@@ -192,7 +192,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 
 <div class="app" id="root">
   <div class="topbar">
-    <div class="brand"><h1>Marala Island Board</h1><span class="tag" id="gameTag">Capstone · BLUFOR vs REDFOR</span></div>
+    <div class="brand"><h1>Marala Island Board</h1><span class="tag" id="gameTag">Capstone · Coalition vs North Korea</span></div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <span id="roleBadge"></span>
       <button id="switchRole" type="button" hidden>Switch view</button>
@@ -203,7 +203,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
   <section id="gate" class="gate" hidden>
     <div class="stack">
       <h1>Marala Island Board</h1>
-      <p class="lede">The live game board for the BLUFOR vs. REDFOR capstone. Each Wing Commander opens their wing's screen, the white cell runs the game from its own screen, and a public screen shows the clock and the shared escalation meter.</p>
+      <p class="lede">The live game board for the capstone: BLUFOR, the US-led Coalition, against REDFOR, North Korea. Each Wing Commander opens their wing's screen, the white cell runs the game from its own screen, and a public screen shows the clock and the shared escalation meter.</p>
     </div>
     <div id="gateNoGame" class="panel" hidden>
       <h2>No game set up yet</h2>
@@ -258,7 +258,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 </div>
 
 <script id="engine">
-const SIDES = { B:{key:'B', name:'BLUFOR', long:'BLUFOR · United States'}, R:{key:'R', name:'REDFOR', long:'REDFOR · China'} };
+const SIDES = { B:{key:'B', name:'BLUFOR', long:'BLUFOR · US-led Coalition'}, R:{key:'R', name:'REDFOR', long:'REDFOR · North Korea'} };
 const OTHER = { B:'R', R:'B' };
 const SITES = {
   harbor:  { name:'Harbor',      grid:'B5', col:1, row:4, letter:'H' },
@@ -655,11 +655,11 @@ function toast(msg, bad){
 
 /* ---------- routing ---------- */
 function show(id){ ['#gate', '#setup', '#vWing', '#vWhite', '#vPublic'].forEach(s => $(s).hidden = s !== id); }
-function roleLabel(r){ return r === 'W' ? 'White cell' : r === 'P' ? 'Public screen' : SIDES[r].name; }
+function roleLabel(r){ return r === 'W' ? 'White cell' : r === 'P' ? 'Public screen' : SIDES[r].long; }
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
   if (!app.role && saved && app.cfg) app.role = saved;
-  $('#gameTag').textContent = app.cfg ? (app.cfg.name || 'Game') + ' · BLUFOR vs REDFOR' : 'Capstone · BLUFOR vs REDFOR';
+  $('#gameTag').textContent = app.cfg ? (app.cfg.name || 'Game') + ' · Coalition vs North Korea' : 'Capstone · Coalition vs North Korea';
   if (app.wantSetup){ show('#setup'); return; }
   if (!app.cfg){ app.role = null; renderGate(); return; }
   if (!app.role){ renderGate(); return; }
@@ -683,8 +683,8 @@ function renderGate(){
   }
   const cards = [
     ['W', 'White cell', 'Runs the clock, checks reports, sends injects and sees the full truth.'],
-    ['B', 'BLUFOR wing', 'The US Wing Commander’s board: sites, reports, actions and points.'],
-    ['R', 'REDFOR wing', 'The Chinese Wing Commander’s board: sites, reports, actions and points.'],
+    ['B', 'BLUFOR · Coalition', 'The US-led Coalition Wing Commander’s board: sites, reports, actions and points.'],
+    ['R', 'REDFOR · North Korea', 'The North Korean Wing Commander’s board: sites, reports, actions and points.'],
     ['P', 'Public screen', 'Clock, escalation meter and public news. No PIN needed.']
   ];
   roles.innerHTML = cards.map(([k, t, d]) => '<button type="button" class="role side-' + (k === 'P' ? 'W' : k) + '" data-role="' + k + '"><b>' + esc(t) + '</b><p>' + esc(d) + '</p></button>').join('');
