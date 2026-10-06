@@ -467,7 +467,7 @@ table.log{{font-size:10pt}}
 <div class="unit"><b>AFROTC DETACHMENT 720</b><span>Capstone</span></div>
 <h1>AFTER-ACTION REPORT</h1>
 <table class="memo">
-<tr><td>EXERCISE:</td><td>{esc(aar['name'])} (Marala Island, BLUFOR vs. REDFOR)</td></tr>
+<tr><td>EXERCISE:</td><td>{esc(aar['name'])} (Marala Island · BLUFOR, US-led Coalition vs. REDFOR, North Korea)</td></tr>
 <tr><td>DATE:</td><td>{esc(built)}</td></tr>
 <tr><td>GAME WINDOW:</td><td>{hhmm(aar['startG'])}–{hhmm(aar['endG'])} board time</td></tr>
 <tr><td>PREPARED BY:</td><td>White Cell</td></tr>
