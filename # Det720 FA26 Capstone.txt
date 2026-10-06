@@ -24,7 +24,7 @@ Lost the white cell PIN? Use **Start a new game** on the main menu with the reco
 
 ## After-action report
 
-One-time setup: install Python from python.org (tick **Add to PATH**), then:
+One-time setup: install something with Python (tick **Add to PATH**), then:
 
 ```
 pip install matplotlib
