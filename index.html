@@ -192,7 +192,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 
 <div class="app" id="root">
   <div class="topbar">
-    <div class="brand"><h1>Marala Island Board</h1><span class="tag" id="gameTag">ALE 2 · BLUFOR vs REDFOR</span></div>
+    <div class="brand"><h1>Marala Island Board</h1><span class="tag" id="gameTag">Capstone · BLUFOR vs REDFOR</span></div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <span id="roleBadge"></span>
       <button id="switchRole" type="button" hidden>Switch view</button>
@@ -235,7 +235,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
     <p class="muted small" style="margin:0">Starting a new game replaces the current one on every screen. Site code words go on the hidden cards at each site; teams radio them to their command post to prove they got there. Only scrambled copies are stored.</p>
     <form id="setupForm" class="stack">
       <div class="row">
-        <label for="sName">Game name<input id="sName" value="ALE 2 capstone" required></label>
+        <label for="sName">Game name<input id="sName" value="Capstone" required></label>
         <label for="sPinW">White cell PIN<input id="sPinW" required autocomplete="off"></label>
         <label for="sPinB">BLUFOR PIN<input id="sPinB" required autocomplete="off"></label>
         <label for="sPinR">REDFOR PIN<input id="sPinR" required autocomplete="off"></label>
@@ -659,7 +659,7 @@ function roleLabel(r){ return r === 'W' ? 'White cell' : r === 'P' ? 'Public scr
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
   if (!app.role && saved && app.cfg) app.role = saved;
-  $('#gameTag').textContent = app.cfg ? (app.cfg.name || 'Game') + ' · BLUFOR vs REDFOR' : 'ALE 2 · BLUFOR vs REDFOR';
+  $('#gameTag').textContent = app.cfg ? (app.cfg.name || 'Game') + ' · BLUFOR vs REDFOR' : 'Capstone · BLUFOR vs REDFOR';
   if (app.wantSetup){ show('#setup'); return; }
   if (!app.cfg){ app.role = null; renderGate(); return; }
   if (!app.role){ renderGate(); return; }
@@ -731,7 +731,7 @@ $('#setupForm').addEventListener('submit', async ev => {
     const gid = await createGame(cfg);
     LS.set('marala-role-' + gid, 'W');
     app.wantSetup = false; app.role = app.mode === 'local' ? 'W' : null;
-    $('#setupForm').reset(); $('#sName').value = 'ALE 2 capstone';
+    $('#setupForm').reset(); $('#sName').value = 'Capstone';
     toast('Game created. You are on the white cell view.');
     route();
   } catch(err){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'The game was not created (' + ((err && err.code) || 'error') + '). ' + (app.online === 'firebase' ? 'Check the internet connection and the database rules in Firebase.' : 'Only people who can edit this board can start a game.'); }
