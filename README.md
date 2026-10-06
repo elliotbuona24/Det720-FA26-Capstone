@@ -1,2 +1,2 @@
 # Det720-FA26-Capstone
-#Marala Island game board
+#Read all documents associated to this project. Read Det720 FA26 Capstone.txt file for game start instruction and how to get AAR report. 
