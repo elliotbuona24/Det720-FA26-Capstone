@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyB4qzKxVXGawFgukEFqRHhMcvC5lyw0q5I",
+  authDomain: "det-720-fa26-capstone.firebaseapp.com",
+  databaseURL: "https://det-720-fa26-capstone-default-rtdb.firebaseio.com",
+  projectId: "det-720-fa26-capstone",
+  storageBucket: "det-720-fa26-capstone.firebasestorage.app",
+  messagingSenderId: "94820311080",
+  appId: "1:94820311080:web:81000de18784ec5839d51d",
+  measurementId: "G-ZR5F9T70BW"
+};
+</script>
+<title>Marala Island Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif;background:#fafaf7}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<style>
+/* Layout: an ops-floor console. Status strip on top, island chart left, controls right, feed beside. */
+:root{
+  --bg:#e9ece8; --panel:#fbfbf8; --panel-2:#f2f4f0; --ink:#17202a; --muted:#56616c; --line:#cfd6d1;
+  --sea:#c9dde3; --sea-line:#b3cbd3; --land:#e6dcc0; --land-edge:#a8996d; --grid:rgba(23,32,42,.22);
+  --blu:#1d5cc0; --blu-soft:#dce7fb; --red:#bf2f28; --red-soft:#f9dfdc; --wc:#3d4a3f; --wc-soft:#dfe6dd;
+  --e0:#2d8a57; --e1:#c39a1d; --e2:#d5712a; --e3:#bf2f28; --e4:#5c1414;
+  --good:#2d8a57; --warn:#b7791f; --bad:#bf2f28; --focus:#1d5cc0;
+  --display:'Saira Condensed','Arial Narrow',Arial,sans-serif;
+  --body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1316; --panel:#151c21; --panel-2:#1b242a; --ink:#e4e9ec; --muted:#97a3ad; --line:#2a353d;
+  --sea:#11232b; --sea-line:#1a333d; --land:#2a2a21; --land-edge:#6a6245; --grid:rgba(228,233,236,.16);
+  --blu:#6c9ff0; --blu-soft:#172a48; --red:#ee6d62; --red-soft:#3c1c19; --wc:#b9c7b6; --wc-soft:#202a22;
+  --e0:#4fb97c; --e1:#e2bd47; --e2:#f0914c; --e3:#ee6d62; --e4:#b14a4a;
+  --good:#4fb97c; --warn:#e2bd47; --bad:#ee6d62; --focus:#6c9ff0; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0e1316; --panel:#151c21; --panel-2:#1b242a; --ink:#e4e9ec; --muted:#97a3ad; --line:#2a353d;
+  --sea:#11232b; --sea-line:#1a333d; --land:#2a2a21; --land-edge:#6a6245; --grid:rgba(228,233,236,.16);
+  --blu:#6c9ff0; --blu-soft:#172a48; --red:#ee6d62; --red-soft:#3c1c19; --wc:#b9c7b6; --wc-soft:#202a22;
+  --e0:#4fb97c; --e1:#e2bd47; --e2:#f0914c; --e3:#ee6d62; --e4:#b14a4a;
+  --good:#4fb97c; --warn:#e2bd47; --bad:#ee6d62; --focus:#6c9ff0; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--body);font-size:14px;line-height:1.45;padding-inline:16px;padding-block:14px 40px}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.02em;margin:0;text-wrap:balance}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:7px 11px;font-weight:500}
+button:hover:not(:disabled){border-color:var(--muted)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+input,select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 9px;min-width:0;width:100%}
+textarea{resize:vertical;min-height:58px}
+label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.row>*{flex:1 1 140px}
+.stack{display:grid;gap:10px}
+.app{max-width:1500px;margin-inline:auto;display:grid;gap:14px}
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{font-size:22px;text-transform:uppercase;letter-spacing:.06em}
+.brand .tag{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.banner{border:1px dashed var(--warn);color:var(--ink);background:var(--panel-2);padding:8px 12px;border-radius:8px;font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0;align-content:start}
+.side-B{--side:var(--blu);--side-soft:var(--blu-soft)}
+.side-R{--side:var(--red);--side-soft:var(--red-soft)}
+.side-W{--side:var(--wc);--side-soft:var(--wc-soft)}
+.badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:var(--side);background:var(--side-soft);border:1px solid var(--side);border-radius:4px;padding:2px 8px}
+.chip{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--muted);background:var(--panel-2)}
+.chip.ok{color:var(--good);border-color:var(--good)}
+.chip.no{color:var(--bad);border-color:var(--bad)}
+.chip.wait{color:var(--warn);border-color:var(--warn)}
+.chip.B{color:var(--blu);border-color:var(--blu);background:var(--blu-soft)}
+.chip.R{color:var(--red);border-color:var(--red);background:var(--red-soft)}
+
+/* status strip */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.stat .v{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat .s{font-size:12px;color:var(--muted)}
+.stat.wide{grid-column:span 2}
+@media (max-width:560px){.stat.wide{grid-column:1 / -1}}
+.clock .v{font-family:var(--mono);font-size:30px;font-weight:600}
+
+/* escalation ladder */
+.ladder{display:grid;gap:6px}
+.ladder-bar{position:relative;height:18px;border-radius:4px;overflow:hidden;display:grid;grid-template-columns:25fr 25fr 25fr 24fr 1fr;border:1px solid var(--line)}
+.ladder-bar>span{opacity:.28}
+.ladder-bar>span.on{opacity:1}
+.z0{background:var(--e0)}.z1{background:var(--e1)}.z2{background:var(--e2)}.z3{background:var(--e3)}.z4{background:var(--e4)}
+.ladder-fill{position:absolute;inset:0 auto 0 0;background:transparent;border-right:3px solid var(--ink)}
+.ladder-legend{display:flex;justify-content:space-between;flex-wrap:wrap;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;gap:2px 6px;min-width:0}
+.lvl{font-family:var(--display);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.lvl-0{color:var(--e0)}.lvl-1{color:var(--e1)}.lvl-2{color:var(--e2)}.lvl-3{color:var(--e3)}.lvl-4{color:var(--e4)}
+.meter{height:8px;border-radius:4px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--side,var(--good))}
+
+/* layouts */
+.wing-grid{display:grid;gap:14px;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-items:start}
+.wing-grid .feedcol{grid-column:1 / -1}
+@media (min-width:1280px){.wing-grid{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,.8fr)}.wing-grid .feedcol{grid-column:auto}}
+@media (max-width:900px){.wing-grid{grid-template-columns:minmax(0,1fr)}}
+.white-grid{display:grid;gap:14px;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr);align-items:start}
+@media (max-width:1180px){.white-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (max-width:760px){.white-grid{grid-template-columns:minmax(0,1fr)}}
+.span2{grid-column:span 2}
+@media (max-width:760px){.span2{grid-column:auto}}
+
+/* map */
+.map-wrap{overflow-x:auto}
+svg.map{width:100%;min-width:420px;height:auto;display:block}
+.map text{font-family:var(--body)}
+.map .lbl{font-size:12px;fill:var(--ink);font-weight:600}
+.map .sub{font-size:10.5px;fill:var(--muted)}
+.map .axis{font-family:var(--mono);font-size:12px;fill:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:50%;display:inline-block;border:2px solid var(--line)}
+
+/* actions */
+.actions{display:grid;gap:8px}
+.act{border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px;background:var(--panel-2)}
+.act-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.act-head b{font-family:var(--display);font-size:16px;letter-spacing:.03em;font-weight:600}
+.cost{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.cost .esc-up{color:var(--bad)}.cost .esc-down{color:var(--good)}
+.act details summary{cursor:pointer;font-size:13px;font-weight:500}
+.btn-side{background:var(--side);border-color:var(--side);color:#fff}
+.btn-side:hover:not(:disabled){filter:brightness(1.08)}
+:root[data-theme="dark"] .btn-side{color:#0e1316}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-side{color:#0e1316}}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tabs button{border:none;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 10px;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--side)}
+
+/* feed and lists */
+.feed{display:grid;gap:8px;max-height:640px;overflow:auto;padding-right:4px}
+.item{border-left:3px solid var(--line);padding:4px 0 4px 10px;display:grid;gap:2px}
+.item .t{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.item.hq{border-left-color:var(--side,var(--wc))}
+.item.alert{border-left-color:var(--bad)}
+.item.good{border-left-color:var(--good)}
+.item.public{border-left-color:var(--e1)}
+.list{display:grid;gap:6px}
+.li{display:flex;gap:8px;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:8px;padding:7px 9px;flex-wrap:wrap;background:var(--panel)}
+.li .grow{flex:1 1 200px;min-width:0}
+.empty{font-size:13px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:10px}
+table.score{width:100%;border-collapse:collapse;font-size:13px}
+table.score td,table.score th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+table.score td:first-child,table.score th:first-child{text-align:left}
+table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
+.evgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.evgrid button{text-align:left;font-size:12.5px;line-height:1.25;padding:7px 9px}
+.evgrid button small{display:block;color:var(--muted);font-family:var(--mono);font-size:11px;margin-top:2px}
+.sitectl{display:grid;gap:6px}
+.sitectl .li{flex-wrap:nowrap}.sitectl .li .grow{flex:1 1 auto}.sitectl .li select{width:auto;flex:0 0 auto}.sitectl .li button{flex:0 0 auto;padding:6px 9px}
+@media (max-width:480px){.sitectl .li{flex-wrap:wrap}}
+
+/* gate */
+.gate{max-width:880px;margin:6vh auto 0;display:grid;gap:18px}
+.gate h1{font-size:38px;text-transform:uppercase;letter-spacing:.05em;line-height:1}
+.gate .lede{max-width:62ch;color:var(--muted)}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.role{border:1px solid var(--line);border-top:4px solid var(--side);border-radius:10px;padding:14px;background:var(--panel);display:grid;gap:8px;text-align:left}
+.role b{font-family:var(--display);font-size:20px;letter-spacing:.04em;text-transform:uppercase;color:var(--side)}
+.role p{margin:0;font-size:12.5px;color:var(--muted)}
+
+/* public */
+.public-view{display:grid;gap:18px}
+.public-view .bigclock{font-family:var(--mono);font-size:clamp(48px,10vw,120px);font-weight:600;line-height:1}
+.public-view .biglvl{font-family:var(--display);font-size:clamp(28px,5vw,56px);font-weight:700;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.public-view .ladder-bar{height:34px}
+.warbar{background:var(--e4);color:#fff;font-family:var(--display);font-size:22px;letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;border-radius:8px}
+@media (prefers-reduced-motion: no-preference){.pulse{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{opacity:.55}}}
+.hidden-sm{}
+@media (max-width:560px){.hidden-sm{display:none}}
+</style>
+
+<div class="app" id="root">
+  <div class="topbar">
+    <div class="brand"><h1>Marala Island Board</h1><span class="tag" id="gameTag">ALE 2 · BLUFOR vs REDFOR</span></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span id="roleBadge"></span>
+      <button id="switchRole" type="button" hidden>Switch view</button>
+    </div>
+  </div>
+  <div id="connBanner" class="banner" hidden></div>
+
+  <section id="gate" class="gate" hidden>
+    <div class="stack">
+      <h1>Marala Island Board</h1>
+      <p class="lede">The live game board for the BLUFOR vs. REDFOR capstone. Each Wing Commander opens their wing's screen, the white cell runs the game from its own screen, and a public screen shows the clock and the shared escalation meter.</p>
+    </div>
+    <div id="gateNoGame" class="panel" hidden>
+      <h2>No game set up yet</h2>
+      <p class="muted" style="margin:0">The white cell creates a game once, on its own laptop. Wing views can join after that.</p>
+      <div><button type="button" class="btn-side side-W" id="gotoSetup">Set up a new game</button></div>
+    </div>
+    <div id="gateRoles" class="roles"></div>
+    <form id="pinForm" class="panel" hidden>
+      <h2 id="pinTitle">Enter PIN</h2>
+      <div class="row">
+        <label for="pinInput">PIN for this view<input id="pinInput" type="password" inputmode="numeric" autocomplete="off"></label>
+        <div style="flex:0 0 auto" class="row"><button type="submit" class="btn-side" id="pinGo">Open view</button><button type="button" id="pinCancel">Back</button></div>
+      </div>
+      <p id="pinErr" class="small" style="color:var(--bad);margin:0" hidden>That PIN doesn't match this game. Ask the white cell for the right one.</p>
+    </form>
+  </section>
+
+  <section id="setup" class="panel side-W" hidden>
+    <h2>Set up a new game</h2>
+    <p class="muted small" style="margin:0">Starting a new game replaces the current one on every screen. Site code words go on the hidden cards at each site; teams read them to their WOC to prove they got there. Only scrambled copies are stored.</p>
+    <form id="setupForm" class="stack">
+      <div class="row">
+        <label for="sName">Game name<input id="sName" value="ALE 2 capstone" required></label>
+        <label for="sPinW">White cell PIN<input id="sPinW" required autocomplete="off"></label>
+        <label for="sPinB">BLUFOR PIN<input id="sPinB" required autocomplete="off"></label>
+        <label for="sPinR">REDFOR PIN<input id="sPinR" required autocomplete="off"></label>
+      </div>
+      <div class="row">
+        <label for="cHarbor">Harbor code word (B5)<input id="cHarbor" required autocomplete="off"></label>
+        <label for="cFuel">Fuel Depot code word (E1)<input id="cFuel" required autocomplete="off"></label>
+        <label for="cRadar">Radar Ridge code word (C1)<input id="cRadar" required autocomplete="off"></label>
+        <label for="cAirstrip">Airstrip code word (D5)<input id="cAirstrip" required autocomplete="off"></label>
+        <label for="cTown">Marala Town code word (C3–D3)<input id="cTown" required autocomplete="off"></label>
+      </div>
+      <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto">Create game</button><button type="button" id="setupCancel" style="flex:0 0 auto">Cancel</button></div>
+      <p id="setupErr" class="small" style="color:var(--bad);margin:0" hidden></p>
+    </form>
+  </section>
+
+  <section id="vWing" hidden></section>
+  <section id="vWhite" class="side-W" hidden></section>
+  <section id="vPublic" class="public-view" hidden></section>
+</div>
+
+<script id="engine">
+const SIDES = { B:{key:'B', name:'BLUFOR', long:'BLUFOR · United States'}, R:{key:'R', name:'REDFOR', long:'REDFOR · China'} };
+const OTHER = { B:'R', R:'B' };
+const SITES = {
+  harbor:  { name:'Harbor',      grid:'B5', col:1, row:4, letter:'H' },
+  fuel:    { name:'Fuel Depot',  grid:'E1', col:4, row:0, letter:'F' },
+  radar:   { name:'Radar Ridge', grid:'C1', col:2, row:0, letter:'R' },
+  airstrip:{ name:'Airstrip',    grid:'D5', col:3, row:4, letter:'A' }
+};
+const SITE_KEYS = Object.keys(SITES);
+const TICKS = [30,40,50,60,70,80,90,100];
+const START_G = 20, END_G = 100;
+const LEVELS = [
+  { name:'Competition', min:0 }, { name:'Tension', min:25 }, { name:'Crisis', min:50 }, { name:'Brink', min:75 }, { name:'War', min:100 }
+];
+const ESC = { provocation:5, sabotage:15, firstfire:30, returnfire:5, falseblame:15, show:10, defied:10, jam:5, strikewing:40, quiet:3, trueblame:5 };
+
+function levelIndex(esc){ return esc >= 100 ? 4 : esc >= 75 ? 3 : esc >= 50 ? 2 : esc >= 25 ? 1 : 0; }
+function hhmm(g){ const m = 360 + Math.floor(g); return String(Math.floor(m/60)).padStart(2,'0') + String(m%60).padStart(2,'0'); }
+function hashStr(str, seed){
+  let h1 = 0xdeadbeef ^ (seed||0), h2 = 0x41c6ce57 ^ (seed||0);
+  for (let i = 0; i < str.length; i++){ const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+function secret(salt, text){ return hashStr(salt + '|' + String(text||'').trim().toUpperCase()); }
+
+function newState(){
+  const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
+  return {
+    esc:10, escBy:{B:0,R:0}, hn:{B:50,R:50},
+    pts:{ B:{reports:0,ied:0,cache:0,adj:0}, R:{reports:0,ied:0,cache:0,adj:0} },
+    sites, office:{B:false,R:false}, access:{B:true,R:true},
+    uses:{ drone:{B:1,R:1}, show:{B:1,R:1}, jam:{B:1,R:1}, strike:{B:1,R:1} }, aidTick:{B:-1,R:-1},
+    cacheDone:null, crisisCallAt:-999, war:false, warAt:null, raised:false, tickIdx:0,
+    clock:{ started:false, running:false, anchorReal:0, anchorG:START_G },
+    endex:false, reveal:false, jam:{B:null,R:null},
+    contacts:[], claims:[], incidents:[], feed:[], requests:[], log:[], statements:{}, lastSeen:{B:{},R:{}},
+    g:START_G
+  };
+}
+function gameAt(S, t){
+  if (!S.clock.started) return START_G;
+  if (!S.clock.running) return S.clock.anchorG;
+  return Math.min(END_G, S.clock.anchorG + Math.max(0, t - S.clock.anchorReal) / 60000);
+}
+function pushFeed(S, to, text, kind, extra){ S.feed.push(Object.assign({ id:'f' + S.feed.length, to, text, kind:kind||'hq', g:S.g }, extra||{})); }
+function pushLog(S, text, side, e, status){ S.log.push({ id:e ? e.id : 'l' + S.log.length, g:S.g, text, side:side||null, status:status||'ok', type:e ? e.type : 'tick', by:e ? e.by : 'system' }); }
+function checkAccess(S, side){
+  S.hn[side] = Math.max(0, Math.min(100, S.hn[side]));
+  if (S.access[side] && S.hn[side] < 20){
+    S.access[side] = false; S.office[side] = false;
+    pushFeed(S, side, 'The mayor has closed your town office. Raise the host-nation meter back to 20, then visit the mayor again.', 'alert');
+    pushLog(S, SIDES[side].name + ' town office closed by the mayor (host nation under 20)', side);
+  } else if (!S.access[side] && S.hn[side] >= 20){
+    S.access[side] = true;
+    pushFeed(S, side, 'The mayor will see you again. Visit Marala Town to reopen your office.', 'good');
+  }
+}
+function addHN(S, side, n){ if (!n) return; S.hn[side] += n; checkAccess(S, side); }
+function raise(S, side, n){
+  S.esc = Math.min(100, S.esc + n);
+  if (side) S.escBy[side] += n;
+  S.raised = true;
+  if (S.esc >= 100 && !S.war){
+    S.war = true; S.warAt = S.g;
+    pushFeed(S, 'public', 'WAR. Deterrence has failed on Marala Island. Both scores will be cut in half.', 'alert');
+    pushLog(S, 'Escalation reached 100: war', null);
+  }
+  return n;
+}
+function lower(S, n){ S.esc = Math.max(0, S.esc - n); }
+function tick(S, g){
+  S.g = g;
+  const parts = { B:[], R:[] };
+  ['B','R'].forEach(side => {
+    const air = S.sites.airstrip;
+    S.uses.drone[side] = 1 + (air.holder === side && !air.contested ? 1 : 0);
+    parts[side].push(S.uses.drone[side] + ' drone flight' + (S.uses.drone[side] > 1 ? 's' : '') + ' ready');
+    if (S.office[side] && S.access[side]){ addHN(S, side, 3); parts[side].push('host nation +3 (town office)'); }
+  });
+  if (!S.raised){ const before = S.esc; lower(S, ESC.quiet); if (S.esc !== before){ parts.B.push('escalation −' + (before - S.esc)); parts.R.push('escalation −' + (before - S.esc)); } }
+  S.raised = false;
+  ['B','R'].forEach(side => pushFeed(S, side, hhmm(g) + ' update: ' + parts[side].join(', '), 'tick'));
+  if (S.esc >= 50 && !S.war && g - S.crisisCallAt >= 20){
+    S.crisisCallAt = g;
+    pushFeed(S, 'both', 'Higher headquarters warning: escalation is at ' + S.esc + '. One more serious incident could start a war.', 'alert');
+  }
+  pushLog(S, hhmm(g) + ' board update', null);
+}
+function runTicks(S, g){
+  if (!S.clock.started) return;
+  while (S.tickIdx < TICKS.length && TICKS[S.tickIdx] <= g + 1e-9){
+    tick(S, TICKS[S.tickIdx]); S.tickIdx++;
+    if (S.tickIdx >= TICKS.length){
+      S.endex = true; S.clock.running = false; S.clock.anchorG = END_G; S.g = END_G;
+      pushFeed(S, 'public', 'ENDEX. The board is frozen at 0740.', 'public');
+      pushLog(S, 'ENDEX', null);
+    }
+  }
+}
+function useUp(S, side, key, e, label){
+  if (S.endex){ pushLog(S, SIDES[side].name + ' ' + label + ' refused: the game has ended', side, e, 'rejected'); return false; }
+  if (S.uses[key][side] < 1){ pushLog(S, SIDES[side].name + ' ' + label + ' refused: none left', side, e, 'rejected'); pushFeed(S, side, label + ' refused: none left.', 'alert'); return false; }
+  S.uses[key][side] -= 1; return true;
+}
+function clearCache(S, side, how, e){
+  if (S.cacheDone){ pushLog(S, 'Cache already handled by ' + SIDES[S.cacheDone].name, side, e, 'rejected'); return; }
+  S.cacheDone = side; S.pts[side].cache += 5; addHN(S, side, 5);
+  pushFeed(S, side, 'Militia cache ' + how + '. +5 points, host nation +5.', 'good');
+  pushFeed(S, OTHER[side], 'The militia cache has been ' + how + ' by the other wing.', 'hq');
+  pushLog(S, SIDES[side].name + ' ' + how + ' the militia cache (+5 points, host nation +5)', side, e);
+}
+function apply(S, e, cfg){
+  const side = e.side, p = e.p || {}, nm = side ? SIDES[side].name : '';
+  switch (e.type){
+    case 'clock_start': S.clock.started = true; S.clock.running = true; S.clock.anchorReal = e.ts; S.clock.anchorG = typeof p.g === 'number' ? p.g : START_G; S.g = S.clock.anchorG; pushFeed(S, 'public', 'STARTEX. The board clock is running.', 'public'); pushLog(S, 'STARTEX at ' + hhmm(S.g), null, e); break;
+    case 'clock_pause': if (S.clock.running){ S.clock.anchorG = gameAt(S, e.ts); S.clock.running = false; S.g = S.clock.anchorG; pushLog(S, 'Clock paused at ' + hhmm(S.g), null, e); } break;
+    case 'clock_resume': if (S.clock.started && !S.clock.running && !S.endex){ S.clock.running = true; S.clock.anchorReal = e.ts; pushLog(S, 'Clock resumed at ' + hhmm(S.clock.anchorG), null, e); } break;
+    case 'clock_set': if (S.clock.started && !S.endex){ S.clock.anchorG = Math.max(START_G, Math.min(END_G, p.g)); S.clock.anchorReal = e.ts; S.g = S.clock.anchorG; pushLog(S, 'Clock set to ' + hhmm(S.g), null, e); } break;
+    case 'reveal': S.reveal = !!p.on; pushLog(S, p.on ? 'Full truth shown on every screen' : 'Truth hidden again', null, e); if (p.on) pushFeed(S, 'public', 'The full truth and both scores are now on every screen.', 'public'); break;
+    case 'site_set': { const s = S.sites[p.site]; if (!s) break; s.holder = p.holder || null; s.contested = false; s.since = S.g; pushLog(S, SITES[p.site].name + (p.holder ? ' set to ' + SIDES[p.holder].name : ' set to nobody'), p.holder, e); break; }
+    case 'site_contested': { const s = S.sites[p.site]; if (!s) break; s.contested = !!p.on; pushLog(S, SITES[p.site].name + (p.on ? ' contested' : ' no longer contested'), null, e);
+      if (p.on && s.holder) pushFeed(S, s.holder, 'The other wing is standing on your ' + SITES[p.site].name + '. It scores nothing while contested.', 'alert'); break; }
+    case 'office': S.office[side] = !!p.on && S.access[side]; pushLog(S, nm + ' town office ' + (S.office[side] ? 'opened' : 'closed'), side, e); break;
+    case 'claim': {
+      const c = { id:e.id, side, site:p.site, g:S.g, status:'rejected', note:'' };
+      const ok = cfg && cfg.codes && p.code === cfg.codes[p.site];
+      if (!ok){ c.note = 'Code word did not match.'; }
+      else if (p.site === 'town'){
+        if (!S.access[side]) c.note = 'The mayor has closed your office for now.';
+        else { c.status = 'accepted'; c.note = S.office[side] ? 'Office already open.' : 'Town office open.'; S.office[side] = true; }
+      } else {
+        const s = S.sites[p.site];
+        if (s.holder === side){ c.status = 'accepted'; c.note = 'Already yours.'; }
+        else if (s.holder){ c.status = 'held'; c.note = 'The other wing’s flag is already up here.'; S.lastSeen[side][p.site] = { holder:s.holder, g:S.g }; }
+        else { s.holder = side; s.contested = false; s.since = S.g; c.status = 'accepted'; c.note = 'Site is yours.'; }
+      }
+      S.claims.push(c);
+      const where = p.site === 'town' ? 'Marala Town office' : SITES[p.site].name;
+      pushLog(S, nm + ' claimed ' + where + ': ' + (c.status === 'accepted' ? 'confirmed' : 'refused') + ' (' + c.note + ')', side, e, c.status === 'accepted' ? 'ok' : 'rejected');
+      pushFeed(S, side, where + ': ' + (c.status === 'accepted' ? 'confirmed. ' : 'refused. ') + c.note, c.status === 'accepted' ? 'good' : 'alert');
+      break; }
+    case 'conduct': addHN(S, side, p.good ? 5 : -5); pushLog(S, nm + (p.good ? ' good conduct with locals (host nation +5)' : ' poor conduct with locals (host nation −5)'), side, e); break;
+    case 'ied': S.pts[side].ied += 2; if (p.result === 'real') addHN(S, side, 5);
+      pushLog(S, nm + (p.result === 'real' ? ' cleared a real IED (+2 points, host nation +5)' : ' called a hoax correctly (+2 points)') + (p.grid ? ' at ' + p.grid : ''), side, e);
+      if (p.result === 'real') pushFeed(S, side, 'IED' + (p.grid ? ' at ' + p.grid : '') + ' cleared after your 9-line. The locals noticed.', 'good');
+      break;
+    case 'cache': clearCache(S, side, 'cleared', e); break;
+    case 'detonation': {
+      const inc = { id:e.id, grid:p.grid || '?', truth:p.truth || 'militia', g:S.g };
+      S.incidents.push(inc);
+      pushFeed(S, 'both', 'Explosion reported at ' + inc.grid + '. Cause unknown.' + (p.casualties ? ' Casualties reported.' : ''), 'alert');
+      pushLog(S, 'Explosion at ' + inc.grid + ' (really caused by ' + (inc.truth === 'militia' ? 'the militia' : SIDES[inc.truth].name) + ')', null, e);
+      break; }
+    case 'civaid': addHN(S, side, 5); pushLog(S, nm + ' helped an injured civilian (host nation +5)', side, e); pushFeed(S, side, 'Locals saw your team help an injured civilian.', 'good'); break;
+    case 'provocation': raise(S, side, ESC.provocation); pushLog(S, nm + ' aimed at or crowded the other wing (escalation +5)', side, e); break;
+    case 'sabotage': { const s = S.sites[p.site]; const prev = s ? s.holder : null; if (s){ s.holder = null; s.contested = false; s.since = S.g; }
+      raise(S, side, ESC.sabotage); addHN(S, side, -5);
+      pushLog(S, nm + ' pulled the flag at ' + (s ? SITES[p.site].name : 'a site') + ' (escalation +15, host nation −5)', side, e);
+      if (prev && prev !== side) pushFeed(S, prev, 'Your flag at ' + SITES[p.site].name + ' has been pulled down.', 'alert');
+      break; }
+    case 'firstfire': raise(S, side, ESC.firstfire); addHN(S, side, -15);
+      pushLog(S, nm + ' fired first' + (p.grid ? ' at ' + p.grid : '') + ' (escalation +30, host nation −15)', side, e);
+      pushFeed(S, 'both', 'Shots fired' + (p.grid ? ' near ' + p.grid : '') + '. Casualties reported.', 'alert'); break;
+    case 'returnfire': raise(S, side, ESC.returnfire); pushLog(S, nm + ' returned fire (escalation +5)', side, e); break;
+    case 'contact':
+      S.contacts.push({ id:e.id, side, kind:p.kind, site:p.site || null, grid:(p.grid || '').toUpperCase(), seen:p.seen || hhmm(S.g), seenG:S.g, note:p.note || '', verdict:null, g:S.g });
+      pushLog(S, nm + ' reported ' + (p.kind === 'site' ? 'an enemy flag at ' + (SITES[p.site] ? SITES[p.site].name : '?') : p.kind === 'team' ? 'an enemy team at ' + (p.grid || '?') : 'activity at ' + (p.grid || '?')), side, e);
+      break;
+    case 'verdict': {
+      const c = S.contacts.find(x => x.id === p.contact); if (!c || c.verdict) break;
+      c.verdict = p.verdict; c.gain = p.verdict === 'confirm' ? 2 : 0;
+      S.pts[c.side].reports += c.gain;
+      pushLog(S, SIDES[c.side].name + ' report ' + ({ confirm:'confirmed (+2 points)', duplicate:'marked duplicate', false:'marked false' })[p.verdict], c.side, e);
+      break; }
+    case 'act_drone': if (!useUp(S, side, 'drone', e, 'Drone flight')) break;
+      S.requests.push({ id:e.id, side, kind:'drone', text:p.text || '', status:'open', g:S.g });
+      pushLog(S, nm + ' drone flight: ' + (p.text || ''), side, e); break;
+    case 'act_aid':
+      if (!S.office[side] || !S.access[side]){ pushLog(S, nm + ' aid refused: no town office', side, e, 'rejected'); pushFeed(S, side, 'Aid needs an open town office.', 'alert'); break; }
+      if (S.aidTick[side] === S.tickIdx){ pushLog(S, nm + ' aid refused: already given this 10 minutes', side, e, 'rejected'); pushFeed(S, side, 'Aid is available again at the next board update.', 'alert'); break; }
+      S.aidTick[side] = S.tickIdx; addHN(S, side, 5); pushLog(S, nm + ' delivered aid (host nation +5)', side, e); pushFeed(S, side, 'Aid delivered. Host nation +5.', 'good'); break;
+    case 'act_statement': {
+      const inc = S.incidents.find(i => i.id === p.incident); const key = side + ':' + p.incident;
+      if (!inc || S.statements[key]){ pushLog(S, nm + ' statement refused', side, e, 'rejected'); break; }
+      S.statements[key] = p.blame;
+      const correct = (p.blame === 'militia' && inc.truth === 'militia') || (p.blame === 'other' && inc.truth === OTHER[side]);
+      if (correct){ lower(S, ESC.trueblame); addHN(S, side, 5); pushLog(S, nm + ' told the truth about the ' + inc.grid + ' explosion (escalation −5, host nation +5)', side, e); }
+      else { raise(S, side, ESC.falseblame); addHN(S, side, -10); pushLog(S, nm + ' falsely blamed the other wing for the ' + inc.grid + ' explosion (escalation +15, host nation −10)', side, e); }
+      pushFeed(S, 'public', SIDES[side].name + ' on the ' + inc.grid + ' explosion: ' + (p.blame === 'militia' ? '"The militia did this."' : '"' + SIDES[OTHER[side]].name + ' did this."'), 'public');
+      break; }
+    case 'act_jam': { if (!useUp(S, side, 'jam', e, 'Jamming')) break; raise(S, side, ESC.jam); const until = Math.min(END_G, S.g + 5); S.jam[OTHER[side]] = until;
+      pushFeed(S, OTHER[side], 'Your island radios are jammed until ' + hhmm(until) + '. Use your backup comms plan.', 'alert');
+      pushLog(S, nm + ' jammed ' + SIDES[OTHER[side]].name + ' island radios until ' + hhmm(until) + ' (escalation +5)', side, e); break; }
+    case 'act_show': if (!useUp(S, side, 'show', e, 'Show of force')) break; raise(S, side, ESC.show);
+      S.requests.push({ id:e.id, side, kind:'show', text:p.text || '', status:'open', g:S.g });
+      pushFeed(S, OTHER[side], 'Show of force by ' + SIDES[side].name + ': leave ' + (p.text || 'the named site') + ' by ' + hhmm(Math.min(END_G, S.g + 5)) + ' or take +10 escalation.', 'alert');
+      pushLog(S, nm + ' show of force at ' + (p.text || '?') + ' (escalation +10)', side, e); break;
+    case 'act_strike': if (!useUp(S, side, 'strike', e, 'Strike')) break;
+      S.requests.push({ id:e.id, side, kind:'strike', target:p.target, text:p.grid || '', status:'open', g:S.g });
+      pushLog(S, nm + ' asked for a strike on ' + (p.target === 'cache' ? 'the militia cache' : SIDES[OTHER[side]].name) + ' at ' + (p.grid || '?'), side, e); break;
+    case 'resolve': {
+      const r = S.requests.find(x => x.id === p.req); if (!r || r.status !== 'open') break;
+      r.status = 'done'; r.result = p.result; r.answer = p.text || '';
+      const rn = SIDES[r.side].name;
+      if (r.kind === 'drone'){ pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.'), 'hq'); pushLog(S, rn + ' drone flight answered', r.side, e); }
+      else if (r.kind === 'show'){
+        if (p.result === 'defied'){ raise(S, OTHER[r.side], ESC.defied); pushFeed(S, OTHER[r.side], 'You did not leave. Escalation +10 charged to you.', 'alert'); pushLog(S, SIDES[OTHER[r.side]].name + ' ignored the show of force (escalation +10)', OTHER[r.side], e); }
+        else { pushFeed(S, r.side, 'The other wing left ' + r.text + '.', 'good'); pushLog(S, SIDES[OTHER[r.side]].name + ' left after the show of force', OTHER[r.side], e); }
+      } else if (r.kind === 'strike'){
+        if (p.result === 'hit'){
+          if (r.target === 'cache') clearCache(S, r.side, 'destroyed by strike', e);
+          else { raise(S, r.side, ESC.strikewing); addHN(S, r.side, -20); pushFeed(S, 'both', 'Air strike on foreign forces at ' + r.text + '.', 'alert'); pushLog(S, rn + ' struck ' + SIDES[OTHER[r.side]].name + ' (escalation +40, host nation −20)', r.side, e); }
+        } else { pushFeed(S, r.side, 'No strike: the 9-line was not correct. Your strike is used up.', 'alert'); pushLog(S, rn + ' strike refused (9-line not correct)', r.side, e); }
+      }
+      break; }
+    case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:p.label || 'Higher headquarters' }); pushLog(S, 'Message to ' + ({ B:'BLUFOR', R:'REDFOR', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
+    case 'adjust': {
+      const d = Number(p.delta) || 0;
+      if (p.field === 'esc'){ if (d > 0) raise(S, side || null, d); else lower(S, -d); }
+      else if (p.field === 'hn') addHN(S, side, d);
+      else if (p.field === 'pts') S.pts[side].adj += d;
+      pushLog(S, 'Adjustment: ' + (side ? nm + ' ' : '') + ({ esc:'escalation', hn:'host nation', pts:'points' })[p.field] + ' ' + (d >= 0 ? '+' : '') + d + (p.reason ? ' (' + p.reason + ')' : ''), side, e);
+      break; }
+  }
+}
+function replay(cfg, events, now){
+  const voided = new Set(events.filter(e => e.type === 'void').map(e => e.p && e.p.target));
+  const evs = events.filter(e => e.type !== 'void' && !voided.has(e.id)).slice().sort((a, b) => (a.ts - b.ts) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const S = newState();
+  for (const e of evs){
+    const g = gameAt(S, e.ts);
+    runTicks(S, g);
+    S.g = Math.max(S.g, Math.min(g, END_G));
+    if (S.endex && e.by !== 'W' && e.by !== 'white' && /^act_|^contact|^claim/.test(e.type)){ pushLog(S, SIDES[e.side].name + ' action after ENDEX ignored', e.side, e, 'rejected'); continue; }
+    apply(S, e, cfg);
+  }
+  const gNow = gameAt(S, now);
+  runTicks(S, gNow);
+  S.g = S.endex ? END_G : (S.clock.started ? gNow : START_G);
+  return S;
+}
+function score(S, side){
+  const sites = SITE_KEYS.reduce((n, k) => n + (S.sites[k].holder === side && !S.sites[k].contested ? 10 : 0), 0);
+  const town = S.office[side] && S.access[side] ? 10 : 0;
+  const v = S.pts[side];
+  const hn = Math.min(10, Math.floor(S.hn[side] / 10));
+  const esc = -S.escBy[side];
+  const sub = sites + town + v.reports + v.ied + v.cache + v.adj + hn + esc;
+  const war = S.war ? Math.trunc(sub / 2) - sub : 0;
+  return { sites, town, reports:v.reports, ied:v.ied, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
+}
+if (typeof module !== 'undefined') module.exports = { SIDES, OTHER, SITES, SITE_KEYS, TICKS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
+</script>
+
+<script>
+(function(){
+const $ = (s, el) => (el || document).querySelector(s);
+const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
+const uid = () => Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
+const LS = { get(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }, set(k, v){ try { sessionStorage.setItem(k, v); } catch(e){} }, del(k){ try { sessionStorage.removeItem(k); } catch(e){} } };
+
+const app = { mode:'connecting', db:null, gid:null, cfg:null, events:[], role:null, S:null, sig:'', unsub:[], localSample:false };
+const LKEY = 'marala-board-v1';
+function localLoad(){ try { return JSON.parse(localStorage.getItem(LKEY) || 'null'); } catch(e){ return null; } }
+function localSave(){ try { localStorage.setItem(LKEY, JSON.stringify({ gid:app.gid, cfg:app.cfg, events:app.events })); } catch(e){} }
+function localPull(){
+  const s = localLoad(); if (!s) return false;
+  const changed = s.gid !== app.gid || (s.events || []).length !== app.events.length || JSON.stringify(s.cfg) !== JSON.stringify(app.cfg);
+  if (!changed) return false;
+  const gidChanged = s.gid !== app.gid;
+  app.gid = s.gid; app.cfg = s.cfg; app.events = s.events || [];
+  if (gidChanged){ app.role = null; app.built = null; route(); } else refresh(true);
+  return true;
+}
+
+function setBanner(text){ const b = $('#connBanner'); b.hidden = !text; b.textContent = text || ''; }
+let offlineTimer = null, offlineShown = false;
+function setOffline(on){
+  clearTimeout(offlineTimer);
+  if (!on){ if (offlineShown){ offlineShown = false; setBanner(''); toast('Back online. The board is up to date.'); } return; }
+  offlineTimer = setTimeout(() => { offlineShown = true; setBanner('Offline: showing the last picture this device saw. Moves made here will send when the connection comes back.'); }, 8000);
+}
+
+/* ---------- storage ---------- */
+const FB_SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
+function firebaseSettings(){
+  const c = typeof FIREBASE_CONFIG !== 'undefined' ? FIREBASE_CONFIG : null;
+  return c && typeof c === 'object' && c.projectId && c.apiKey ? c : null;
+}
+async function firebaseDb(cfg){
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 20000));
+  const [A, F] = await Promise.race([Promise.all([import(FB_SDK + 'firebase-app.js'), import(FB_SDK + 'firebase-firestore.js')]), timeout]);
+  const fapp = A.initializeApp(cfg);
+  let fs;
+  try { fs = F.initializeFirestore(fapp, { ignoreUndefinedProperties:true, localCache:F.persistentLocalCache({ tabManager:F.persistentMultipleTabManager() }) }); }
+  catch(e){ fs = F.getFirestore(fapp); }
+  const wrap = s => ({ id:s.id, exists:s.exists(), data:() => s.data() });
+  return {
+    doc: p => ({
+      onSnapshot: (next, err) => F.onSnapshot(F.doc(fs, p), s => next(wrap(s)), err),
+      set: d => F.setDoc(F.doc(fs, p), d)
+    }),
+    collection: p => ({
+      onSnapshot: (next, err) => F.onSnapshot(F.collection(fs, p), { includeMetadataChanges:true }, s => next({ docs:s.docs.map(wrap), fromCache:!!(s.metadata && s.metadata.fromCache) }), err)
+    })
+  };
+}
+async function connect(){
+  show('#gate'); $('#gateNoGame').hidden = true; $('#gateRoles').innerHTML = '<div class="empty">Connecting to the shared board\u2026</div>';
+  let db = null;
+  const fb = firebaseSettings();
+  if (fb){
+    try { db = await firebaseDb(fb); app.online = 'firebase'; }
+    catch(e){
+      setBanner('Can\u2019t reach the online board. Check this device\u2019s internet connection, then reload the page.');
+      $('#gateRoles').innerHTML = '<div class="panel"><h2>Not connected</h2><p class="muted small" style="margin:0">The board needs the internet to load. If the connection is down for good, the white cell can carry on with the offline copy and a backup file.</p><div class="row" style="justify-content:flex-start"><button type="button" onclick="location.reload()" style="flex:0 0 auto">Try again</button></div></div>';
+      return;
+    }
+  } else {
+    try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch(e){ db = null; }
+    if (db) app.online = 'claude';
+  }
+  if (db){ app.mode = 'remote'; app.db = db; setBanner(''); subscribeMeta(); }
+  else {
+    app.mode = 'local';
+    setBanner('Running on this computer only. Open this page in more windows on the same computer for the other screens; they stay in sync. Use the white cell\u2019s "Download backup" to save the game.');
+    const s = localLoad();
+    if (s && s.cfg){ app.gid = s.gid; app.cfg = s.cfg; app.events = s.events || []; } else { app.cfg = null; app.gid = null; }
+    window.addEventListener('storage', ev => { if (ev.key === LKEY) localPull(); });
+    setInterval(localPull, 2000);
+    route();
+  }
+}
+function subscribeMeta(){
+  try {
+    const u = app.db.doc('meta/current').onSnapshot(snap => {
+      const gid = snap.exists ? (snap.data() || {}).gameId : null;
+      if (gid !== app.gid){ app.gid = gid; subscribeGame(); }
+      else if (!gid) route();
+    }, err => { setBanner('The shared board stopped responding (' + (err && err.code) + '). Reload the page.'); });
+    app.unsub.push(u);
+  } catch(e){ setBanner('Could not reach the shared board. Reload the page.'); }
+}
+let gameUnsubs = [];
+function subscribeGame(){
+  gameUnsubs.forEach(f => { try { f(); } catch(e){} }); gameUnsubs = [];
+  app.cfg = null; app.events = []; app.evSig = null;
+  if (!app.gid){ route(); return; }
+  gameUnsubs.push(app.db.doc('games/' + app.gid).onSnapshot(s => { app.cfg = s.exists ? s.data() : null; route(); }, () => {}));
+  gameUnsubs.push(app.db.collection('games/' + app.gid + '/events').onSnapshot(s => {
+    if (app.online === 'firebase') setOffline(s.fromCache);
+    const evs = s.docs.map(d => d.data());
+    const sig = evs.length + ':' + evs.reduce((a, e) => a + e.id, '');
+    if (sig === app.evSig && app.online === 'firebase') return;
+    app.evSig = sig; app.events = evs; refresh(true);
+  }, err => setBanner('Live updates stopped (' + (err && err.code) + '). Reload the page.')));
+}
+async function writeEvent(type, side, p){
+  if (!app.cfg) return;
+  const e = { id:uid(), ts:Date.now(), type, side:side || null, p:p || {}, by:app.role };
+  if (app.mode === 'remote'){
+    try { await app.db.doc('games/' + app.gid + '/events/' + e.id).set(e); }
+    catch(err){
+      if (err && err.code === 'unavailable'){ await new Promise(r => setTimeout(r, 400 + Math.random() * 600)); try { await app.db.doc('games/' + app.gid + '/events/' + e.id).set(e); return; } catch(e2){} }
+      toast('That didn’t save (' + ((err && err.code) || 'error') + '). Check your connection and try again.', true);
+    }
+  } else {
+    const s = localLoad(); if (s && s.gid === app.gid) app.events = s.events || [];
+    app.events.push(e); localSave(); refresh(true);
+  }
+}
+async function createGame(cfg){
+  const gid = 'g' + Date.now().toString(36);
+  if (app.mode === 'remote'){
+    await app.db.doc('games/' + gid).set(cfg);
+    await app.db.doc('meta/current').set({ gameId:gid, at:Date.now() });
+  } else { app.gid = gid; app.cfg = cfg; app.events = []; localSave(); route(); }
+  return gid;
+}
+
+/* ---------- toast ---------- */
+let toastTimer = null;
+function toast(msg, bad){
+  let t = $('#toast');
+  if (!t){ t = document.createElement('div'); t.id = 'toast'; t.setAttribute('role', 'status'); t.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:min(560px,calc(100% - 32px));background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:13px;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.2)'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.background = bad ? 'var(--bad)' : 'var(--ink)'; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+}
+
+/* ---------- routing ---------- */
+function show(id){ ['#gate', '#setup', '#vWing', '#vWhite', '#vPublic'].forEach(s => $(s).hidden = s !== id); }
+function roleLabel(r){ return r === 'W' ? 'White cell' : r === 'P' ? 'Public screen' : SIDES[r].name; }
+function route(){
+  const saved = LS.get('marala-role-' + (app.gid || 'none'));
+  if (!app.role && saved && app.cfg) app.role = saved;
+  $('#gameTag').textContent = app.cfg ? (app.cfg.name || 'Game') + ' · BLUFOR vs REDFOR' : 'ALE 2 · BLUFOR vs REDFOR';
+  if (app.wantSetup){ show('#setup'); return; }
+  if (!app.cfg){ app.role = null; renderGate(); return; }
+  if (!app.role){ renderGate(); return; }
+  $('#switchRole').hidden = false;
+  $('#roleBadge').innerHTML = '<span class="badge side-' + (app.role === 'P' ? 'W' : app.role) + '">' + esc(roleLabel(app.role)) + '</span>';
+  if (app.role === 'W'){ show('#vWhite'); buildWhite(); }
+  else if (app.role === 'P'){ show('#vPublic'); buildPublic(); }
+  else { show('#vWing'); buildWing(app.role); }
+  refresh(true);
+}
+function renderGate(){
+  show('#gate'); $('#switchRole').hidden = true; $('#roleBadge').innerHTML = '';
+  $('#gateNoGame').hidden = !!app.cfg;
+  const roles = $('#gateRoles');
+  if (!app.cfg){
+    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Load a sample game with example moves to see every screen work. PINs: white cell 0000, BLUFOR 1111, REDFOR 2222. Setting up a new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
+    const gi = $('#gateImport'); if (gi) gi.onchange = () => importBackup(gi.files[0]);
+    const ls = $('#loadSample'); if (ls) ls.onclick = loadSample;
+    return;
+  }
+  const cards = [
+    ['W', 'White cell', 'Runs the clock, checks reports, sends injects and sees the full truth.'],
+    ['B', 'BLUFOR wing', 'The US Wing Commander’s board: sites, reports, actions and points.'],
+    ['R', 'REDFOR wing', 'The Chinese Wing Commander’s board: sites, reports, actions and points.'],
+    ['P', 'Public screen', 'Clock, escalation meter and public news. No PIN needed.']
+  ];
+  roles.innerHTML = cards.map(([k, t, d]) => '<button type="button" class="role side-' + (k === 'P' ? 'W' : k) + '" data-role="' + k + '"><b>' + esc(t) + '</b><p>' + esc(d) + '</p></button>').join('');
+  $$('.role', roles).forEach(b => b.onclick = () => pickRole(b.dataset.role));
+}
+let pendingRole = null;
+function pickRole(r){
+  if (r === 'P'){ setRole('P'); return; }
+  pendingRole = r; $('#pinForm').hidden = false; $('#pinForm').className = 'panel side-' + r; $('#pinTitle').textContent = 'PIN for the ' + roleLabel(r) + ' view'; $('#pinErr').hidden = true; $('#pinInput').value = ''; $('#pinInput').focus();
+}
+function setRole(r){ app.role = r; LS.set('marala-role-' + (app.gid || 'none'), r); $('#pinForm').hidden = true; route(); }
+$('#pinForm').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const r = pendingRole; if (!r || !app.cfg) return;
+  const ok = secret(app.cfg.salt, $('#pinInput').value) === app.cfg.pins[r];
+  if (!ok){ $('#pinErr').hidden = false; return; }
+  setRole(r);
+});
+$('#pinCancel').onclick = () => { $('#pinForm').hidden = true; pendingRole = null; };
+$('#switchRole').onclick = () => { LS.del('marala-role-' + (app.gid || 'none')); app.role = null; app.built = null; route(); };
+$('#gotoSetup').onclick = () => { app.wantSetup = true; route(); };
+$('#setupCancel').onclick = () => { app.wantSetup = false; route(); };
+$('#setupForm').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const salt = Math.random().toString(36).slice(2, 10);
+  const val = id => $(id).value.trim();
+  const pins = { W:val('#sPinW'), B:val('#sPinB'), R:val('#sPinR') };
+  if (new Set(Object.values(pins)).size < 3){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use three different PINs so each view stays separate.'; return; }
+  const cfg = { name:val('#sName') || 'Game', salt, createdAt:Date.now(),
+    pins:{ W:secret(salt, pins.W), B:secret(salt, pins.B), R:secret(salt, pins.R) },
+    codes:{ harbor:secret(salt, val('#cHarbor')), fuel:secret(salt, val('#cFuel')), radar:secret(salt, val('#cRadar')), airstrip:secret(salt, val('#cAirstrip')), town:secret(salt, val('#cTown')) } };
+  try {
+    const gid = await createGame(cfg);
+    LS.set('marala-role-' + gid, 'W');
+    app.wantSetup = false; app.role = app.mode === 'local' ? 'W' : null;
+    $('#setupForm').reset(); $('#sName').value = 'ALE 2 capstone';
+    toast('Game created. You are on the white cell view.');
+    route();
+  } catch(err){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'The game was not created (' + ((err && err.code) || 'error') + '). ' + (app.online === 'firebase' ? 'Check the internet connection and the database rules in Firebase.' : 'Only people who can edit this board can start a game.'); }
+});
+
+/* ---------- sample (local only) ---------- */
+function loadSample(){
+  const salt = 'sample01';
+  app.cfg = { name:'Sample game', salt, sample:true, pins:{ W:secret(salt, '0000'), B:secret(salt, '1111'), R:secret(salt, '2222') },
+    codes:{ harbor:secret(salt, 'ANCHOR'), fuel:secret(salt, 'BARREL'), radar:secret(salt, 'ECHO'), airstrip:secret(salt, 'RUNWAY'), town:secret(salt, 'MAYOR') } };
+  app.gid = 'sample';
+  const t0 = Date.now() - 46 * 60000; let n = 0;
+  const ev = (min, type, side, p, by) => ({ id:'s' + String(n++).padStart(3, '0'), ts:t0 + min * 60000, type, side:side || null, p:p || {}, by:by || 'white' });
+  app.events = [
+    ev(0, 'clock_start', null, { g:20 }),
+    ev(2, 'msg', null, { to:'both', text:'Marala’s mayor will meet foreign forces in Marala Town at 0700. Militia activity reported on island roads.' }),
+    ev(14, 'claim', 'B', { site:'harbor', code:secret(salt, 'ANCHOR') }, 'B'),
+    ev(16, 'claim', 'R', { site:'fuel', code:secret(salt, 'BARREL') }, 'R'),
+    ev(19, 'ied', 'B', { result:'real', grid:'B4' }),
+    ev(21, 'contact', 'B', { kind:'team', grid:'D4-2', seen:'0640', note:'4 pax moving west in a wedge' }, 'B'),
+    ev(22, 'verdict', null, { contact:'s005', verdict:'confirm' }),
+    ev(23, 'claim', 'R', { site:'airstrip', code:secret(salt, 'RUNWAY') }, 'R'),
+    ev(25, 'detonation', null, { grid:'C2', truth:'militia' }),
+    ev(27, 'act_drone', 'B', { text:'Who holds the Airstrip at D5?' }, 'B'),
+    ev(28, 'claim', 'B', { site:'radar', code:secret(salt, 'ECHO') }, 'B'),
+    ev(30, 'resolve', null, { req:'s009', text:'REDFOR flag at the Airstrip, 3 personnel on site.' }),
+    ev(31, 'act_statement', 'R', { incident:'s008', blame:'other' }, 'R'),
+    ev(33, 'provocation', 'R', {}),
+    ev(35, 'claim', 'B', { site:'town', code:secret(salt, 'MAYOR') }, 'B'),
+    ev(37, 'act_aid', 'B', {}, 'B'),
+    ev(40, 'claim', 'R', { site:'town', code:secret(salt, 'MAYOR') }, 'R'),
+    ev(41, 'conduct', 'R', { good:true }),
+    ev(42, 'contact', 'R', { kind:'site', site:'radar', grid:'C1', seen:'0700', note:'Blue flag on the ridge' }, 'R'),
+    ev(44, 'clock_pause', null, {})
+  ];
+  app.localSample = true; localSave(); route();
+}
+
+function downloadBackup(){
+  try {
+    const blob = new Blob([JSON.stringify({ app:'marala-board', gid:app.gid, cfg:app.cfg, events:app.events }, null, 1)], { type:'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    const d = new Date(); a.download = 'marala-board-backup-' + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0') + '.json';
+    document.body.appendChild(a); a.click(); a.remove(); toast('Backup downloaded.');
+  } catch(e){ toast('The backup could not be saved here.', true); }
+}
+function importBackup(file){
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!d || !d.cfg || !Array.isArray(d.events)) throw new Error('bad');
+      app.gid = d.gid || ('g' + Date.now().toString(36)); app.cfg = d.cfg; app.events = d.events; app.role = null; app.built = null;
+      localSave(); toast('Backup loaded: ' + (d.cfg.name || 'game') + ', ' + d.events.length + ' events.'); route();
+    } catch(e){ toast('That file isn\u2019t a Marala board backup.', true); }
+  };
+  r.readAsText(file);
+}
+
+/* ---------- shared rendering helpers ---------- */
+function ladderHTML(S, big){
+  const lvl = levelIndex(S.esc);
+  const zones = [0,1,2,3,4].map(i => '<span class="z' + i + (i === lvl ? ' on' : '') + '"></span>').join('');
+  return '<div class="ladder"><div class="ladder-bar" role="img" aria-label="Escalation ' + S.esc + ' of 100, ' + LEVELS[lvl].name + '">' + zones + '<i class="ladder-fill" style="width:' + Math.max(0.5, S.esc) + '%"></i></div>' +
+    '<div class="ladder-legend"><span>Competition</span><span>Tension 25</span><span>Crisis 50</span><span>Brink 75</span><span>War 100</span></div></div>';
+}
+function nextTickText(S, now){
+  if (!S.clock.started) return 'Waiting for STARTEX';
+  if (S.endex) return 'ENDEX';
+  const t = TICKS[S.tickIdx]; if (t == null) return 'ENDEX';
+  const g = gameAt(S, now);
+  const secs = Math.max(0, Math.round((t - g) * 60));
+  return 'Next board update ' + hhmm(t) + (S.clock.running ? ' in ' + Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0') : ' (clock paused)');
+}
+function clockText(S, now){ const g = S.clock.started ? (S.endex ? END_G : gameAt(S, now)) : START_G; return hhmm(g); }
+
+const CX = c => 30 + c * 100 + 50, CY = r => 30 + r * 80 + 40;
+function parseGrid(gs){
+  const m = /^([A-F])\s*([1-5])(?:\s*[-– ]?\s*([1-9]))?$/i.exec(String(gs || '').trim());
+  if (!m) return null;
+  const col = m[1].toUpperCase().charCodeAt(0) - 65, row = +m[2] - 1, k = m[3] ? +m[3] : 5;
+  const dx = ((k - 1) % 3 - 1) * 30, dy = (Math.floor((k - 1) / 3) - 1) * 24;
+  return { x:CX(col) + dx, y:CY(row) + dy };
+}
+function siteView(S, side, k){
+  const s = S.sites[k];
+  if (!side || S.reveal) return { holder:s.holder, contested:s.contested, known:true };
+  if (s.holder === side) return { holder:side, contested:s.contested, known:true };
+  const radar = S.sites.radar;
+  if (radar.holder === side && !radar.contested) return { holder:s.holder, contested:s.contested, known:true, via:'radar' };
+  const seen = S.lastSeen[side][k];
+  const rep = S.contacts.filter(c => c.side === side && c.kind === 'site' && c.site === k).pop();
+  if (seen && (!rep || seen.g >= rep.g)) return { holder:seen.holder, known:false, stale:true, at:seen.g };
+  if (rep) return { holder:OTHER[side], known:false, reported:true, at:rep.seenG, verdict:rep.verdict };
+  return { holder:null, known:false, unknown:true };
+}
+function mapSVG(S, side){
+  const fill = h => h === 'B' ? 'var(--blu)' : h === 'R' ? 'var(--red)' : 'var(--panel)';
+  let o = '<svg class="map" viewBox="0 0 660 470" role="img" aria-label="Map of Marala Island">';
+  o += '<rect x="0" y="0" width="660" height="470" fill="var(--sea)"/>';
+  o += '<path d="M60,72 C150,36 262,48 332,40 C420,32 522,30 592,62 C640,92 626,170 622,232 C616,302 642,382 592,420 C520,456 420,432 332,442 C240,452 140,456 80,420 C36,390 52,320 46,250 C40,180 26,110 60,72 Z" fill="var(--land)" stroke="var(--land-edge)" stroke-width="2"/>';
+  for (let c = 0; c <= 6; c++) o += '<line x1="' + (30 + c * 100) + '" y1="30" x2="' + (30 + c * 100) + '" y2="430" stroke="var(--grid)" stroke-width="1"/>';
+  for (let r = 0; r <= 5; r++) o += '<line x1="30" y1="' + (30 + r * 80) + '" x2="630" y2="' + (30 + r * 80) + '" stroke="var(--grid)" stroke-width="1"/>';
+  'ABCDEF'.split('').forEach((L, c) => o += '<text class="axis" x="' + CX(c) + '" y="20" text-anchor="middle">' + L + '</text>');
+  for (let r = 0; r < 5; r++) o += '<text class="axis" x="14" y="' + (CY(r) + 4) + '" text-anchor="middle">' + (r + 1) + '</text>';
+  o += '<rect x="' + (CX(0) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--blu-soft)" stroke="var(--blu)" stroke-width="2"/><text class="lbl" x="' + CX(0) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">LZ West</text><text class="sub" x="' + CX(0) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">BLUFOR · A3</text>';
+  o += '<rect x="' + (CX(5) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2"/><text class="lbl" x="' + CX(5) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">LZ East</text><text class="sub" x="' + CX(5) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">REDFOR · F3</text>';
+  const tB = S.office.B && S.access.B, tR = S.office.R && S.access.R;
+  const showB = !side || S.reveal || side === 'B' ? tB : false, showR = !side || S.reveal || side === 'R' ? tR : false;
+  o += '<rect x="' + (CX(2) - 36) + '" y="' + (CY(2) - 26) + '" width="' + (CX(3) - CX(2) + 72) + '" height="52" rx="8" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>';
+  o += '<text class="lbl" x="' + ((CX(2) + CX(3)) / 2) + '" y="' + (CY(2) - 4) + '" text-anchor="middle">Marala Town</text>';
+  o += '<text class="sub" x="' + ((CX(2) + CX(3)) / 2) + '" y="' + (CY(2) + 12) + '" text-anchor="middle">C3–D3 · town offices</text>';
+  o += '<circle cx="' + (CX(2) - 20) + '" cy="' + CY(2) + '" r="7" fill="' + (showB ? 'var(--blu)' : 'none') + '" stroke="var(--blu)" stroke-width="2"/>';
+  o += '<circle cx="' + (CX(3) + 20) + '" cy="' + CY(2) + '" r="7" fill="' + (showR ? 'var(--red)' : 'none') + '" stroke="var(--red)" stroke-width="2"/>';
+  SITE_KEYS.forEach(k => {
+    const s = SITES[k], v = siteView(S, side, k), x = CX(s.col), y = CY(s.row);
+    const f = v.unknown ? 'var(--panel)' : fill(v.holder);
+    const dash = (v.reported || v.stale) ? ' stroke-dasharray="4 3"' : '';
+    o += '<g>';
+    if (v.contested) o += '<circle cx="' + x + '" cy="' + y + '" r="25" fill="none" stroke="var(--e2)" stroke-width="3" stroke-dasharray="5 4"/>';
+    o += '<circle cx="' + x + '" cy="' + y + '" r="18" fill="' + ((v.reported || v.stale) ? 'var(--panel)' : f) + '" stroke="' + (v.holder ? fill(v.holder) : 'var(--muted)') + '" stroke-width="2.5"' + dash + '/>';
+    o += '<text x="' + x + '" y="' + (y + 5) + '" text-anchor="middle" style="font-family:var(--display);font-weight:700;font-size:15px" fill="' + ((v.holder && !v.reported && !v.stale) ? 'var(--panel)' : 'var(--ink)') + '">' + (v.unknown ? '?' : s.letter) + '</text>';
+    o += '<text class="lbl" x="' + x + '" y="' + (y + 34) + '" text-anchor="middle">' + esc(s.name) + '</text>';
+    const sub = v.unknown ? 'unknown' : v.reported ? 'reported ' + hhmm(v.at) : v.stale ? 'seen ' + hhmm(v.at) : v.contested ? 'contested' : v.holder ? SIDES[v.holder].name + (v.via ? ' (radar)' : '') : 'neutral';
+    o += '<text class="sub" x="' + x + '" y="' + (y + 47) + '" text-anchor="middle">' + esc(s.grid + ' · ' + sub) + '</text></g>';
+  });
+  S.incidents.forEach(inc => { const pt = parseGrid(inc.grid); if (!pt) return; o += '<g><path d="M' + pt.x + ',' + (pt.y - 11) + ' l3,7 l8,-3 l-4,8 l7,4 l-8,2 l1,8 l-7,-5 l-7,5 l1,-8 l-8,-2 l7,-4 l-4,-8 l8,3 z" fill="var(--e2)" stroke="var(--panel)" stroke-width="1"/></g>'; });
+  const contacts = S.contacts.filter(c => (!side || S.reveal || c.side === side) && c.kind !== 'site');
+  contacts.forEach(c => {
+    const pt = parseGrid(c.grid); if (!pt) return;
+    const age = Math.max(0, Math.floor(S.g - c.seenG));
+    const col = !side ? (c.side === 'B' ? 'var(--blu)' : 'var(--red)') : (side === 'B' ? 'var(--red)' : 'var(--blu)');
+    const op = age > 15 ? 0.35 : 1;
+    o += '<g opacity="' + op + '"><path d="M' + pt.x + ',' + (pt.y - 8) + ' L' + (pt.x + 8) + ',' + (pt.y + 6) + ' L' + (pt.x - 8) + ',' + (pt.y + 6) + ' Z" fill="' + col + '" stroke="var(--panel)" stroke-width="1.5"/>' +
+      '<text class="sub" x="' + (pt.x + 11) + '" y="' + (pt.y + 4) + '">' + age + 'm</text></g>';
+  });
+  o += '</svg>';
+  return o;
+}
+function legendHTML(side){
+  return '<div class="legend">' +
+    '<span><i class="sw" style="background:var(--blu);border-color:var(--blu)"></i>BLUFOR held</span>' +
+    '<span><i class="sw" style="background:var(--red);border-color:var(--red)"></i>REDFOR held</span>' +
+    (side ? '<span><i class="sw" style="border-style:dashed;border-color:var(--muted)"></i>Reported or last seen</span><span><i class="sw"></i>Unknown</span>' : '<span><i class="sw"></i>Neutral</span>') +
+    '<span><i class="sw" style="border-color:var(--e2);border-style:dashed"></i>Contested</span>' +
+    '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
+}
+function scoreTable(S, sides){
+  const rows = [['sites', 'Sites held'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['ied', 'IEDs and hoaxes'], ['cache', 'Militia cache'], ['hn', 'Host nation ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
+  const sc = {}; sides.forEach(s => sc[s] = score(S, s));
+  let h = '<table class="score"><thead><tr><th>Points</th>' + sides.map(s => '<th><span class="chip ' + s + '">' + SIDES[s].name + '</span></th>').join('') + '</tr></thead><tbody>';
+  rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if (k === 'adj' && sides.every(s => !sc[s].adj)) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
+  h += '<tr class="total"><td>Total</td>' + sides.map(s => '<td>' + sc[s].total + '</td>').join('') + '</tr></tbody></table>';
+  return h;
+}
+function feedHTML(items, empty){
+  if (!items.length) return '<div class="empty">' + esc(empty) + '</div>';
+  return items.slice().reverse().map(f => '<div class="item ' + (f.kind === 'alert' ? 'alert' : f.kind === 'good' ? 'good' : f.kind === 'public' ? 'public' : f.kind === 'tick' ? '' : 'hq') + '"><span class="t">' + hhmm(f.g) + ' · ' + esc(f.label || (f.kind === 'tick' ? 'Board' : f.to === 'public' ? 'Public' : f.kind === 'good' || f.kind === 'alert' ? 'Board' : 'Higher headquarters')) + '</span><span>' + esc(f.text) + '</span></div>').join('');
+}
+function keepSelect(sel, html){ const v = sel.value; sel.innerHTML = html; if ([...sel.options].some(o => o.value === v)) sel.value = v; }
+
+/* ---------- wing view ---------- */
+function buildWing(side){
+  if (app.built === 'wing-' + side) return; app.built = 'wing-' + side;
+  const v = $('#vWing'); v.className = 'side-' + side;
+  const other = SIDES[OTHER[side]].name;
+  v.innerHTML = `
+  <div class="app">
+    <div class="strip">
+      <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>0620</span><span class="s" data-next>—</span></div>
+      <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escnote></span></div>
+      <div class="stat"><span class="k">Host nation</span><span class="v" data-hn>50</span><div class="meter"><i data-hnbar style="width:50%"></i></div><span class="s" data-hnnote></span></div>
+      <div class="stat"><span class="k">Escalation you caused</span><span class="v" data-esccaused>0</span><span class="s">Each point costs 1 point at the end</span></div>
+      <div class="stat"><span class="k">Points so far</span><span class="v" data-pts>0</span><span class="s">${esc(other)}'s points are hidden</span></div>
+    </div>
+    <div data-warbar></div>
+    <div class="wing-grid">
+      <div class="panel">
+        <div class="act-head"><h2>Your picture of Marala</h2><span class="small muted" data-radar></span></div>
+        <div class="map-wrap" data-map></div>
+        <div data-legend></div>
+        <h2>Your reports of ${esc(other)}</h2>
+        <div class="list" data-contacts></div>
+      </div>
+      <div class="panel">
+        <div class="tabs" role="tablist">
+          <button type="button" role="tab" aria-selected="true" data-tab="act">Commander's actions</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="rep">Reports and site claims</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="req">Requests</button>
+        </div>
+        <div data-pane="act" class="actions">
+          <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost" data-dronecount>1 ready</span></div>
+            <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Who holds the Airstrip at D5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
+          <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · true <span class="esc-down">−5</span> · false <span class="esc-up">+15</span></span></div>
+            <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Incident<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">Who did it<select id="stB-${side}" name="blame"><option value="militia">The militia</option><option value="other">${esc(other)}</option></select></label></div><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
+          <div class="act"><div class="act-head"><b>Humanitarian aid</b><span class="cost">Once every 10 minutes · needs a town office · host nation +5</span></div>
+            <form data-f="aid"><button class="btn-side" type="submit">Deliver aid</button></form></div>
+          <details class="act"><summary>Pressure options (they raise escalation)</summary>
+            <div class="stack" style="margin-top:8px">
+              <div class="act-head"><b>Show of force</b><span class="cost"><span data-left="show"></span> · <span class="esc-up">+10 escalation</span></span></div>
+              <form class="stack" data-f="show"><label for="shT-${side}">Site the other wing must leave<input id="shT-${side}" name="t" maxlength="60" placeholder="Radar Ridge, C1" required></label><div><button type="submit">Order show of force</button></div></form>
+              <div class="act-head"><b>Jam their radios</b><span class="cost"><span data-left="jam"></span> · <span class="esc-up">+5 escalation</span> · 5 minutes</span></div>
+              <form data-f="jam"><button type="submit">Jam radios</button></form>
+              <div class="act-head"><b>Strike</b><span class="cost"><span data-left="strike"></span> · needs a correct 9-line</span></div>
+              <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="8" placeholder="C4-6" required></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="nine" required style="width:auto"> A team has sent the strike 9-line</label><div><button type="submit">Ask for strike</button></div></form>
+            </div></details>
+        </div>
+        <div data-pane="rep" class="stack" hidden>
+          <div class="act"><div class="act-head"><b>Report the other wing</b><span class="cost">from a team's SALUTE report</span></div>
+            <form class="stack" data-f="contact">
+              <div class="row"><label for="ctK-${side}">What was seen<select id="ctK-${side}" name="kind"><option value="team">${esc(other)} team</option><option value="site">${esc(other)} flag on a site</option><option value="other">Other activity</option></select></label>
+              <label for="ctS-${side}">Which site (for a flag)<select id="ctS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + ' (' + SITES[k].grid + ')</option>').join('')}</select></label></div>
+              <div class="row"><label for="ctG-${side}">Grid square<input id="ctG-${side}" name="grid" maxlength="8" placeholder="D4 or D4-2" required></label><label for="ctT-${side}">Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="0642"></label></div>
+              <label for="ctN-${side}">Notes (how many, doing what)<input id="ctN-${side}" name="note" maxlength="140" placeholder="4 people, moving west"></label>
+              <div><button class="btn-side" type="submit">Post report</button></div></form></div>
+          <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">code word from the site card</span></div>
+            <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + ' (' + SITES[k].grid + ')</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
+            <div class="list" data-claims></div></div>
+        </div>
+        <div data-pane="req" class="stack" hidden><div class="list" data-reqs></div></div>
+      </div>
+      <div class="panel feedcol"><h2>Messages</h2><div class="feed" data-feed aria-live="polite"></div></div>
+    </div>
+  </div>`;
+  $$('[data-tab]', v).forEach(b => b.onclick = () => { $$('[data-tab]', v).forEach(x => x.setAttribute('aria-selected', x === b ? 'true' : 'false')); $$('[data-pane]', v).forEach(p => p.hidden = p.dataset.pane !== b.dataset.tab); });
+  const on = (name, fn) => { const f = $('[data-f="' + name + '"]', v); f.addEventListener('submit', async ev => { ev.preventDefault(); if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; } const fd = new FormData(f); const ok = await fn(fd); if (ok !== false){ f.reset(); toast('Sent to the board.'); } }); };
+  on('drone', fd => writeEvent('act_drone', side, { text:fd.get('q') }));
+  on('statement', fd => { if (!fd.get('inc')){ toast('There is no incident to talk about yet.', true); return false; } return writeEvent('act_statement', side, { incident:fd.get('inc'), blame:fd.get('blame') }); });
+  on('aid', () => writeEvent('act_aid', side, {}));
+  on('show', fd => writeEvent('act_show', side, { text:fd.get('t') }));
+  on('jam', () => writeEvent('act_jam', side, {}));
+  on('strike', fd => writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase() }));
+  on('contact', fd => { const kind = fd.get('kind'); if (kind === 'site' && !fd.get('site')){ toast('Pick which site the flag is on.', true); return false; } return writeEvent('contact', side, { kind, site:kind === 'site' ? fd.get('site') : null, grid:String(fd.get('grid')).toUpperCase(), seen:fd.get('seen'), note:fd.get('note') }); });
+  on('claim', fd => writeEvent('claim', side, { site:fd.get('site'), code:secret(app.cfg.salt, fd.get('code')) }));
+}
+function renderWing(S, side, now){
+  const v = $('#vWing'), lvl = levelIndex(S.esc), sc = score(S, side);
+  $('[data-esclvl]', v).innerHTML = '· <span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
+  $('[data-ladder]', v).innerHTML = ladderHTML(S);
+  $('[data-escnote]', v).textContent = S.war ? 'War: both scores are cut in half.' : S.esc >= 50 ? 'Danger zone: one more serious incident could mean war.' : 'Shared by both wings. 100 means war.';
+  $('[data-hn]', v).textContent = S.hn[side];
+  $('[data-hnbar]', v).style.width = S.hn[side] + '%';
+  $('[data-hnnote]', v).textContent = !S.access[side] ? 'Town office closed by the mayor' : S.office[side] ? 'Town office open (+3 every 10 min)' : 'No town office yet';
+  $('[data-esccaused]', v).textContent = S.escBy[side];
+  $('[data-pts]', v).textContent = sc.total;
+  $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + ' · both scores cut in half</div>' : S.reveal ? '<div class="panel"><h2>The full truth and final points</h2>' + scoreTable(S, ['B', 'R']) + '</div>' : (S.jam[side] && S.g < S.jam[side] ? '<div class="banner">Your island radios are jammed until ' + hhmm(S.jam[side]) + '. Use your backup comms plan.</div>' : '');
+  $('[data-radar]', v).textContent = S.reveal ? 'Showing the full truth' : (S.sites.radar.holder === side && !S.sites.radar.contested) ? 'Radar Ridge shows every site the other wing holds' : 'The other wing shows up only where you report it';
+  $('[data-map]', v).innerHTML = mapSVG(S, S.reveal ? null : side);
+  $('[data-legend]', v).innerHTML = legendHTML(S.reveal ? null : side);
+  const mine = S.contacts.filter(c => c.side === side);
+  $('[data-contacts]', v).innerHTML = mine.length ? mine.slice().reverse().map(c => {
+    const age = Math.max(0, Math.floor(S.g - c.seenG));
+    const st = c.verdict ? (c.verdict === 'confirm' ? '<span class="chip ok">Confirmed +2</span>' : '<span class="chip no">Not confirmed</span>') : '<span class="chip wait">Checking</span>';
+    return '<div class="li"><div class="grow"><b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid || '') + '</span> <span class="muted small">seen ' + esc(c.seen) + ' · ' + age + ' min ago' + (age > 15 ? ' · old' : '') + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' + st + '</div>';
+  }).join('') : '<div class="empty">No reports yet. Intel posts them from the Reports tab; each confirmed report is worth 2 points.</div>';
+  const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id]);
+  keepSelect($('[name="inc"]', v), incs.length ? incs.map(i => '<option value="' + i.id + '">' + esc(i.grid) + ' explosion, ' + hhmm(i.g) + '</option>').join('') : '<option value="">No incidents yet</option>');
+  const claims = S.claims.filter(c => c.side === side);
+  $('[data-claims]', v).innerHTML = claims.slice(-4).reverse().map(c => '<div class="li"><span class="grow">' + esc(c.site === 'town' ? 'Marala Town' : SITES[c.site].name) + ' · ' + hhmm(c.g) + ' <span class="small muted">' + esc(c.note) + '</span></span><span class="chip ' + (c.status === 'accepted' ? 'ok' : 'no') + '">' + (c.status === 'accepted' ? 'Confirmed' : 'Refused') + '</span></div>').join('');
+  const reqs = S.requests.filter(r => r.side === side);
+  const kindName = { drone:'Drone flight', show:'Show of force', strike:'Strike' };
+  $('[data-reqs]', v).innerHTML = reqs.length ? reqs.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + kindName[r.kind] + '</b> <span class="muted small">' + hhmm(r.g) + '</span><div class="small">' + esc(r.text) + '</div>' + (r.answer ? '<div class="small muted">Answer: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : 'ok') + '">' + (r.status === 'open' ? 'With the white cell' : 'Done') + '</span></div>').join('') : '<div class="empty">Drone flights, shows of force and strikes wait here until the white cell answers.</div>';
+  $('[data-dronecount]', v).textContent = S.uses.drone[side] + ' ready' + (S.sites.airstrip.holder === side ? ' (Airstrip bonus)' : '');
+  ['show', 'jam', 'strike'].forEach(k => { const el = $('[data-left="' + k + '"]', v); if (el) el.textContent = S.uses[k][side] ? '1 left' : 'used'; });
+  const lock = !S.clock.started || S.endex;
+  $$('form[data-f] button[type="submit"]', v).forEach(b => {
+    const f = b.closest('form').dataset.f;
+    let off = lock;
+    if (f === 'drone') off = off || S.uses.drone[side] < 1;
+    if (f === 'show' || f === 'jam' || f === 'strike') off = off || S.uses[f][side] < 1;
+    if (f === 'aid') off = off || !(S.office[side] && S.access[side]) || S.aidTick[side] === S.tickIdx;
+    b.disabled = off;
+  });
+  $('[data-feed]', v).innerHTML = feedHTML(S.feed.filter(f => f.to === side || f.to === 'both' || f.to === 'public'), 'Messages from higher headquarters, board updates and public news appear here.');
+}
+
+/* ---------- public view ---------- */
+function buildPublic(){
+  if (app.built === 'public') return; app.built = 'public';
+  $('#vPublic').innerHTML = `<div class="strip"><div class="stat clock"><span class="k">Board time</span><span class="bigclock" data-clock>0620</span><span class="s" data-next></span></div>
+    <div class="stat wide"><span class="k">Shared escalation</span><span class="biglvl" data-biglvl></span><span data-ladder></span></div></div>
+    <div data-warbar></div><div class="panel"><h2>Public news</h2><div class="feed" data-feed></div></div>`;
+}
+function renderPublic(S){
+  const v = $('#vPublic'), lvl = levelIndex(S.esc);
+  $('[data-biglvl]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' · ' + S.esc + '</span>';
+  $('[data-ladder]', v).innerHTML = ladderHTML(S, true);
+  $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar pulse">War · deterrence failed</div>' : S.reveal ? '<div class="panel"><h2>Final points</h2>' + scoreTable(S, ['B', 'R']) + '<div class="map-wrap">' + mapSVG(S, null) + '</div></div>' : '';
+  $('[data-feed]', v).innerHTML = feedHTML(S.feed.filter(f => f.to === 'public' || f.to === 'both'), 'The start, explosions, public statements and the end of the game appear here.');
+}
+
+/* ---------- white cell ---------- */
+const TEMPLATES = [
+  { t:'0610', label:'Higher headquarters update', to:'both', text:'Marala’s mayor will meet foreign forces in Marala Town at 0700. The militia is active on island roads; report every suspected device with a 9-line.' },
+  { t:'0630', label:'Tip (fill in)', to:'B', text:'Imagery, 5 minutes old: foreign troops moving toward ____.' },
+  { t:'0640', label:'Rumor for BLUFOR', to:'B', text:'Locals saw men burying something on the Harbor road near B4.' },
+  { t:'0640', label:'Rumor for REDFOR', to:'R', text:'Locals saw men burying something on the Fuel Depot road near E2.' },
+  { t:'0700', label:'Mayor’s meeting', to:'both', text:'The mayor invites your representatives to Marala Town now. The other foreign force is invited too.' },
+  { t:'0705', label:'Injured civilian', to:'both', text:'Locals report an injured civilian near Marala Town.' },
+  { t:'0715', label:'Militia cache', to:'both', text:'Police report a militia weapons cache at the culvert between C4 and D4. Clear it or strike it.' },
+  { t:'0725', label:'Vague tip', to:'both', text:'Unconfirmed report: a device near the airstrip.' },
+  { t:'0735', label:'Final report call', to:'both', text:'Report all known enemy positions by 0740.' }
+];
+function buildWhite(){
+  if (app.built === 'white') return; app.built = 'white';
+  const v = $('#vWhite');
+  const sideCol = s => `
+    <div class="panel side-${s}">
+      <div class="act-head"><span class="badge side-${s}">${SIDES[s].name}</span><span class="small muted" data-wstat="${s}"></span></div>
+      <div class="evgrid">
+        <button type="button" data-ev="ied" data-side="${s}" data-r="real">Real IED cleared<small>+2 points · host nation +5</small></button>
+        <button type="button" data-ev="ied" data-side="${s}" data-r="hoax">Hoax called correctly<small>+2 points</small></button>
+        <button type="button" data-ev="cache" data-side="${s}">Militia cache cleared<small>+5 points · host nation +5</small></button>
+        <button type="button" data-ev="conduct" data-side="${s}" data-good="1">Good conduct<small>host nation +5</small></button>
+        <button type="button" data-ev="conduct" data-side="${s}" data-good="0">Poor conduct<small>host nation −5</small></button>
+        <button type="button" data-ev="civaid" data-side="${s}">Helped a civilian<small>host nation +5</small></button>
+        <button type="button" data-ev="provocation" data-side="${s}">Aimed at or crowded the other wing<small>escalation +5</small></button>
+        <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>escalation +30 · host nation −15</small></button>
+        <button type="button" data-ev="returnfire" data-side="${s}">Returned fire<small>escalation +5</small></button>
+        <button type="button" data-ev="office" data-side="${s}" data-on="0">Close town office<small>override</small></button>
+      </div>
+      <form class="row" data-wf="sabotage" data-side="${s}"><label>Pulled the other wing's flag at<select name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label><button type="submit" style="flex:0 0 auto">Flag pulled<small class="mono muted"> +15</small></button></form>
+      <form class="row" data-wf="adjust" data-side="${s}"><label>Adjust<select name="field"><option value="hn">Host nation</option><option value="pts">Points</option><option value="esc">Escalation (charged to them)</option></select></label><label>By<input name="delta" type="number" value="1" step="1"></label><label>Reason<input name="reason" maxlength="80"></label><button type="submit" style="flex:0 0 auto">Apply</button></form>
+    </div>`;
+  v.innerHTML = `
+  <div class="app">
+    <div class="strip">
+      <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>0620</span><span class="s" data-next></span></div>
+      <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
+      <div class="panel stat wide" style="min-width:0"><h2>Clock</h2>
+        <div class="row" style="align-items:center">
+          <button type="button" class="btn-side" data-clk="start" style="flex:0 0 auto">Start the game (0620)</button>
+          <button type="button" data-clk="pause" style="flex:0 0 auto">Pause</button>
+          <button type="button" data-clk="resume" style="flex:0 0 auto">Resume</button>
+          <form class="row" data-wf="clockset" style="flex:1 1 200px;align-items:end"><label>Set board time<input name="t" maxlength="4" inputmode="numeric" placeholder="0700"></label><button type="submit" style="flex:0 0 auto">Set</button></form>
+          <button type="button" data-clk="reveal" style="flex:0 0 auto">Show the truth</button>
+        </div></div>
+    </div>
+    <div data-warbar></div>
+    <div class="white-grid">
+      <div class="panel">
+        <div class="act-head"><h2>The full truth</h2><span class="small muted">Only this screen sees everything</span></div>
+        <div class="map-wrap" data-map></div>
+        <div data-legend></div>
+        <div class="sitectl" data-sitectl></div>
+      </div>
+      <div class="panel"><h2>Waiting on you</h2><div class="list" data-queue></div></div>
+      <div class="panel"><h2>Points</h2><div data-score></div>
+        <h2>Explosions</h2>
+        <form class="stack" data-wf="detonation"><div class="row"><label>Explosion at grid<input name="grid" maxlength="8" placeholder="C2" required></label><label>Really caused by<select name="truth"><option value="militia">Militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="cas" style="width:auto"> Casualties</label><div><button type="submit">Tell both wings</button></div></form>
+      </div>
+      ${sideCol('B')}
+      ${sideCol('R')}
+      <div class="panel"><h2>Send a message</h2>
+        <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="Higher headquarters" maxlength="30"></label></div>
+          <label>Message<textarea name="text" maxlength="400" required></textarea></label><div><button class="btn-side" type="submit">Send</button></div></form>
+        <h2>Inject templates</h2><div class="evgrid" data-templates></div></div>
+      <div class="panel span2"><div class="act-head"><h2>Log</h2><span class="small muted">Void a mistake and every screen recalculates</span></div><div class="feed" data-log style="max-height:420px"></div></div>
+      <div class="panel"><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
+    </div>
+  </div>`;
+  $$('[data-ev]', v).forEach(b => b.onclick = () => {
+    const s = b.dataset.side, t = b.dataset.ev; const p = {};
+    if (t === 'ied') p.result = b.dataset.r;
+    if (t === 'conduct') p.good = b.dataset.good === '1';
+    if (t === 'office') p.on = b.dataset.on === '1';
+    writeEvent(t, s, p); toast(b.firstChild.textContent.trim() + ' · ' + SIDES[s].name);
+  });
+  $$('form[data-wf]', v).forEach(f => f.addEventListener('submit', ev => {
+    ev.preventDefault(); const fd = new FormData(f), k = f.dataset.wf, s = f.dataset.side || null;
+    if (k === 'sabotage') writeEvent('sabotage', s, { site:fd.get('site') });
+    if (k === 'adjust') writeEvent('adjust', s, { field:fd.get('field'), delta:Number(fd.get('delta')) || 0, reason:fd.get('reason') });
+    if (k === 'detonation') writeEvent('detonation', null, { grid:String(fd.get('grid')).toUpperCase(), truth:fd.get('truth'), casualties:!!fd.get('cas') });
+    if (k === 'msg') writeEvent('msg', null, { to:fd.get('to'), text:fd.get('text'), label:fd.get('label') || 'Higher headquarters' });
+    if (k === 'clockset'){ const m = /^(\d{2})(\d{2})$/.exec(String(fd.get('t')).trim()); if (!m){ toast('Use 24-hour time like 0700.', true); return; } writeEvent('clock_set', null, { g:(+m[1]) * 60 + (+m[2]) - 360 }); }
+    if (k !== 'adjust' && k !== 'msg') f.reset();
+    if (k === 'msg') f.querySelector('textarea').value = '';
+    toast('Logged.');
+  }));
+  $$('[data-clk]', v).forEach(b => b.onclick = () => {
+    const k = b.dataset.clk;
+    if (k === 'start') writeEvent('clock_start', null, { g:START_G });
+    if (k === 'pause') writeEvent('clock_pause', null, {});
+    if (k === 'resume') writeEvent('clock_resume', null, {});
+    if (k === 'reveal') writeEvent('reveal', null, { on:!(app.S && app.S.reveal) });
+  });
+  $('[data-templates]', v).innerHTML = TEMPLATES.map((t, i) => '<button type="button" data-tpl="' + i + '">' + esc(t.label) + '<small>' + t.t + ' · ' + ({ both:'both', B:'BLUFOR', R:'REDFOR' })[t.to] + '</small></button>').join('');
+  $$('[data-tpl]', v).forEach(b => b.onclick = () => { const t = TEMPLATES[+b.dataset.tpl], f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = 'Higher headquarters'; f.text.value = t.text; f.text.focus(); });
+  $('[data-newgame]', v).onclick = () => { app.wantSetup = true; route(); };
+  if (app.mode === 'local' || app.online === 'firebase'){
+    $('[data-backup]', v).hidden = false;
+    $('[data-backup]', v).onclick = downloadBackup;
+  }
+  if (app.mode === 'local'){
+    $('[data-restore]', v).hidden = false;
+    $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
+  }
+  v.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-act]'); if (!b) return;
+    const a = b.dataset.act, id = b.dataset.id;
+    if (a === 'verdict') writeEvent('verdict', null, { contact:id, verdict:b.dataset.v });
+    if (a === 'resolve'){ const box = $('#ans-' + id); writeEvent('resolve', null, { req:id, result:b.dataset.r, text:box ? box.value : '' }); }
+    if (a === 'void') writeEvent('void', null, { target:id });
+    if (a === 'site') { const sel = $('#site-' + id); writeEvent('site_set', null, { site:id, holder:sel.value || null }); }
+    if (a === 'contest') writeEvent('site_contested', null, { site:id, on:b.dataset.on === '1' });
+    if (a === 'office') writeEvent('office', b.dataset.side, { on:b.dataset.on === '1' });
+  });
+}
+function renderWhite(S, now){
+  const v = $('#vWhite'), lvl = levelIndex(S.esc);
+  $('[data-esclvl]', v).innerHTML = '· <span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
+  $('[data-ladder]', v).innerHTML = ladderHTML(S);
+  $('[data-escby]', v).textContent = 'Caused by BLUFOR ' + S.escBy.B + ' · REDFOR ' + S.escBy.R;
+  $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + '. Play the casualty event.</div>' : '';
+  $('[data-clk="start"]', v).disabled = S.clock.started;
+  $('[data-clk="pause"]', v).disabled = !S.clock.running;
+  $('[data-clk="resume"]', v).disabled = !S.clock.started || S.clock.running || S.endex;
+  $('[data-clk="reveal"]', v).textContent = S.reveal ? 'Hide the truth' : 'Show the truth';
+  $('[data-map]', v).innerHTML = mapSVG(S, null);
+  $('[data-legend]', v).innerHTML = legendHTML(null);
+  $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + SITES[k].grid + '</span>' + (s.contested ? ' <span class="chip wait">Contested</span>' : '') + '</span>' +
+    '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>REDFOR</option></select>' +
+    '<button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? 'Uncontest' : 'Contest') + '</button></div>'; }).join('') +
+    '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
+  const q = [];
+  S.contacts.filter(c => !c.verdict).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid) + '</span> <span class="small muted">seen ' + esc(c.seen) + ' · posted ' + hhmm(c.g) + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' +
+    '<div class="row" style="flex:0 0 auto"><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="confirm">True · +2</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="duplicate">Duplicate</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="false">False</button></div></div>'));
+  const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request' };
+  S.requests.filter(r => r.status === 'open').forEach(r => {
+    let ctl = '';
+    if (r.kind === 'drone') ctl = '<input id="ans-' + r.id + '" placeholder="True answer" maxlength="200"><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="answer">Send answer</button>';
+    if (r.kind === 'show') ctl = '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="complied">' + SIDES[OTHER[r.side]].name + ' left</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="defied">Stayed · +10 to them</button>';
+    if (r.kind === 'strike') ctl = '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="hit">9-line correct · strike</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="invalid">9-line wrong</button>';
+    q.push('<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + kindName[r.kind] + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + r.text : r.text) + '</div></div><div class="row" style="flex:1 1 260px">' + ctl + '</div></div>');
+  });
+  $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force and strikes land here.</div>';
+  $('[data-score]', v).innerHTML = scoreTable(S, ['B', 'R']);
+  ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Host nation ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · escalation caused ' + S.escBy[s]; });
+  $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · from ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">Void</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
+  const voids = app.events.filter(e => e.type === 'void').length;
+  $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · saved on this computer' : ' · shared');
+}
+
+/* ---------- refresh loop ---------- */
+function refresh(force){
+  if (!app.cfg || !app.role) return;
+  const now = Date.now();
+  const S = replay(app.cfg, app.events, now);
+  app.S = S;
+  const sig = app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role;
+  if (force || sig !== app.sig){
+    app.sig = sig;
+    if (app.role === 'W') renderWhite(S, now);
+    else if (app.role === 'P') renderPublic(S);
+    else renderWing(S, app.role, now);
+  }
+  $$('[data-clock]').forEach(el => el.textContent = clockText(S, now));
+  $$('[data-next]').forEach(el => el.textContent = nextTickText(S, now));
+}
+setInterval(() => { if (app.cfg && app.role) refresh(false); }, 1000);
+connect();
+})();
+</script>
+
+</body>
+</html>
