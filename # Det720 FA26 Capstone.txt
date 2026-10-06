@@ -1,0 +1,49 @@
+# Det720 FA26 Capstone
+
+Live game board for the Marala Island capstone (BLUFOR vs. REDFOR).
+
+**Board:** https://elliotbuona24.github.io/Det720-FA26-Capstone/
+
+## Files
+
+| File | What it is |
+| --- | --- |
+| `index.html` | The game board (this is the website) |
+| `marala_aar.py` | Turns a game backup into a printable after-action report |
+| `sample-backup.json` | Fake game for testing the AAR script |
+
+## Running a game
+
+1. Open the board, choose **White cell**, enter the PIN (provided by C/Buona).
+2. **Game** panel → **Set up a new game** → enter PINs and site code words → **Create game**.
+3. Wings pick their view and enter their PIN. **Public screen** needs no PIN.
+4. Click **Start the game (on STARTEX)**.
+5. After ENDEX: **Download backup**.
+
+Lost the white cell PIN? Use **Start a new game** on the main menu with the recovery code (C/Buona).
+
+## After-action report
+
+One-time setup: install Python from python.org (tick **Add to PATH**), then:
+
+```
+pip install matplotlib
+```
+
+Each game: put `marala_aar.py` and the backup in one folder, open a terminal there, and run:
+
+```
+python marala_aar.py marala-board-backup-XXXX.json
+```
+
+Open the `AAR - ….html` file it creates → Ctrl+P → **Save as PDF** (headers and footers off).
+Add `--charts charts` to also save each chart as an image for slides.
+
+
+## Updating the board
+
+**Add file → Upload files** → drag in the new `index.html` → **Commit changes**. Live in about a minute (check **Actions** for the green check).
+
+## Do not upload
+
+Real PINs, code words, the recovery code, rosters, or backups from real games. This repository is public.
