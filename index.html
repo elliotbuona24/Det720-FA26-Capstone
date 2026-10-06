@@ -136,6 +136,22 @@ svg.map{width:100%;min-width:420px;height:auto;display:block}
 .act{border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px;background:var(--panel-2)}
 .act-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
 .act-head b{font-family:var(--display);font-size:16px;letter-spacing:.03em;font-weight:600}
+.ip-items{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.ip-items li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline;border-left:3px solid var(--line);padding:2px 0 2px 8px}
+.ip-items li b{font-family:var(--mono);font-size:13px}
+.ip-items li .src{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.02em;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.ip-tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink);background:var(--panel)}
+.ipw button{flex:0 0 auto;padding:5px 9px;font-size:13px}
+.ip-key{font-size:13px}.ip-key summary{cursor:pointer;color:var(--muted)}.ip-key dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:8px 0 0}.ip-key dt{font-family:var(--mono);font-weight:600;font-size:12px}.ip-key dd{margin:0}
+.ip-items li .txt{grid-column:2}
+.ip-q{font-weight:600;margin:2px 0 0}
+fieldset.ip-set{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0;display:grid;gap:6px;min-width:0;align-content:start}
+fieldset.ip-set legend{font-size:12px;color:var(--muted);padding:0 4px}
+.ip-set label{display:flex;align-items:flex-start;gap:8px;font-size:14px;color:var(--ink);line-height:1.3}
+.ip-set input[type=radio]{width:auto;margin:2px 0 0;flex:0 0 auto}
+.ip-row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:8px}
+@media (max-width:560px){.ip-row{grid-template-columns:minmax(0,1fr)}}
+.ip-status{font-size:13px}
 .cost{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .cost .esc-up{color:var(--bad)}.cost .esc-down{color:var(--good)}
 .act details summary{cursor:pointer;font-size:13px;font-weight:500}
@@ -272,6 +288,8 @@ const START_G = 20, END_G = 100;
 const LEVELS = [
   { name:'Competition', min:0 }, { name:'Tension', min:25 }, { name:'Crisis', min:50 }, { name:'Brink', min:75 }, { name:'War', min:100 }
 ];
+const PROBLEMS = [{"id":"p1","t":25,"due":40,"title":"The airstrip gate bomb","q":"Who planted the bomb at the airstrip gate two nights ago?","opts":["BLUFOR (the Coalition)","REDFOR (North Korea)","The Marala First Front (militia)","Not enough information"],"items":[{"k":"A","disc":"SIGINT","rating":"A2","dtg":"102358R NOV 26","src":"Intercept, known militia handheld frequency","text":"\"Gift is at the gate. Walk home through the paddies.\" Direction finding puts the transmitter within 500 m of the gate."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"110214R NOV 26","src":"Airstrip gate camera, still frame","text":"Two men in civilian fishing gear, no uniforms or weapons, leave a bag at the gate and walk west toward the fishing village."},{"k":"C","disc":"HUMINT","rating":"F6","dtg":"111900R NOV 26","src":"Walk-in source, first contact, reunification party member, asked to be paid","text":"\"I watched Coalition soldiers carry a bag to the airstrip gate around 0200.\""},{"k":"D","disc":"GEOINT","rating":"B2","dtg":"Terrain study, current","src":"Road and foot-path analysis","text":"The only vehicle road to the gate runs through the Coalition checkpoint, which logged no traffic from 0100 to 0400. A foot path along the paddy dikes links the fishing village to the gate: 400 m, about 6 minutes on foot."}],"a":"4uviw2t474","f":"25bfal3rpyq"},{"id":"p2","t":40,"due":55,"title":"Where is the mayor's meeting?","q":"Where will the mayor meet the foreign forces at 0700?","opts":["The harbor fish market","Town Hall","The church","The airstrip"],"items":[{"k":"A","disc":"SIGINT","rating":"F3","dtg":"120635R NOV 26","src":"Intercepted cell call, unregistered phone near the harbor","text":"\"Tell the foreigners the mayor moved the meeting to the fish market.\""},{"k":"B","disc":"HUMINT","rating":"B2","dtg":"120620R NOV 26","src":"Mayor's driver, regular contact","text":"Told to have the car parked at Town Hall by 0650 and wait there."},{"k":"C","disc":"IMINT","rating":"A2","dtg":"120630R NOV 26","src":"Drone video, Marala Town and harbor","text":"Police setting up a cordon and chairs outside Town Hall (C3). The harbor fish market is empty, stalls shuttered."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Tide tables and road survey","src":"Harbor road, B4 to B5","text":"The harbor road floods at high tide from 0640 to 0750. No vehicle can reach the fish market before 0800."}],"a":"2dj32folanx","f":"10ylo7q1h9c"},{"id":"p3","t":48,"due":60,"title":"The 0645 explosion","q":"Who set off the explosion at C2 at 0645?","opts":["BLUFOR (the Coalition)","The Marala First Front (militia)","REDFOR (North Korea)","An accident"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"120650R NOV 26","src":"Shopkeeper near C2, met once before","text":"At 0640 a man on a motorbike left a sack at the roadside and rode north toward the quarry."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"120643R NOV 26","src":"Intercept, known militia handheld frequency","text":"\"The bird flies at quarter to. Ride north after.\" Direction finding: transmitter near C2."},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"120630R NOV 26","src":"Weather station on Radar Ridge, with terrain overlay","text":"Dense fog from 0630 to 0700 over squares C1 to C3. Visibility under 20 m."},{"k":"D","disc":"IMINT","rating":"F6","dtg":"120644R NOV 26 (as posted)","src":"Photo posted online, metadata stripped","text":"Clear, sunny photo of armed soldiers standing at the C2 roadside."}],"a":"1bncd0lno9j","f":"f2igowkl9o"},{"id":"p4","t":60,"due":75,"title":"The militia cache","q":"Where is the militia hiding its weapons cache?","opts":["The church basement (C3)","The harbor warehouse (B5)","The old quarry shed (D4)","The fuel depot (E1)"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"120600R NOV 26","src":"Quarry foreman, regular contact","text":"The stolen explosive was loaded into a red van with no plates."},{"k":"B","disc":"GEOINT","rating":"A1","dtg":"Terrain database, 2019 survey","src":"Structures near the quarry, D4","text":"The old quarry shed at D4 was torn down in 2020. The nearest standing building that could hide a cache is the church in Marala Town (C3)."},{"k":"C","disc":"SIGINT","rating":"B2","dtg":"120552R NOV 26","src":"Intercept, known militia handheld frequency","text":"\"The van is in the barn by the stones. Keep the doors shut.\" Direction finding: bearing crosses the quarry at D4."},{"k":"D","disc":"IMINT","rating":"A1","dtg":"120650R NOV 26","src":"Drone still, quarry area","text":"A red van with no plates parked inside the open doors of a shed at D4. Fresh tire tracks lead in."}],"a":"20dazhp7ngh","f":"14d6b7eo0cf"},{"id":"p5","t":78,"due":92,"title":"The north-road device","q":"Is there a live device on the north road, and where?","opts":["No, it's a hoax","Yes, at the north-road culvert (D2)","Yes, but on the coast road (C2)","Not enough information"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"120510R NOV 26","src":"Fisherman, met once before","text":"Saw two men digging at the north-road culvert (D2) at 0500."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"120710R NOV 26","src":"Intercept, known militia handheld frequency","text":"\"The gift under the north road is wrapped. Wait for a patrol.\""},{"k":"C","disc":"IMINT","rating":"A1","dtg":"081030R NOV 26","src":"Satellite image, north road at D2","text":"The road is under water. The culvert can't be seen."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"River gauge and road survey, current","src":"North road, D1 to D3","text":"The water dropped below the road on 10 November, and the road has been passable since. The culvert is the only place on this 1 km stretch where something could be hidden."}],"a":"24zbs04alk3","f":"2aqfn1cwyoi"}];
+function intelKey(pid, kind, val){ return secret('marala-intel', pid + ':' + kind + ':' + val); }
 const ESC = { provocation:5, sabotage:15, firstfire:30, returnfire:5, falseblame:15, show:10, defied:10, jam:5, strikewing:40, quiet:3, trueblame:5 };
 
 function levelIndex(esc){ return esc >= 100 ? 4 : esc >= 75 ? 3 : esc >= 50 ? 2 : esc >= 25 ? 1 : 0; }
@@ -289,7 +307,8 @@ function newState(){
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   return {
     esc:10, escBy:{B:0,R:0}, hn:{B:50,R:50},
-    pts:{ B:{reports:0,ied:0,cache:0,adj:0}, R:{reports:0,ied:0,cache:0,adj:0} },
+    pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
+    intel:{B:{},R:{}}, intelOut:{}, intelVer:0,
     sites, office:{B:false,R:false}, access:{B:true,R:true},
     uses:{ drone:{B:1,R:1}, show:{B:1,R:1}, jam:{B:1,R:1}, strike:{B:1,R:1} }, aidTick:{B:-1,R:-1},
     cacheDone:null, crisisCallAt:-999, war:false, warAt:null, raised:false, tickIdx:0,
@@ -348,9 +367,25 @@ function tick(S, g){
   }
   pushLog(S, hhmm(g) + ' board update', null);
 }
+function intelOpen(S, pid, side){ const o = S.intelOut[pid]; return o ? o[side] || null : null; }
+function gradeIntel(S, P, i, side, o){
+  const keep = S.g; S.g = o.due; o.done = true; S.intelVer++;
+  const ans = S.intel[side][P.id];
+  const okA = !!(ans && ans.a === P.a), okF = !!(ans && ans.f === P.f), pts = (okA ? 2 : 0) + (okF ? 2 : 0);
+  if (ans){ ans.okA = okA; ans.okF = okF; ans.pts = pts; }
+  S.pts[side].intel += pts;
+  pushFeed(S, side, 'Intel package ' + (i + 1) + ' results: ' + (ans ? 'answer ' + (okA ? 'right' : 'wrong') + ', false piece ' + (okF ? 'right' : 'wrong') + '. +' + pts + ' points.' : 'no answer in time. +0.'), pts ? 'good' : 'alert', { label:'Intel' });
+  pushLog(S, SIDES[side].name + ' intel package ' + (i + 1) + ': ' + (ans ? (okA ? 'answer right' : 'answer wrong') + ', ' + (okF ? 'false piece right' : 'false piece wrong') : 'no answer') + ' (+' + pts + ')', side);
+  S.g = Math.max(keep, o.due);
+  if (S.step) S.step(S, null);
+}
+function intelClock(S, g){
+  PROBLEMS.forEach((P, i) => ['B','R'].forEach(side => { const o = intelOpen(S, P.id, side); if (o && !o.done && o.due <= g + 1e-9) gradeIntel(S, P, i, side, o); }));
+}
 function runTicks(S, g){
   if (!S.clock.started) return;
   while (S.tickIdx < TICKS.length && TICKS[S.tickIdx] <= g + 1e-9){
+    intelClock(S, TICKS[S.tickIdx]);
     tick(S, TICKS[S.tickIdx]); S.tickIdx++;
     if (S.step) S.step(S, null);
     if (S.tickIdx >= TICKS.length){
@@ -359,6 +394,7 @@ function runTicks(S, g){
       pushLog(S, 'ENDEX', null);
     }
   }
+  if (!S.endex) intelClock(S, g);
 }
 function useUp(S, side, key, e, label){
   if (S.endex){ pushLog(S, SIDES[side].name + ' ' + label + ' refused: the game has ended', side, e, 'rejected'); return false; }
@@ -476,6 +512,39 @@ function apply(S, e, cfg){
         } else { pushFeed(S, r.side, 'No strike: the 9-line was not correct. Your strike is used up.', 'alert'); pushLog(S, rn + ' strike refused (9-line not correct)', r.side, e); }
       }
       break; }
+    case 'intel_deploy': {
+      const i = PROBLEMS.findIndex(x => x.id === p.pid), P = PROBLEMS[i];
+      if (!P) break;
+      if (!S.clock.started || S.endex){ pushLog(S, 'Intel package ' + (i + 1) + ' not sent: the game is not running', null, e, 'rejected'); break; }
+      const to = (p.to === 'B' || p.to === 'R' ? [p.to] : ['B','R']).filter(sd => !intelOpen(S, P.id, sd));
+      if (!to.length){ pushLog(S, 'Intel package ' + (i + 1) + ' already sent', null, e, 'rejected'); break; }
+      const due = Math.min(END_G, S.g + (P.due - P.t));
+      S.intelOut[P.id] = S.intelOut[P.id] || {};
+      to.forEach(sd => {
+        S.intelOut[P.id][sd] = { g:S.g, due, done:false };
+        pushFeed(S, sd, 'New intel package ' + (i + 1) + ': ' + P.title + (/[?.!]$/.test(P.title) ? '' : '.') + ' Answer in the Intel packages tab by ' + hhmm(due) + '.', 'hq', { label:'Intel' });
+      });
+      S.intelVer++;
+      pushLog(S, 'Intel package ' + (i + 1) + ' (' + P.title + ') sent to ' + to.map(sd => SIDES[sd].name).join(' and ') + ', due ' + hhmm(due), null, e);
+      break; }
+    case 'intel_close': {
+      const i = PROBLEMS.findIndex(x => x.id === p.pid), P = PROBLEMS[i];
+      if (!P) break;
+      const open = ['B','R'].filter(sd => { const o = intelOpen(S, P.id, sd); return o && !o.done; });
+      if (!open.length){ pushLog(S, 'Intel package ' + (i + 1) + ' is not open', null, e, 'rejected'); break; }
+      pushLog(S, 'Intel package ' + (i + 1) + ' closed early at ' + hhmm(S.g), null, e);
+      open.forEach(sd => { const o = intelOpen(S, P.id, sd); o.due = S.g; gradeIntel(S, P, i, sd, o); });
+      break; }
+    case 'intel_answer': {
+      const i = PROBLEMS.findIndex(x => x.id === p.pid), P = PROBLEMS[i], o = P ? intelOpen(S, P.id, side) : null;
+      if (!P || !o){ pushLog(S, nm + ' intel answer refused: that package was not sent to them', side, e, 'rejected'); break; }
+      if (o.done){ pushLog(S, nm + ' intel package ' + (i + 1) + ' answer refused: past the ' + hhmm(o.due) + ' deadline', side, e, 'rejected'); pushFeed(S, side, 'Too late: intel package ' + (i + 1) + ' closed at ' + hhmm(o.due) + '.', 'alert', { label:'Intel' }); break; }
+      if (S.intel[side][P.id]){ pushLog(S, nm + ' intel package ' + (i + 1) + ' answer refused: already answered', side, e, 'rejected'); break; }
+      S.intel[side][P.id] = { a:p.a, f:p.f, g:S.g };
+      S.intelVer++;
+      pushLog(S, nm + ' answered intel package ' + (i + 1) + ' (' + P.title + ')', side, e);
+      pushFeed(S, side, 'Answer to intel package ' + (i + 1) + ' locked in. Results at ' + hhmm(o.due) + '.', 'hq', { label:'Intel' });
+      break; }
     case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:p.label || 'Higher headquarters' }); pushLog(S, 'Message to ' + ({ B:'BLUFOR', R:'REDFOR', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
     case 'adjust': {
       const d = Number(p.delta) || 0;
@@ -510,11 +579,11 @@ function score(S, side){
   const v = S.pts[side];
   const hn = Math.min(10, Math.floor(S.hn[side] / 10));
   const esc = -S.escBy[side];
-  const sub = sites + town + v.reports + v.ied + v.cache + v.adj + hn + esc;
+  const sub = sites + town + v.reports + v.ied + v.cache + (v.intel || 0) + v.adj + hn + esc;
   const war = S.war ? Math.trunc(sub / 2) - sub : 0;
-  return { sites, town, reports:v.reports, ied:v.ied, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
+  return { sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
 }
-if (typeof module !== 'undefined') module.exports = { SIDES, OTHER, SITES, SITE_KEYS, TICKS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
+if (typeof module !== 'undefined') module.exports = { PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, TICKS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
 </script>
 
 <script>
@@ -786,7 +855,10 @@ function buildAAR(){
     sites:Object.fromEntries(SITE_KEYS.map(k => [k, { name:SITES[k].name, grid:SITES[k].grid }])),
     final:{ B:score(S, 'B'), R:score(S, 'R'), esc:S.esc, hn:{ B:S.hn.B, R:S.hn.R }, war:S.war, warAt:S.warAt, endex:S.endex, g:S.g },
     steps, log:clean(S.log), contacts:clean(S.contacts), claims:clean(S.claims), incidents:clean(S.incidents), statements:clean(S.statements),
-    requests:clean(S.requests), cacheDone:S.cacheDone };
+    requests:clean(S.requests), cacheDone:S.cacheDone,
+    intel:PROBLEMS.map((P, i) => { const tr = intelTruth(P); const r = s => { const o = intelOpen(S, P.id, s), m = S.intel[s][P.id]; const base = o ? { sent:true, sentAt:o.g, due:o.due, closed:!!o.done } : { sent:false }; return Object.assign(base, m ? { answered:true, g:m.g, okA:!!m.okA, okF:!!m.okF, pts:m.pts || 0 } : { answered:false, pts:0 }); };
+      const os = ['B','R'].map(s => intelOpen(S, P.id, s)).filter(Boolean);
+      return { n:i + 1, id:P.id, title:P.title, intended:P.t, t:os.length ? Math.min(...os.map(o => o.g)) : P.t, due:os.length ? Math.max(...os.map(o => o.due)) : P.due, released:os.length > 0, closed:os.length > 0 && os.every(o => o.done), answer:P.opts[tr.a] || '', fake:tr.f, fakeDisc:(P.items.find(x => x.k === tr.f) || {}).disc || '', fakeSrc:(P.items.find(x => x.k === tr.f) || {}).src || '', B:r('B'), R:r('R') }; }) };
 }
 function downloadBackup(){
   try {
@@ -900,7 +972,7 @@ function legendHTML(side){
     '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
 }
 function scoreTable(S, sides){
-  const rows = [['sites', 'Sites held'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['ied', 'IEDs and hoaxes'], ['cache', 'Militia cache'], ['hn', 'Host nation ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
+  const rows = [['sites', 'Sites held'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs and hoaxes'], ['cache', 'Militia cache'], ['hn', 'Host nation ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
   const sc = {}; sides.forEach(s => sc[s] = score(S, s));
   let h = '<table class="score"><thead><tr><th>Points</th>' + sides.map(s => '<th><span class="chip ' + s + '">' + SIDES[s].name + '</span></th>').join('') + '</tr></thead><tbody>';
   rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if (k === 'adj' && sides.every(s => !sc[s].adj)) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
@@ -940,6 +1012,7 @@ function buildWing(side){
         <div class="tabs" role="tablist">
           <button type="button" role="tab" aria-selected="true" data-tab="act">Commander's actions</button>
           <button type="button" role="tab" aria-selected="false" data-tab="rep">Reports and site claims</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="intel">Intel packages<span data-intelcount></span></button>
           <button type="button" role="tab" aria-selected="false" data-tab="req">Requests</button>
         </div>
         <div data-pane="act" class="actions">
@@ -971,6 +1044,7 @@ function buildWing(side){
             <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + ' (' + SITES[k].grid + ')</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
             <div class="list" data-claims></div></div>
         </div>
+        <div data-pane="intel" class="stack" hidden><p class="small muted" style="margin:0">Each package gives four pieces of intel, one from each discipline. Exactly one is false or misleading. Pick the answer and that piece before the deadline: +2 for each. One try per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 120615R NOV 26 is 12 November, 0615 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from higher headquarters arrive here during the game.</div></div></div>
         <div data-pane="req" class="stack" hidden><div class="list" data-reqs></div></div>
       </div>
       <div class="panel feedcol"><h2>Messages</h2><div class="feed" data-feed aria-live="polite"></div></div>
@@ -987,8 +1061,58 @@ function buildWing(side){
   on('contact', fd => { const kind = fd.get('kind'); if (kind === 'site' && !fd.get('site')){ toast('Pick which site the flag is on.', true); return false; } return writeEvent('contact', side, { kind, site:kind === 'site' ? fd.get('site') : null, grid:String(fd.get('grid')).toUpperCase(), seen:fd.get('seen'), note:fd.get('note') }); });
   on('claim', fd => writeEvent('claim', side, { site:fd.get('site'), code:secret(app.cfg.salt, fd.get('code')) }));
 }
+function intelTruth(P){
+  const a = P.opts.findIndex((_, i) => intelKey(P.id, 'a', i) === P.a);
+  const f = P.items.find(it => intelKey(P.id, 'f', it.k) === P.f);
+  return { a, f:f ? f.k : '?' };
+}
+function renderIntel(S, side, v){
+  const box = $('[data-intel]', v);
+  const out = PROBLEMS.map((P, i) => ({ P, i })).filter(x => intelOpen(S, x.P.id, side)).sort((a, b) => intelOpen(S, a.P.id, side).g - intelOpen(S, b.P.id, side).g);
+  let open = 0;
+  $$('[id^="ip-' + side + '-"]', box).forEach(c => { if (!intelOpen(S, c.id.slice(4 + side.length), side)) c.remove(); });
+  if (out.length && box.querySelector('.empty')) box.innerHTML = '';
+  if (!out.length && !box.children.length) box.innerHTML = '<div class="empty">Intel packages from higher headquarters arrive here during the game.</div>';
+  out.forEach(({ P, i }) => {
+    const id = 'ip-' + side + '-' + P.id;
+    let card = document.getElementById(id);
+    if (!card){
+      card = document.createElement('div'); card.className = 'act'; card.id = id;
+      card.innerHTML = '<div class="act-head"><b>' + (i + 1) + '. ' + esc(P.title) + '</b><span class="cost" data-ipdue></span></div>' +
+        '<ul class="ip-items">' + P.items.map(it => '<li><b>' + it.k + '</b><span class="src"><span class="ip-tag">' + esc(it.disc) + '</span><span class="ip-tag" title="Source rating">' + esc(it.rating) + '</span><span class="mono">' + esc(it.dtg) + '</span><span>' + esc(it.src) + '</span></span><span class="txt">' + esc(it.text) + '</span></li>').join('') + '</ul>' +
+        '<p class="ip-q">' + esc(P.q) + '</p>' +
+        '<form class="stack" data-ipf="' + P.id + '"><div class="ip-row">' +
+        '<fieldset class="ip-set"><legend>Answer</legend>' + P.opts.map((o, k) => '<label><input type="radio" name="a" value="' + k + '">' + esc(o) + '</label>').join('') + '</fieldset>' +
+        '<fieldset class="ip-set"><legend>Which piece is false or misleading?</legend>' + P.items.map(it => '<label><input type="radio" name="f" value="' + it.k + '">' + it.k + ' · ' + esc(it.disc) + '</label>').join('') + '</fieldset>' +
+        '</div><div><button class="btn-side" type="submit">Lock in answer</button></div></form><div class="ip-status" data-ipstatus></div>';
+      box.prepend(card);
+      const f = $('form', card);
+      f.addEventListener('submit', ev => {
+        ev.preventDefault();
+        const fd = new FormData(f), a = fd.get('a'), fk = fd.get('f');
+        if (a === null || fk === null){ toast('Pick an answer and the false piece first.', true); return; }
+        writeEvent('intel_answer', side, { pid:P.id, a:intelKey(P.id, 'a', +a), f:intelKey(P.id, 'f', fk) });
+        toast('Answer locked in.');
+      });
+    }
+    const o = intelOpen(S, P.id, side), mine = S.intel[side][P.id], done = !!o.done;
+    $('[data-ipdue]', card).textContent = done ? 'closed ' + hhmm(o.due) : 'due ' + hhmm(o.due);
+    const f = $('form', card), st = $('[data-ipstatus]', card);
+    $$('input, button', f).forEach(el => el.disabled = !!mine || done || S.endex);
+    if (done){
+      const tr = intelTruth(P);
+      const res = mine ? ('Answer ' + (mine.okA ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · false piece ' + (mine.okF ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · <b>+' + (mine.pts || 0) + '</b>') : '<span class="chip no">No answer in time</span> · +0';
+      const fi = P.items.find(x => x.k === tr.f) || {};
+      st.innerHTML = res + '<div class="small muted">Correct: ' + esc(P.opts[tr.a] || '?') + '. False piece: ' + tr.f + ' (' + esc(fi.disc || '') + ').</div>';
+    } else if (mine){
+      st.innerHTML = '<span class="chip wait">Locked in ' + hhmm(mine.g) + '</span> <span class="small muted">Results at ' + hhmm(o.due) + '.</span>';
+    } else { open++; st.innerHTML = ''; }
+  });
+  $('[data-intelcount]', v).textContent = open ? ' · ' + open : '';
+}
 function renderWing(S, side, now){
   const v = $('#vWing'), lvl = levelIndex(S.esc), sc = score(S, side);
+  renderIntel(S, side, v);
   $('[data-esclvl]', v).innerHTML = '· <span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
   $('[data-ladder]', v).innerHTML = ladderHTML(S);
   $('[data-escnote]', v).textContent = S.war ? 'War: both scores are cut in half.' : S.esc >= 50 ? 'Danger zone: one more serious incident could mean war.' : 'Shared by both wings. 100 means war.';
@@ -1051,8 +1175,7 @@ const TEMPLATES = [
   { t:'0640', label:'Rumor for REDFOR', to:'R', text:'Locals saw men burying something on the Fuel Depot road near E2.' },
   { t:'0700', label:'Mayor’s meeting', to:'both', text:'The mayor invites your representatives to Marala Town now. The other foreign force is invited too.' },
   { t:'0705', label:'Injured civilian', to:'both', text:'Locals report an injured civilian near Marala Town.' },
-  { t:'0715', label:'Militia cache', to:'both', text:'Police report a militia weapons cache at the culvert between C4 and D4. Clear it or strike it.' },
-  { t:'0725', label:'Vague tip', to:'both', text:'Unconfirmed report: a device near the airstrip.' },
+  { t:'0715', label:'Militia cache', to:'both', text:'Police confirm a militia weapons cache in the old quarry shed at D4. Clear it or strike it.' },
   { t:'0735', label:'Final report call', to:'both', text:'Report all known enemy positions by 0740.' }
 ];
 function buildWhite(){
@@ -1100,6 +1223,7 @@ function buildWhite(){
       </div>
       <div class="panel"><h2>Waiting on you</h2><div class="list" data-queue></div></div>
       <div class="panel"><h2>Points</h2><div data-score></div>
+        <h2>Intel packages</h2><p class="small muted" style="margin:0">Nothing goes out until you deploy it. Each window starts when you send it.</p><div class="list" data-intelw></div>
         <h2>Explosions</h2>
         <form class="stack" data-wf="detonation"><div class="row"><label>Explosion at grid<input name="grid" maxlength="8" placeholder="C2" required></label><label>Really caused by<select name="truth"><option value="militia">Militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="cas" style="width:auto"> Casualties</label><div><button type="submit">Tell both wings</button></div></form>
       </div>
@@ -1155,6 +1279,8 @@ function buildWhite(){
     if (a === 'verdict') writeEvent('verdict', null, { contact:id, verdict:b.dataset.v });
     if (a === 'resolve'){ const box = $('#ans-' + id); writeEvent('resolve', null, { req:id, result:b.dataset.r, text:box ? box.value : '' }); }
     if (a === 'void') writeEvent('void', null, { target:id });
+    if (a === 'ipdeploy'){ writeEvent('intel_deploy', null, { pid:id, to:b.dataset.to }); toast('Intel package sent.'); }
+    if (a === 'ipclose'){ if (confirm('Close this intel package now and score it?')) writeEvent('intel_close', null, { pid:id }); }
     if (a === 'site') { const sel = $('#site-' + id); writeEvent('site_set', null, { site:id, holder:sel.value || null }); }
     if (a === 'contest') writeEvent('site_contested', null, { site:id, on:b.dataset.on === '1' });
     if (a === 'office') writeEvent('office', b.dataset.side, { on:b.dataset.on === '1' });
@@ -1189,6 +1315,16 @@ function renderWhite(S, now){
   });
   $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force and strikes land here.</div>';
   $('[data-score]', v).innerHTML = scoreTable(S, ['B', 'R']);
+  const running = S.clock.started && !S.endex;
+  $('[data-intelw]', v).innerHTML = PROBLEMS.map((P, i) => {
+    const tr = intelTruth(P), oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R');
+    const st = s => { const o = s === 'B' ? oB : oR, m = S.intel[s][P.id]; return '<span class="chip ' + s + '" style="flex:0 0 auto">' + SIDES[s].name + ': ' + (!o ? 'not sent' : o.done ? (m ? '+' + (m.pts || 0) : 'no answer') : m ? 'locked ' + hhmm(m.g) : 'working, due ' + hhmm(o.due)) + '</span>'; };
+    let btns = '';
+    if (!oB && !oR) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="B"' + (running ? '' : ' disabled') + '>BLUFOR only</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="R"' + (running ? '' : ' disabled') + '>REDFOR only</button>';
+    else if (!oB || !oR) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>';
+    if ((oB && !oB.done) || (oR && !oR.done)) btns += '<button type="button" data-act="ipclose" data-id="' + P.id + '">Close now</button>';
+    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(P.title) + '</b> <span class="small muted">intended ' + hhmm(P.t) + ' · ' + (P.due - P.t) + '-minute window</span><div class="small muted">Key: ' + esc(P.opts[tr.a] || '?') + ' · false piece ' + tr.f + ' (' + esc((P.items.find(x => x.k === tr.f) || {}).disc || '') + ')</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
+  }).join('');
   ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Host nation ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · escalation caused ' + S.escBy[s]; });
   $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · from ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">Void</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
   const voids = app.events.filter(e => e.type === 'void').length;
@@ -1201,7 +1337,7 @@ function refresh(force){
   const now = Date.now();
   const S = replay(app.cfg, app.events, now);
   app.S = S;
-  const sig = app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role;
+  const sig = app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer;
   if (force || sig !== app.sig){
     app.sig = sig;
     if (app.role === 'W') renderWhite(S, now);

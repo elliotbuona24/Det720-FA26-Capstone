@@ -1,0 +1,6437 @@
+{
+ "app": "marala-board",
+ "gid": "gdrill",
+ "cfg": {
+  "name": "Dry run 16 Oct",
+  "salt": "drill001",
+  "createdAt": 1791290219892,
+  "pins": {
+   "W": "19s04x56lua",
+   "B": "t6olxh02c1",
+   "R": "8y6cy5kjib"
+  },
+  "codes": {
+   "harbor": "1zhxi2anx4c",
+   "fuel": "lsp4hpl531",
+   "radar": "1uw3msbjaf0",
+   "airstrip": "wzj4m6wecg",
+   "town": "1dof7jur35"
+  }
+ },
+ "events": [
+  {
+   "id": "e000",
+   "ts": 1791279419892,
+   "type": "clock_start",
+   "side": null,
+   "p": {
+    "g": 20
+   },
+   "by": "W"
+  },
+  {
+   "id": "e001",
+   "ts": 1791279437892,
+   "type": "msg",
+   "side": null,
+   "p": {
+    "to": "both",
+    "text": "Higher headquarters: the mayor meets both sides at 0700. Militia active on island roads."
+   },
+   "by": "W"
+  },
+  {
+   "id": "e002",
+   "ts": 1791279599892,
+   "type": "contact",
+   "side": "B",
+   "p": {
+    "kind": "activity",
+    "grid": "C4",
+    "seen": "0621",
+    "note": "Vehicle lights moving north"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e003",
+   "ts": 1791279779892,
+   "type": "claim",
+   "side": "B",
+   "p": {
+    "site": "harbor",
+    "code": "1zhxi2anx4c"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e004",
+   "ts": 1791279869892,
+   "type": "claim",
+   "side": "R",
+   "p": {
+    "site": "fuel",
+    "code": "lsp4hpl531"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e005",
+   "ts": 1791279959892,
+   "type": "contact",
+   "side": "R",
+   "p": {
+    "kind": "team",
+    "grid": "B4",
+    "seen": "0626",
+    "note": "5 pax wedge heading to harbor"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e006",
+   "ts": 1791280019892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e005",
+    "verdict": "confirm"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e007",
+   "ts": 1791280049892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e002",
+    "verdict": "false"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e008",
+   "ts": 1791280079892,
+   "type": "claim",
+   "side": "R",
+   "p": {
+    "site": "airstrip",
+    "code": "wzj4m6wecg"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e009",
+   "ts": 1791280109892,
+   "type": "claim",
+   "side": "B",
+   "p": {
+    "site": "airstrip",
+    "code": "wrong"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e010",
+   "ts": 1791280199892,
+   "type": "ied",
+   "side": "B",
+   "p": {
+    "result": "real",
+    "grid": "B4"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e011",
+   "ts": 1791280259892,
+   "type": "contact",
+   "side": "B",
+   "p": {
+    "kind": "team",
+    "grid": "E2",
+    "seen": "0631",
+    "note": "4 pax near fuel depot"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e012",
+   "ts": 1791280319892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e011",
+    "verdict": "confirm"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e013",
+   "ts": 1791280379892,
+   "type": "claim",
+   "side": "B",
+   "p": {
+    "site": "radar",
+    "code": "1uw3msbjaf0"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e014",
+   "ts": 1791280499892,
+   "type": "provocation",
+   "side": "R",
+   "p": {},
+   "by": "W"
+  },
+  {
+   "id": "e015",
+   "ts": 1791280619892,
+   "type": "contact",
+   "side": "R",
+   "p": {
+    "kind": "site",
+    "site": "harbor",
+    "grid": "B5",
+    "seen": "0638",
+    "note": "Blue flag at harbor"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e016",
+   "ts": 1791280679892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e015",
+    "verdict": "confirm"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e017",
+   "ts": 1791280739892,
+   "type": "ied",
+   "side": "R",
+   "p": {
+    "result": "hoax",
+    "grid": "E3"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e018",
+   "ts": 1791280919892,
+   "type": "detonation",
+   "side": null,
+   "p": {
+    "grid": "C2",
+    "truth": "militia",
+    "casualties": false
+   },
+   "by": "W"
+  },
+  {
+   "id": "e019",
+   "ts": 1791280979892,
+   "type": "act_statement",
+   "side": "R",
+   "p": {
+    "incident": "e018",
+    "blame": "other"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e020",
+   "ts": 1791281099892,
+   "type": "act_statement",
+   "side": "B",
+   "p": {
+    "incident": "e018",
+    "blame": "militia"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e021",
+   "ts": 1791281129892,
+   "type": "act_drone",
+   "side": "B",
+   "p": {
+    "text": "Who holds the Airstrip at D5?"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e022",
+   "ts": 1791281219892,
+   "type": "resolve",
+   "side": null,
+   "p": {
+    "req": "e021",
+    "text": "REDFOR flag at the Airstrip, 3 personnel on site."
+   },
+   "by": "W"
+  },
+  {
+   "id": "e023",
+   "ts": 1791281249892,
+   "type": "claim",
+   "side": "B",
+   "p": {
+    "site": "town",
+    "code": "1dof7jur35"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e024",
+   "ts": 1791281309892,
+   "type": "claim",
+   "side": "R",
+   "p": {
+    "site": "town",
+    "code": "1dof7jur35"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e025",
+   "ts": 1791281339892,
+   "type": "conduct",
+   "side": "B",
+   "p": {
+    "good": true
+   },
+   "by": "W"
+  },
+  {
+   "id": "e026",
+   "ts": 1791281399892,
+   "type": "act_show",
+   "side": "R",
+   "p": {
+    "text": "Radar Ridge"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e027",
+   "ts": 1791281639892,
+   "type": "resolve",
+   "side": null,
+   "p": {
+    "req": "e026",
+    "result": "left"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e028",
+   "ts": 1791281651892,
+   "type": "site_set",
+   "side": null,
+   "p": {
+    "site": "radar",
+    "holder": null
+   },
+   "by": "W"
+  },
+  {
+   "id": "e029",
+   "ts": 1791281699892,
+   "type": "contact",
+   "side": "B",
+   "p": {
+    "kind": "site",
+    "site": "airstrip",
+    "grid": "D5",
+    "seen": "0649",
+    "note": "Red flag, 3 pax"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e030",
+   "ts": 1791281759892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e029",
+    "verdict": "confirm"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e031",
+   "ts": 1791281819892,
+   "type": "msg",
+   "side": null,
+   "p": {
+    "to": "both",
+    "text": "The mayor is in Marala Town and will meet both wings now."
+   },
+   "by": "W"
+  },
+  {
+   "id": "e032",
+   "ts": 1791281879892,
+   "type": "conduct",
+   "side": "R",
+   "p": {
+    "good": false
+   },
+   "by": "W"
+  },
+  {
+   "id": "e033",
+   "ts": 1791281939892,
+   "type": "provocation",
+   "side": "B",
+   "p": {},
+   "by": "W"
+  },
+  {
+   "id": "e034",
+   "ts": 1791281999892,
+   "type": "firstfire",
+   "side": "R",
+   "p": {
+    "grid": "D4"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e035",
+   "ts": 1791282023892,
+   "type": "returnfire",
+   "side": "B",
+   "p": {},
+   "by": "W"
+  },
+  {
+   "id": "e036",
+   "ts": 1791282119892,
+   "type": "civaid",
+   "side": "B",
+   "p": {},
+   "by": "W"
+  },
+  {
+   "id": "e037",
+   "ts": 1791282179892,
+   "type": "contact",
+   "side": "B",
+   "p": {
+    "kind": "team",
+    "grid": "A2",
+    "seen": "0702",
+    "note": "Possible team in tree line"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e038",
+   "ts": 1791282239892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e037",
+    "verdict": "false"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e039",
+   "ts": 1791282269892,
+   "type": "act_aid",
+   "side": "B",
+   "p": {},
+   "by": "B"
+  },
+  {
+   "id": "e040",
+   "ts": 1791282299892,
+   "type": "claim",
+   "side": "R",
+   "p": {
+    "site": "radar",
+    "code": "1uw3msbjaf0"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e041",
+   "ts": 1791282419892,
+   "type": "msg",
+   "side": null,
+   "p": {
+    "to": "both",
+    "text": "Militia weapons cache reported near E3."
+   },
+   "by": "W"
+  },
+  {
+   "id": "e042",
+   "ts": 1791282539892,
+   "type": "act_strike",
+   "side": "B",
+   "p": {
+    "target": "cache",
+    "grid": "E3"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e043",
+   "ts": 1791282599892,
+   "type": "act_jam",
+   "side": "R",
+   "p": {},
+   "by": "R"
+  },
+  {
+   "id": "e044",
+   "ts": 1791282659892,
+   "type": "resolve",
+   "side": null,
+   "p": {
+    "req": "e042",
+    "result": "hit"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e045",
+   "ts": 1791282719892,
+   "type": "contact",
+   "side": "R",
+   "p": {
+    "kind": "site",
+    "site": "harbor",
+    "grid": "B5",
+    "seen": "0712",
+    "note": "Blue flag at harbor still"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e046",
+   "ts": 1791282779892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e045",
+    "verdict": "duplicate"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e047",
+   "ts": 1791282899892,
+   "type": "act_aid",
+   "side": "B",
+   "p": {},
+   "by": "B"
+  },
+  {
+   "id": "e048",
+   "ts": 1791282959892,
+   "type": "site_contested",
+   "side": null,
+   "p": {
+    "site": "airstrip",
+    "on": true
+   },
+   "by": "W"
+  },
+  {
+   "id": "e049",
+   "ts": 1791283079892,
+   "type": "contact",
+   "side": "R",
+   "p": {
+    "kind": "team",
+    "grid": "C3",
+    "seen": "0718",
+    "note": "BLUFOR team at town edge"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e050",
+   "ts": 1791283139892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e049",
+    "verdict": "confirm"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e051",
+   "ts": 1791283259892,
+   "type": "site_contested",
+   "side": null,
+   "p": {
+    "site": "airstrip",
+    "on": false
+   },
+   "by": "W"
+  },
+  {
+   "id": "e052",
+   "ts": 1791283379892,
+   "type": "ied",
+   "side": "R",
+   "p": {
+    "result": "real",
+    "grid": "D2"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e053",
+   "ts": 1791283439892,
+   "type": "act_drone",
+   "side": "R",
+   "p": {
+    "text": "Is anyone at Radar Ridge C1?"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e054",
+   "ts": 1791283499892,
+   "type": "resolve",
+   "side": null,
+   "p": {
+    "req": "e053",
+    "text": "No one at Radar Ridge. REDFOR flag still up."
+   },
+   "by": "W"
+  },
+  {
+   "id": "e055",
+   "ts": 1791283799892,
+   "type": "contact",
+   "side": "B",
+   "p": {
+    "kind": "site",
+    "site": "radar",
+    "grid": "C1",
+    "seen": "0731",
+    "note": "Red flag on the ridge"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e056",
+   "ts": 1791283859892,
+   "type": "contact",
+   "side": "B",
+   "p": {
+    "kind": "team",
+    "grid": "E1",
+    "seen": "0732",
+    "note": "REDFOR at fuel depot"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e057",
+   "ts": 1791283919892,
+   "type": "contact",
+   "side": "R",
+   "p": {
+    "kind": "site",
+    "site": "radar",
+    "grid": "C1",
+    "seen": "0733",
+    "note": "Blue flag on radar"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e058",
+   "ts": 1791284039892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e055",
+    "verdict": "confirm"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e059",
+   "ts": 1791284051892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e056",
+    "verdict": "confirm"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e060",
+   "ts": 1791284063892,
+   "type": "verdict",
+   "side": null,
+   "p": {
+    "contact": "e057",
+    "verdict": "false"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e061",
+   "ts": 1791279719892,
+   "type": "intel_deploy",
+   "side": null,
+   "p": {
+    "pid": "p1",
+    "to": "both"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e062",
+   "ts": 1791280619892,
+   "type": "intel_deploy",
+   "side": null,
+   "p": {
+    "pid": "p2",
+    "to": "both"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e063",
+   "ts": 1791281099892,
+   "type": "intel_deploy",
+   "side": null,
+   "p": {
+    "pid": "p3",
+    "to": "both"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e064",
+   "ts": 1791281819892,
+   "type": "intel_deploy",
+   "side": null,
+   "p": {
+    "pid": "p4",
+    "to": "both"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e065",
+   "ts": 1791282899892,
+   "type": "intel_deploy",
+   "side": null,
+   "p": {
+    "pid": "p5",
+    "to": "both"
+   },
+   "by": "W"
+  },
+  {
+   "id": "e066",
+   "ts": 1791280019892,
+   "type": "intel_answer",
+   "side": "B",
+   "p": {
+    "pid": "p1",
+    "a": "4uviw2t474",
+    "f": "25bfal3rpyq"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e067",
+   "ts": 1791280199892,
+   "type": "intel_answer",
+   "side": "R",
+   "p": {
+    "pid": "p1",
+    "a": "135sa31e4vz",
+    "f": "25bfal3rpyq"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e068",
+   "ts": 1791281039892,
+   "type": "intel_answer",
+   "side": "B",
+   "p": {
+    "pid": "p2",
+    "a": "2dj32folanx",
+    "f": "2euj9zrk00q"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e069",
+   "ts": 1791281339892,
+   "type": "intel_answer",
+   "side": "R",
+   "p": {
+    "pid": "p2",
+    "a": "2dj32folanx",
+    "f": "10ylo7q1h9c"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e070",
+   "ts": 1791281399892,
+   "type": "intel_answer",
+   "side": "B",
+   "p": {
+    "pid": "p3",
+    "a": "1bncd0lno9j",
+    "f": "f2igowkl9o"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e071",
+   "ts": 1791281579892,
+   "type": "intel_answer",
+   "side": "R",
+   "p": {
+    "pid": "p3",
+    "a": "1q28o5gx80w",
+    "f": "164s6x6x6gk"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e072",
+   "ts": 1791282179892,
+   "type": "intel_answer",
+   "side": "B",
+   "p": {
+    "pid": "p4",
+    "a": "20dazhp7ngh",
+    "f": "14d6b7eo0cf"
+   },
+   "by": "B"
+  },
+  {
+   "id": "e073",
+   "ts": 1791283319892,
+   "type": "intel_answer",
+   "side": "R",
+   "p": {
+    "pid": "p5",
+    "a": "24zbs04alk3",
+    "f": "2aqfn1cwyoi"
+   },
+   "by": "R"
+  },
+  {
+   "id": "e074",
+   "ts": 1791284279892,
+   "type": "reveal",
+   "side": null,
+   "p": {
+    "on": true
+   },
+   "by": "W"
+  }
+ ],
+ "aar": {
+  "version": 1,
+  "built": 1791290222383,
+  "name": "Dry run 16 Oct",
+  "startG": 20,
+  "endG": 100,
+  "levels": [
+   {
+    "name": "Competition",
+    "min": 0
+   },
+   {
+    "name": "Tension",
+    "min": 25
+   },
+   {
+    "name": "Crisis",
+    "min": 50
+   },
+   {
+    "name": "Brink",
+    "min": 75
+   },
+   {
+    "name": "War",
+    "min": 100
+   }
+  ],
+  "esc": {
+   "provocation": 5,
+   "sabotage": 15,
+   "firstfire": 30,
+   "returnfire": 5,
+   "falseblame": 15,
+   "show": 10,
+   "defied": 10,
+   "jam": 5,
+   "strikewing": 40,
+   "quiet": 3,
+   "trueblame": 5
+  },
+  "sites": {
+   "harbor": {
+    "name": "Harbor",
+    "grid": "B5"
+   },
+   "fuel": {
+    "name": "Fuel Depot",
+    "grid": "E1"
+   },
+   "radar": {
+    "name": "Radar Ridge",
+    "grid": "C1"
+   },
+   "airstrip": {
+    "name": "Airstrip",
+    "grid": "D5"
+   }
+  },
+  "final": {
+   "B": {
+    "sites": 10,
+    "town": 10,
+    "reports": 8,
+    "intel": 14,
+    "ied": 2,
+    "cache": 5,
+    "adj": 0,
+    "hn": 10,
+    "esc": -10,
+    "war": 0,
+    "total": 49
+   },
+   "R": {
+    "sites": 30,
+    "town": 10,
+    "reports": 6,
+    "intel": 10,
+    "ied": 4,
+    "cache": 0,
+    "adj": 0,
+    "hn": 4,
+    "esc": -65,
+    "war": 0,
+    "total": -1
+   },
+   "esc": 71,
+   "hn": {
+    "B": 100,
+    "R": 40
+   },
+   "war": false,
+   "warAt": null,
+   "endex": true,
+   "g": 100
+  },
+  "steps": [
+   {
+    "g": 20,
+    "t": "0620",
+    "esc": 10,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 5,
+     "R": 5
+    },
+    "sites": {
+     "harbor": {
+      "holder": null,
+      "contested": false
+     },
+     "fuel": {
+      "holder": null,
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e000",
+     "type": "clock_start",
+     "side": null
+    }
+   },
+   {
+    "g": 20.3,
+    "t": "0620",
+    "esc": 10,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 5,
+     "R": 5
+    },
+    "sites": {
+     "harbor": {
+      "holder": null,
+      "contested": false
+     },
+     "fuel": {
+      "holder": null,
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e001",
+     "type": "msg",
+     "side": null
+    }
+   },
+   {
+    "g": 23,
+    "t": "0623",
+    "esc": 10,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 5,
+     "R": 5
+    },
+    "sites": {
+     "harbor": {
+      "holder": null,
+      "contested": false
+     },
+     "fuel": {
+      "holder": null,
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e002",
+     "type": "contact",
+     "side": "B"
+    }
+   },
+   {
+    "g": 25,
+    "t": "0625",
+    "esc": 10,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 5,
+     "R": 5
+    },
+    "sites": {
+     "harbor": {
+      "holder": null,
+      "contested": false
+     },
+     "fuel": {
+      "holder": null,
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e061",
+     "type": "intel_deploy",
+     "side": null
+    }
+   },
+   {
+    "g": 26,
+    "t": "0626",
+    "esc": 10,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 15,
+     "R": 5
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": null,
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e003",
+     "type": "claim",
+     "side": "B"
+    }
+   },
+   {
+    "g": 27.5,
+    "t": "0627",
+    "esc": 10,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 15,
+     "R": 15
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e004",
+     "type": "claim",
+     "side": "R"
+    }
+   },
+   {
+    "g": 29,
+    "t": "0629",
+    "esc": 10,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 15,
+     "R": 15
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e005",
+     "type": "contact",
+     "side": "R"
+    }
+   },
+   {
+    "g": 30,
+    "t": "0630",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 15,
+     "R": 15
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 30,
+    "t": "0630",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 15,
+     "R": 17
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e006",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 30,
+    "t": "0630",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 15,
+     "R": 17
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e066",
+     "type": "intel_answer",
+     "side": "B"
+    }
+   },
+   {
+    "g": 30.5,
+    "t": "0630",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 15,
+     "R": 17
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": null,
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e007",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 31,
+    "t": "0631",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 15,
+     "R": 27
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e008",
+     "type": "claim",
+     "side": "R"
+    }
+   },
+   {
+    "g": 31.5,
+    "t": "0631",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 50,
+     "R": 50
+    },
+    "score": {
+     "B": 15,
+     "R": 27
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e009",
+     "type": "claim",
+     "side": "B"
+    }
+   },
+   {
+    "g": 33,
+    "t": "0633",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 17,
+     "R": 27
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e010",
+     "type": "ied",
+     "side": "B"
+    }
+   },
+   {
+    "g": 33,
+    "t": "0633",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 17,
+     "R": 27
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e067",
+     "type": "intel_answer",
+     "side": "R"
+    }
+   },
+   {
+    "g": 34,
+    "t": "0634",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 17,
+     "R": 27
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e011",
+     "type": "contact",
+     "side": "B"
+    }
+   },
+   {
+    "g": 35,
+    "t": "0635",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 19,
+     "R": 27
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e012",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 36,
+    "t": "0636",
+    "esc": 7,
+    "escBy": {
+     "B": 0,
+     "R": 0
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 29,
+     "R": 27
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e013",
+     "type": "claim",
+     "side": "B"
+    }
+   },
+   {
+    "g": 38,
+    "t": "0638",
+    "esc": 12,
+    "escBy": {
+     "B": 0,
+     "R": 5
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 29,
+     "R": 22
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e014",
+     "type": "provocation",
+     "side": "R"
+    }
+   },
+   {
+    "g": 40,
+    "t": "0640",
+    "esc": 12,
+    "escBy": {
+     "B": 0,
+     "R": 5
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 33,
+     "R": 22
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 40,
+    "t": "0640",
+    "esc": 12,
+    "escBy": {
+     "B": 0,
+     "R": 5
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 33,
+     "R": 24
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 40,
+    "t": "0640",
+    "esc": 12,
+    "escBy": {
+     "B": 0,
+     "R": 5
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 33,
+     "R": 24
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 40,
+    "t": "0640",
+    "esc": 12,
+    "escBy": {
+     "B": 0,
+     "R": 5
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 33,
+     "R": 24
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e015",
+     "type": "contact",
+     "side": "R"
+    }
+   },
+   {
+    "g": 40,
+    "t": "0640",
+    "esc": 12,
+    "escBy": {
+     "B": 0,
+     "R": 5
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 33,
+     "R": 24
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e062",
+     "type": "intel_deploy",
+     "side": null
+    }
+   },
+   {
+    "g": 41,
+    "t": "0641",
+    "esc": 12,
+    "escBy": {
+     "B": 0,
+     "R": 5
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 33,
+     "R": 26
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e016",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 42,
+    "t": "0642",
+    "esc": 12,
+    "escBy": {
+     "B": 0,
+     "R": 5
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 33,
+     "R": 28
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e017",
+     "type": "ied",
+     "side": "R"
+    }
+   },
+   {
+    "g": 45,
+    "t": "0645",
+    "esc": 12,
+    "escBy": {
+     "B": 0,
+     "R": 5
+    },
+    "hn": {
+     "B": 55,
+     "R": 50
+    },
+    "score": {
+     "B": 33,
+     "R": 28
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e018",
+     "type": "detonation",
+     "side": null
+    }
+   },
+   {
+    "g": 46,
+    "t": "0646",
+    "esc": 27,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 55,
+     "R": 40
+    },
+    "score": {
+     "B": 33,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e019",
+     "type": "act_statement",
+     "side": "R"
+    }
+   },
+   {
+    "g": 47,
+    "t": "0647",
+    "esc": 27,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 55,
+     "R": 40
+    },
+    "score": {
+     "B": 33,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e068",
+     "type": "intel_answer",
+     "side": "B"
+    }
+   },
+   {
+    "g": 48,
+    "t": "0648",
+    "esc": 22,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 60,
+     "R": 40
+    },
+    "score": {
+     "B": 34,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e020",
+     "type": "act_statement",
+     "side": "B"
+    }
+   },
+   {
+    "g": 48,
+    "t": "0648",
+    "esc": 22,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 60,
+     "R": 40
+    },
+    "score": {
+     "B": 34,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e063",
+     "type": "intel_deploy",
+     "side": null
+    }
+   },
+   {
+    "g": 48.5,
+    "t": "0648",
+    "esc": 22,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 60,
+     "R": 40
+    },
+    "score": {
+     "B": 34,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e021",
+     "type": "act_drone",
+     "side": "B"
+    }
+   },
+   {
+    "g": 50,
+    "t": "0650",
+    "esc": 22,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 60,
+     "R": 40
+    },
+    "score": {
+     "B": 34,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 50,
+    "t": "0650",
+    "esc": 22,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 60,
+     "R": 40
+    },
+    "score": {
+     "B": 34,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": false,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e022",
+     "type": "resolve",
+     "side": null
+    }
+   },
+   {
+    "g": 50.5,
+    "t": "0650",
+    "esc": 22,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 60,
+     "R": 40
+    },
+    "score": {
+     "B": 44,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": false
+    },
+    "war": false,
+    "ev": {
+     "id": "e023",
+     "type": "claim",
+     "side": "B"
+    }
+   },
+   {
+    "g": 51.5,
+    "t": "0651",
+    "esc": 22,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 60,
+     "R": 40
+    },
+    "score": {
+     "B": 44,
+     "R": 22
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e024",
+     "type": "claim",
+     "side": "R"
+    }
+   },
+   {
+    "g": 52,
+    "t": "0652",
+    "esc": 22,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 44,
+     "R": 22
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e025",
+     "type": "conduct",
+     "side": "B"
+    }
+   },
+   {
+    "g": 52,
+    "t": "0652",
+    "esc": 22,
+    "escBy": {
+     "B": 0,
+     "R": 20
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 44,
+     "R": 22
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e069",
+     "type": "intel_answer",
+     "side": "R"
+    }
+   },
+   {
+    "g": 53,
+    "t": "0653",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 44,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e026",
+     "type": "act_show",
+     "side": "R"
+    }
+   },
+   {
+    "g": 53,
+    "t": "0653",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 44,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e070",
+     "type": "intel_answer",
+     "side": "B"
+    }
+   },
+   {
+    "g": 55,
+    "t": "0655",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 46,
+     "R": 12
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 55,
+    "t": "0655",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 46,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 56,
+    "t": "0656",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 46,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e071",
+     "type": "intel_answer",
+     "side": "R"
+    }
+   },
+   {
+    "g": 57,
+    "t": "0657",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 46,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "B",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e027",
+     "type": "resolve",
+     "side": null
+    }
+   },
+   {
+    "g": 57.2,
+    "t": "0657",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 36,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e028",
+     "type": "site_set",
+     "side": null
+    }
+   },
+   {
+    "g": 58,
+    "t": "0658",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 36,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e029",
+     "type": "contact",
+     "side": "B"
+    }
+   },
+   {
+    "g": 59,
+    "t": "0659",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 38,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e030",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 60,
+    "t": "0700",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 42,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 60,
+    "t": "0700",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 65,
+     "R": 40
+    },
+    "score": {
+     "B": 42,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 60,
+    "t": "0700",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 68,
+     "R": 43
+    },
+    "score": {
+     "B": 42,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 60,
+    "t": "0700",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 68,
+     "R": 43
+    },
+    "score": {
+     "B": 42,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e031",
+     "type": "msg",
+     "side": null
+    }
+   },
+   {
+    "g": 60,
+    "t": "0700",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 68,
+     "R": 43
+    },
+    "score": {
+     "B": 42,
+     "R": 16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e064",
+     "type": "intel_deploy",
+     "side": null
+    }
+   },
+   {
+    "g": 61,
+    "t": "0701",
+    "esc": 32,
+    "escBy": {
+     "B": 0,
+     "R": 30
+    },
+    "hn": {
+     "B": 68,
+     "R": 38
+    },
+    "score": {
+     "B": 42,
+     "R": 15
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e032",
+     "type": "conduct",
+     "side": "R"
+    }
+   },
+   {
+    "g": 62,
+    "t": "0702",
+    "esc": 37,
+    "escBy": {
+     "B": 5,
+     "R": 30
+    },
+    "hn": {
+     "B": 68,
+     "R": 38
+    },
+    "score": {
+     "B": 37,
+     "R": 15
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e033",
+     "type": "provocation",
+     "side": "B"
+    }
+   },
+   {
+    "g": 63,
+    "t": "0703",
+    "esc": 67,
+    "escBy": {
+     "B": 5,
+     "R": 60
+    },
+    "hn": {
+     "B": 68,
+     "R": 23
+    },
+    "score": {
+     "B": 37,
+     "R": -16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e034",
+     "type": "firstfire",
+     "side": "R"
+    }
+   },
+   {
+    "g": 63.4,
+    "t": "0703",
+    "esc": 72,
+    "escBy": {
+     "B": 10,
+     "R": 60
+    },
+    "hn": {
+     "B": 68,
+     "R": 23
+    },
+    "score": {
+     "B": 32,
+     "R": -16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e035",
+     "type": "returnfire",
+     "side": "B"
+    }
+   },
+   {
+    "g": 65,
+    "t": "0705",
+    "esc": 72,
+    "escBy": {
+     "B": 10,
+     "R": 60
+    },
+    "hn": {
+     "B": 73,
+     "R": 23
+    },
+    "score": {
+     "B": 33,
+     "R": -16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e036",
+     "type": "civaid",
+     "side": "B"
+    }
+   },
+   {
+    "g": 66,
+    "t": "0706",
+    "esc": 72,
+    "escBy": {
+     "B": 10,
+     "R": 60
+    },
+    "hn": {
+     "B": 73,
+     "R": 23
+    },
+    "score": {
+     "B": 33,
+     "R": -16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e037",
+     "type": "contact",
+     "side": "B"
+    }
+   },
+   {
+    "g": 66,
+    "t": "0706",
+    "esc": 72,
+    "escBy": {
+     "B": 10,
+     "R": 60
+    },
+    "hn": {
+     "B": 73,
+     "R": 23
+    },
+    "score": {
+     "B": 33,
+     "R": -16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e072",
+     "type": "intel_answer",
+     "side": "B"
+    }
+   },
+   {
+    "g": 67,
+    "t": "0707",
+    "esc": 72,
+    "escBy": {
+     "B": 10,
+     "R": 60
+    },
+    "hn": {
+     "B": 73,
+     "R": 23
+    },
+    "score": {
+     "B": 33,
+     "R": -16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e038",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 67.5,
+    "t": "0707",
+    "esc": 72,
+    "escBy": {
+     "B": 10,
+     "R": 60
+    },
+    "hn": {
+     "B": 78,
+     "R": 23
+    },
+    "score": {
+     "B": 33,
+     "R": -16
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": null,
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e039",
+     "type": "act_aid",
+     "side": "B"
+    }
+   },
+   {
+    "g": 68,
+    "t": "0708",
+    "esc": 72,
+    "escBy": {
+     "B": 10,
+     "R": 60
+    },
+    "hn": {
+     "B": 78,
+     "R": 23
+    },
+    "score": {
+     "B": 33,
+     "R": -6
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e040",
+     "type": "claim",
+     "side": "R"
+    }
+   },
+   {
+    "g": 70,
+    "t": "0710",
+    "esc": 72,
+    "escBy": {
+     "B": 10,
+     "R": 60
+    },
+    "hn": {
+     "B": 81,
+     "R": 26
+    },
+    "score": {
+     "B": 34,
+     "R": -6
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 70,
+    "t": "0710",
+    "esc": 72,
+    "escBy": {
+     "B": 10,
+     "R": 60
+    },
+    "hn": {
+     "B": 81,
+     "R": 26
+    },
+    "score": {
+     "B": 34,
+     "R": -6
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e041",
+     "type": "msg",
+     "side": null
+    }
+   },
+   {
+    "g": 72,
+    "t": "0712",
+    "esc": 72,
+    "escBy": {
+     "B": 10,
+     "R": 60
+    },
+    "hn": {
+     "B": 81,
+     "R": 26
+    },
+    "score": {
+     "B": 34,
+     "R": -6
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e042",
+     "type": "act_strike",
+     "side": "B"
+    }
+   },
+   {
+    "g": 73,
+    "t": "0713",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 81,
+     "R": 26
+    },
+    "score": {
+     "B": 34,
+     "R": -11
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e043",
+     "type": "act_jam",
+     "side": "R"
+    }
+   },
+   {
+    "g": 74,
+    "t": "0714",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 86,
+     "R": 26
+    },
+    "score": {
+     "B": 39,
+     "R": -11
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e044",
+     "type": "resolve",
+     "side": null
+    }
+   },
+   {
+    "g": 75,
+    "t": "0715",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 86,
+     "R": 26
+    },
+    "score": {
+     "B": 43,
+     "R": -11
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 75,
+    "t": "0715",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 86,
+     "R": 26
+    },
+    "score": {
+     "B": 43,
+     "R": -11
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 75,
+    "t": "0715",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 86,
+     "R": 26
+    },
+    "score": {
+     "B": 43,
+     "R": -11
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e045",
+     "type": "contact",
+     "side": "R"
+    }
+   },
+   {
+    "g": 76,
+    "t": "0716",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 86,
+     "R": 26
+    },
+    "score": {
+     "B": 43,
+     "R": -11
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e046",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 78,
+    "t": "0718",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 91,
+     "R": 26
+    },
+    "score": {
+     "B": 44,
+     "R": -11
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e047",
+     "type": "act_aid",
+     "side": "B"
+    }
+   },
+   {
+    "g": 78,
+    "t": "0718",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 91,
+     "R": 26
+    },
+    "score": {
+     "B": 44,
+     "R": -11
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e065",
+     "type": "intel_deploy",
+     "side": null
+    }
+   },
+   {
+    "g": 79,
+    "t": "0719",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 91,
+     "R": 26
+    },
+    "score": {
+     "B": 44,
+     "R": -21
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": true
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e048",
+     "type": "site_contested",
+     "side": null
+    }
+   },
+   {
+    "g": 80,
+    "t": "0720",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 94,
+     "R": 29
+    },
+    "score": {
+     "B": 44,
+     "R": -21
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": true
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 81,
+    "t": "0721",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 94,
+     "R": 29
+    },
+    "score": {
+     "B": 44,
+     "R": -21
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": true
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e049",
+     "type": "contact",
+     "side": "R"
+    }
+   },
+   {
+    "g": 82,
+    "t": "0722",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 94,
+     "R": 29
+    },
+    "score": {
+     "B": 44,
+     "R": -19
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": true
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e050",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 84,
+    "t": "0724",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 94,
+     "R": 29
+    },
+    "score": {
+     "B": 44,
+     "R": -9
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e051",
+     "type": "site_contested",
+     "side": null
+    }
+   },
+   {
+    "g": 85,
+    "t": "0725",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 94,
+     "R": 29
+    },
+    "score": {
+     "B": 44,
+     "R": -9
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e073",
+     "type": "intel_answer",
+     "side": "R"
+    }
+   },
+   {
+    "g": 86,
+    "t": "0726",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 94,
+     "R": 34
+    },
+    "score": {
+     "B": 44,
+     "R": -6
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e052",
+     "type": "ied",
+     "side": "R"
+    }
+   },
+   {
+    "g": 87,
+    "t": "0727",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 94,
+     "R": 34
+    },
+    "score": {
+     "B": 44,
+     "R": -6
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e053",
+     "type": "act_drone",
+     "side": "R"
+    }
+   },
+   {
+    "g": 88,
+    "t": "0728",
+    "esc": 77,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 94,
+     "R": 34
+    },
+    "score": {
+     "B": 44,
+     "R": -6
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e054",
+     "type": "resolve",
+     "side": null
+    }
+   },
+   {
+    "g": 90,
+    "t": "0730",
+    "esc": 74,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 97,
+     "R": 37
+    },
+    "score": {
+     "B": 44,
+     "R": -6
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 92,
+    "t": "0732",
+    "esc": 74,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 97,
+     "R": 37
+    },
+    "score": {
+     "B": 44,
+     "R": -6
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 92,
+    "t": "0732",
+    "esc": 74,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 97,
+     "R": 37
+    },
+    "score": {
+     "B": 44,
+     "R": -2
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 93,
+    "t": "0733",
+    "esc": 74,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 97,
+     "R": 37
+    },
+    "score": {
+     "B": 44,
+     "R": -2
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e055",
+     "type": "contact",
+     "side": "B"
+    }
+   },
+   {
+    "g": 94,
+    "t": "0734",
+    "esc": 74,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 97,
+     "R": 37
+    },
+    "score": {
+     "B": 44,
+     "R": -2
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e056",
+     "type": "contact",
+     "side": "B"
+    }
+   },
+   {
+    "g": 95,
+    "t": "0735",
+    "esc": 74,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 97,
+     "R": 37
+    },
+    "score": {
+     "B": 44,
+     "R": -2
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e057",
+     "type": "contact",
+     "side": "R"
+    }
+   },
+   {
+    "g": 97,
+    "t": "0737",
+    "esc": 74,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 97,
+     "R": 37
+    },
+    "score": {
+     "B": 46,
+     "R": -2
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e058",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 97.2,
+    "t": "0737",
+    "esc": 74,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 97,
+     "R": 37
+    },
+    "score": {
+     "B": 48,
+     "R": -2
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e059",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 97.4,
+    "t": "0737",
+    "esc": 74,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 97,
+     "R": 37
+    },
+    "score": {
+     "B": 48,
+     "R": -2
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e060",
+     "type": "verdict",
+     "side": null
+    }
+   },
+   {
+    "g": 100,
+    "t": "0740",
+    "esc": 71,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 100,
+     "R": 40
+    },
+    "score": {
+     "B": 49,
+     "R": -1
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "type": "tick"
+    }
+   },
+   {
+    "g": 100,
+    "t": "0740",
+    "esc": 71,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 100,
+     "R": 40
+    },
+    "score": {
+     "B": 49,
+     "R": -1
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "e074",
+     "type": "reveal",
+     "side": null
+    }
+   },
+   {
+    "g": 100,
+    "t": "0740",
+    "esc": 71,
+    "escBy": {
+     "B": 10,
+     "R": 65
+    },
+    "hn": {
+     "B": 100,
+     "R": 40
+    },
+    "score": {
+     "B": 49,
+     "R": -1
+    },
+    "sites": {
+     "harbor": {
+      "holder": "B",
+      "contested": false
+     },
+     "fuel": {
+      "holder": "R",
+      "contested": false
+     },
+     "radar": {
+      "holder": "R",
+      "contested": false
+     },
+     "airstrip": {
+      "holder": "R",
+      "contested": false
+     }
+    },
+    "office": {
+     "B": true,
+     "R": true
+    },
+    "war": false,
+    "ev": {
+     "id": "end",
+     "type": "end",
+     "side": null
+    }
+   }
+  ],
+  "log": [
+   {
+    "id": "e000",
+    "g": 20,
+    "text": "STARTEX at 0620",
+    "side": null,
+    "status": "ok",
+    "type": "clock_start",
+    "by": "W"
+   },
+   {
+    "id": "e001",
+    "g": 20.3,
+    "text": "Message to both wings: Higher headquarters: the mayor meets both sides at 0700. Militia active on island roads.",
+    "side": null,
+    "status": "ok",
+    "type": "msg",
+    "by": "W"
+   },
+   {
+    "id": "e002",
+    "g": 23,
+    "text": "BLUFOR reported activity at C4",
+    "side": "B",
+    "status": "ok",
+    "type": "contact",
+    "by": "B"
+   },
+   {
+    "id": "e061",
+    "g": 25,
+    "text": "Intel package 1 (The airstrip gate bomb) sent to BLUFOR and REDFOR, due 0640",
+    "side": null,
+    "status": "ok",
+    "type": "intel_deploy",
+    "by": "W"
+   },
+   {
+    "id": "e003",
+    "g": 26,
+    "text": "BLUFOR claimed Harbor: confirmed (Site is yours.)",
+    "side": "B",
+    "status": "ok",
+    "type": "claim",
+    "by": "B"
+   },
+   {
+    "id": "e004",
+    "g": 27.5,
+    "text": "REDFOR claimed Fuel Depot: confirmed (Site is yours.)",
+    "side": "R",
+    "status": "ok",
+    "type": "claim",
+    "by": "R"
+   },
+   {
+    "id": "e005",
+    "g": 29,
+    "text": "REDFOR reported an enemy team at B4",
+    "side": "R",
+    "status": "ok",
+    "type": "contact",
+    "by": "R"
+   },
+   {
+    "id": "l7",
+    "g": 30,
+    "text": "0630 board update",
+    "side": null,
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "e006",
+    "g": 30,
+    "text": "REDFOR report confirmed (+2 points)",
+    "side": "R",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "e066",
+    "g": 30,
+    "text": "BLUFOR answered intel package 1 (The airstrip gate bomb)",
+    "side": "B",
+    "status": "ok",
+    "type": "intel_answer",
+    "by": "B"
+   },
+   {
+    "id": "e007",
+    "g": 30.5,
+    "text": "BLUFOR report marked false",
+    "side": "B",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "e008",
+    "g": 31,
+    "text": "REDFOR claimed Airstrip: confirmed (Site is yours.)",
+    "side": "R",
+    "status": "ok",
+    "type": "claim",
+    "by": "R"
+   },
+   {
+    "id": "e009",
+    "g": 31.5,
+    "text": "BLUFOR claimed Airstrip: refused (Code word did not match.)",
+    "side": "B",
+    "status": "rejected",
+    "type": "claim",
+    "by": "B"
+   },
+   {
+    "id": "e010",
+    "g": 33,
+    "text": "BLUFOR cleared a real IED (+2 points, host nation +5) at B4",
+    "side": "B",
+    "status": "ok",
+    "type": "ied",
+    "by": "W"
+   },
+   {
+    "id": "e067",
+    "g": 33,
+    "text": "REDFOR answered intel package 1 (The airstrip gate bomb)",
+    "side": "R",
+    "status": "ok",
+    "type": "intel_answer",
+    "by": "R"
+   },
+   {
+    "id": "e011",
+    "g": 34,
+    "text": "BLUFOR reported an enemy team at E2",
+    "side": "B",
+    "status": "ok",
+    "type": "contact",
+    "by": "B"
+   },
+   {
+    "id": "e012",
+    "g": 35,
+    "text": "BLUFOR report confirmed (+2 points)",
+    "side": "B",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "e013",
+    "g": 36,
+    "text": "BLUFOR claimed Radar Ridge: confirmed (Site is yours.)",
+    "side": "B",
+    "status": "ok",
+    "type": "claim",
+    "by": "B"
+   },
+   {
+    "id": "e014",
+    "g": 38,
+    "text": "REDFOR aimed at or crowded the other wing (escalation +5)",
+    "side": "R",
+    "status": "ok",
+    "type": "provocation",
+    "by": "W"
+   },
+   {
+    "id": "l19",
+    "g": 40,
+    "text": "BLUFOR intel package 1: answer right, false piece right (+4)",
+    "side": "B",
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "l20",
+    "g": 40,
+    "text": "REDFOR intel package 1: answer wrong, false piece right (+2)",
+    "side": "R",
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "l21",
+    "g": 40,
+    "text": "0640 board update",
+    "side": null,
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "e015",
+    "g": 40,
+    "text": "REDFOR reported an enemy flag at Harbor",
+    "side": "R",
+    "status": "ok",
+    "type": "contact",
+    "by": "R"
+   },
+   {
+    "id": "e062",
+    "g": 40,
+    "text": "Intel package 2 (Where is the mayor's meeting?) sent to BLUFOR and REDFOR, due 0655",
+    "side": null,
+    "status": "ok",
+    "type": "intel_deploy",
+    "by": "W"
+   },
+   {
+    "id": "e016",
+    "g": 41,
+    "text": "REDFOR report confirmed (+2 points)",
+    "side": "R",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "e017",
+    "g": 42,
+    "text": "REDFOR called a hoax correctly (+2 points) at E3",
+    "side": "R",
+    "status": "ok",
+    "type": "ied",
+    "by": "W"
+   },
+   {
+    "id": "e018",
+    "g": 45,
+    "text": "Explosion at C2 (really caused by the militia)",
+    "side": null,
+    "status": "ok",
+    "type": "detonation",
+    "by": "W"
+   },
+   {
+    "id": "e019",
+    "g": 46,
+    "text": "REDFOR falsely blamed the other wing for the C2 explosion (escalation +15, host nation −10)",
+    "side": "R",
+    "status": "ok",
+    "type": "act_statement",
+    "by": "R"
+   },
+   {
+    "id": "e068",
+    "g": 47,
+    "text": "BLUFOR answered intel package 2 (Where is the mayor's meeting?)",
+    "side": "B",
+    "status": "ok",
+    "type": "intel_answer",
+    "by": "B"
+   },
+   {
+    "id": "e020",
+    "g": 48,
+    "text": "BLUFOR told the truth about the C2 explosion (escalation −5, host nation +5)",
+    "side": "B",
+    "status": "ok",
+    "type": "act_statement",
+    "by": "B"
+   },
+   {
+    "id": "e063",
+    "g": 48,
+    "text": "Intel package 3 (The 0645 explosion) sent to BLUFOR and REDFOR, due 0700",
+    "side": null,
+    "status": "ok",
+    "type": "intel_deploy",
+    "by": "W"
+   },
+   {
+    "id": "e021",
+    "g": 48.5,
+    "text": "BLUFOR drone flight: Who holds the Airstrip at D5?",
+    "side": "B",
+    "status": "ok",
+    "type": "act_drone",
+    "by": "B"
+   },
+   {
+    "id": "l32",
+    "g": 50,
+    "text": "0650 board update",
+    "side": null,
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "e022",
+    "g": 50,
+    "text": "BLUFOR drone flight answered",
+    "side": "B",
+    "status": "ok",
+    "type": "resolve",
+    "by": "W"
+   },
+   {
+    "id": "e023",
+    "g": 50.5,
+    "text": "BLUFOR claimed Marala Town office: confirmed (Town office open.)",
+    "side": "B",
+    "status": "ok",
+    "type": "claim",
+    "by": "B"
+   },
+   {
+    "id": "e024",
+    "g": 51.5,
+    "text": "REDFOR claimed Marala Town office: confirmed (Town office open.)",
+    "side": "R",
+    "status": "ok",
+    "type": "claim",
+    "by": "R"
+   },
+   {
+    "id": "e025",
+    "g": 52,
+    "text": "BLUFOR good conduct with locals (host nation +5)",
+    "side": "B",
+    "status": "ok",
+    "type": "conduct",
+    "by": "W"
+   },
+   {
+    "id": "e069",
+    "g": 52,
+    "text": "REDFOR answered intel package 2 (Where is the mayor's meeting?)",
+    "side": "R",
+    "status": "ok",
+    "type": "intel_answer",
+    "by": "R"
+   },
+   {
+    "id": "e026",
+    "g": 53,
+    "text": "REDFOR show of force at Radar Ridge (escalation +10)",
+    "side": "R",
+    "status": "ok",
+    "type": "act_show",
+    "by": "R"
+   },
+   {
+    "id": "e070",
+    "g": 53,
+    "text": "BLUFOR answered intel package 3 (The 0645 explosion)",
+    "side": "B",
+    "status": "ok",
+    "type": "intel_answer",
+    "by": "B"
+   },
+   {
+    "id": "l40",
+    "g": 55,
+    "text": "BLUFOR intel package 2: answer right, false piece wrong (+2)",
+    "side": "B",
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "l41",
+    "g": 55,
+    "text": "REDFOR intel package 2: answer right, false piece right (+4)",
+    "side": "R",
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "e071",
+    "g": 56,
+    "text": "REDFOR answered intel package 3 (The 0645 explosion)",
+    "side": "R",
+    "status": "ok",
+    "type": "intel_answer",
+    "by": "R"
+   },
+   {
+    "id": "e027",
+    "g": 57,
+    "text": "BLUFOR left after the show of force",
+    "side": "B",
+    "status": "ok",
+    "type": "resolve",
+    "by": "W"
+   },
+   {
+    "id": "e028",
+    "g": 57.2,
+    "text": "Radar Ridge set to nobody",
+    "side": null,
+    "status": "ok",
+    "type": "site_set",
+    "by": "W"
+   },
+   {
+    "id": "e029",
+    "g": 58,
+    "text": "BLUFOR reported an enemy flag at Airstrip",
+    "side": "B",
+    "status": "ok",
+    "type": "contact",
+    "by": "B"
+   },
+   {
+    "id": "e030",
+    "g": 59,
+    "text": "BLUFOR report confirmed (+2 points)",
+    "side": "B",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "l47",
+    "g": 60,
+    "text": "BLUFOR intel package 3: answer right, false piece right (+4)",
+    "side": "B",
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "l48",
+    "g": 60,
+    "text": "REDFOR intel package 3: answer wrong, false piece wrong (+0)",
+    "side": "R",
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "l49",
+    "g": 60,
+    "text": "0700 board update",
+    "side": null,
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "e031",
+    "g": 60,
+    "text": "Message to both wings: The mayor is in Marala Town and will meet both wings now.",
+    "side": null,
+    "status": "ok",
+    "type": "msg",
+    "by": "W"
+   },
+   {
+    "id": "e064",
+    "g": 60,
+    "text": "Intel package 4 (The militia cache) sent to BLUFOR and REDFOR, due 0715",
+    "side": null,
+    "status": "ok",
+    "type": "intel_deploy",
+    "by": "W"
+   },
+   {
+    "id": "e032",
+    "g": 61,
+    "text": "REDFOR poor conduct with locals (host nation −5)",
+    "side": "R",
+    "status": "ok",
+    "type": "conduct",
+    "by": "W"
+   },
+   {
+    "id": "e033",
+    "g": 62,
+    "text": "BLUFOR aimed at or crowded the other wing (escalation +5)",
+    "side": "B",
+    "status": "ok",
+    "type": "provocation",
+    "by": "W"
+   },
+   {
+    "id": "e034",
+    "g": 63,
+    "text": "REDFOR fired first at D4 (escalation +30, host nation −15)",
+    "side": "R",
+    "status": "ok",
+    "type": "firstfire",
+    "by": "W"
+   },
+   {
+    "id": "e035",
+    "g": 63.4,
+    "text": "BLUFOR returned fire (escalation +5)",
+    "side": "B",
+    "status": "ok",
+    "type": "returnfire",
+    "by": "W"
+   },
+   {
+    "id": "e036",
+    "g": 65,
+    "text": "BLUFOR helped an injured civilian (host nation +5)",
+    "side": "B",
+    "status": "ok",
+    "type": "civaid",
+    "by": "W"
+   },
+   {
+    "id": "e037",
+    "g": 66,
+    "text": "BLUFOR reported an enemy team at A2",
+    "side": "B",
+    "status": "ok",
+    "type": "contact",
+    "by": "B"
+   },
+   {
+    "id": "e072",
+    "g": 66,
+    "text": "BLUFOR answered intel package 4 (The militia cache)",
+    "side": "B",
+    "status": "ok",
+    "type": "intel_answer",
+    "by": "B"
+   },
+   {
+    "id": "e038",
+    "g": 67,
+    "text": "BLUFOR report marked false",
+    "side": "B",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "e039",
+    "g": 67.5,
+    "text": "BLUFOR delivered aid (host nation +5)",
+    "side": "B",
+    "status": "ok",
+    "type": "act_aid",
+    "by": "B"
+   },
+   {
+    "id": "e040",
+    "g": 68,
+    "text": "REDFOR claimed Radar Ridge: confirmed (Site is yours.)",
+    "side": "R",
+    "status": "ok",
+    "type": "claim",
+    "by": "R"
+   },
+   {
+    "id": "l62",
+    "g": 70,
+    "text": "0710 board update",
+    "side": null,
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "e041",
+    "g": 70,
+    "text": "Message to both wings: Militia weapons cache reported near E3.",
+    "side": null,
+    "status": "ok",
+    "type": "msg",
+    "by": "W"
+   },
+   {
+    "id": "e042",
+    "g": 72,
+    "text": "BLUFOR asked for a strike on the militia cache at E3",
+    "side": "B",
+    "status": "ok",
+    "type": "act_strike",
+    "by": "B"
+   },
+   {
+    "id": "e043",
+    "g": 73,
+    "text": "REDFOR jammed BLUFOR island radios until 0718 (escalation +5)",
+    "side": "R",
+    "status": "ok",
+    "type": "act_jam",
+    "by": "R"
+   },
+   {
+    "id": "e044",
+    "g": 74,
+    "text": "BLUFOR destroyed by strike the militia cache (+5 points, host nation +5)",
+    "side": "B",
+    "status": "ok",
+    "type": "resolve",
+    "by": "W"
+   },
+   {
+    "id": "l67",
+    "g": 75,
+    "text": "BLUFOR intel package 4: answer right, false piece right (+4)",
+    "side": "B",
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "l68",
+    "g": 75,
+    "text": "REDFOR intel package 4: no answer (+0)",
+    "side": "R",
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "e045",
+    "g": 75,
+    "text": "REDFOR reported an enemy flag at Harbor",
+    "side": "R",
+    "status": "ok",
+    "type": "contact",
+    "by": "R"
+   },
+   {
+    "id": "e046",
+    "g": 76,
+    "text": "REDFOR report marked duplicate",
+    "side": "R",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "e047",
+    "g": 78,
+    "text": "BLUFOR delivered aid (host nation +5)",
+    "side": "B",
+    "status": "ok",
+    "type": "act_aid",
+    "by": "B"
+   },
+   {
+    "id": "e065",
+    "g": 78,
+    "text": "Intel package 5 (The north-road device) sent to BLUFOR and REDFOR, due 0732",
+    "side": null,
+    "status": "ok",
+    "type": "intel_deploy",
+    "by": "W"
+   },
+   {
+    "id": "e048",
+    "g": 79,
+    "text": "Airstrip contested",
+    "side": null,
+    "status": "ok",
+    "type": "site_contested",
+    "by": "W"
+   },
+   {
+    "id": "l74",
+    "g": 80,
+    "text": "0720 board update",
+    "side": null,
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "e049",
+    "g": 81,
+    "text": "REDFOR reported an enemy team at C3",
+    "side": "R",
+    "status": "ok",
+    "type": "contact",
+    "by": "R"
+   },
+   {
+    "id": "e050",
+    "g": 82,
+    "text": "REDFOR report confirmed (+2 points)",
+    "side": "R",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "e051",
+    "g": 84,
+    "text": "Airstrip no longer contested",
+    "side": null,
+    "status": "ok",
+    "type": "site_contested",
+    "by": "W"
+   },
+   {
+    "id": "e073",
+    "g": 85,
+    "text": "REDFOR answered intel package 5 (The north-road device)",
+    "side": "R",
+    "status": "ok",
+    "type": "intel_answer",
+    "by": "R"
+   },
+   {
+    "id": "e052",
+    "g": 86,
+    "text": "REDFOR cleared a real IED (+2 points, host nation +5) at D2",
+    "side": "R",
+    "status": "ok",
+    "type": "ied",
+    "by": "W"
+   },
+   {
+    "id": "e053",
+    "g": 87,
+    "text": "REDFOR drone flight: Is anyone at Radar Ridge C1?",
+    "side": "R",
+    "status": "ok",
+    "type": "act_drone",
+    "by": "R"
+   },
+   {
+    "id": "e054",
+    "g": 88,
+    "text": "REDFOR drone flight answered",
+    "side": "R",
+    "status": "ok",
+    "type": "resolve",
+    "by": "W"
+   },
+   {
+    "id": "l82",
+    "g": 90,
+    "text": "0730 board update",
+    "side": null,
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "l83",
+    "g": 92,
+    "text": "BLUFOR intel package 5: no answer (+0)",
+    "side": "B",
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "l84",
+    "g": 92,
+    "text": "REDFOR intel package 5: answer right, false piece right (+4)",
+    "side": "R",
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "e055",
+    "g": 93,
+    "text": "BLUFOR reported an enemy flag at Radar Ridge",
+    "side": "B",
+    "status": "ok",
+    "type": "contact",
+    "by": "B"
+   },
+   {
+    "id": "e056",
+    "g": 94,
+    "text": "BLUFOR reported an enemy team at E1",
+    "side": "B",
+    "status": "ok",
+    "type": "contact",
+    "by": "B"
+   },
+   {
+    "id": "e057",
+    "g": 95,
+    "text": "REDFOR reported an enemy flag at Radar Ridge",
+    "side": "R",
+    "status": "ok",
+    "type": "contact",
+    "by": "R"
+   },
+   {
+    "id": "e058",
+    "g": 97,
+    "text": "BLUFOR report confirmed (+2 points)",
+    "side": "B",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "e059",
+    "g": 97.2,
+    "text": "BLUFOR report confirmed (+2 points)",
+    "side": "B",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "e060",
+    "g": 97.4,
+    "text": "REDFOR report marked false",
+    "side": "R",
+    "status": "ok",
+    "type": "verdict",
+    "by": "W"
+   },
+   {
+    "id": "l91",
+    "g": 100,
+    "text": "0740 board update",
+    "side": null,
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "l92",
+    "g": 100,
+    "text": "ENDEX",
+    "side": null,
+    "status": "ok",
+    "type": "tick",
+    "by": "system"
+   },
+   {
+    "id": "e074",
+    "g": 100,
+    "text": "Full truth shown on every screen",
+    "side": null,
+    "status": "ok",
+    "type": "reveal",
+    "by": "W"
+   }
+  ],
+  "contacts": [
+   {
+    "id": "e002",
+    "side": "B",
+    "kind": "activity",
+    "site": null,
+    "grid": "C4",
+    "seen": "0621",
+    "seenG": 23,
+    "note": "Vehicle lights moving north",
+    "verdict": "false",
+    "g": 23,
+    "gain": 0
+   },
+   {
+    "id": "e005",
+    "side": "R",
+    "kind": "team",
+    "site": null,
+    "grid": "B4",
+    "seen": "0626",
+    "seenG": 29,
+    "note": "5 pax wedge heading to harbor",
+    "verdict": "confirm",
+    "g": 29,
+    "gain": 2
+   },
+   {
+    "id": "e011",
+    "side": "B",
+    "kind": "team",
+    "site": null,
+    "grid": "E2",
+    "seen": "0631",
+    "seenG": 34,
+    "note": "4 pax near fuel depot",
+    "verdict": "confirm",
+    "g": 34,
+    "gain": 2
+   },
+   {
+    "id": "e015",
+    "side": "R",
+    "kind": "site",
+    "site": "harbor",
+    "grid": "B5",
+    "seen": "0638",
+    "seenG": 40,
+    "note": "Blue flag at harbor",
+    "verdict": "confirm",
+    "g": 40,
+    "gain": 2
+   },
+   {
+    "id": "e029",
+    "side": "B",
+    "kind": "site",
+    "site": "airstrip",
+    "grid": "D5",
+    "seen": "0649",
+    "seenG": 58,
+    "note": "Red flag, 3 pax",
+    "verdict": "confirm",
+    "g": 58,
+    "gain": 2
+   },
+   {
+    "id": "e037",
+    "side": "B",
+    "kind": "team",
+    "site": null,
+    "grid": "A2",
+    "seen": "0702",
+    "seenG": 66,
+    "note": "Possible team in tree line",
+    "verdict": "false",
+    "g": 66,
+    "gain": 0
+   },
+   {
+    "id": "e045",
+    "side": "R",
+    "kind": "site",
+    "site": "harbor",
+    "grid": "B5",
+    "seen": "0712",
+    "seenG": 75,
+    "note": "Blue flag at harbor still",
+    "verdict": "duplicate",
+    "g": 75,
+    "gain": 0
+   },
+   {
+    "id": "e049",
+    "side": "R",
+    "kind": "team",
+    "site": null,
+    "grid": "C3",
+    "seen": "0718",
+    "seenG": 81,
+    "note": "BLUFOR team at town edge",
+    "verdict": "confirm",
+    "g": 81,
+    "gain": 2
+   },
+   {
+    "id": "e055",
+    "side": "B",
+    "kind": "site",
+    "site": "radar",
+    "grid": "C1",
+    "seen": "0731",
+    "seenG": 93,
+    "note": "Red flag on the ridge",
+    "verdict": "confirm",
+    "g": 93,
+    "gain": 2
+   },
+   {
+    "id": "e056",
+    "side": "B",
+    "kind": "team",
+    "site": null,
+    "grid": "E1",
+    "seen": "0732",
+    "seenG": 94,
+    "note": "REDFOR at fuel depot",
+    "verdict": "confirm",
+    "g": 94,
+    "gain": 2
+   },
+   {
+    "id": "e057",
+    "side": "R",
+    "kind": "site",
+    "site": "radar",
+    "grid": "C1",
+    "seen": "0733",
+    "seenG": 95,
+    "note": "Blue flag on radar",
+    "verdict": "false",
+    "g": 95,
+    "gain": 0
+   }
+  ],
+  "claims": [
+   {
+    "id": "e003",
+    "side": "B",
+    "site": "harbor",
+    "g": 26,
+    "status": "accepted",
+    "note": "Site is yours."
+   },
+   {
+    "id": "e004",
+    "side": "R",
+    "site": "fuel",
+    "g": 27.5,
+    "status": "accepted",
+    "note": "Site is yours."
+   },
+   {
+    "id": "e008",
+    "side": "R",
+    "site": "airstrip",
+    "g": 31,
+    "status": "accepted",
+    "note": "Site is yours."
+   },
+   {
+    "id": "e009",
+    "side": "B",
+    "site": "airstrip",
+    "g": 31.5,
+    "status": "rejected",
+    "note": "Code word did not match."
+   },
+   {
+    "id": "e013",
+    "side": "B",
+    "site": "radar",
+    "g": 36,
+    "status": "accepted",
+    "note": "Site is yours."
+   },
+   {
+    "id": "e023",
+    "side": "B",
+    "site": "town",
+    "g": 50.5,
+    "status": "accepted",
+    "note": "Town office open."
+   },
+   {
+    "id": "e024",
+    "side": "R",
+    "site": "town",
+    "g": 51.5,
+    "status": "accepted",
+    "note": "Town office open."
+   },
+   {
+    "id": "e040",
+    "side": "R",
+    "site": "radar",
+    "g": 68,
+    "status": "accepted",
+    "note": "Site is yours."
+   }
+  ],
+  "incidents": [
+   {
+    "id": "e018",
+    "grid": "C2",
+    "truth": "militia",
+    "g": 45
+   }
+  ],
+  "statements": {
+   "R:e018": "other",
+   "B:e018": "militia"
+  },
+  "requests": [
+   {
+    "id": "e021",
+    "side": "B",
+    "kind": "drone",
+    "text": "Who holds the Airstrip at D5?",
+    "status": "done",
+    "g": 48.5,
+    "answer": "REDFOR flag at the Airstrip, 3 personnel on site."
+   },
+   {
+    "id": "e026",
+    "side": "R",
+    "kind": "show",
+    "text": "Radar Ridge",
+    "status": "done",
+    "g": 53,
+    "result": "left",
+    "answer": ""
+   },
+   {
+    "id": "e042",
+    "side": "B",
+    "kind": "strike",
+    "target": "cache",
+    "text": "E3",
+    "status": "done",
+    "g": 72,
+    "result": "hit",
+    "answer": ""
+   },
+   {
+    "id": "e053",
+    "side": "R",
+    "kind": "drone",
+    "text": "Is anyone at Radar Ridge C1?",
+    "status": "done",
+    "g": 87,
+    "answer": "No one at Radar Ridge. REDFOR flag still up."
+   }
+  ],
+  "cacheDone": "B",
+  "intel": [
+   {
+    "n": 1,
+    "id": "p1",
+    "title": "The airstrip gate bomb",
+    "intended": 25,
+    "t": 25,
+    "due": 40,
+    "released": true,
+    "closed": true,
+    "answer": "The Marala First Front (militia)",
+    "fake": "C",
+    "fakeDisc": "HUMINT",
+    "fakeSrc": "Walk-in source, first contact, reunification party member, asked to be paid",
+    "B": {
+     "sent": true,
+     "sentAt": 25,
+     "due": 40,
+     "closed": true,
+     "answered": true,
+     "g": 30,
+     "okA": true,
+     "okF": true,
+     "pts": 4
+    },
+    "R": {
+     "sent": true,
+     "sentAt": 25,
+     "due": 40,
+     "closed": true,
+     "answered": true,
+     "g": 33,
+     "okA": false,
+     "okF": true,
+     "pts": 2
+    }
+   },
+   {
+    "n": 2,
+    "id": "p2",
+    "title": "Where is the mayor's meeting?",
+    "intended": 40,
+    "t": 40,
+    "due": 55,
+    "released": true,
+    "closed": true,
+    "answer": "Town Hall",
+    "fake": "A",
+    "fakeDisc": "SIGINT",
+    "fakeSrc": "Intercepted cell call, unregistered phone near the harbor",
+    "B": {
+     "sent": true,
+     "sentAt": 40,
+     "due": 55,
+     "closed": true,
+     "answered": true,
+     "g": 47,
+     "okA": true,
+     "okF": false,
+     "pts": 2
+    },
+    "R": {
+     "sent": true,
+     "sentAt": 40,
+     "due": 55,
+     "closed": true,
+     "answered": true,
+     "g": 52,
+     "okA": true,
+     "okF": true,
+     "pts": 4
+    }
+   },
+   {
+    "n": 3,
+    "id": "p3",
+    "title": "The 0645 explosion",
+    "intended": 48,
+    "t": 48,
+    "due": 60,
+    "released": true,
+    "closed": true,
+    "answer": "The Marala First Front (militia)",
+    "fake": "D",
+    "fakeDisc": "IMINT",
+    "fakeSrc": "Photo posted online, metadata stripped",
+    "B": {
+     "sent": true,
+     "sentAt": 48,
+     "due": 60,
+     "closed": true,
+     "answered": true,
+     "g": 53,
+     "okA": true,
+     "okF": true,
+     "pts": 4
+    },
+    "R": {
+     "sent": true,
+     "sentAt": 48,
+     "due": 60,
+     "closed": true,
+     "answered": true,
+     "g": 56,
+     "okA": false,
+     "okF": false,
+     "pts": 0
+    }
+   },
+   {
+    "n": 4,
+    "id": "p4",
+    "title": "The militia cache",
+    "intended": 60,
+    "t": 60,
+    "due": 75,
+    "released": true,
+    "closed": true,
+    "answer": "The old quarry shed (D4)",
+    "fake": "B",
+    "fakeDisc": "GEOINT",
+    "fakeSrc": "Structures near the quarry, D4",
+    "B": {
+     "sent": true,
+     "sentAt": 60,
+     "due": 75,
+     "closed": true,
+     "answered": true,
+     "g": 66,
+     "okA": true,
+     "okF": true,
+     "pts": 4
+    },
+    "R": {
+     "sent": true,
+     "sentAt": 60,
+     "due": 75,
+     "closed": true,
+     "answered": false,
+     "pts": 0
+    }
+   },
+   {
+    "n": 5,
+    "id": "p5",
+    "title": "The north-road device",
+    "intended": 78,
+    "t": 78,
+    "due": 92,
+    "released": true,
+    "closed": true,
+    "answer": "Yes, at the north-road culvert (D2)",
+    "fake": "C",
+    "fakeDisc": "IMINT",
+    "fakeSrc": "Satellite image, north road at D2",
+    "B": {
+     "sent": true,
+     "sentAt": 78,
+     "due": 92,
+     "closed": true,
+     "answered": false,
+     "pts": 0
+    },
+    "R": {
+     "sent": true,
+     "sentAt": 78,
+     "due": 92,
+     "closed": true,
+     "answered": true,
+     "g": 85,
+     "okA": true,
+     "okF": true,
+     "pts": 4
+    }
+   }
+  ]
+ }
+}

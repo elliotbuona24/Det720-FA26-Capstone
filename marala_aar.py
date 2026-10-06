@@ -331,6 +331,22 @@ def questions(aar, stats, jumps, stmts):
         lost = sum(1 for c in aar["claims"] if c["side"] == side and c["status"] == "held")
         if lost:
             qs[side].append(f"Your teams reached {lost} site(s) that {NAMES[other]} already held. How did your plan decide which sites to go for first?")
+        ips = [p for p in aar.get("intel", []) if p[side].get("closed", p.get("closed")) and p[side].get("sent", True)]
+        if ips:
+            full = sum(1 for p in ips if p[side].get("okA") and p[side].get("okF"))
+            missed = [p for p in ips if p[side].get("answered") and not p[side].get("okF")]
+            unanswered = [p for p in ips if not p[side].get("answered")]
+            line = f"Intel solved {full} of {len(ips)} intel packages completely."
+            if missed:
+                p0 = missed[0]
+                fd = p0.get("fakeDisc") or "false"
+                line += f" On package {p0['n']} ({p0['title']}) the false piece was the {fd} report ({p0['fakeSrc'].split(',')[0].lower()}). What made Intel trust it, and what should have given it away?"
+            elif unanswered:
+                p0 = unanswered[0]
+                line += f" Package {p0['n']} ({p0['title']}) got no answer before {hhmm(p0[side].get('due', p0['due']))}. Who owned it, and what got in the way?"
+            else:
+                line += " What method did Intel use to find the false piece each time?"
+            qs[side].append(line)
         qs[side].append(f"You finished holding {held} of {len(aar['sites'])} sites. Which branch of your plan actually got used, and which never came up?")
     return qs
 
@@ -375,14 +391,14 @@ def build_html(data, aar, charts):
     war = "War broke out" + (f" at {hhmm(final['warAt'])}" if final.get("warAt") is not None else "") + ", so both scores were cut in half." if final["war"] else \
         f"No war. Escalation finished at {final['esc']} ({level_name(final['esc'])})."
     score_rows = [
-        ("Sites held at the end (10 each)", "sites"), ("Town office open", "town"), ("Confirmed intel reports", "reports"),
+        ("Sites held at the end (10 each)", "sites"), ("Town office open", "town"), ("Confirmed intel reports", "reports"), ("Intel packages (2 + 2 each)", "intel"),
         ("IEDs handled", "ied"), ("Militia cache", "cache"), ("Host nation (1 per 10)", "hn"),
         ("Escalation caused (−1 each)", "esc"), ("White cell adjustments", "adj"), ("War penalty", "war"),
     ]
     rows_html = "".join(
-        f"<tr><td>{esc(label)}</td><td class='num'>{b[k]:+d}</td><td class='num'>{r[k]:+d}</td></tr>" if k in ("esc", "war", "adj") else
-        f"<tr><td>{esc(label)}</td><td class='num'>{b[k]}</td><td class='num'>{r[k]}</td></tr>"
-        for label, k in score_rows if b[k] or r[k] or k in ("sites", "esc")
+        f"<tr><td>{esc(label)}</td><td class='num'>{b.get(k, 0):+d}</td><td class='num'>{r.get(k, 0):+d}</td></tr>" if k in ("esc", "war", "adj") else
+        f"<tr><td>{esc(label)}</td><td class='num'>{b.get(k, 0)}</td><td class='num'>{r.get(k, 0)}</td></tr>"
+        for label, k in score_rows if b.get(k, 0) or r.get(k, 0) or k in ("sites", "esc")
     )
     rows_html += f"<tr class='total'><td>Total</td><td class='num'>{b['total']}</td><td class='num'>{r['total']}</td></tr>"
     intel_rows = ""
@@ -395,6 +411,16 @@ def build_html(data, aar, charts):
         f"<tr><td>{hhmm(s['g'])}</td>{side_cell(s['side'], NAMES[s['side']])}<td>{esc(s['grid'])}</td><td>{esc(s['said'])}</td><td>{esc(s['truth'])}</td><td>{'Correct' if s['correct'] else 'Wrong'}</td></tr>"
         for s in sorted(stmts, key=lambda x: x["g"])
     ) or "<tr><td colspan='6' class='muted'>No public statements were made.</td></tr>"
+    def ip_cell(x):
+        if x.get("sent") is False:
+            return "<td>Not sent</td>"
+        if not x.get("answered"):
+            return "<td>No answer</td>"
+        return f"<td>Answer {'✓' if x['okA'] else '✗'} · False piece {'✓' if x['okF'] else '✗'} · <b>+{x['pts']}</b></td>"
+    ip_rows = "".join(
+        f"<tr><td>{p['n']}</td><td>{esc(p['title'])}</td><td>{hhmm(p['t'])}–{hhmm(p['due'])}</td><td>{esc(p['answer'])}; false: {esc(p['fake'])}, {esc(p.get('fakeDisc', ''))} ({esc(p['fakeSrc'])})</td>{ip_cell(p['B'])}{ip_cell(p['R'])}</tr>"
+        for p in aar.get("intel", []) if p.get("released")
+    ) or "<tr><td colspan='6' class='muted'>No intel packages were sent.</td></tr>"
     esc_rows = "".join(f"<tr><td>{t}</td>{side_cell(sd, who)}<td class='num'>{d}</td><td>{esc(txt)}</td></tr>" for t, who, d, txt, sd in esc_table(jumps)) \
         or "<tr><td colspan='4' class='muted'>Escalation never changed.</td></tr>"
     key_log = [e for e in aar["log"] if e.get("type") in KEY_TYPES]
@@ -504,6 +530,9 @@ table.log{{font-size:10pt}}
 <p class="note">Delay is the time from a team's sighting to the report reaching the board. Accuracy counts only reports the white cell judged.</p>
 <h3>Attribution of explosions</h3>
 <table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Where</th><th>Public statement</th><th>Actual cause</th><th>Result</th></tr></thead><tbody>{stmt_rows}</tbody></table>
+<h3>Intel packages</h3>
+<table class="data"><thead><tr><th>#</th><th>Problem</th><th>Window</th><th>Key</th><th>BLUFOR</th><th>REDFOR</th></tr></thead><tbody>{ip_rows}</tbody></table>
+<p class="note">Each package gave four pieces of intel (HUMINT, SIGINT, IMINT and GEOINT), one of them false or misleading. +2 for the right answer, +2 for spotting the false piece. The window shows when the white cell sent it and when it closed.</p>
 
 <h2>7. Discussion Points</h2>
 <div class="qs">{q_html}</div>
