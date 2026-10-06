@@ -14,6 +14,7 @@ const FIREBASE_CONFIG = {
   appId: "1:94820311080:web:81000de18784ec5839d51d",
   measurementId: "G-ZR5F9T70BW"
 };
+const RECOVERY_CODE_HASH = "3nonh9lo9n";
 </script>
 <title>Marala Island Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -218,11 +219,20 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
       </div>
       <p id="pinErr" class="small" style="color:var(--bad);margin:0" hidden>That PIN doesn't match this game. Ask the white cell for the right one.</p>
     </form>
+    <div id="gateAdmin" class="panel" hidden>
+      <h2>Start a new game</h2>
+      <p class="muted small" style="margin:0">Replaces the current game on every screen. Enter the white cell PIN, or the admin recovery code if the PIN is lost.</p>
+      <form id="adminForm" class="row">
+        <label for="adminInput">White cell PIN or recovery code<input id="adminInput" type="password" autocomplete="off"></label>
+        <div style="flex:0 0 auto" class="row"><button type="submit" class="btn-side side-W">Continue</button></div>
+      </form>
+      <p id="adminErr" class="small" style="color:var(--bad);margin:0" hidden>That doesn't match the white cell PIN or the recovery code.</p>
+    </div>
   </section>
 
   <section id="setup" class="panel side-W" hidden>
     <h2>Set up a new game</h2>
-    <p class="muted small" style="margin:0">Starting a new game replaces the current one on every screen. Site code words go on the hidden cards at each site; teams read them to their WOC to prove they got there. Only scrambled copies are stored.</p>
+    <p class="muted small" style="margin:0">Starting a new game replaces the current one on every screen. Site code words go on the hidden cards at each site; teams radio them to their command post to prove they got there. Only scrambled copies are stored.</p>
     <form id="setupForm" class="stack">
       <div class="row">
         <label for="sName">Game name<input id="sName" value="ALE 2 capstone" required></label>
@@ -588,7 +598,7 @@ function subscribeMeta(){
   try {
     const u = app.db.doc('meta/current').onSnapshot(snap => {
       const gid = snap.exists ? (snap.data() || {}).gameId : null;
-      if (gid !== app.gid){ app.gid = gid; subscribeGame(); }
+      if (gid !== app.gid){ const had = app.gid; app.gid = gid; if (had){ app.role = null; app.built = null; } subscribeGame(); }
       else if (!gid) route();
     }, err => { setBanner('The shared board stopped responding (' + (err && err.code) + '). Reload the page.'); });
     app.unsub.push(u);
@@ -660,6 +670,7 @@ function route(){
 function renderGate(){
   show('#gate'); $('#switchRole').hidden = true; $('#roleBadge').innerHTML = '';
   $('#gateNoGame').hidden = !!app.cfg;
+  $('#gateAdmin').hidden = !app.cfg; $('#adminErr').hidden = true; $('#adminInput').value = '';
   const roles = $('#gateRoles');
   if (!app.cfg){
     roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Load a sample game with example moves to see every screen work. PINs: white cell 0000, BLUFOR 1111, REDFOR 2222. Setting up a new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
@@ -693,6 +704,17 @@ $('#pinCancel').onclick = () => { $('#pinForm').hidden = true; pendingRole = nul
 $('#switchRole').onclick = () => { LS.del('marala-role-' + (app.gid || 'none')); app.role = null; app.built = null; route(); };
 $('#gotoSetup').onclick = () => { app.wantSetup = true; route(); };
 $('#setupCancel').onclick = () => { app.wantSetup = false; route(); };
+function recoveryOk(v){
+  const h = typeof RECOVERY_CODE_HASH !== 'undefined' ? RECOVERY_CODE_HASH : null;
+  return !!(h && String(v || '').trim() && secret('marala-recovery', v) === h);
+}
+$('#adminForm').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const v = $('#adminInput').value;
+  const ok = app.cfg && (secret(app.cfg.salt, v) === app.cfg.pins.W || recoveryOk(v));
+  if (!ok){ $('#adminErr').hidden = false; return; }
+  $('#adminInput').value = ''; app.wantSetup = true; route();
+});
 $('#setupForm').addEventListener('submit', async ev => {
   ev.preventDefault();
   const salt = Math.random().toString(36).slice(2, 10);
