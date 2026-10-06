@@ -1,0 +1,64 @@
+{
+ "app": "marala-board",
+ "gid": "gmuw423zj",
+ "cfg": {
+  "pins": {
+   "R": "tm6rl4wu7g",
+   "W": "10967ue2dix",
+   "B": "26tctfo0cxr"
+  },
+  "salt": "o8ap23un",
+  "codes": {
+   "airstrip": "ngqted6mec",
+   "town": "15hfumqcmu",
+   "harbor": "fw9mojfu3p",
+   "radar": "v4snhf3lta",
+   "fuel": "1m5s991fflp"
+  },
+  "name": "ALE 2 capstone",
+  "createdAt": 1791256814767
+ },
+ "events": [
+  {
+   "type": "msg",
+   "ts": 1791256883903,
+   "side": null,
+   "by": "W",
+   "id": "muw43lbz-voeom9u",
+   "p": {
+    "text": "hi riley!",
+    "label": "elliot",
+    "to": "public"
+   }
+  },
+  {
+   "side": null,
+   "id": "muw4bjri-g6swowb",
+   "by": "W",
+   "ts": 1791257255118,
+   "p": {
+    "g": 20
+   },
+   "type": "clock_start"
+  },
+  {
+   "type": "clock_pause",
+   "by": "W",
+   "id": "muw4f6tu-scw3j35",
+   "side": null,
+   "ts": 1791257424978,
+   "p": {}
+  },
+  {
+   "by": "W",
+   "p": {
+    "holder": "B",
+    "site": "harbor"
+   },
+   "id": "muw4qqby-kod0rae",
+   "type": "site_set",
+   "side": null,
+   "ts": 1791257963470
+  }
+ ]
+}
