@@ -352,6 +352,7 @@ function runTicks(S, g){
   if (!S.clock.started) return;
   while (S.tickIdx < TICKS.length && TICKS[S.tickIdx] <= g + 1e-9){
     tick(S, TICKS[S.tickIdx]); S.tickIdx++;
+    if (S.step) S.step(S, null);
     if (S.tickIdx >= TICKS.length){
       S.endex = true; S.clock.running = false; S.clock.anchorG = END_G; S.g = END_G;
       pushFeed(S, 'public', 'ENDEX. The board is frozen at 0740.', 'public');
@@ -485,16 +486,18 @@ function apply(S, e, cfg){
       break; }
   }
 }
-function replay(cfg, events, now){
+function replay(cfg, events, now, step){
   const voided = new Set(events.filter(e => e.type === 'void').map(e => e.p && e.p.target));
   const evs = events.filter(e => e.type !== 'void' && !voided.has(e.id)).slice().sort((a, b) => (a.ts - b.ts) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const S = newState();
+  if (step) S.step = step;
   for (const e of evs){
     const g = gameAt(S, e.ts);
     runTicks(S, g);
     S.g = Math.max(S.g, Math.min(g, END_G));
     if (S.endex && e.by !== 'W' && e.by !== 'white' && /^act_|^contact|^claim/.test(e.type)){ pushLog(S, SIDES[e.side].name + ' action after ENDEX ignored', e.side, e, 'rejected'); continue; }
     apply(S, e, cfg);
+    if (step) step(S, e);
   }
   const gNow = gameAt(S, now);
   runTicks(S, gNow);
@@ -767,9 +770,28 @@ function loadSample(){
   app.localSample = true; localSave(); route();
 }
 
+function buildAAR(){
+  const steps = [];
+  const snap = (S, e) => {
+    const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:S.sites[k].holder, contested:!!S.sites[k].contested });
+    const sc = { B:score(S, 'B'), R:score(S, 'R') };
+    steps.push({ g:Math.round(S.g * 100) / 100, t:hhmm(S.g), esc:S.esc, escBy:{ B:S.escBy.B, R:S.escBy.R }, hn:{ B:S.hn.B, R:S.hn.R },
+      score:{ B:sc.B.total, R:sc.R.total }, sites, office:{ B:!!(S.office.B && S.access.B), R:!!(S.office.R && S.access.R) }, war:S.war,
+      ev: e ? { id:e.id, type:e.type, side:e.side || null } : { type:'tick' } });
+  };
+  const S = replay(app.cfg, app.events, Date.now(), snap);
+  snap(S, { id:'end', type:'end', side:null });
+  const clean = o => JSON.parse(JSON.stringify(o));
+  return { version:1, built:Date.now(), name:(app.cfg && app.cfg.name) || 'Game', startG:START_G, endG:END_G, levels:LEVELS, esc:ESC,
+    sites:Object.fromEntries(SITE_KEYS.map(k => [k, { name:SITES[k].name, grid:SITES[k].grid }])),
+    final:{ B:score(S, 'B'), R:score(S, 'R'), esc:S.esc, hn:{ B:S.hn.B, R:S.hn.R }, war:S.war, warAt:S.warAt, endex:S.endex, g:S.g },
+    steps, log:clean(S.log), contacts:clean(S.contacts), claims:clean(S.claims), incidents:clean(S.incidents), statements:clean(S.statements),
+    requests:clean(S.requests), cacheDone:S.cacheDone };
+}
 function downloadBackup(){
   try {
-    const blob = new Blob([JSON.stringify({ app:'marala-board', gid:app.gid, cfg:app.cfg, events:app.events }, null, 1)], { type:'application/json' });
+    let aar = null; try { aar = buildAAR(); } catch(e){ aar = null; }
+    const blob = new Blob([JSON.stringify({ app:'marala-board', gid:app.gid, cfg:app.cfg, events:app.events, aar }, null, 1)], { type:'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     const d = new Date(); a.download = 'marala-board-backup-' + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0') + '.json';
     document.body.appendChild(a); a.click(); a.remove(); toast('Backup downloaded.');
