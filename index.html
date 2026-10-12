@@ -1097,7 +1097,7 @@ function newState(){
     esc:10, escBy:{B:0,R:0}, hn:{B:50,R:50},
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0,
-    liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[],
+    liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
     sites, office:{B:false,R:false}, access:{B:true,R:true},
     uses:{ drone:{B:1,R:1}, show:{B:1,R:1}, strike:{B:1,R:1} }, jamLast:{B:null,R:null}, aidTick:{B:-1,R:-1},
     cacheDone:null, crisisCallAt:-999, war:false, warAt:null, raised:false, tickIdx:0,
@@ -1307,7 +1307,7 @@ function apply(S, e, cfg){
     case 'act_jam': {
       const lastJ = S.jamLast[side];
       if (S.endex || !S.clock.started || (lastJ != null && S.g - lastJ < JAM_EVERY - 1e-9)){ pushLog(S, nm + ' datalink jam refused: not ready', side, e, 'rejected'); pushFeed(S, side, 'Datalink jam not ready yet.', 'alert'); break; }
-      raise(S, side, ESC.jam); const until = Math.min(END_G, S.g + JAM_MIN); S.jam[OTHER[side]] = until; S.jamLast[side] = S.g; S.ver++;
+      raise(S, side, ESC.jam); const until = Math.min(END_G, S.g + JAM_MIN); S.jam[OTHER[side]] = until; S.jamLast[side] = S.g; S.jams.push({ side, g:S.g, until }); S.ver++;
       pushFeed(S, OTHER[side], 'Your datalink is jammed until ' + hhmm(until) + ': no live map and no drone flights. Radios still work.', 'alert', { team:true });
       pushLog(S, nm + ' jammed the ' + SIDES[OTHER[side]].name + ' datalink until ' + hhmm(until) + ' (escalation +' + ESC.jam + ')', side, e); break; }
     case 'act_show': if (!useUp(S, side, 'show', e, 'Show of force')) break; raise(S, side, ESC.show);
@@ -1777,8 +1777,8 @@ function buildAAR(){
     sites:Object.fromEntries(SITE_KEYS.map(k => [k, { name:SITES[k].name, grid:SITES[k].grid }])),
     final:{ B:score(S, 'B'), R:score(S, 'R'), esc:S.esc, hn:{ B:S.hn.B, R:S.hn.R }, war:S.war, warAt:S.warAt, endex:S.endex, g:S.g },
     steps, log:clean(S.log), contacts:clean(S.contacts), claims:clean(S.claims), incidents:clean(S.incidents), statements:clean(S.statements),
-    requests:clean(S.requests), cacheDone:S.cacheDone, liaison:clean(S.liaison), offers:clean(S.offers), uavs:clean(S.uavs),
-    teams:['B','R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const errs = t.fixes.filter(f => f.gps && f.rep).map(f => Math.round(GEO.dist(f.gps, f.rep))); return { side:sd, name:t.name, fixes:t.fixes.length, checks:errs.length, median:errs.length ? errs.slice().sort((a, b) => a - b)[Math.floor(errs.length / 2)] : null, worst:errs.length ? Math.max(...errs) : null }; })),
+    requests:clean(S.requests), cacheDone:S.cacheDone, liaison:clean(S.liaison), offers:clean(S.offers), uavs:clean(S.uavs), jams:clean(S.jams), orders:clean(S.orders),
+    teams:['B','R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const errs = t.fixes.filter(f => f.gps && f.rep).map(f => Math.round(GEO.dist(f.gps, f.rep))); return { side:sd, id:t.id, name:t.name, removed:!!t.removed, status:t.status || null, maps:t.mapN || 0, fixes:t.fixes.length, checks:errs.length, median:errs.length ? errs.slice().sort((a, b) => a - b)[Math.floor(errs.length / 2)] : null, worst:errs.length ? Math.max(...errs) : null }; })),
     intel:PROBLEMS.map((P, i) => { const tr = intelTruth(P); const r = s => { const o = intelOpen(S, P.id, s), m = S.intel[s][P.id]; const base = o ? { sent:true, sentAt:o.g, due:o.due, closed:!!o.done } : { sent:false }; return Object.assign(base, m ? { answered:true, g:m.g, okA:!!m.okA, okF:!!m.okF, pts:m.pts || 0 } : { answered:false, pts:0 }); };
       const os = ['B','R'].map(s => intelOpen(S, P.id, s)).filter(Boolean);
       return { n:i + 1, id:P.id, title:fillT(P.title), intended:START_G + P.at, t:os.length ? Math.min(...os.map(o => o.g)) : START_G + P.at, due:os.length ? Math.max(...os.map(o => o.due)) : START_G + P.at + P.win, released:os.length > 0, closed:os.length > 0 && os.every(o => o.done), answer:fillT(P.opts[tr.a] || ''), fake:tr.f, fakeDisc:(P.items.find(x => x.k === tr.f) || {}).disc || '', fakeSrc:(P.items.find(x => x.k === tr.f) || {}).src || '', B:r('B'), R:r('R') }; }) };

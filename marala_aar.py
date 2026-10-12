@@ -32,6 +32,7 @@ KEY_TYPES = {
     "claim", "act_drone", "act_show", "act_jam", "act_strike", "act_aid", "act_statement",
     "firstfire", "returnfire", "sabotage", "provocation", "detonation", "cache", "civaid",
     "resolve", "conduct", "ied", "site_set", "site_contested",
+    "act_uav", "team_remove", "void", "handover_offer", "handover_reply", "intel_deploy", "intel_close",
 }
 
 plt.rcParams.update({
@@ -292,72 +293,6 @@ def statements(aar):
     return rows
 
 
-def questions(aar, stats, jumps, stmts):
-    final = aar["final"]
-    qs = {"B": [], "R": []}
-    for side in ("B", "R"):
-        other = "R" if side == "B" else "B"
-        mine = sorted([j for j in jumps if j["side"] == side and j["delta"] > 0], key=lambda j: -j["delta"])
-        if mine:
-            top = mine[0]
-            qs[side].append(
-                f"Your biggest escalation was at {hhmm(top['g'])}: {top['text']}. What did the Wing Commander know at that "
-                f"moment, who made the call, and was it in your decision table?")
-        total_esc = final[side]["esc"]
-        if total_esc:
-            qs[side].append(f"Escalation cost your wing {-total_esc} points in total. Which of those raises bought you something worth it?")
-        else:
-            qs[side].append("Your wing caused no escalation at all. What did that restraint cost or gain you on the ground?")
-        st = stats[side]
-        if st["false"]:
-            qs[side].append(
-                f"{st['false']} of your {st['filed']} reports were judged false. Where did each one start, and how could Intel have checked it before it went to the board?")
-        if st["delay"] is not None and st["delay"] >= 4:
-            qs[side].append(
-                f"Reports took a median of {st['delay']:.0f} minutes from sighting to the board (longest {st['delay_max']:.0f}). Where did the time go between the team and Intel?")
-        elif st["delay"] is not None:
-            qs[side].append(f"Reports reached the board in a median of {st['delay']:.0f} minutes. What made the reporting chain fast, and does it hold up under jamming?")
-        for s in stmts:
-            if s["side"] != side:
-                continue
-            if s["correct"]:
-                qs[side].append(f"You correctly said the {s['grid']} explosion was caused by {s['truth']}. What evidence convinced you?")
-            else:
-                qs[side].append(
-                    f"You said \"{s['said']}\" about the {s['grid']} explosion, but it was {s['truth']}. What was that based on, and who checked it?")
-        hn = final["hn"][side]
-        if hn < 40:
-            qs[side].append(f"The mayor's support ended at {hn}. Which moments lost it, and what could have kept the town on your side?")
-        held = sum(1 for k, v in aar["steps"][-1]["sites"].items() if v["holder"] == side and not v["contested"])
-        lost = sum(1 for c in aar["claims"] if c["side"] == side and c["status"] == "held")
-        if lost:
-            qs[side].append(f"Your teams reached {lost} site(s) that {NAMES[other]} already held. How did your plan decide which sites to go for first?")
-        ips = [p for p in aar.get("intel", []) if p[side].get("closed", p.get("closed")) and p[side].get("sent", True)]
-        if ips:
-            full = sum(1 for p in ips if p[side].get("okA") and p[side].get("okF"))
-            missed = [p for p in ips if p[side].get("answered") and not p[side].get("okF")]
-            unanswered = [p for p in ips if not p[side].get("answered")]
-            line = f"Intel solved {full} of {len(ips)} intel packages completely."
-            if missed:
-                p0 = missed[0]
-                fd = p0.get("fakeDisc") or "false"
-                line += f" On package {p0['n']} ({p0['title']}) the false piece was the {fd} report ({p0['fakeSrc'].split(',')[0].lower()}). What made Intel trust it, and what should have given it away?"
-            elif unanswered:
-                p0 = unanswered[0]
-                line += f" Package {p0['n']} ({p0['title']}) got no answer before {hhmm(p0[side].get('due', p0['due']))}. Who owned it, and what got in the way?"
-            else:
-                line += " What method did Intel use to find the false piece each time?"
-            qs[side].append(line)
-        n_li = sum(1 for m in aar.get("liaison", []) if m["side"] == side)
-        if aar.get("liaison") is not None:
-            if n_li == 0:
-                qs[side].append("Your Wing Commander never used the liaison channel. Where did that leave your teams relative to the other wing, and what could one message have prevented?")
-            else:
-                qs[side].append(f"Your Wing Commander sent {n_li} liaison message(s). Which agreement mattered most, and did your teams on the ground keep to it?")
-        qs[side].append(f"You finished holding {held} of {len(aar['sites'])} sites. Which branch of your plan actually got used, and which never came up?")
-    return qs
-
-
 def esc_table(jumps):
     rows = []
     for j in jumps:
@@ -388,7 +323,6 @@ def build_html(data, aar, charts):
     stats = intel_stats(aar)
     jumps = escalation_jumps(aar)
     stmts = statements(aar)
-    qs = questions(aar, stats, jumps, stmts)
     if b["total"] > r["total"]:
         winner = f"BLUFOR wins on points, {b['total']} to {r['total']}."
     elif r["total"] > b["total"]:
@@ -443,6 +377,7 @@ def build_html(data, aar, charts):
         for o in offers
     ) or "<tr><td colspan='5' class='muted'>No site handovers.</td></tr>"
     li_count = {sd: sum(1 for m in liaison if m["side"] == sd) for sd in ("B", "R")}
+    teams = aar.get("teams", [])
     uavs = aar.get("uavs", [])
     uav_rows = "".join(
         f"<tr><td>{hhmm(u['g'])}</td>{side_cell(u['side'], NAMES[u['side']])}<td class='num'>{u['n']}</td><td class='num'>+10</td></tr>"
@@ -450,9 +385,9 @@ def build_html(data, aar, charts):
     ) or "<tr><td colspan='4' class='muted'>No UAV launches.</td></tr>"
     teams = aar.get("teams", [])
     tm_rows = "".join(
-        f"<tr>{side_cell(t['side'], NAMES[t['side']])}<td>{esc(t['name'])}</td><td class='num'>{t['fixes']}</td><td class='num'>{t['checks']}</td><td class='num'>{(str(t['median']) + ' m') if t['median'] is not None else '–'}</td><td class='num'>{(str(t['worst']) + ' m') if t['worst'] is not None else '–'}</td></tr>"
+        f"<tr>{side_cell(t['side'], NAMES[t['side']])}<td>{esc(t['name'])}{' <i>(removed)</i>' if t.get('removed') else ''}</td><td class='num'>{t.get('maps', 0)}</td><td class='num'>{t['fixes']}</td><td class='num'>{t['checks']}</td><td class='num'>{(str(t['median']) + ' m') if t['median'] is not None else '–'}</td><td class='num'>{(str(t['worst']) + ' m') if t['worst'] is not None else '–'}</td></tr>"
         for t in sorted(teams, key=lambda t: (t["side"], t["name"]))
-    ) or "<tr><td colspan='6' class='muted'>No fireteams reported positions.</td></tr>"
+    ) or "<tr><td colspan='7' class='muted'>No fireteams signed in.</td></tr>"
     esc_rows = "".join(f"<tr><td>{t}</td>{side_cell(sd, who)}<td class='num'>{d}</td><td>{esc(txt)}</td></tr>" for t, who, d, txt, sd in esc_table(jumps)) \
         or "<tr><td colspan='4' class='muted'>Escalation never changed.</td></tr>"
     key_log = [e for e in aar["log"] if e.get("type") in KEY_TYPES]
@@ -464,10 +399,56 @@ def build_html(data, aar, charts):
         f"<tr class='{'rej' if e.get('status') == 'rejected' else ''}'><td>{hhmm(e['g'])}</td>{side_cell(e.get('side'), NAMES.get(e.get('side'), '–'))}<td>{esc(e['text'])}</td></tr>"
         for e in aar["log"]
     )
-    q_html = "".join(
-        f"<div class='{side.lower()}'><h3>{NAMES[side]} Wing Commander</h3><ol>{''.join(f'<li>{esc(q)}</li>' for q in qs[side])}</ol></div>"
-        for side in ("B", "R")
-    )
+    kind_names = {"team": "Enemy team", "site": "Enemy flag", "other": "Activity"}
+    verdicts = {"confirm": "Confirmed +2", "false": "False", "duplicate": "Duplicate"}
+    def report_detail(c):
+        sal = c.get("salute")
+        if sal:
+            return (f"<b>S</b> {esc(sal.get('s', ''))} · <b>A</b> {esc(sal.get('a', ''))} · <b>L</b> {esc(sal.get('l', ''))} · "
+                    f"<b>U</b> {esc(sal.get('u', ''))} · <b>T</b> {esc(sal.get('t', ''))} · <b>E</b> {esc(sal.get('e', ''))}")
+        bits = []
+        if c.get("kind") == "site" and c.get("site"):
+            bits.append(site_names.get(c["site"], c["site"]))
+        if c.get("note"):
+            bits.append(c["note"])
+        return esc(" · ".join(bits))
+    rep_rows = "".join(
+        f"<tr><td>{esc(c.get('seen') or '')}</td><td>{hhmm(c['g'])}</td>{side_cell(c['side'], NAMES[c['side']])}<td>{esc(kind_names.get(c.get('kind'), c.get('kind') or ''))}</td>"
+        f"<td>{esc(c.get('grid') or '')}</td><td>{report_detail(c)}</td><td>{esc(verdicts.get(c.get('verdict'), 'Not judged'))}</td></tr>"
+        for c in sorted(aar.get("contacts", []), key=lambda x: x["g"])
+    ) or "<tr><td colspan='7' class='muted'>No reports were filed.</td></tr>"
+    claim_res = {"accepted": "Accepted", "contest": "Contest started", "held": "Already contesting", "rejected": "Refused"}
+    claim_rows = "".join(
+        f"<tr><td>{hhmm(c['g'])}</td>{side_cell(c['side'], NAMES[c['side']])}<td>{esc(site_names.get(c['site'], c['site']) + (' office' if c['site'] == 'town' else ''))}</td>"
+        f"<td>{esc(claim_res.get(c['status'], c['status']))}</td><td>{esc(c.get('note') or '')}</td></tr>"
+        for c in sorted(aar.get("claims", []), key=lambda x: x["g"])
+    ) or "<tr><td colspan='5' class='muted'>No site claims.</td></tr>"
+    req_kind = {"drone": "Drone flight", "show": "Show of force", "strike": "Strike"}
+    def req_result(q):
+        if q.get("status") == "open":
+            return "Never answered"
+        if q["kind"] == "drone":
+            return "Answer: " + (q.get("answer") or "none")
+        if q["kind"] == "show":
+            return "The other wing stayed (+10 to them)" if q.get("result") == "defied" else "The other wing left"
+        if q["kind"] == "strike":
+            tgt = "the militia cache" if q.get("target") == "cache" else "the other wing"
+            return f"Hit on {tgt}" if q.get("result") == "hit" else "Refused: 9-line not correct"
+        return ""
+    req_rows = "".join(
+        f"<tr><td>{hhmm(q['g'])}</td>{side_cell(q['side'], NAMES[q['side']])}<td>{esc(req_kind.get(q['kind'], q['kind']))}</td><td>{esc(q.get('text') or '')}</td><td>{esc(req_result(q))}</td></tr>"
+        for q in sorted(aar.get("requests", []), key=lambda x: x["g"])
+    ) or "<tr><td colspan='5' class='muted'>No drone flights, shows of force or strikes.</td></tr>"
+    jam_rows = "".join(
+        f"<tr><td>{hhmm(j['g'])}</td>{side_cell(j['side'], NAMES[j['side']])}<td>{NAMES['R' if j['side'] == 'B' else 'B']} datalink down until {hhmm(j['until'])}</td><td class='num'>+5</td></tr>"
+        for j in aar.get("jams", [])
+    ) or "<tr><td colspan='4' class='muted'>No datalink jams.</td></tr>"
+    team_names = {(t["side"], t.get("id")): t["name"] for t in teams}
+    order_rows = "".join(
+        f"<tr><td>{hhmm(o['g'])}</td>{side_cell(o['side'], NAMES[o['side']])}<td>{esc('All fireteams' if o.get('team') in (None, 'all') else team_names.get((o['side'], o.get('team')), 'One fireteam'))}</td><td>{esc(o['text'])}</td></tr>"
+        for o in sorted(aar.get("orders", []), key=lambda x: x["g"])
+    ) or "<tr><td colspan='4' class='muted'>No orders were sent to fireteams.</td></tr>"
+    void_n = sum(1 for e in aar["log"] if e.get("type") == "void")
     built_dt = datetime.fromtimestamp(aar["built"] / 1000) if aar.get("built") else datetime.now()
     built = built_dt.strftime("%d %b %Y").upper()
     outcome = "WAR" if final["war"] else level_name(final["esc"]).upper()
@@ -511,11 +492,7 @@ figure{{margin:8px 0 10px;break-inside:avoid}}
 figure img{{width:94%;height:auto;display:block;margin:0 auto}}
 figcaption{{font-size:10.5pt;font-style:italic;text-align:center;margin-top:3px}}
 .note{{font-size:10.5pt;font-style:italic;color:var(--muted);margin:2px 0 8px}}
-.qs h3{{font-style:normal;font-weight:bold;margin:12px 0 4px}}
-.qs ol{{margin:0 0 6px;padding-left:24px}} .qs li{{margin:0 0 5px;text-align:justify}}
-.qs .b h3{{color:var(--blue)}} .qs .r h3{{color:var(--red)}}
-.sig{{margin-top:28px;width:3.2in;margin-left:auto;break-inside:avoid}}
-.sig .line{{border-top:1px solid var(--rule);margin-top:40px;padding-top:2px;font-size:11pt}}
+.meta{{text-align:center;margin:-8px 0 18px;font-size:11pt;color:var(--muted)}}
 .foot{{margin-top:28px;font-size:9.5pt;text-align:center;color:var(--muted)}}
 table.log{{font-size:10pt}}
 @media print{{html{{background:#fff}} main{{margin:0;padding:0;max-width:none;box-shadow:none}} h2{{break-after:avoid}} table.data tr,.stats,.bluf{{break-inside:avoid}} .pb{{break-before:page}}}}
@@ -524,13 +501,7 @@ table.log{{font-size:10pt}}
 <div class="banner">* EXERCISE * EXERCISE * EXERCISE * EXERCISE *</div>
 <div class="unit"><b>AFROTC DETACHMENT 720</b><span>Capstone</span></div>
 <h1>AFTER-ACTION REPORT</h1>
-<table class="memo">
-<tr><td>EXERCISE:</td><td>{esc(aar['name'])} (Marala Island · BLUFOR, US-led Coalition vs. REDFOR, North Korea)</td></tr>
-<tr><td>DATE:</td><td>{esc(built)}</td></tr>
-<tr><td>GAME WINDOW:</td><td>{hhmm(aar['startG'])}–{hhmm(aar['endG'])} board time</td></tr>
-<tr><td>PREPARED BY:</td><td>White Cell</td></tr>
-<tr><td>SUBJECT:</td><td>Results, key decisions and discussion points for both Wing Commanders</td></tr>
-</table>
+<p class="meta">{esc(aar['name'])} · {esc(built)} · board time {hhmm(aar['startG'])}–{hhmm(aar['endG'])}<br>Marala Island · BLUFOR (US-led Coalition) vs. REDFOR (North Korea)</p>
 
 <h2>1. Bottom Line Up Front</h2>
 <div class="bluf"><b>{esc(winner)}</b> {esc(war)}</div>
@@ -555,37 +526,47 @@ table.log{{font-size:10pt}}
 
 <h2>5. Site Control</h2>
 <figure>{img(charts['sites'], 'Who held each site')}<figcaption>Figure 4. Control of each site over the game. Hatched bars were contested and scored nothing.</figcaption></figure>
+<h3>Every site and town-office claim</h3>
+<table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Site</th><th>Result</th><th>Board note</th></tr></thead><tbody>{claim_rows}</tbody></table>
+<h3>Site handovers</h3>
+<table class="data"><thead><tr><th>Time</th><th>Offered by</th><th>Site</th><th>Note</th><th>Result</th></tr></thead><tbody>{ho_rows}</tbody></table>
 
-<h2>6. Managing Intelligence</h2>
-<figure>{img(charts['intel'], 'Intel reports by verdict')}<figcaption>Figure 5. Reports sent to the board and how the white cell judged them.</figcaption></figure>
+<h2>6. Field Reports</h2>
+<figure>{img(charts['intel'], 'Reports by verdict')}<figcaption>Figure 5. Reports sent to the board and how the white cell judged them.</figcaption></figure>
 <table class="data"><thead><tr><th>Wing</th><th class="num">Reports</th><th class="num">Confirmed</th><th class="num">False</th><th class="num">Duplicate</th><th class="num">Accuracy</th><th class="num">Median delay</th></tr></thead><tbody>{intel_rows}</tbody></table>
 <p class="note">Delay is the time from a team's sighting to the report reaching the board. Accuracy counts only reports the white cell judged.</p>
-<h3>Attribution of explosions</h3>
-<table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Where</th><th>Public statement</th><th>Actual cause</th><th>Result</th></tr></thead><tbody>{stmt_rows}</tbody></table>
+<h3>Every report filed</h3>
+<table class="data"><thead><tr><th>Seen</th><th>Posted</th><th>Wing</th><th>Type</th><th>Location</th><th>What was reported</th><th>Verdict</th></tr></thead><tbody>{rep_rows}</tbody></table>
+<p class="note">Enemy-team reports carry the full SALUTE: Size, Activity, Location, Uniform, Time, Equipment.</p>
+
+<h2>7. Managing Intelligence</h2>
 <h3>Intel packages</h3>
 <table class="data"><thead><tr><th>#</th><th>Problem</th><th>Window</th><th>Key</th><th>BLUFOR</th><th>REDFOR</th></tr></thead><tbody>{ip_rows}</tbody></table>
 <p class="note">Each package gave four pieces of intel (HUMINT, SIGINT, IMINT and GEOINT), one of them false or misleading. +2 for the right answer, +2 for spotting the false piece. The window shows when the white cell sent it and when it closed.</p>
+<h3>Attribution of explosions</h3>
+<table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Where</th><th>Public statement</th><th>Actual cause</th><th>Result</th></tr></thead><tbody>{stmt_rows}</tbody></table>
 
-<h2>7. C2 Liaison and Deconfliction</h2>
-<p>The Wing Commanders sent {li_count['B']} (BLUFOR) and {li_count['R']} (REDFOR) messages on the liaison channel. Declared sites appear in italics.</p>
-<table class="data"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">From</th><th>Message</th></tr></thead><tbody>{li_rows}</tbody></table>
-<h3>Site handovers</h3>
-<table class="data"><thead><tr><th>Time</th><th>Offered by</th><th>Site</th><th>Note</th><th>Result</th></tr></thead><tbody>{ho_rows}</tbody></table>
+<h2>8. Commander's Actions</h2>
+<h3>Drone flights, shows of force and strikes</h3>
+<table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Action</th><th>Asked or targeted</th><th>Outcome</th></tr></thead><tbody>{req_rows}</tbody></table>
 <h3>UAV launches</h3>
 <table class="data"><thead><tr><th>Time</th><th>Launched by</th><th class="num">Enemy fireteams located</th><th class="num">Escalation</th></tr></thead><tbody>{uav_rows}</tbody></table>
+<h3>Datalink jams</h3>
+<table class="data"><thead><tr><th>Time</th><th>Jammed by</th><th>Effect</th><th class="num">Escalation</th></tr></thead><tbody>{jam_rows}</tbody></table>
 
-<h2>8. Fireteam Land Navigation</h2>
-<table class="data"><thead><tr><th>Wing</th><th>Fireteam</th><th class="num">Position reports</th><th class="num">Map-grid checks</th><th class="num">Median error</th><th class="num">Worst</th></tr></thead><tbody>{tm_rows}</tbody></table>
-<p class="note">A map-grid check is a report where the team typed its grid from the map and the phone also sent GPS. The error is the distance between the two.</p>
+<h2>9. C2 Liaison</h2>
+<p>The Wing Commanders sent {li_count['B']} (BLUFOR) and {li_count['R']} (REDFOR) messages on the liaison channel. Declared sites appear in italics.</p>
+<table class="data"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">From</th><th>Message</th></tr></thead><tbody>{li_rows}</tbody></table>
 
-<h2>9. Discussion Points</h2>
-<div class="qs">{q_html}</div>
-
-<div class="sig"><div class="line">White Cell Lead<br>Capstone, Det 720</div></div>
+<h2>10. Fireteams</h2>
+<table class="data"><thead><tr><th>Wing</th><th>Fireteam</th><th class="num">Map looks</th><th class="num">Position reports</th><th class="num">Map-grid checks</th><th class="num">Median error</th><th class="num">Worst</th></tr></thead><tbody>{tm_rows}</tbody></table>
+<p class="note">A map-grid check is a report where the team typed its grid from the map and the phone also sent GPS; the error is the distance between the two. Map looks counts the 3-minute map windows each team opened.</p>
+<h3>Orders from the Wing Commanders</h3>
+<table class="data"><thead><tr><th>Time</th><th>Wing</th><th>To</th><th>Order</th></tr></thead><tbody>{order_rows}</tbody></table>
 
 <h2 class="pb">Annex A. Chronology of Key Events</h2>
 <table class="data"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">Wing</th><th>Event</th></tr></thead><tbody>{key_rows}</tbody></table>
-<p class="note">Struck-through entries were refused by the board.</p>
+<p class="note">Struck-through entries were refused by the board. The white cell voided {void_n} entr{'y' if void_n == 1 else 'ies'}; voided actions are left out of every count and show in the log as "Voided:" entries.</p>
 
 <h2 class="pb">Annex B. Full Board Log ({len(aar['log'])} entries)</h2>
 <table class="data log"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">Wing</th><th>Entry</th></tr></thead><tbody>{full_rows}</tbody></table>
