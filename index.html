@@ -150,6 +150,7 @@ svg.map{width:100%;min-width:420px;height:auto;display:block}
 .mapfs .lmap{height:100%;border-radius:0;border:0}
 input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .teammap{height:62vh;min-height:300px}
+.gridtog{background:rgba(0,0,0,.72);color:#fff;border-radius:6px;padding:6px 8px;font:500 13px/1.3 var(--sans,system-ui);display:grid;gap:4px}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
 .gl.m{color:#8fe6ff;font-size:10px}
 .leaflet-tooltip.sitelbl,.leaflet-tooltip.teamlbl{background:rgba(10,14,12,.72);color:#fff;border:0;box-shadow:none;font:600 12px/1.2 var(--body);padding:2px 6px}
@@ -1813,8 +1814,8 @@ function mapSVG(S, side){
   for (let r = 0; r <= 5; r++) o += '<line x1="30" y1="' + (30 + r * 80) + '" x2="630" y2="' + (30 + r * 80) + '" stroke="var(--grid)" stroke-width="1"/>';
   'ABCDEF'.split('').forEach((L, c) => o += '<text class="axis" x="' + CX(c) + '" y="20" text-anchor="middle">' + L + '</text>');
   for (let r = 0; r < 5; r++) o += '<text class="axis" x="14" y="' + (CY(r) + 4) + '" text-anchor="middle">' + (r + 1) + '</text>';
-  o += '<rect x="' + (CX(0) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--blu-soft)" stroke="var(--blu)" stroke-width="2"/><text class="lbl" x="' + CX(0) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">LZ West</text><text class="sub" x="' + CX(0) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">BLUFOR · A3</text>';
-  o += '<rect x="' + (CX(5) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2"/><text class="lbl" x="' + CX(5) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">LZ East</text><text class="sub" x="' + CX(5) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">REDFOR · F3</text>';
+  o += '<rect x="' + (CX(0) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--blu-soft)" stroke="var(--blu)" stroke-width="2"/><text class="lbl" x="' + CX(0) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">BLUFOR HQ</text><text class="sub" x="' + CX(0) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">A3</text>';
+  o += '<rect x="' + (CX(5) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2"/><text class="lbl" x="' + CX(5) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">REDFOR HQ</text><text class="sub" x="' + CX(5) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">F3</text>';
   const tB = S.office.B && S.access.B, tR = S.office.R && S.access.R;
   const showB = !side || S.reveal || side === 'B' ? tB : false, showR = !side || S.reveal || side === 'R' ? tR : false;
   o += '<rect x="' + (CX(2) - 36) + '" y="' + (CY(2) - 26) + '" width="' + (CX(3) - CX(2) + 72) + '" height="52" rx="8" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>';
@@ -1872,7 +1873,7 @@ function keepSelect(sel, html){ const v = sel.value; sel.innerHTML = html; if ([
 /* ---------- real map ---------- */
 const COLS_L = 'ABCDEFGHIJKL';
 const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'BLUFOR landing zone'], ['lzR', 'REDFOR landing zone']];
+const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ']];
 function mapCfg(S){ return S && S.map && S.map.sw && S.map.ne ? S.map : DEFAULT_MAP; }
 function gridDims(M){ return { cols:Math.max(1, Math.min(12, +M.cols || 6)), rows:Math.max(1, Math.min(12, +M.rows || 5)) }; }
 function squareOf(M, pt){
@@ -1893,7 +1894,25 @@ function squareCenter(M, label){
 function locate(M, text){
   const t = String(text || '').trim(); if (!t) return null;
   if (/^[A-L]\s*\d{1,2}(\s*[-–]?\s*\d)?$/i.test(t)) return squareCenter(M, t);
-  return GEO.parsePoint(t);
+  return GEO.parsePoint(t) || shortMGRS(M, t);
+}
+function shortMGRS(M, t){
+  const s = String(t || '').toUpperCase().replace(/\s+/g, '');
+  const m = /^([A-HJ-NP-Z][A-HJ-NP-V])?(\d{4,10})$/.exec(s);
+  if (!M || !m || m[2].length % 2) return null;
+  const c = [(M.sw[0] + M.ne[0]) / 2, (M.sw[1] + M.ne[1]) / 2];
+  const refs = [c, M.sw, M.ne, [M.sw[0], M.ne[1]], [M.ne[0], M.sw[1]]];
+  let best = null, bd = Infinity;
+  refs.forEach(r => {
+    const parts = GEO.toMGRS(r[0], r[1], 5).split(' ');
+    if (m[1] && parts[1] !== m[1]) return;
+    const pt = GEO.parseMGRS(parts[0] + parts[1] + m[2]);
+    if (!pt) return;
+    const d = GEO.dist(pt, c);
+    if (d < bd){ bd = d; best = pt; }
+  });
+  if (!best && m[1]){ const parts = GEO.toMGRS(c[0], c[1], 5).split(' '); best = GEO.parseMGRS(parts[0] + m[1] + m[2]); }
+  return best;
 }
 function fmtPt(pt){ return pt ? GEO.toMGRS(pt[0], pt[1], 5) : ''; }
 const DEFAULT_MAP = (() => {
@@ -1910,7 +1929,11 @@ function lmapEnsure(el, M){
     el.innerHTML = ''; el.classList.add('lmap');
     const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true, zoomSnap:0.25 });
     const base = L.tileLayer(TILE_URL, { maxZoom:20, maxNativeZoom:19, attribution:'Imagery © Esri, Maxar' }).addTo(map);
-    st = el._lm = { map, base, grid:L.layerGroup().addTo(map), dyn:L.layerGroup().addTo(map), key:null };
+    st = el._lm = { map, base, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), dyn:L.layerGroup().addTo(map), key:null };
+    applyGridPref(st);
+    const tog = L.control({ position:'topright' });
+    tog.onAdd = () => { const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref(); d.innerHTML = '<label><input type="checkbox" data-gt="play"' + (pr.play ? ' checked' : '') + '> <span style="color:#ffd400">▬</span> Play grid</label><label><input type="checkbox" data-gt="mgrs"' + (pr.mgrs ? ' checked' : '') + '> <span style="color:#6fdcff">▬</span> MGRS lines</label>'; L.DomEvent.disableClickPropagation(d); d.addEventListener('change', ev => { const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.lmap').forEach(x => { if (x._lm) applyGridPref(x._lm); }); $$('.gridtog [data-gt="' + k + '"]').forEach(c => c.checked = ev.target.checked); }); return d; };
+    tog.addTo(map);
     map.on('click', ev => {
       const pt = [ev.latlng.lat, ev.latlng.lng]; app.lastClick = pt;
       const sq = squareOf((app.role === 'W' && app.previewMap) || mapCfg(app.S), pt);
@@ -1919,14 +1942,16 @@ function lmapEnsure(el, M){
     });
     setTimeout(() => map.invalidateSize(), 60);
   }
-  st.key = key; st.grid.clearLayers();
-  if (!M.preview) drawGrid(st.grid, M);
+  st.key = key; st.gPlay.clearLayers(); st.gMgrs.clearLayers();
+  if (!M.preview) drawGrid(st.gPlay, M, st.gMgrs);
   const b = L.latLngBounds([M.sw, M.ne]);
   st.map.fitBounds(b, { padding:[12, 12] });
   if (!M.preview) st.map.setMaxBounds(b.pad(1.5)); else st.map.setMaxBounds(null);
   return st;
 }
-function drawGrid(layer, M){
+function gridPref(){ try { return Object.assign({ play:true, mgrs:true }, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return { play:true, mgrs:true }; } }
+function applyGridPref(st){ const pr = gridPref(); [['play', st.gPlay], ['mgrs', st.gMgrs]].forEach(([k, g]) => { if (pr[k] && !st.map.hasLayer(g)) g.addTo(st.map); if (!pr[k] && st.map.hasLayer(g)) st.map.removeLayer(g); }); }
+function drawGrid(layer, M, mlayer){
   const { cols, rows } = gridDims(M);
   const s = M.sw[0], w = M.sw[1], n = M.ne[0], e = M.ne[1];
   const yl = { color:'#ffd400', weight:2, opacity:.95, interactive:false };
@@ -1940,7 +1965,7 @@ function drawGrid(layer, M){
   if ((maxE - minE) / step > 80 || (maxN - minN) / step > 80) return;
   const digits = step >= 1000 ? 2 : 3;
   const lab = v => String(Math.floor((Math.round(v) % 100000) / Math.pow(10, 5 - digits))).padStart(digits, '0');
-  const ml = { color:'#6fdcff', weight:1, opacity:.8, interactive:false };
+  const ml = { color:'#6fdcff', weight:1, opacity:.8, interactive:false }; layer = mlayer || layer;
   for (let E = Math.ceil(minE / step) * step; E <= maxE; E += step){
     const pts = []; for (let i = 0; i <= 8; i++) pts.push(GEO.fromUTM(zone, E, minN + (maxN - minN) * i / 8, south));
     L.polyline(pts, ml).addTo(layer);
@@ -1958,7 +1983,7 @@ function drawDyn(st, S, side, opts){
   if (!M) return;
   const pts = M.sites || {};
   const tip = (m, text, dir, off) => m.bindTooltip(esc(text), { permanent:true, direction:dir || 'top', className:'sitelbl', offset:off || [0, -10] });
-  [['lzB', 'BLUFOR LZ', 'B'], ['lzR', 'REDFOR LZ', 'R']].forEach(([k, name, sd]) => { if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name).addTo(layer); });
+  [['lzB', 'BLUFOR HQ', 'B'], ['lzR', 'REDFOR HQ', 'R']].forEach(([k, name, sd]) => { if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name).addTo(layer); });
   SITE_KEYS.forEach(k => {
     const pt = pts[k]; if (!pt) return;
     const v = siteView(S, side, k), raw = S.sites[k];
@@ -2079,7 +2104,7 @@ async function sendTeamPos(side, opts){
   const v = $('#vTeam'), M = mapCfg(app.S);
   const repText = opts.gpsOnly ? '' : $('[data-grid]', v).value.trim();
   const rep = repText ? locate(M, repText) : null;
-  if (repText && !rep){ toast('That grid didn’t read. Use MGRS like 18T TL 5856 2009, or a play square like D4.', true); return; }
+  if (repText && !rep){ toast('That grid didn’t read. Use MGRS like 5908 2353 or 18T TL 59085 23533, or a play square like D4.', true); return; }
   if (!opts.silent){ $('[data-send]', v).disabled = true; $('[data-send]', v).textContent = 'Getting GPS…'; }
   const g = await getGPS();
   if (!opts.silent){ $('[data-send]', v).disabled = false; $('[data-send]', v).textContent = 'Send position'; }
@@ -2107,7 +2132,7 @@ function buildTeam(side){
       <div class="lmap teammap" data-tmap hidden></div></div>
     <div class="panel stack"><h2>Report your position</h2>
       <p class="small muted" style="margin:0">Your navigator reads your grid off the map, types it here and sends it. The phone adds its GPS fix so your C2 can see you on the map.</p>
-      <label>Your grid from the map (MGRS or play square)<input data-grid autocomplete="off" placeholder="Example: 18T TL 5908 2353 or D4"></label>
+      <label>Your grid from the map (MGRS or play square)<input data-grid autocomplete="off" placeholder="Example: 5908 2353, 18T TL 59085 23533 or D4"></label>
       <label>Status<select data-status><option>Moving</option><option>At objective</option><option>Holding</option><option>Halted: suspected IED</option><option>Treating a casualty</option><option>Need help</option></select></label>
       <button type="button" class="btn-side team-big" data-send>Send position</button>
       <label class="chk"><input type="checkbox" data-auto> Also send GPS by itself every 10 minutes</label>
@@ -2139,7 +2164,7 @@ function renderTeam(S, side){
   const lvl = levelIndex(S.esc);
   $('[data-tlvl]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
   const t = S.teams[side][me.id], f = t && t.last;
-  $('[data-tlast]', v).textContent = f ? 'Last sent ' + hhmm(f.g) + (f.rep ? ' with your map grid' : '') + (f.gps ? ' and GPS' + (f.acc ? ' (±' + f.acc + ' m)' : '') : '') + '.' : 'Nothing sent yet.';
+  $('[data-tlast]', v).textContent = f ? 'Last sent ' + hhmm(f.g) + (f.rep ? ' with your map grid' + (f.repText ? ' ' + f.repText : '') : '') + (f.gps ? ' and GPS' + (f.acc ? ' (±' + f.acc + ' m)' : '') : '') + '.' : 'Nothing sent yet.';
   const al = S.feed.filter(f => f.team && f.to === side).slice(-5).reverse();
   $('[data-talerts]', v).innerHTML = al.length ? al.map(f => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(f.g) + '</span><div>' + esc(f.text) + '</div></div></div>').join('') : '<div class="empty">Nothing yet. UAV sightings and warnings show here.</div>';
   const ph = uavPhase(S, side), u = S.uav[side];
