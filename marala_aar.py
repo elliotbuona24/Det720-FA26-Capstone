@@ -75,7 +75,8 @@ def level_name(esc):
 
 def time_axis(ax, start, end):
     ax.set_xlim(start, end)
-    ax.xaxis.set_major_locator(MultipleLocator(10))
+    span = end - start
+    ax.xaxis.set_major_locator(MultipleLocator(10 if span <= 100 else 20 if span <= 200 else 30))
     ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: hhmm(v)))
     ax.grid(axis="y", color=GRID, linewidth=0.8)
     ax.set_axisbelow(True)
@@ -200,7 +201,7 @@ def site_segments(aar, key):
 
 def chart_sites(aar):
     keys = list(aar["sites"].keys()) + ["town"]
-    labels = [f"{aar['sites'][k]['name']} ({aar['sites'][k]['grid']})" for k in aar["sites"]] + ["Town office"]
+    labels = [aar['sites'][k]['name'] for k in aar["sites"]] + ["Town office"]
     fig, ax = plt.subplots(figsize=(8, 3.13))
     for row, key in enumerate(keys):
         for g0, g1, (holder, contested) in site_segments(aar, key):
@@ -347,6 +348,12 @@ def questions(aar, stats, jumps, stmts):
             else:
                 line += " What method did Intel use to find the false piece each time?"
             qs[side].append(line)
+        n_li = sum(1 for m in aar.get("liaison", []) if m["side"] == side)
+        if aar.get("liaison") is not None:
+            if n_li == 0:
+                qs[side].append("Your Wing Commander never used the liaison channel. Where did that leave your teams relative to the other wing, and what could one message have prevented?")
+            else:
+                qs[side].append(f"Your Wing Commander sent {n_li} liaison message(s). Which agreement mattered most, and did your teams on the ground keep to it?")
         qs[side].append(f"You finished holding {held} of {len(aar['sites'])} sites. Which branch of your plan actually got used, and which never came up?")
     return qs
 
@@ -421,6 +428,26 @@ def build_html(data, aar, charts):
         f"<tr><td>{p['n']}</td><td>{esc(p['title'])}</td><td>{hhmm(p['t'])}–{hhmm(p['due'])}</td><td>{esc(p['answer'])}; false: {esc(p['fake'])}, {esc(p.get('fakeDisc', ''))} ({esc(p['fakeSrc'])})</td>{ip_cell(p['B'])}{ip_cell(p['R'])}</tr>"
         for p in aar.get("intel", []) if p.get("released")
     ) or "<tr><td colspan='6' class='muted'>No intel packages were sent.</td></tr>"
+    liaison = aar.get("liaison", [])
+    site_names = {k: v["name"] for k, v in aar["sites"].items()}
+    site_names["town"] = "Marala Town"
+    li_rows = "".join(
+        f"<tr><td>{hhmm(m['g'])}</td>{side_cell(m['side'], NAMES[m['side']])}<td>{esc(m['text'])}"
+        + (f" <i>(declared {esc(site_names.get(m['site'], m['site']))}" + (f" until {hhmm(m['until'])}" if m.get('until') is not None else "") + ")</i>" if m.get('site') else "")
+        + "</td></tr>"
+        for m in liaison
+    ) or "<tr><td colspan='3' class='muted'>The Wing Commanders never used the liaison channel.</td></tr>"
+    offers = aar.get("offers", [])
+    ho_rows = "".join(
+        f"<tr><td>{hhmm(o['g'])}</td>{side_cell(o['from'], NAMES[o['from']])}<td>{esc(site_names.get(o['site'], o['site']))}</td><td>{esc(o.get('note') or '')}</td><td>{esc(o['status'].capitalize())}</td></tr>"
+        for o in offers
+    ) or "<tr><td colspan='5' class='muted'>No site handovers.</td></tr>"
+    li_count = {sd: sum(1 for m in liaison if m["side"] == sd) for sd in ("B", "R")}
+    teams = aar.get("teams", [])
+    tm_rows = "".join(
+        f"<tr>{side_cell(t['side'], NAMES[t['side']])}<td>{esc(t['name'])}</td><td class='num'>{t['fixes']}</td><td class='num'>{t['checks']}</td><td class='num'>{(str(t['median']) + ' m') if t['median'] is not None else '–'}</td><td class='num'>{(str(t['worst']) + ' m') if t['worst'] is not None else '–'}</td></tr>"
+        for t in sorted(teams, key=lambda t: (t["side"], t["name"]))
+    ) or "<tr><td colspan='6' class='muted'>No fireteams reported positions.</td></tr>"
     esc_rows = "".join(f"<tr><td>{t}</td>{side_cell(sd, who)}<td class='num'>{d}</td><td>{esc(txt)}</td></tr>" for t, who, d, txt, sd in esc_table(jumps)) \
         or "<tr><td colspan='4' class='muted'>Escalation never changed.</td></tr>"
     key_log = [e for e in aar["log"] if e.get("type") in KEY_TYPES]
@@ -534,7 +561,17 @@ table.log{{font-size:10pt}}
 <table class="data"><thead><tr><th>#</th><th>Problem</th><th>Window</th><th>Key</th><th>BLUFOR</th><th>REDFOR</th></tr></thead><tbody>{ip_rows}</tbody></table>
 <p class="note">Each package gave four pieces of intel (HUMINT, SIGINT, IMINT and GEOINT), one of them false or misleading. +2 for the right answer, +2 for spotting the false piece. The window shows when the white cell sent it and when it closed.</p>
 
-<h2>7. Discussion Points</h2>
+<h2>7. C2 Liaison and Deconfliction</h2>
+<p>The Wing Commanders sent {li_count['B']} (BLUFOR) and {li_count['R']} (REDFOR) messages on the liaison channel. Declared sites appear in italics.</p>
+<table class="data"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">From</th><th>Message</th></tr></thead><tbody>{li_rows}</tbody></table>
+<h3>Site handovers</h3>
+<table class="data"><thead><tr><th>Time</th><th>Offered by</th><th>Site</th><th>Note</th><th>Result</th></tr></thead><tbody>{ho_rows}</tbody></table>
+
+<h2>8. Fireteam Land Navigation</h2>
+<table class="data"><thead><tr><th>Wing</th><th>Fireteam</th><th class="num">Position reports</th><th class="num">Map-grid checks</th><th class="num">Median error</th><th class="num">Worst</th></tr></thead><tbody>{tm_rows}</tbody></table>
+<p class="note">A map-grid check is a report where the team typed its grid from the map and the phone also sent GPS. The error is the distance between the two.</p>
+
+<h2>9. Discussion Points</h2>
 <div class="qs">{q_html}</div>
 
 <div class="sig"><div class="line">White Cell Lead<br>Capstone, Det 720</div></div>
