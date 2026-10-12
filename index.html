@@ -148,6 +148,8 @@ svg.map{width:100%;min-width:420px;height:auto;display:block}
 .mapfs .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
 .mapfs .bar button{flex:0 0 auto}
 .mapfs .lmap{height:100%;border-radius:0;border:0}
+input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
+.teammap{height:62vh;min-height:300px}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
 .gl.m{color:#8fe6ff;font-size:10px}
 .leaflet-tooltip.sitelbl,.leaflet-tooltip.teamlbl{background:rgba(10,14,12,.72);color:#fff;border:0;box-shadow:none;font:600 12px/1.2 var(--body);padding:2px 6px}
@@ -280,7 +282,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
       <div class="row">
         <label for="sPinTB">BLUFOR fireteam PIN<input id="sPinTB" required autocomplete="off"></label>
         <label for="sPinTR">REDFOR fireteam PIN<input id="sPinTR" required autocomplete="off"></label>
-        <label for="sStart">Board clock starts at<input id="sStart" value="0630" maxlength="5" inputmode="numeric" required></label>
+        <label for="sStart">Board clock starts at<input id="sStart" value="0830" maxlength="5" inputmode="numeric" required></label>
         <label for="sLen">Game length (minutes)<input id="sLen" type="number" min="30" max="300" step="5" value="165" required></label>
       </div>
       <div class="row">
@@ -1063,6 +1065,8 @@ function setWindow(cfg){
 }
 setWindow(null);
 const CONTEST_MIN = 10;
+const UAV_EVERY = 20, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 3;
+function uavPhase(S, side){ const u = S.uav && S.uav[side]; if (!u) return ''; const d = S.g - u.g; return d < 1 ? 'live' : d < 6 ? 'fade' : ''; }
 const LEVELS = [
   { name:'Competition', min:0 }, { name:'Tension', min:25 }, { name:'Crisis', min:50 }, { name:'Brink', min:75 }, { name:'War', min:100 }
 ];
@@ -1088,7 +1092,7 @@ function newState(){
     esc:10, escBy:{B:0,R:0}, hn:{B:50,R:50},
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0,
-    liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0,
+    liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[],
     sites, office:{B:false,R:false}, access:{B:true,R:true},
     uses:{ drone:{B:1,R:1}, show:{B:1,R:1}, jam:{B:1,R:1}, strike:{B:1,R:1} }, aidTick:{B:-1,R:-1},
     cacheDone:null, crisisCallAt:-999, war:false, warAt:null, raised:false, tickIdx:0,
@@ -1210,7 +1214,7 @@ function apply(S, e, cfg){
     case 'clock_pause': if (S.clock.running){ S.clock.anchorG = gameAt(S, e.ts); S.clock.running = false; S.g = S.clock.anchorG; pushLog(S, 'Clock paused at ' + hhmm(S.g), null, e); } break;
     case 'clock_resume': if (S.clock.started && !S.clock.running && !S.endex){ S.clock.running = true; S.clock.anchorReal = e.ts; pushLog(S, 'Clock resumed at ' + hhmm(S.clock.anchorG), null, e); } break;
     case 'clock_set': if (S.clock.started && !S.endex){ S.clock.anchorG = Math.max(START_G, Math.min(END_G, p.g)); S.clock.anchorReal = e.ts; S.g = S.clock.anchorG; pushLog(S, 'Clock set to ' + hhmm(S.g), null, e); } break;
-    case 'reveal': S.reveal = !!p.on; pushLog(S, p.on ? 'Full truth shown on every screen' : 'Truth hidden again', null, e); if (p.on) pushFeed(S, 'public', 'The full truth and both scores are now on every screen.', 'public'); break;
+    case 'reveal': S.reveal = !!p.on; pushLog(S, p.on ? 'Fog of war lifted' : 'Fog of war enacted', null, e); pushFeed(S, 'public', p.on ? 'Fog of war lifted. Every position and both scores are now on every screen.' : 'Fog of war enacted.', 'public'); break;
     case 'site_set': { const s = S.sites[p.site]; if (!s) break; s.holder = p.holder || null; s.contested = false; s.contestBy = null; s.contestUntil = null; s.since = S.g; pushLog(S, SITES[p.site].name + (p.holder ? ' set to ' + SIDES[p.holder].name : ' set to nobody'), p.holder, e); break; }
     case 'site_contested': { const s = S.sites[p.site]; if (!s) break; s.contested = !!p.on; if (!p.on){ s.contestBy = null; s.contestUntil = null; } pushLog(S, SITES[p.site].name + (p.on ? ' contested' : ' no longer contested'), null, e);
       if (p.on && s.holder) pushFeed(S, s.holder, 'The other wing is standing on your ' + SITES[p.site].name + '. It scores nothing while contested.', 'alert'); break; }
@@ -1393,6 +1397,27 @@ function apply(S, e, cfg){
       if (p.status) t.status = p.status;
       t.g = S.g; S.ver++;
       break; }
+    case 'window_set': pushLog(S, 'Game window set: clock starts ' + hhmm(START_G) + ', ' + (END_G - START_G) + ' minutes', null, e); break;
+    case 'team_map': {
+      if (!side || !p.team) break;
+      const t = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:p.name || 'Team', fixes:[] });
+      if (t.mapTs && e.ts - t.mapTs < TEAM_MAP_EVERY * 60000) break;
+      t.mapTs = e.ts; t.mapN = (t.mapN || 0) + 1; S.ver++;
+      break; }
+    case 'act_uav': {
+      const last = S.uav[side];
+      if (!S.clock.started || (last && S.g - last.g < UAV_EVERY - 1e-9)){ pushLog(S, nm + ' UAV not ready yet', side, e, 'rejected'); break; }
+      const o = OTHER[side];
+      const spots = Object.values(S.teams[o]).filter(t => t.last && t.status !== 'Left the game').map(t => ({ name:t.name, pt:t.last.gps || t.last.rep, at:t.last.g })).filter(x => x.pt);
+      raise(S, side, UAV_ESC);
+      S.uav[side] = { id:e.id, g:S.g, spots };
+      S.spotted[o] = { id:e.id, g:S.g };
+      S.uavs.push({ side, g:S.g, n:spots.length });
+      pushFeed(S, side, 'UAV overhead: we have enemy fireteam locations now. They show on the map for 1 minute, then as last seen for 5 minutes.', 'alert', { team:true });
+      pushFeed(S, o, 'Your fireteams have been spotted. Assume the other wing knows where you are.', 'alert', { team:true });
+      pushLog(S, nm + ' launched a UAV: ' + spots.length + ' enemy fireteam' + (spots.length === 1 ? '' : 's') + ' located (escalation +' + UAV_ESC + ')', side, e);
+      S.ver++;
+      break; }
     case 'map_config': S.map = p && p.sw && p.ne ? p : null; S.ver++; pushLog(S, 'Map updated', null, e); break;
     case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:p.label || 'Higher headquarters' }); pushLog(S, 'Message to ' + ({ B:'BLUFOR', R:'REDFOR', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
     case 'adjust': {
@@ -1407,7 +1432,9 @@ function apply(S, e, cfg){
 function replay(cfg, events, now, step){
   const voided = new Set(events.filter(e => e.type === 'void').map(e => e.p && e.p.target));
   const evs = events.filter(e => e.type !== 'void' && !voided.has(e.id)).slice().sort((a, b) => (a.ts - b.ts) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  setWindow(cfg);
+  const firstStart = evs.find(e => e.type === 'clock_start');
+  const ws = evs.filter(e => e.type === 'window_set' && e.p && (!firstStart || e.ts < firstStart.ts)).pop();
+  setWindow(ws ? Object.assign({}, cfg, { startG:ws.p.startG, lengthMin:ws.p.lengthMin }) : cfg);
   const S = newState();
   if (step) S.step = step;
   for (const e of evs){
@@ -1433,7 +1460,7 @@ function score(S, side){
   const war = S.war ? Math.trunc(sub / 2) - sub : 0;
   return { sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
 }
-if (typeof module !== 'undefined') module.exports = { setWindow, fillT, CONTEST_MIN, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
+if (typeof module !== 'undefined') module.exports = { setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
 </script>
 
 <script>
@@ -1602,7 +1629,7 @@ function renderGate(){
     return;
   }
   const cards = [
-    ['W', 'White cell', 'Runs the clock, checks reports, sends injects and sees the full truth.'],
+    ['W', 'White cell', 'Runs the clock, checks reports, sends injects and sees through the fog of war.'],
     ['B', 'BLUFOR · Coalition', 'The US-led Coalition Wing Commander’s board: sites, reports, actions and points.'],
     ['R', 'REDFOR · North Korea', 'The North Korean Wing Commander’s board: sites, reports, actions and points.'],
     ['P', 'Public screen', 'Clock, escalation meter and public news. No PIN needed.'],
@@ -1648,7 +1675,7 @@ $('#setupForm').addEventListener('submit', async ev => {
   const pins = { W:val('#sPinW'), B:val('#sPinB'), R:val('#sPinR'), TB:val('#sPinTB'), TR:val('#sPinTR') };
   if (new Set(Object.values(pins)).size < 5){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use five different PINs so each view stays separate.'; return; }
   const startG = parseHHMM(val('#sStart')), lengthMin = Math.round(+val('#sLen'));
-  if (startG == null || !(lengthMin >= 30 && lengthMin <= 300)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter the start as 24-hour time like 0630, and a length from 30 to 300 minutes.'; return; }
+  if (startG == null || !(lengthMin >= 30 && lengthMin <= 300)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter the start as 24-hour time like 0830, and a length from 30 to 300 minutes.'; return; }
   const cfg = { name:val('#sName') || 'Game', salt, createdAt:Date.now(), startG, lengthMin,
     pins:{ W:secret(salt, pins.W), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR) },
     codes:{ harbor:secret(salt, val('#cHarbor')), fuel:secret(salt, val('#cFuel')), radar:secret(salt, val('#cRadar')), airstrip:secret(salt, val('#cAirstrip')), town:secret(salt, val('#cTown')) } };
@@ -1711,7 +1738,7 @@ function buildAAR(){
     sites:Object.fromEntries(SITE_KEYS.map(k => [k, { name:SITES[k].name, grid:SITES[k].grid }])),
     final:{ B:score(S, 'B'), R:score(S, 'R'), esc:S.esc, hn:{ B:S.hn.B, R:S.hn.R }, war:S.war, warAt:S.warAt, endex:S.endex, g:S.g },
     steps, log:clean(S.log), contacts:clean(S.contacts), claims:clean(S.claims), incidents:clean(S.incidents), statements:clean(S.statements),
-    requests:clean(S.requests), cacheDone:S.cacheDone, liaison:clean(S.liaison), offers:clean(S.offers),
+    requests:clean(S.requests), cacheDone:S.cacheDone, liaison:clean(S.liaison), offers:clean(S.offers), uavs:clean(S.uavs),
     teams:['B','R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const errs = t.fixes.filter(f => f.gps && f.rep).map(f => Math.round(GEO.dist(f.gps, f.rep))); return { side:sd, name:t.name, fixes:t.fixes.length, checks:errs.length, median:errs.length ? errs.slice().sort((a, b) => a - b)[Math.floor(errs.length / 2)] : null, worst:errs.length ? Math.max(...errs) : null }; })),
     intel:PROBLEMS.map((P, i) => { const tr = intelTruth(P); const r = s => { const o = intelOpen(S, P.id, s), m = S.intel[s][P.id]; const base = o ? { sent:true, sentAt:o.g, due:o.due, closed:!!o.done } : { sent:false }; return Object.assign(base, m ? { answered:true, g:m.g, okA:!!m.okA, okF:!!m.okF, pts:m.pts || 0 } : { answered:false, pts:0 }); };
       const os = ['B','R'].map(s => intelOpen(S, P.id, s)).filter(Boolean);
@@ -1846,7 +1873,7 @@ function keepSelect(sel, html){ const v = sel.value; sel.innerHTML = html; if ([
 const COLS_L = 'ABCDEFGHIJKL';
 const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'BLUFOR landing zone'], ['lzR', 'REDFOR landing zone']];
-function mapCfg(S){ return S && S.map && S.map.sw && S.map.ne ? S.map : null; }
+function mapCfg(S){ return S && S.map && S.map.sw && S.map.ne ? S.map : DEFAULT_MAP; }
 function gridDims(M){ return { cols:Math.max(1, Math.min(12, +M.cols || 6)), rows:Math.max(1, Math.min(12, +M.rows || 5)) }; }
 function squareOf(M, pt){
   if (!M || !pt || M.preview) return null;
@@ -1869,18 +1896,24 @@ function locate(M, text){
   return GEO.parsePoint(t);
 }
 function fmtPt(pt){ return pt ? GEO.toMGRS(pt[0], pt[1], 5) : ''; }
+const DEFAULT_MAP = (() => {
+  const c = [40.827469, -77.856957], dLat = 250 / 111320, dLon = 300 / (111320 * Math.cos(c[0] * Math.PI / 180));
+  const M = { sw:[c[0] - dLat, c[1] - dLon], ne:[c[0] + dLat, c[1] + dLon], cols:6, rows:5, step:100, placeholder:true, sites:{ town:c.slice() } };
+  [['harbor', 'B5'], ['fuel', 'E1'], ['radar', 'C1'], ['airstrip', 'D5'], ['lzB', 'A3'], ['lzR', 'F3']].forEach(([k, g]) => M.sites[k] = squareCenter(M, g));
+  return M;
+})();
 function lmapEnsure(el, M){
   const key = JSON.stringify([M.sw, M.ne, M.cols, M.rows, M.step, !!M.preview]);
   let st = el._lm;
   if (st && st.key === key) return st;
   if (!st){
     el.innerHTML = ''; el.classList.add('lmap');
-    const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true });
+    const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true, zoomSnap:0.25 });
     const base = L.tileLayer(TILE_URL, { maxZoom:20, maxNativeZoom:19, attribution:'Imagery © Esri, Maxar' }).addTo(map);
     st = el._lm = { map, base, grid:L.layerGroup().addTo(map), dyn:L.layerGroup().addTo(map), key:null };
     map.on('click', ev => {
       const pt = [ev.latlng.lat, ev.latlng.lng]; app.lastClick = pt;
-      const sq = squareOf(mapCfg(app.S) || app.previewMap, pt);
+      const sq = squareOf((app.role === 'W' && app.previewMap) || mapCfg(app.S), pt);
       L.popup().setLatLng(ev.latlng).setContent('<b class="mono">' + esc(fmtPt(pt)) + '</b>' + (sq ? '<br>Play square ' + sq : '')).openOn(map);
       $$('[data-lastclick]').forEach(x => x.textContent = fmtPt(pt));
     });
@@ -1920,7 +1953,7 @@ function drawGrid(layer, M){
   }
 }
 const SIDE_HEX = { B:'#3d7dff', R:'#ff4d42' };
-function drawDyn(st, S, side){
+function drawDyn(st, S, side, opts){
   const M = mapCfg(S), layer = st.dyn; layer.clearLayers();
   if (!M) return;
   const pts = M.sites || {};
@@ -1951,6 +1984,7 @@ function drawDyn(st, S, side){
       .bindTooltip(esc((side ? 'Reported ' : SIDES[c.side].name + ' reported ') + SIDES[OTHER[c.side]].name + (c.note ? ': ' + c.note : '') + ' · ' + age + ' min ago')).addTo(layer);
   });
   ['B', 'R'].forEach(sd => {
+    if (opts && opts.team) return;
     if (side && side !== sd && !S.reveal) return;
     Object.values(S.teams[sd]).forEach(t => {
       const f = t.last; if (!f) return; const pt = f.gps || f.rep; if (!pt) return;
@@ -1959,12 +1993,18 @@ function drawDyn(st, S, side){
         .bindTooltip(esc(t.name + ' · ' + age + 'm' + (t.status ? ' · ' + t.status : '')), { permanent:true, direction:'right', className:'teamlbl', offset:[8, 0] }).addTo(layer);
     });
   });
+  const ph = side ? uavPhase(S, side) : '';
+  if (ph){
+    const u = S.uav[side], col = SIDE_HEX[OTHER[side]], fade = ph === 'fade', op = fade ? Math.max(.35, 1 - (S.g - u.g - 1) / 5) : 1;
+    u.spots.forEach(x => L.circleMarker(x.pt, { radius:8, color:col, weight:3, opacity:op, dashArray:fade ? '4 3' : null, fillColor:col, fillOpacity:fade ? .15 : .85 })
+      .bindTooltip(esc((fade ? 'Last seen ' + hhmm(u.g) : 'UAV now') + ' · ' + x.name), { permanent:true, direction:'right', className:'teamlbl', offset:[8, 0] }).addTo(layer));
+  }
 }
-function renderMapInto(el, S, side){
-  const M = mapCfg(S) || (app.role === 'W' ? app.previewMap : null);
+function renderMapInto(el, S, side, opts){
+  const M = (app.role === 'W' && app.previewMap) || mapCfg(S);
   if (M && window.L){
     const st = lmapEnsure(el, M);
-    if (!M.preview) drawDyn(st, S, side); else st.dyn.clearLayers();
+    if (!M.preview) drawDyn(st, S, side, opts); else st.dyn.clearLayers();
     return true;
   }
   if (el._lm){ el._lm.map.remove(); el._lm = null; el.classList.remove('lmap'); }
@@ -1972,14 +2012,14 @@ function renderMapInto(el, S, side){
   return false;
 }
 function realLegend(){
-  return '<div class="legend"><span><i class="sw" style="background:#3d7dff;border-color:#3d7dff"></i>BLUFOR</span><span><i class="sw" style="background:#ff4d42;border-color:#ff4d42"></i>REDFOR</span><span><i class="sw" style="border-style:dashed;border-color:var(--muted)"></i>Reported or last seen</span><span style="color:#b38f00">▬ Play grid</span><span style="color:#1f9cc4">▬ MGRS grid</span><span>● Your fireteams</span><span>▲ Reported sighting</span><span style="color:var(--e2)">✸ Explosion</span><span>Tap the map for a grid</span></div>';
+  return '<div class="legend"><span><i class="sw" style="background:#3d7dff;border-color:#3d7dff"></i>BLUFOR</span><span><i class="sw" style="background:#ff4d42;border-color:#ff4d42"></i>REDFOR</span><span><i class="sw" style="border-style:dashed;border-color:var(--muted)"></i>Reported or last seen</span><span style="color:#b38f00">▬ Play grid</span><span style="color:#1f9cc4">▬ MGRS grid</span><span>● Your fireteams</span><span>▲ Reported sighting</span><span>◉ UAV sighting</span><span style="color:var(--e2)">✸ Explosion</span><span>Tap the map for a grid</span></div>';
 }
 function openFullMap(side){
   const S = app.S;
   if (!(mapCfg(S) || (app.role === 'W' && app.previewMap)) || !window.L){ toast('The real map isn’t set up yet. The white cell sets it under Map setup.', true); return; }
   if ($('#mapfs')) return;
   const ov = document.createElement('div'); ov.id = 'mapfs'; ov.className = 'mapfs';
-  ov.innerHTML = '<div class="bar"><b>' + esc(side ? SIDES[side].name + ' picture of Marala' : 'Full truth') + '</b><span class="small muted">Tap anywhere for its grid: <span class="mono" data-lastclick>—</span></span><button type="button" data-closefs>Close map</button></div><div class="lmap" data-fsmap></div>';
+  ov.innerHTML = '<div class="bar"><b>' + esc(side ? SIDES[side].name + ' picture of Marala' : 'White cell map (no fog of war)') + '</b><span class="small muted">Tap anywhere for its grid: <span class="mono" data-lastclick>—</span></span><button type="button" data-closefs>Close map</button></div><div class="lmap" data-fsmap></div>';
   document.body.appendChild(ov);
   app.fsSide = side; app.fsEl = $('[data-fsmap]', ov);
   $('[data-closefs]', ov).onclick = closeFullMap;
@@ -2030,7 +2070,7 @@ let teamAutoTimer = null;
 function getGPS(){
   return new Promise(res => {
     if (!navigator.geolocation){ res(null); return; }
-    navigator.geolocation.getCurrentPosition(p => res({ pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy) }), () => res(null), { enableHighAccuracy:true, timeout:9000, maximumAge:15000 });
+    navigator.geolocation.getCurrentPosition(p => res({ pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy) }), () => res(null), { enableHighAccuracy:true, timeout:12000, maximumAge:10000 });
   });
 }
 async function sendTeamPos(side, opts){
@@ -2052,28 +2092,45 @@ function buildTeam(side){
   const v = $('#vTeam'); v.className = 'team-view side-' + side;
   const me = teamGet(side);
   if (!me){
-    v.innerHTML = '<div class="panel stack"><h2>Name your fireteam</h2><p class="small muted" style="margin:0">Your C2 sees this name on the map and sends orders to it.</p><form class="stack" data-tjoin><label>Fireteam name<input name="name" maxlength="40" required placeholder="Fireteam 2 (Hawk)"></label><div><button class="btn-side team-big" type="submit">Join as ' + esc(SIDES[side].name) + ' fireteam</button></div></form></div>';
+    v.innerHTML = '<div class="panel stack"><h2>Name your fireteam</h2><p class="small muted" style="margin:0">Your C2 sees this name on the map and sends orders to it.</p><form class="stack" data-tjoin><label>Fireteam name<input name="name" maxlength="40" required placeholder="Input fireteam name"></label><div><button class="btn-side team-big" type="submit">Join as ' + esc(SIDES[side].name) + ' fireteam</button></div></form></div>';
     $('[data-tjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const name = new FormData(ev.target).get('name').trim(); if (!name) return; teamSet(side, { id:'t' + uid(), name }); app.built = null; buildTeam(side); refresh(true); });
     return;
   }
   v.innerHTML = `
   <div class="stack">
     <div class="panel"><div class="act-head"><h2>${esc(me.name)}</h2><span class="small muted">${esc(SIDES[side].long)}</span></div>
-      <div class="row" style="align-items:baseline;justify-content:space-between"><span><span class="k small muted">Board time</span> <b class="mono" data-clock>—</b></span><span data-tlvl></span><button type="button" data-rename style="flex:0 0 auto;padding:4px 10px;font-size:13px">Rename</button></div></div>
+      <div class="row" style="align-items:baseline;justify-content:space-between"><span><span class="k small muted">Board time</span> <b class="mono" data-clock>—</b></span><span data-tlvl></span><span class="row" style="flex:0 0 auto;gap:6px"><button type="button" data-rename style="flex:0 0 auto;padding:4px 10px;font-size:13px">Rename</button><button type="button" data-leave style="flex:0 0 auto;padding:4px 10px;font-size:13px">Leave this fireteam</button></span></div></div>
+    <div class="panel stack"><h2>Alerts</h2><div data-tuav></div><div class="list" data-talerts></div></div>
+    <div class="panel stack"><div class="act-head"><h2>Map</h2><span class="small muted" data-tmapstate></span></div>
+      <p class="small muted" style="margin:0">Open the map for 3 minutes, once every 10 minutes. Your own position isn’t shown, so read the ground.</p>
+      <button type="button" class="btn-side team-big" data-tmapbtn>Open map for 3 minutes</button>
+      <div class="lmap teammap" data-tmap hidden></div></div>
     <div class="panel stack"><h2>Report your position</h2>
       <p class="small muted" style="margin:0">Your navigator reads your grid off the map, types it here and sends it. The phone adds its GPS fix so your C2 can see you on the map.</p>
-      <label>Your grid from the map (MGRS or play square)<input data-grid autocomplete="off" placeholder="18T TL 5856 2009 or D4"></label>
+      <label>Your grid from the map (MGRS or play square)<input data-grid autocomplete="off" placeholder="Example: 18T TL 5908 2353 or D4"></label>
       <label>Status<select data-status><option>Moving</option><option>At objective</option><option>Holding</option><option>Halted: suspected IED</option><option>Treating a casualty</option><option>Need help</option></select></label>
       <button type="button" class="btn-side team-big" data-send>Send position</button>
-      <label class="chk"><input type="checkbox" data-auto> Also send GPS by itself every 3 minutes</label>
+      <label class="chk"><input type="checkbox" data-auto> Also send GPS by itself every 10 minutes</label>
       <div class="small muted" data-tlast></div></div>
     <div class="panel"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
   </div>`;
   $('[data-send]', v).onclick = () => sendTeamPos(side, {});
   $('[data-rename]', v).onclick = () => { const n = prompt('Fireteam name', me.name); if (n && n.trim()){ teamSet(side, { id:me.id, name:n.trim().slice(0, 40) }); app.built = null; buildTeam(side); refresh(true); } };
+  $('[data-leave]', v).onclick = async () => {
+    if (!confirm('Leave this fireteam on this phone? The team stays on the map with its last position, and you can join again with a new name.')) return;
+    clearInterval(teamAutoTimer); teamAutoTimer = null;
+    try { await writeEvent('pos', side, { team:me.id, name:me.name, status:'Left the game' }); } catch(e){}
+    try { localStorage.removeItem(teamIdKey(side)); localStorage.removeItem(teamIdKey(side) + '-auto'); } catch(e){}
+    app.built = null; buildTeam(side); refresh(true); toast('You left ' + me.name + '.');
+  };
+  $('[data-tmapbtn]', v).onclick = () => {
+    const S = app.S, t = S && S.teams[side][me.id];
+    if (t && t.mapTs && Date.now() - t.mapTs < TEAM_MAP_EVERY * 60000){ toast('The map isn’t ready yet.', true); return; }
+    writeEvent('team_map', side, { team:me.id, name:me.name });
+  };
   const auto = $('[data-auto]', v);
   try { auto.checked = localStorage.getItem(teamIdKey(side) + '-auto') === '1'; } catch(e){}
-  const arm = () => { clearInterval(teamAutoTimer); teamAutoTimer = null; if (auto.checked) teamAutoTimer = setInterval(() => { if (document.visibilityState === 'visible' && app.role === 'T' + side) sendTeamPos(side, { gpsOnly:true, silent:true }); }, 180000); };
+  const arm = () => { clearInterval(teamAutoTimer); teamAutoTimer = null; if (auto.checked) teamAutoTimer = setInterval(() => { if (document.visibilityState === 'visible' && app.role === 'T' + side) sendTeamPos(side, { gpsOnly:true, silent:true }); }, 600000); };
   auto.onchange = () => { try { localStorage.setItem(teamIdKey(side) + '-auto', auto.checked ? '1' : '0'); } catch(e){} arm(); };
   arm();
 }
@@ -2083,8 +2140,39 @@ function renderTeam(S, side){
   $('[data-tlvl]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
   const t = S.teams[side][me.id], f = t && t.last;
   $('[data-tlast]', v).textContent = f ? 'Last sent ' + hhmm(f.g) + (f.rep ? ' with your map grid' : '') + (f.gps ? ' and GPS' + (f.acc ? ' (±' + f.acc + ' m)' : '') : '') + '.' : 'Nothing sent yet.';
+  const al = S.feed.filter(f => f.team && f.to === side).slice(-5).reverse();
+  $('[data-talerts]', v).innerHTML = al.length ? al.map(f => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(f.g) + '</span><div>' + esc(f.text) + '</div></div></div>').join('') : '<div class="empty">Nothing yet. UAV sightings and warnings show here.</div>';
+  const ph = uavPhase(S, side), u = S.uav[side];
+  $('[data-tuav]', v).innerHTML = ph ? '<div class="li" style="border-left:3px solid var(--' + (side === 'B' ? 'red' : 'blu') + ');padding-left:8px"><div class="grow"><b>' + (ph === 'live' ? 'Enemy fireteams now' : 'Enemy fireteams last seen ' + hhmm(u.g)) + '</b>' + (u.spots.length ? u.spots.map(x => '<div class="mono small">' + esc(GEO.toMGRS(x.pt[0], x.pt[1], 3)) + '</div>').join('') : '<div class="small muted">The UAV found no one.</div>') + '</div></div>' : '';
+  const tm = $('[data-tmap]', v);
+  if (tm && !tm.hidden && tm._lm) drawDyn(tm._lm, S, side, { team:true });
   const os = S.orders.filter(o => o.side === side && (o.team === 'all' || o.team === me.id));
   $('[data-torders]', v).innerHTML = os.length ? os.slice().reverse().map(o => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(o.g) + (o.team === 'all' ? ' · all teams' : ' · to you') + '</span><div>' + esc(o.text) + '</div></div></div>').join('') : '<div class="empty">No orders yet. Your C2 sends them from the board.</div>';
+}
+
+function teamTick(S, side, now){
+  const v = $('#vTeam'), me = teamGet(side), btn = $('[data-tmapbtn]', v); if (!me || !btn) return;
+  const t = S.teams[side][me.id], ts = t && t.mapTs;
+  const openLeft = ts ? ts + TEAM_MAP_OPEN * 60000 - now : 0, nextIn = ts ? ts + TEAM_MAP_EVERY * 60000 - now : 0;
+  const el = $('[data-tmap]', v), st = $('[data-tmapstate]', v);
+  const mmss = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+  if (openLeft > 0){
+    st.textContent = 'Closes in ' + mmss(openLeft); btn.hidden = true;
+    if (el.hidden){ el.hidden = false; renderMapInto(el, S, side, { team:true }); }
+  } else {
+    if (!el.hidden){ el.hidden = true; if (el._lm){ el._lm.map.remove(); el._lm = null; } el.innerHTML = ''; }
+    btn.hidden = false; btn.disabled = nextIn > 0;
+    st.textContent = nextIn > 0 ? 'Opens again in ' + mmss(nextIn) : 'Ready';
+    btn.textContent = nextIn > 0 ? 'Map opens again in ' + mmss(nextIn) : 'Open map for 3 minutes';
+  }
+}
+function uavNotify(S){
+  const r = app.role; if (!r || r === 'W' || r === 'P') return;
+  const sd = r[0] === 'T' ? r[1] : r, u = S.uav[sd], sp = S.spotted[sd];
+  if (app.uavRole !== r){ app.uavRole = r; app.uavSeen = u ? u.id : null; app.spotSeen = sp ? sp.id : null; return; }
+  const buzz = () => { try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} };
+  if (u && u.id !== app.uavSeen){ app.uavSeen = u.id; if (uavPhase(S, sd)){ toast('UAV overhead: we have enemy fireteam locations now.'); buzz(); } }
+  if (sp && sp.id !== app.spotSeen){ app.spotSeen = sp.id; if (S.g - sp.g < 6){ toast('Your fireteams have been spotted.', true); buzz(); } }
 }
 
 /* ---------- wing view ---------- */
@@ -2121,7 +2209,10 @@ function buildWing(side){
         </div>
         <div data-pane="act" class="actions">
           <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost" data-dronecount>1 ready</span></div>
-            <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Who holds the Airstrip at D5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
+            <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at D5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
+          <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · once every 20 minutes · <span class="esc-up">+10 escalation</span></span></div>
+            <p class="small muted" style="margin:0">Shows the other wing’s fireteams at their latest known positions, to you and your fireteams: live for 1 minute, then last seen for 5. The other wing is told it was spotted, but not how.</p>
+            <form data-f="uav"><button class="btn-side" type="submit">Launch UAV</button></form></div>
           <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · true <span class="esc-down">−5</span> · false <span class="esc-up">+15</span></span></div>
             <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Incident<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">Who did it<select id="stB-${side}" name="blame"><option value="militia">The militia</option><option value="other">${esc(other)}</option></select></label></div><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
           <div class="act"><div class="act-head"><b>Humanitarian aid</b><span class="cost">Once every 10 minutes · needs a town office · host nation +5</span></div>
@@ -2129,11 +2220,11 @@ function buildWing(side){
           <details class="act"><summary>Pressure options (they raise escalation)</summary>
             <div class="stack" style="margin-top:8px">
               <div class="act-head"><b>Show of force</b><span class="cost"><span data-left="show"></span> · <span class="esc-up">+10 escalation</span></span></div>
-              <form class="stack" data-f="show"><label for="shT-${side}">Site the other wing must leave<input id="shT-${side}" name="t" maxlength="60" placeholder="Radar Ridge, C1" required></label><div><button type="submit">Order show of force</button></div></form>
+              <form class="stack" data-f="show"><label for="shT-${side}">Site the other wing must leave<input id="shT-${side}" name="t" maxlength="60" placeholder="Example: Radar Ridge, C1" required></label><div><button type="submit">Order show of force</button></div></form>
               <div class="act-head"><b>Jam their radios</b><span class="cost"><span data-left="jam"></span> · <span class="esc-up">+5 escalation</span> · 5 minutes</span></div>
               <form data-f="jam"><button type="submit">Jam radios</button></form>
               <div class="act-head"><b>Strike</b><span class="cost"><span data-left="strike"></span> · needs a correct 9-line</span></div>
-              <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="8" placeholder="C4-6" required></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="nine" required style="width:auto"> A team has sent the strike 9-line</label><div><button type="submit">Ask for strike</button></div></form>
+              <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="8" placeholder="Example: C4-6" required></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="nine" required style="width:auto"> A team has sent the strike 9-line</label><div><button type="submit">Ask for strike</button></div></form>
             </div></details>
         </div>
         <div data-pane="rep" class="stack" hidden>
@@ -2141,8 +2232,8 @@ function buildWing(side){
             <form class="stack" data-f="contact">
               <div class="row"><label for="ctK-${side}">What was seen<select id="ctK-${side}" name="kind"><option value="team">${esc(other)} team</option><option value="site">${esc(other)} flag on a site</option><option value="other">Other activity</option></select></label>
               <label for="ctS-${side}">Which site (for a flag)<select id="ctS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
-              <div class="row"><label for="ctG-${side}">Grid square<input id="ctG-${side}" name="grid" maxlength="8" placeholder="D4 or D4-2" required></label><label for="ctT-${side}">Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="0642"></label></div>
-              <label for="ctN-${side}">Notes (how many, doing what)<input id="ctN-${side}" name="note" maxlength="140" placeholder="4 people, moving west"></label>
+              <div class="row"><label for="ctG-${side}">Grid square<input id="ctG-${side}" name="grid" maxlength="8" placeholder="Example: D4 or D4-2" required></label><label for="ctT-${side}">Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="Example: 0842"></label></div>
+              <label for="ctN-${side}">Notes (how many, doing what)<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: 4 people, moving west"></label>
               <div><button class="btn-side" type="submit">Post report</button></div></form></div>
           <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">code word from the site card</span></div>
             <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
@@ -2154,16 +2245,16 @@ function buildWing(side){
           <p class="small muted" style="margin:0">Your fireteams report from their phones. Give intent and tasks here; they decide how to get it done.</p>
           <div class="list" data-teams></div>
           <div class="act"><div class="act-head"><b>Send an order</b><span class="cost">shows on the fireteam's phone</span></div>
-            <form class="stack" data-f="order"><label for="orT-${side}">To<select id="orT-${side}" name="team" data-teamsel><option value="all">All fireteams</option></select></label><label for="orX-${side}">Order<input id="orX-${side}" name="text" maxlength="300" required placeholder="Claim Radar Ridge, then hold and report by 0715"></label><div><button class="btn-side" type="submit">Send order</button></div></form></div>
+            <form class="stack" data-f="order"><label for="orT-${side}">To<select id="orT-${side}" name="team" data-teamsel><option value="all">All fireteams</option></select></label><label for="orX-${side}">Order<input id="orX-${side}" name="text" maxlength="300" required placeholder="Example: Claim Radar Ridge, then hold and report in 20 minutes"></label><div><button class="btn-side" type="submit">Send order</button></div></form></div>
         </div>
         <div data-pane="liaison" class="stack" hidden>
           <p class="small muted" style="margin:0">A direct channel to the other Wing Commander. The white cell reads everything. Declare where your teams will be so the wings don't collide, and trade sites instead of fighting over them.</p>
-          <div class="act"><form class="stack" data-f="liaison"><label for="lzX-${side}">Message<input id="lzX-${side}" name="text" maxlength="400" required placeholder="Our team will be at Radar Ridge until 0730. Please stay clear."></label>
-            <div class="row"><label for="lzS-${side}">Declare a site (optional)<select id="lzS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label for="lzU-${side}">Until<input id="lzU-${side}" name="until" maxlength="5" inputmode="numeric" placeholder="0730"></label></div>
+          <div class="act"><form class="stack" data-f="liaison"><label for="lzX-${side}">Message<input id="lzX-${side}" name="text" maxlength="400" required placeholder="Example: Our team will be at Radar Ridge for the next 20 minutes. Please stay clear."></label>
+            <div class="row"><label for="lzS-${side}">Declare a site (optional)<select id="lzS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label for="lzU-${side}">Until<input id="lzU-${side}" name="until" maxlength="5" inputmode="numeric" placeholder="Example: 0900"></label></div>
             <div><button class="btn-side" type="submit">Send to the other wing</button></div></form></div>
           <div class="feed" data-liaison style="max-height:320px"></div>
           <div class="act"><div class="act-head"><b>Hand over a site</b><span class="cost">no escalation · host nation +2 for both</span></div>
-            <form class="stack" data-f="handover"><div class="row"><label for="hoS-${side}">Site you hold<select id="hoS-${side}" name="site" data-ownsites></select></label><label for="hoN-${side}">Note<input id="hoN-${side}" name="note" maxlength="200" placeholder="In exchange for the Harbor"></label></div><div><button type="submit">Offer handover</button></div></form>
+            <form class="stack" data-f="handover"><div class="row"><label for="hoS-${side}">Site you hold<select id="hoS-${side}" name="site" data-ownsites></select></label><label for="hoN-${side}">Note<input id="hoN-${side}" name="note" maxlength="200" placeholder="Example: In exchange for the Harbor"></label></div><div><button type="submit">Offer handover</button></div></form>
             <div class="list" data-offers></div></div>
         </div>
       </div>
@@ -2175,6 +2266,7 @@ function buildWing(side){
   on('drone', fd => writeEvent('act_drone', side, { text:fd.get('q') }));
   on('statement', fd => { if (!fd.get('inc')){ toast('There is no incident to talk about yet.', true); return false; } return writeEvent('act_statement', side, { incident:fd.get('inc'), blame:fd.get('blame') }); });
   on('aid', () => writeEvent('act_aid', side, {}));
+  on('uav', () => { if (!confirm('Launch a UAV? Escalation goes up by 10, and the other wing is told it was spotted.')) return false; return writeEvent('act_uav', side, {}); });
   on('show', fd => writeEvent('act_show', side, { text:fd.get('t') }));
   on('jam', () => writeEvent('act_jam', side, {}));
   on('strike', fd => writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase() }));
@@ -2246,8 +2338,8 @@ function renderWing(S, side, now){
   $('[data-hnnote]', v).textContent = !S.access[side] ? 'Town office closed by the mayor' : S.office[side] ? 'Town office open (+3 every 10 min)' : 'No town office yet';
   $('[data-esccaused]', v).textContent = S.escBy[side];
   $('[data-pts]', v).textContent = sc.total;
-  $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + ' · both scores cut in half</div>' : S.reveal ? '<div class="panel"><h2>The full truth and final points</h2>' + scoreTable(S, ['B', 'R']) + '</div>' : (S.jam[side] && S.g < S.jam[side] ? '<div class="banner">Your island radios are jammed until ' + hhmm(S.jam[side]) + '. Use your backup comms plan.</div>' : '');
-  $('[data-radar]', v).textContent = S.reveal ? 'Showing the full truth' : (S.sites.radar.holder === side && !S.sites.radar.contested) ? 'Radar Ridge shows every site the other wing holds' : 'The other wing shows up only where you report it';
+  $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + ' · both scores cut in half</div>' : S.reveal ? '<div class="panel"><h2>Fog of war lifted: final points</h2>' + scoreTable(S, ['B', 'R']) + '</div>' : (S.jam[side] && S.g < S.jam[side] ? '<div class="banner">Your island radios are jammed until ' + hhmm(S.jam[side]) + '. Use your backup comms plan.</div>' : '');
+  $('[data-radar]', v).textContent = S.reveal ? 'Fog of war lifted' : (S.sites.radar.holder === side && !S.sites.radar.contested) ? 'Radar Ridge shows every site the other wing holds' : 'The other wing shows up only where you report it';
   const real = renderMapInto($('[data-map]', v), S, S.reveal ? null : side);
   $('[data-legend]', v).innerHTML = real ? realLegend() : legendHTML(S.reveal ? null : side);
   $('[data-teams]', v).innerHTML = teamRows(S, side, false);
@@ -2276,10 +2368,13 @@ function renderWing(S, side, now){
   $('[data-dronecount]', v).textContent = S.uses.drone[side] + ' ready' + (S.sites.airstrip.holder === side ? ' (Airstrip bonus)' : '');
   ['show', 'jam', 'strike'].forEach(k => { const el = $('[data-left="' + k + '"]', v); if (el) el.textContent = S.uses[k][side] ? '1 left' : 'used'; });
   const lock = !S.clock.started || S.endex;
+  const uavL = S.uav[side], uavReady = !uavL || S.g - uavL.g >= UAV_EVERY - 1e-9;
+  $('[data-uavstate]', v).textContent = uavReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(uavL.g + UAV_EVERY));
   $$('form[data-f] button[type="submit"]', v).forEach(b => {
     const f = b.closest('form').dataset.f;
     let off = lock;
     if (f === 'drone') off = off || S.uses.drone[side] < 1;
+    if (f === 'uav') off = off || !uavReady;
     if (f === 'show' || f === 'jam' || f === 'strike') off = off || S.uses[f][side] < 1;
     if (f === 'aid') off = off || !(S.office[side] && S.access[side]) || S.aidTick[side] === S.tickIdx;
     b.disabled = off;
@@ -2354,14 +2449,15 @@ function buildWhite(){
           <button type="button" class="btn-side" data-clk="start" style="flex:0 0 auto">Start the game</button>
           <button type="button" data-clk="pause" style="flex:0 0 auto">Pause</button>
           <button type="button" data-clk="resume" style="flex:0 0 auto">Resume</button>
-          <form class="row" data-wf="clockset" style="flex:1 1 200px;align-items:end"><label>Set board time<input name="t" maxlength="4" inputmode="numeric" placeholder="0700"></label><button type="submit" style="flex:0 0 auto">Set</button></form>
-          <button type="button" data-clk="reveal" style="flex:0 0 auto">Show the truth</button>
-        </div></div>
+          <form class="row" data-wf="clockset" style="flex:1 1 200px;align-items:end"><label>Set board time<input name="t" maxlength="4" inputmode="numeric" placeholder="Example: 0900"></label><button type="submit" style="flex:0 0 auto">Set</button></form>
+          <button type="button" data-clk="reveal" style="flex:0 0 auto">Lift fog of war</button>
+        </div>
+        <form class="row" data-wf="window" style="align-items:end;margin-top:8px"><label>Clock starts at<input name="start" maxlength="5" inputmode="numeric"></label><label>Game length (minutes)<input name="len" type="number" min="30" max="300" step="5"></label><button type="submit" style="flex:0 0 auto">Save start time</button></form></div>
     </div>
     <div data-warbar></div>
     <div class="white-grid">
       <div class="panel">
-        <div class="map-head"><h2>The full truth</h2><span class="small muted">Only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
+        <div class="map-head"><h2>White cell map</h2><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
         <div class="sitectl" data-sitectl></div>
@@ -2370,7 +2466,7 @@ function buildWhite(){
       <div class="panel"><h2>Points</h2><div data-score></div>
         <h2>Intel packages</h2><p class="small muted" style="margin:0">Nothing goes out until you deploy it. Each window starts when you send it.</p><div class="list" data-intelw></div>
         <h2>Explosions</h2>
-        <form class="stack" data-wf="detonation"><div class="row"><label>Explosion at grid<input name="grid" maxlength="8" placeholder="C2" required></label><label>Really caused by<select name="truth"><option value="militia">Militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="cas" style="width:auto"> Casualties</label><div><button type="submit">Tell both wings</button></div></form>
+        <form class="stack" data-wf="detonation"><div class="row"><label>Explosion at grid<input name="grid" maxlength="8" placeholder="Example: C2" required></label><label>Really caused by<select name="truth"><option value="militia">Militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="cas" style="width:auto"> Casualties</label><div><button type="submit">Tell both wings</button></div></form>
       </div>
       ${sideCol('B')}
       ${sideCol('R')}
@@ -2383,8 +2479,8 @@ function buildWhite(){
       <div class="panel span2"><div class="act-head"><h2>Log</h2><span class="small muted">Void a mistake and every screen recalculates</span></div><div class="feed" data-log style="max-height:420px"></div></div>
       <details class="panel span2 mapset" data-mapsetup><summary><b>Map setup</b> <span class="small muted">(do this once, before the game)</span></summary>
         <div class="stack" style="margin-top:10px">
-          <p class="small muted" style="margin:0">Type an MGRS grid (18T TL 58564 20097) or latitude, longitude for each point, or click the map above and press “Use last click”. Last click: <b class="mono" data-lastclick>—</b></p>
-          <div class="li"><label>Find the field: center on<input data-mcenter placeholder="40.8012, -77.8601 or an MGRS grid"></label><button type="button" data-mshow>Show on the map</button></div>
+          <p class="small muted" style="margin:0">Type an MGRS grid (for example 18T TL 59085 23533) or latitude, longitude for each point, or click the map above and press “Use last click”. Last click: <b class="mono" data-lastclick>—</b></p>
+          <div class="li"><label>Find the field: center on<input data-mcenter placeholder="Example: 40.8275, -77.8570 or an MGRS grid"></label><button type="button" data-mshow>Show on the map</button></div>
           <div class="li"><label>Southwest corner of the play area<input data-mp="sw"></label><button type="button" data-muse="sw">Use last click</button></div>
           <div class="li"><label>Northeast corner of the play area<input data-mp="ne"></label><button type="button" data-muse="ne">Use last click</button></div>
           <div class="row"><label>Play-grid columns<input data-mcols type="number" min="1" max="12" value="6"></label><label>Play-grid rows<input data-mrows type="number" min="1" max="12" value="5"></label><label>MGRS lines every<select data-mstep><option value="100">100 m</option><option value="1000">1 km</option></select></label></div>
@@ -2407,6 +2503,7 @@ function buildWhite(){
     if (k === 'adjust') writeEvent('adjust', s, { field:fd.get('field'), delta:Number(fd.get('delta')) || 0, reason:fd.get('reason') });
     if (k === 'detonation') writeEvent('detonation', null, { grid:String(fd.get('grid')).toUpperCase(), truth:fd.get('truth'), casualties:!!fd.get('cas') });
     if (k === 'msg') writeEvent('msg', null, { to:fd.get('to'), text:fd.get('text'), label:fd.get('label') || 'Higher headquarters' });
+    if (k === 'window'){ const st = parseHHMM(fd.get('start')), len = Math.round(+fd.get('len')); if (st == null || !(len >= 30 && len <= 300)){ toast('Use 24-hour time like 0830 and a length from 30 to 300 minutes.', true); return; } if (app.S && app.S.clock.started){ toast('The game has already started. Use Set board time instead.', true); return; } writeEvent('window_set', null, { startG:st, lengthMin:len }); app.winKey = null; toast('Start time saved: ' + hhmm(st) + ', ' + len + ' minutes.'); return; }
     if (k === 'clockset'){ const m = /^(\d{2})(\d{2})$/.exec(String(fd.get('t')).trim()); if (!m){ toast('Use 24-hour time like 0700.', true); return; } writeEvent('clock_set', null, { g:(+m[1]) * 60 + (+m[2]) - 360 }); }
     if (k !== 'adjust' && k !== 'msg') f.reset();
     if (k === 'msg') f.querySelector('textarea').value = '';
@@ -2467,7 +2564,11 @@ function renderWhite(S, now){
   $('[data-clk="start"]', v).disabled = S.clock.started;
   $('[data-clk="pause"]', v).disabled = !S.clock.running;
   $('[data-clk="resume"]', v).disabled = !S.clock.started || S.clock.running || S.endex;
-  $('[data-clk="reveal"]', v).textContent = S.reveal ? 'Hide the truth' : 'Show the truth';
+  $('[data-clk="reveal"]', v).textContent = S.reveal ? 'Enact fog of war' : 'Lift fog of war';
+  const wf = $('form[data-wf="window"]', v), wk = START_G + '|' + END_G;
+  if (wf && app.winKey !== wk && !wf.contains(document.activeElement)){ app.winKey = wk; wf.elements.start.value = hhmm(START_G); wf.elements.len.value = END_G - START_G; }
+  if (wf) Array.from(wf.elements).forEach(x => x.disabled = S.clock.started);
+  $('[data-mapnote]', v).textContent = mapCfg(S).placeholder ? 'Placeholder map (O-course). Set the real area under Map setup.' : 'No fog of war: only this screen sees everything';
   const real = renderMapInto($('[data-map]', v), S, null);
   $('[data-legend]', v).innerHTML = real ? realLegend() : legendHTML(null);
   $('[data-clk="start"]', v).textContent = 'Start the game (' + hhmm(START_G) + ')';
@@ -2489,7 +2590,7 @@ function renderWhite(S, now){
   const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request' };
   S.requests.filter(r => r.status === 'open').forEach(r => {
     let ctl = '';
-    if (r.kind === 'drone') ctl = '<input id="ans-' + r.id + '" placeholder="True answer" maxlength="200"><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="answer">Send answer</button>';
+    if (r.kind === 'drone') ctl = '<input id="ans-' + r.id + '" placeholder="Type the true answer" maxlength="200"><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="answer">Send answer</button>';
     if (r.kind === 'show') ctl = '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="complied">' + SIDES[OTHER[r.side]].name + ' left</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="defied">Stayed · +10 to them</button>';
     if (r.kind === 'strike') ctl = '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="hit">9-line correct · strike</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="invalid">9-line wrong</button>';
     q.push('<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + kindName[r.kind] + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + r.text : r.text) + '</div></div><div class="row" style="flex:1 1 260px">' + ctl + '</div></div>');
@@ -2518,7 +2619,7 @@ function refresh(force){
   const now = Date.now();
   const S = replay(app.cfg, app.events, now);
   app.S = S;
-  const sig = app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer + '|' + S.ver;
+  const sig = app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer + '|' + S.ver + '|' + uavPhase(S, 'B') + uavPhase(S, 'R');
   if (force || sig !== app.sig){
     app.sig = sig;
     if (app.role === 'W') renderWhite(S, now);
@@ -2527,6 +2628,8 @@ function refresh(force){
     else renderWing(S, app.role, now);
     if (app.fsEl && app.fsEl._lm && mapCfg(S)) drawDyn(app.fsEl._lm, S, app.fsSide);
   }
+  if (app.role[0] === 'T') teamTick(S, app.role[1], now);
+  uavNotify(S);
   $$('[data-clock]').forEach(el => el.textContent = clockText(S, now));
   $$('[data-next]').forEach(el => el.textContent = nextTickText(S, now));
 }

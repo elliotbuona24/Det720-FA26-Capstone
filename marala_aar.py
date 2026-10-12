@@ -443,6 +443,11 @@ def build_html(data, aar, charts):
         for o in offers
     ) or "<tr><td colspan='5' class='muted'>No site handovers.</td></tr>"
     li_count = {sd: sum(1 for m in liaison if m["side"] == sd) for sd in ("B", "R")}
+    uavs = aar.get("uavs", [])
+    uav_rows = "".join(
+        f"<tr><td>{hhmm(u['g'])}</td>{side_cell(u['side'], NAMES[u['side']])}<td class='num'>{u['n']}</td><td class='num'>+10</td></tr>"
+        for u in uavs
+    ) or "<tr><td colspan='4' class='muted'>No UAV launches.</td></tr>"
     teams = aar.get("teams", [])
     tm_rows = "".join(
         f"<tr>{side_cell(t['side'], NAMES[t['side']])}<td>{esc(t['name'])}</td><td class='num'>{t['fixes']}</td><td class='num'>{t['checks']}</td><td class='num'>{(str(t['median']) + ' m') if t['median'] is not None else '–'}</td><td class='num'>{(str(t['worst']) + ' m') if t['worst'] is not None else '–'}</td></tr>"
@@ -566,6 +571,8 @@ table.log{{font-size:10pt}}
 <table class="data"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">From</th><th>Message</th></tr></thead><tbody>{li_rows}</tbody></table>
 <h3>Site handovers</h3>
 <table class="data"><thead><tr><th>Time</th><th>Offered by</th><th>Site</th><th>Note</th><th>Result</th></tr></thead><tbody>{ho_rows}</tbody></table>
+<h3>UAV launches</h3>
+<table class="data"><thead><tr><th>Time</th><th>Launched by</th><th class="num">Enemy fireteams located</th><th class="num">Escalation</th></tr></thead><tbody>{uav_rows}</tbody></table>
 
 <h2>8. Fireteam Land Navigation</h2>
 <table class="data"><thead><tr><th>Wing</th><th>Fireteam</th><th class="num">Position reports</th><th class="num">Map-grid checks</th><th class="num">Median error</th><th class="num">Worst</th></tr></thead><tbody>{tm_rows}</tbody></table>
