@@ -150,6 +150,8 @@ svg.map{width:100%;min-width:420px;height:auto;display:block}
 .mapfs .lmap{height:100%;border-radius:0;border:0}
 input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .teammap{height:62vh;min-height:300px}
+[hidden]{display:none!important}
+.jambox{height:340px;border-radius:8px;border:2px dashed var(--bad);display:grid;place-content:center;gap:6px;text-align:center;padding:16px;background:repeating-linear-gradient(45deg,transparent 0 12px,rgba(200,40,40,.06) 12px 24px)}.jambox b{color:var(--bad);letter-spacing:.08em}
 .gridtog{background:rgba(0,0,0,.72);color:#fff;border-radius:6px;padding:6px 8px;font:500 13px/1.3 var(--sans,system-ui);display:grid;gap:4px}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
 .gl.m{color:#8fe6ff;font-size:10px}
@@ -1066,7 +1068,9 @@ function setWindow(cfg){
 }
 setWindow(null);
 const CONTEST_MIN = 10;
-const UAV_EVERY = 20, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 3;
+const UAV_EVERY = 20, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 3, JAM_EVERY = 45, JAM_MIN = 5.5;
+function liveTeams(S, side){ return Object.values(S.teams[side]).filter(t => !t.removed); }
+function jammed(S, side){ return !!(S.jam && S.jam[side] != null && S.g < S.jam[side] && !S.reveal); }
 function uavPhase(S, side){ const u = S.uav && S.uav[side]; if (!u) return ''; const d = S.g - u.g; return d < 1 ? 'live' : d < 6 ? 'fade' : ''; }
 const LEVELS = [
   { name:'Competition', min:0 }, { name:'Tension', min:25 }, { name:'Crisis', min:50 }, { name:'Brink', min:75 }, { name:'War', min:100 }
@@ -1095,7 +1099,7 @@ function newState(){
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0,
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[],
     sites, office:{B:false,R:false}, access:{B:true,R:true},
-    uses:{ drone:{B:1,R:1}, show:{B:1,R:1}, jam:{B:1,R:1}, strike:{B:1,R:1} }, aidTick:{B:-1,R:-1},
+    uses:{ drone:{B:1,R:1}, show:{B:1,R:1}, strike:{B:1,R:1} }, jamLast:{B:null,R:null}, aidTick:{B:-1,R:-1},
     cacheDone:null, crisisCallAt:-999, war:false, warAt:null, raised:false, tickIdx:0,
     clock:{ started:false, running:false, anchorReal:0, anchorG:START_G },
     endex:false, reveal:false, jam:{B:null,R:null},
@@ -1190,7 +1194,7 @@ function runTicks(S, g){
     if (S.step) S.step(S, null);
     if (S.tickIdx >= TICKS.length){
       S.endex = true; S.clock.running = false; S.clock.anchorG = END_G; S.g = END_G;
-      pushFeed(S, 'public', 'ENDEX. The board is frozen at 0740.', 'public');
+      pushFeed(S, 'public', 'ENDEX. The board is frozen at ' + hhmm(END_G) + '.', 'public');
       pushLog(S, 'ENDEX', null);
     }
   }
@@ -1274,7 +1278,7 @@ function apply(S, e, cfg){
       pushFeed(S, 'both', 'Shots fired' + (p.grid ? ' near ' + p.grid : '') + '. Casualties reported.', 'alert'); break;
     case 'returnfire': raise(S, side, ESC.returnfire); pushLog(S, nm + ' returned fire (escalation +5)', side, e); break;
     case 'contact':
-      S.contacts.push({ id:e.id, side, kind:p.kind, site:p.site || null, grid:(p.grid || '').toUpperCase(), seen:p.seen || hhmm(S.g), seenG:S.g, note:p.note || '', verdict:null, g:S.g });
+      S.contacts.push({ id:e.id, side, kind:p.kind, site:p.site || null, grid:(p.grid || '').toUpperCase(), seen:p.seen || hhmm(S.g), seenG:S.g, note:p.note || '', salute:p.salute || null, verdict:null, g:S.g });
       pushLog(S, nm + ' reported ' + (p.kind === 'site' ? 'an enemy flag at ' + (SITES[p.site] ? SITES[p.site].name : '?') : p.kind === 'team' ? 'an enemy team at ' + (p.grid || '?') : 'activity at ' + (p.grid || '?')), side, e);
       break;
     case 'verdict': {
@@ -1283,7 +1287,8 @@ function apply(S, e, cfg){
       S.pts[c.side].reports += c.gain;
       pushLog(S, SIDES[c.side].name + ' report ' + ({ confirm:'confirmed (+2 points)', duplicate:'marked duplicate', false:'marked false' })[p.verdict], c.side, e);
       break; }
-    case 'act_drone': if (!useUp(S, side, 'drone', e, 'Drone flight')) break;
+    case 'act_drone': if (jammed(S, side)){ pushLog(S, nm + ' drone flight refused: datalink jammed', side, e, 'rejected'); pushFeed(S, side, 'No drone flights while your datalink is jammed.', 'alert'); break; }
+      if (!useUp(S, side, 'drone', e, 'Drone flight')) break;
       S.requests.push({ id:e.id, side, kind:'drone', text:p.text || '', status:'open', g:S.g });
       pushLog(S, nm + ' drone flight: ' + (p.text || ''), side, e); break;
     case 'act_aid':
@@ -1299,9 +1304,12 @@ function apply(S, e, cfg){
       else { raise(S, side, ESC.falseblame); addHN(S, side, -10); pushLog(S, nm + ' falsely blamed the other wing for the ' + inc.grid + ' explosion (escalation +15, host nation −10)', side, e); }
       pushFeed(S, 'public', SIDES[side].name + ' on the ' + inc.grid + ' explosion: ' + (p.blame === 'militia' ? '"The militia did this."' : '"' + SIDES[OTHER[side]].name + ' did this."'), 'public');
       break; }
-    case 'act_jam': { if (!useUp(S, side, 'jam', e, 'Jamming')) break; raise(S, side, ESC.jam); const until = Math.min(END_G, S.g + 5); S.jam[OTHER[side]] = until;
-      pushFeed(S, OTHER[side], 'Your island radios are jammed until ' + hhmm(until) + '. Use your backup comms plan.', 'alert');
-      pushLog(S, nm + ' jammed ' + SIDES[OTHER[side]].name + ' island radios until ' + hhmm(until) + ' (escalation +5)', side, e); break; }
+    case 'act_jam': {
+      const lastJ = S.jamLast[side];
+      if (S.endex || !S.clock.started || (lastJ != null && S.g - lastJ < JAM_EVERY - 1e-9)){ pushLog(S, nm + ' datalink jam refused: not ready', side, e, 'rejected'); pushFeed(S, side, 'Datalink jam not ready yet.', 'alert'); break; }
+      raise(S, side, ESC.jam); const until = Math.min(END_G, S.g + JAM_MIN); S.jam[OTHER[side]] = until; S.jamLast[side] = S.g; S.ver++;
+      pushFeed(S, OTHER[side], 'Your datalink is jammed until ' + hhmm(until) + ': no live map and no drone flights. Radios still work.', 'alert', { team:true });
+      pushLog(S, nm + ' jammed the ' + SIDES[OTHER[side]].name + ' datalink until ' + hhmm(until) + ' (escalation +' + ESC.jam + ')', side, e); break; }
     case 'act_show': if (!useUp(S, side, 'show', e, 'Show of force')) break; raise(S, side, ESC.show);
       S.requests.push({ id:e.id, side, kind:'show', text:p.text || '', status:'open', g:S.g });
       pushFeed(S, OTHER[side], 'Show of force by ' + SIDES[side].name + ': leave ' + (p.text || 'the named site') + ' by ' + hhmm(Math.min(END_G, S.g + 5)) + ' or take +10 escalation.', 'alert');
@@ -1398,6 +1406,12 @@ function apply(S, e, cfg){
       if (p.status) t.status = p.status;
       t.g = S.g; S.ver++;
       break; }
+    case 'team_remove': {
+      const t = side && p.team ? S.teams[side][p.team] : null;
+      if (!t || t.removed){ pushLog(S, 'Fireteam removal refused: no such team', side, e, 'rejected'); break; }
+      t.removed = true; t.status = 'Removed'; S.ver++;
+      pushLog(S, nm + ' fireteam ' + t.name + ' removed by ' + (e.by === 'W' ? 'the white cell' : 'the Wing Commander'), side, e);
+      break; }
     case 'window_set': pushLog(S, 'Game window set: clock starts ' + hhmm(START_G) + ', ' + (END_G - START_G) + ' minutes', null, e); break;
     case 'team_map': {
       if (!side || !p.team) break;
@@ -1409,7 +1423,7 @@ function apply(S, e, cfg){
       const last = S.uav[side];
       if (!S.clock.started || (last && S.g - last.g < UAV_EVERY - 1e-9)){ pushLog(S, nm + ' UAV not ready yet', side, e, 'rejected'); break; }
       const o = OTHER[side];
-      const spots = Object.values(S.teams[o]).filter(t => t.last && t.status !== 'Left the game').map(t => ({ name:t.name, pt:t.last.gps || t.last.rep, at:t.last.g })).filter(x => x.pt);
+      const spots = liveTeams(S, o).filter(t => t.last && t.status !== 'Left the game').map(t => ({ name:t.name, pt:t.last.gps || t.last.rep, at:t.last.g })).filter(x => x.pt);
       raise(S, side, UAV_ESC);
       S.uav[side] = { id:e.id, g:S.g, spots };
       S.spotted[o] = { id:e.id, g:S.g };
@@ -1461,7 +1475,7 @@ function score(S, side){
   const war = S.war ? Math.trunc(sub / 2) - sub : 0;
   return { sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
 }
-if (typeof module !== 'undefined') module.exports = { setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
+if (typeof module !== 'undefined') module.exports = { setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, JAM_EVERY, JAM_MIN, jammed, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
 </script>
 
 <script>
@@ -1814,8 +1828,8 @@ function mapSVG(S, side){
   for (let r = 0; r <= 5; r++) o += '<line x1="30" y1="' + (30 + r * 80) + '" x2="630" y2="' + (30 + r * 80) + '" stroke="var(--grid)" stroke-width="1"/>';
   'ABCDEF'.split('').forEach((L, c) => o += '<text class="axis" x="' + CX(c) + '" y="20" text-anchor="middle">' + L + '</text>');
   for (let r = 0; r < 5; r++) o += '<text class="axis" x="14" y="' + (CY(r) + 4) + '" text-anchor="middle">' + (r + 1) + '</text>';
-  o += '<rect x="' + (CX(0) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--blu-soft)" stroke="var(--blu)" stroke-width="2"/><text class="lbl" x="' + CX(0) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">BLUFOR HQ</text><text class="sub" x="' + CX(0) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">A3</text>';
-  o += '<rect x="' + (CX(5) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2"/><text class="lbl" x="' + CX(5) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">REDFOR HQ</text><text class="sub" x="' + CX(5) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">F3</text>';
+  if (!side || side === 'B' || S.reveal) o += '<rect x="' + (CX(0) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--blu-soft)" stroke="var(--blu)" stroke-width="2"/><text class="lbl" x="' + CX(0) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">BLUFOR HQ</text><text class="sub" x="' + CX(0) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">A3</text>';
+  if (!side || side === 'R' || S.reveal) o += '<rect x="' + (CX(5) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2"/><text class="lbl" x="' + CX(5) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">REDFOR HQ</text><text class="sub" x="' + CX(5) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">F3</text>';
   const tB = S.office.B && S.access.B, tR = S.office.R && S.access.R;
   const showB = !side || S.reveal || side === 'B' ? tB : false, showR = !side || S.reveal || side === 'R' ? tR : false;
   o += '<rect x="' + (CX(2) - 36) + '" y="' + (CY(2) - 26) + '" width="' + (CX(3) - CX(2) + 72) + '" height="52" rx="8" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>';
@@ -1983,7 +1997,7 @@ function drawDyn(st, S, side, opts){
   if (!M) return;
   const pts = M.sites || {};
   const tip = (m, text, dir, off) => m.bindTooltip(esc(text), { permanent:true, direction:dir || 'top', className:'sitelbl', offset:off || [0, -10] });
-  [['lzB', 'BLUFOR HQ', 'B'], ['lzR', 'REDFOR HQ', 'R']].forEach(([k, name, sd]) => { if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name).addTo(layer); });
+  [['lzB', 'BLUFOR HQ', 'B'], ['lzR', 'REDFOR HQ', 'R']].forEach(([k, name, sd]) => { if (side && sd !== side && !S.reveal) return; if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name).addTo(layer); });
   SITE_KEYS.forEach(k => {
     const pt = pts[k]; if (!pt) return;
     const v = siteView(S, side, k), raw = S.sites[k];
@@ -2011,7 +2025,7 @@ function drawDyn(st, S, side, opts){
   ['B', 'R'].forEach(sd => {
     if (opts && opts.team) return;
     if (side && side !== sd && !S.reveal) return;
-    Object.values(S.teams[sd]).forEach(t => {
+    liveTeams(S, sd).forEach(t => {
       const f = t.last; if (!f) return; const pt = f.gps || f.rep; if (!pt) return;
       const age = Math.max(0, Math.floor(S.g - f.g));
       L.circleMarker(pt, { radius:7, color:'#ffffff', weight:2, fillColor:SIDE_HEX[sd], fillOpacity:age > 10 ? .4 : 1 })
@@ -2039,8 +2053,14 @@ function renderMapInto(el, S, side, opts){
 function realLegend(){
   return '<div class="legend"><span><i class="sw" style="background:#3d7dff;border-color:#3d7dff"></i>BLUFOR</span><span><i class="sw" style="background:#ff4d42;border-color:#ff4d42"></i>REDFOR</span><span><i class="sw" style="border-style:dashed;border-color:var(--muted)"></i>Reported or last seen</span><span style="color:#b38f00">▬ Play grid</span><span style="color:#1f9cc4">▬ MGRS grid</span><span>● Your fireteams</span><span>▲ Reported sighting</span><span>◉ UAV sighting</span><span style="color:var(--e2)">✸ Explosion</span><span>Tap the map for a grid</span></div>';
 }
+function jamMapInto(el, S, side){
+  if (el._lm){ el._lm.map.remove(); el._lm = null; el.classList.remove('lmap'); }
+  el.innerHTML = '<div class="jambox"><b>DATALINK JAMMED</b><span>Live map down until ' + hhmm(S.jam[side]) + '. Use the radio.</span></div>';
+  return true;
+}
 function openFullMap(side){
   const S = app.S;
+  if (side && jammed(S, side)){ toast('Your datalink is jammed. The map is down until ' + hhmm(S.jam[side]) + '.', true); return; }
   if (!(mapCfg(S) || (app.role === 'W' && app.previewMap)) || !window.L){ toast('The real map isn’t set up yet. The white cell sets it under Map setup.', true); return; }
   if ($('#mapfs')) return;
   const ov = document.createElement('div'); ov.id = 'mapfs'; ov.className = 'mapfs';
@@ -2075,7 +2095,7 @@ function offersHTML(S, viewer){
   }).join('');
 }
 function teamRows(S, side, forWhite){
-  const ts = Object.values(S.teams[side]);
+  const ts = liveTeams(S, side);
   if (!ts.length) return '<div class="empty">No fireteams signed in yet. Each team opens the board on a phone and picks ' + SIDES[side].name + ' fireteam.</div>';
   const M = mapCfg(S);
   return ts.map(t => {
@@ -2083,9 +2103,16 @@ function teamRows(S, side, forWhite){
     const sq = pt ? squareOf(M, pt) : null;
     let nav = '';
     if (forWhite && f && f.gps && f.rep){ const d = Math.round(GEO.dist(f.gps, f.rep)); nav = '<span class="chip ' + (d <= 100 ? 'ok' : d <= 250 ? 'wait' : 'no') + '">map grid off by ' + d + ' m</span>'; }
-    return '<div class="li"><div class="grow"><b>' + esc(t.name) + '</b> <span class="small muted">' + (t.status ? esc(t.status) + ' · ' : '') + (f ? 'updated ' + hhmm(f.g) + ' (' + age + ' min ago)' : 'no position yet') + '</span>' + (pt ? '<div class="small mono">' + esc(fmtPt(pt)) + (sq ? ' · square ' + sq : '') + (f.gps ? '' : ' · from map reading') + '</div>' : '') + '</div>' + nav + (age != null && age > 10 ? '<span class="chip wait">stale</span>' : '') + '</div>';
+    return '<div class="li"><div class="grow"><b>' + esc(t.name) + '</b> <span class="small muted">' + (t.status ? esc(t.status) + ' · ' : '') + (f ? 'updated ' + hhmm(f.g) + ' (' + age + ' min ago)' : 'no position yet') + '</span>' + (pt ? '<div class="small mono">' + esc(fmtPt(pt)) + (sq ? ' · square ' + sq : '') + (f.gps ? '' : ' · from map reading') + '</div>' : '') + '</div>' + nav + (age != null && age > 10 ? '<span class="chip wait">stale</span>' : '') + '<button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>';
   }).join('');
 }
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-tremove]'); if (!b) return;
+  if (!(app.role === 'W' || app.role === b.dataset.side)) return;
+  if (!confirm('Remove ' + b.dataset.name + '? It disappears from the map and lists, and its phone goes back to the sign-in screen.')) return;
+  writeEvent('team_remove', b.dataset.side, { team:b.dataset.id }); toast(b.dataset.name + ' removed.');
+});
 
 /* ---------- fireteam view ---------- */
 function teamIdKey(side){ return 'marala-team-' + (app.gid || 'none') + '-' + side; }
@@ -2117,7 +2144,8 @@ function buildTeam(side){
   const v = $('#vTeam'); v.className = 'team-view side-' + side;
   const me = teamGet(side);
   if (!me){
-    v.innerHTML = '<div class="panel stack"><h2>Name your fireteam</h2><p class="small muted" style="margin:0">Your C2 sees this name on the map and sends orders to it.</p><form class="stack" data-tjoin><label>Fireteam name<input name="name" maxlength="40" required placeholder="Input fireteam name"></label><div><button class="btn-side team-big" type="submit">Join as ' + esc(SIDES[side].name) + ' fireteam</button></div></form></div>';
+    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>Create a new fireteam</h2><p class="small muted" style="margin:0">Your C2 sees this name on the map and sends orders to it.</p><form class="stack" data-tjoin><label>Fireteam name<input name="name" maxlength="40" required placeholder="Input fireteam name"></label><div><button class="btn-side team-big" type="submit">Create ' + esc(SIDES[side].name) + ' fireteam</button></div></form></div><div class="panel stack"><h2>Or join an existing fireteam</h2><p class="small muted" style="margin:0">For a second phone on a team that already signed in.</p><div class="list" data-tjoinlist></div></div></div>';
+    $('[data-tjoinlist]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tjoinid]'); if (!b) return; teamSet(side, { id:b.dataset.tjoinid, name:b.dataset.name }); app.built = null; buildTeam(side); refresh(true); toast('Joined ' + b.dataset.name + '.'); });
     $('[data-tjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const name = new FormData(ev.target).get('name').trim(); if (!name) return; teamSet(side, { id:'t' + uid(), name }); app.built = null; buildTeam(side); refresh(true); });
     return;
   }
@@ -2142,9 +2170,8 @@ function buildTeam(side){
   $('[data-send]', v).onclick = () => sendTeamPos(side, {});
   $('[data-rename]', v).onclick = () => { const n = prompt('Fireteam name', me.name); if (n && n.trim()){ teamSet(side, { id:me.id, name:n.trim().slice(0, 40) }); app.built = null; buildTeam(side); refresh(true); } };
   $('[data-leave]', v).onclick = async () => {
-    if (!confirm('Leave this fireteam on this phone? The team stays on the map with its last position, and you can join again with a new name.')) return;
+    if (!confirm('Leave ' + me.name + ' on this phone? The team stays on the map; your C2 can remove it. You can then create or join a fireteam.')) return;
     clearInterval(teamAutoTimer); teamAutoTimer = null;
-    try { await writeEvent('pos', side, { team:me.id, name:me.name, status:'Left the game' }); } catch(e){}
     try { localStorage.removeItem(teamIdKey(side)); localStorage.removeItem(teamIdKey(side) + '-auto'); } catch(e){}
     app.built = null; buildTeam(side); refresh(true); toast('You left ' + me.name + '.');
   };
@@ -2160,15 +2187,29 @@ function buildTeam(side){
   arm();
 }
 function renderTeam(S, side){
-  const v = $('#vTeam'), me = teamGet(side); if (!me || !$('[data-torders]', v)) return;
+  const v = $('#vTeam'), me = teamGet(side);
+  if (!me){
+    const jl = $('[data-tjoinlist]', v); if (!jl) return;
+    const ts = liveTeams(S, side).filter(t => t.status !== 'Left the game');
+    jl.innerHTML = ts.length ? ts.map(t => '<div class="li"><div class="grow"><b>' + esc(t.name) + '</b> <span class="small muted">' + (t.last ? 'last update ' + hhmm(t.last.g) : 'no position yet') + '</span></div><button type="button" class="btn-side" data-tjoinid="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto">Join</button></div>').join('') : '<div class="empty">No ' + esc(SIDES[side].name) + ' fireteams yet. Create one above.</div>';
+    return;
+  }
+  const mine = S.teams[side][me.id];
+  if (mine && mine.removed){
+    clearInterval(teamAutoTimer); teamAutoTimer = null;
+    try { localStorage.removeItem(teamIdKey(side)); localStorage.removeItem(teamIdKey(side) + '-auto'); } catch(e){}
+    toast(me.name + ' was removed. Create or join a fireteam.', true);
+    app.built = null; buildTeam(side); renderTeam(S, side); return;
+  }
+  if (!$('[data-torders]', v)) return;
   const lvl = levelIndex(S.esc);
   $('[data-tlvl]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
   const t = S.teams[side][me.id], f = t && t.last;
   $('[data-tlast]', v).textContent = f ? 'Last sent ' + hhmm(f.g) + (f.rep ? ' with your map grid' + (f.repText ? ' ' + f.repText : '') : '') + (f.gps ? ' and GPS' + (f.acc ? ' (±' + f.acc + ' m)' : '') : '') + '.' : 'Nothing sent yet.';
   const al = S.feed.filter(f => f.team && f.to === side).slice(-5).reverse();
   $('[data-talerts]', v).innerHTML = al.length ? al.map(f => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(f.g) + '</span><div>' + esc(f.text) + '</div></div></div>').join('') : '<div class="empty">Nothing yet. UAV sightings and warnings show here.</div>';
-  const ph = uavPhase(S, side), u = S.uav[side];
-  $('[data-tuav]', v).innerHTML = ph ? '<div class="li" style="border-left:3px solid var(--' + (side === 'B' ? 'red' : 'blu') + ');padding-left:8px"><div class="grow"><b>' + (ph === 'live' ? 'Enemy fireteams now' : 'Enemy fireteams last seen ' + hhmm(u.g)) + '</b>' + (u.spots.length ? u.spots.map(x => '<div class="mono small">' + esc(GEO.toMGRS(x.pt[0], x.pt[1], 3)) + '</div>').join('') : '<div class="small muted">The UAV found no one.</div>') + '</div></div>' : '';
+  const ph = jammed(S, side) ? '' : uavPhase(S, side), u = S.uav[side];
+  $('[data-tuav]', v).innerHTML = jammed(S, side) ? '<div class="li"><div class="grow"><b>Datalink jammed until ' + hhmm(S.jam[side]) + '</b><div class="small muted">No map and no UAV picture. Keep reporting by radio.</div></div></div>' : ph ? '<div class="li" style="border-left:3px solid var(--' + (side === 'B' ? 'red' : 'blu') + ');padding-left:8px"><div class="grow"><b>' + (ph === 'live' ? 'Enemy fireteams now' : 'Enemy fireteams last seen ' + hhmm(u.g)) + '</b>' + (u.spots.length ? u.spots.map(x => '<div class="mono small">' + esc(GEO.toMGRS(x.pt[0], x.pt[1], 3)) + '</div>').join('') : '<div class="small muted">The UAV found no one.</div>') + '</div></div>' : '';
   const tm = $('[data-tmap]', v);
   if (tm && !tm.hidden && tm._lm) drawDyn(tm._lm, S, side, { team:true });
   const os = S.orders.filter(o => o.side === side && (o.team === 'all' || o.team === me.id));
@@ -2181,7 +2222,11 @@ function teamTick(S, side, now){
   const openLeft = ts ? ts + TEAM_MAP_OPEN * 60000 - now : 0, nextIn = ts ? ts + TEAM_MAP_EVERY * 60000 - now : 0;
   const el = $('[data-tmap]', v), st = $('[data-tmapstate]', v);
   const mmss = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
-  if (openLeft > 0){
+  if (jammed(S, side)){
+    if (!el.hidden){ el.hidden = true; if (el._lm){ el._lm.map.remove(); el._lm = null; } el.innerHTML = ''; }
+    btn.hidden = false; btn.disabled = true; st.textContent = 'Jammed';
+    btn.textContent = 'Datalink jammed until ' + hhmm(S.jam[side]);
+  } else if (openLeft > 0){
     st.textContent = 'Closes in ' + mmss(openLeft); btn.hidden = true;
     if (el.hidden){ el.hidden = false; renderMapInto(el, S, side, { team:true }); }
   } else {
@@ -2208,7 +2253,7 @@ function buildWing(side){
   v.innerHTML = `
   <div class="app">
     <div class="strip">
-      <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>0620</span><span class="s" data-next>—</span></div>
+      <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next>—</span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escnote></span></div>
       <div class="stat"><span class="k">Host nation</span><span class="v" data-hn>50</span><div class="meter"><i data-hnbar style="width:50%"></i></div><span class="s" data-hnnote></span></div>
       <div class="stat"><span class="k">Escalation you caused</span><span class="v" data-esccaused>0</span><span class="s">Each point costs 1 point at the end</span></div>
@@ -2246,19 +2291,23 @@ function buildWing(side){
             <div class="stack" style="margin-top:8px">
               <div class="act-head"><b>Show of force</b><span class="cost"><span data-left="show"></span> · <span class="esc-up">+10 escalation</span></span></div>
               <form class="stack" data-f="show"><label for="shT-${side}">Site the other wing must leave<input id="shT-${side}" name="t" maxlength="60" placeholder="Example: Radar Ridge, C1" required></label><div><button type="submit">Order show of force</button></div></form>
-              <div class="act-head"><b>Jam their radios</b><span class="cost"><span data-left="jam"></span> · <span class="esc-up">+5 escalation</span> · 5 minutes</span></div>
-              <form data-f="jam"><button type="submit">Jam radios</button></form>
+              <div class="act-head"><b>Jam enemy datalink</b><span class="cost"><span data-jamstate>Ready</span> · once every 45 minutes · <span class="esc-up">+5 escalation</span> · 5.5 minutes</span></div>
+              <p class="small muted" style="margin:0">Their live map and drone flights go down for 5.5 minutes. Their radios still work.</p>
+              <form data-f="jam"><button type="submit">Jam datalink</button></form>
               <div class="act-head"><b>Strike</b><span class="cost"><span data-left="strike"></span> · needs a correct 9-line</span></div>
               <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="8" placeholder="Example: C4-6" required></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="nine" required style="width:auto"> A team has sent the strike 9-line</label><div><button type="submit">Ask for strike</button></div></form>
             </div></details>
         </div>
         <div data-pane="rep" class="stack" hidden>
-          <div class="act"><div class="act-head"><b>Report the other wing</b><span class="cost">from a team's SALUTE report</span></div>
+          <div class="act"><div class="act-head"><b>Report activity</b><span class="cost">+2 when the white cell confirms it</span></div>
             <form class="stack" data-f="contact">
               <div class="row"><label for="ctK-${side}">What was seen<select id="ctK-${side}" name="kind"><option value="team">${esc(other)} team</option><option value="site">${esc(other)} flag on a site</option><option value="other">Other activity</option></select></label>
               <label for="ctS-${side}">Which site (for a flag)<select id="ctS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
-              <div class="row"><label for="ctG-${side}">Grid square<input id="ctG-${side}" name="grid" maxlength="8" placeholder="Example: D4 or D4-2" required></label><label for="ctT-${side}">Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="Example: 0842"></label></div>
-              <label for="ctN-${side}">Notes (how many, doing what)<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: 4 people, moving west"></label>
+              <p class="small muted" style="margin:0" data-salnote>Enemy team: enter the full SALUTE report your fireteam radioed in.</p>
+              <div class="row" data-sal><label for="ctSz-${side}">S · Size<input id="ctSz-${side}" name="sz" maxlength="60" placeholder="Example: 4 people"></label><label for="ctAc-${side}">A · Activity<input id="ctAc-${side}" name="act" maxlength="120" placeholder="Example: moving west along the tree line"></label></div>
+              <div class="row"><label for="ctG-${side}">L · Location (play square or MGRS)<input id="ctG-${side}" name="grid" maxlength="24" placeholder="Example: D4 or 5908 2353" required></label><label for="ctUn-${side}" data-sal>U · Uniform<input id="ctUn-${side}" name="uni" maxlength="80" placeholder="Example: red armbands, dark jackets"></label></div>
+              <div class="row"><label for="ctT-${side}">T · Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="Example: 0842"></label><label for="ctEq-${side}" data-sal>E · Equipment<input id="ctEq-${side}" name="eq" maxlength="80" placeholder="Example: 2 rifles, a radio"></label></div>
+              <label for="ctN-${side}" data-notesal>Notes<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: flag on the Radar Ridge mast"></label>
               <div><button class="btn-side" type="submit">Post report</button></div></form></div>
           <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">code word from the site card</span></div>
             <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
@@ -2293,9 +2342,23 @@ function buildWing(side){
   on('aid', () => writeEvent('act_aid', side, {}));
   on('uav', () => { if (!confirm('Launch a UAV? Escalation goes up by 10, and the other wing is told it was spotted.')) return false; return writeEvent('act_uav', side, {}); });
   on('show', fd => writeEvent('act_show', side, { text:fd.get('t') }));
-  on('jam', () => writeEvent('act_jam', side, {}));
+  on('jam', () => { if (!confirm('Jam the enemy datalink? Escalation goes up by 5.')) return false; return writeEvent('act_jam', side, {}); });
   on('strike', fd => writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase() }));
-  on('contact', fd => { const kind = fd.get('kind'); if (kind === 'site' && !fd.get('site')){ toast('Pick which site the flag is on.', true); return false; } return writeEvent('contact', side, { kind, site:kind === 'site' ? fd.get('site') : null, grid:String(fd.get('grid')).toUpperCase(), seen:fd.get('seen'), note:fd.get('note') }); });
+  const ctF = $('[data-f="contact"]', v), salSync = () => { const team = ctF.elements.kind.value === 'team'; $$('[data-sal]', ctF).forEach(x => x.hidden = !team); $('[data-notesal]', ctF).hidden = team; $('[data-salnote]', ctF).hidden = !team; ['sz', 'act', 'uni', 'eq', 'seen'].forEach(n => ctF.elements[n].required = team); };
+  ctF.elements.kind.addEventListener('change', salSync); salSync();
+  on('contact', fd => {
+    const kind = fd.get('kind'); if (kind === 'site' && !fd.get('site')){ toast('Pick which site the flag is on.', true); return false; }
+    const seen = String(fd.get('seen') || '').trim();
+    if (seen && !/^\d{4}$/.test(seen)){ toast('Write the time seen like 0842.', true); return false; }
+    let note = fd.get('note'), salute = null;
+    if (kind === 'team'){
+      salute = { s:String(fd.get('sz')).trim(), a:String(fd.get('act')).trim(), l:String(fd.get('grid')).trim().toUpperCase(), u:String(fd.get('uni')).trim(), t:seen, e:String(fd.get('eq')).trim() };
+      if (!salute.s || !salute.a || !salute.u || !salute.e || !salute.t){ toast('Fill in every line of the SALUTE report.', true); return false; }
+      note = 'S: ' + salute.s + ' · A: ' + salute.a + ' · U: ' + salute.u + ' · E: ' + salute.e;
+    }
+    const r = writeEvent('contact', side, { kind, site:kind === 'site' ? fd.get('site') : null, grid:String(fd.get('grid')).toUpperCase(), seen, note, salute });
+    setTimeout(salSync, 0); return r;
+  });
   on('claim', fd => writeEvent('claim', side, { site:fd.get('site'), code:secret(app.cfg.salt, fd.get('code')) }));
   on('order', fd => writeEvent('order', side, { team:fd.get('team'), text:fd.get('text') }));
   on('liaison', fd => { const site = fd.get('site') || null, ut = String(fd.get('until') || '').trim(); let until = null; if (ut){ until = parseHHMM(ut); if (until == null){ toast('Write the time like 0730.', true); return false; } } if (site && until == null){ toast('Add an “until” time when you declare a site.', true); return false; } return writeEvent('liaison', side, { text:fd.get('text'), site, until }); });
@@ -2363,12 +2426,13 @@ function renderWing(S, side, now){
   $('[data-hnnote]', v).textContent = !S.access[side] ? 'Town office closed by the mayor' : S.office[side] ? 'Town office open (+3 every 10 min)' : 'No town office yet';
   $('[data-esccaused]', v).textContent = S.escBy[side];
   $('[data-pts]', v).textContent = sc.total;
-  $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + ' · both scores cut in half</div>' : S.reveal ? '<div class="panel"><h2>Fog of war lifted: final points</h2>' + scoreTable(S, ['B', 'R']) + '</div>' : (S.jam[side] && S.g < S.jam[side] ? '<div class="banner">Your island radios are jammed until ' + hhmm(S.jam[side]) + '. Use your backup comms plan.</div>' : '');
+  $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + ' · both scores cut in half</div>' : S.reveal ? '<div class="panel"><h2>Fog of war lifted: final points</h2>' + scoreTable(S, ['B', 'R']) + '</div>' : (jammed(S, side) ? '<div class="banner">Datalink jammed until ' + hhmm(S.jam[side]) + ': your live map and drone flights are down. Radios still work.</div>' : '');
   $('[data-radar]', v).textContent = S.reveal ? 'Fog of war lifted' : (S.sites.radar.holder === side && !S.sites.radar.contested) ? 'Radar Ridge shows every site the other wing holds' : 'The other wing shows up only where you report it';
-  const real = renderMapInto($('[data-map]', v), S, S.reveal ? null : side);
+  const jm = jammed(S, side), real = jm ? jamMapInto($('[data-map]', v), S, side) : renderMapInto($('[data-map]', v), S, S.reveal ? null : side);
+  if (jm && app.fsEl) closeFullMap();
   $('[data-legend]', v).innerHTML = real ? realLegend() : legendHTML(S.reveal ? null : side);
-  $('[data-teams]', v).innerHTML = teamRows(S, side, false);
-  const tl = Object.values(S.teams[side]);
+  $('[data-teams]', v).innerHTML = jm ? '<div class="empty">Datalink jammed until ' + hhmm(S.jam[side]) + '. Fireteam positions are unavailable; use the radio.</div>' + liveTeams(S, side).map(t => '<div class="li"><b class="grow">' + esc(t.name) + '</b><button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>').join('') : teamRows(S, side, false);
+  const tl = liveTeams(S, side);
   $('[data-teamcount]', v).textContent = tl.length ? ' · ' + tl.length : '';
   keepSelect($('[data-teamsel]', v), '<option value="all">All fireteams</option>' + tl.map(t => '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>').join(''));
   $('[data-liaison]', v).innerHTML = liaisonHTML(S, side);
@@ -2390,9 +2454,11 @@ function renderWing(S, side, now){
   const reqs = S.requests.filter(r => r.side === side);
   const kindName = { drone:'Drone flight', show:'Show of force', strike:'Strike' };
   $('[data-reqs]', v).innerHTML = reqs.length ? reqs.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + kindName[r.kind] + '</b> <span class="muted small">' + hhmm(r.g) + '</span><div class="small">' + esc(r.text) + '</div>' + (r.answer ? '<div class="small muted">Answer: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : 'ok') + '">' + (r.status === 'open' ? 'With the white cell' : 'Done') + '</span></div>').join('') : '<div class="empty">Drone flights, shows of force and strikes wait here until the white cell answers.</div>';
-  $('[data-dronecount]', v).textContent = S.uses.drone[side] + ' ready' + (S.sites.airstrip.holder === side ? ' (Airstrip bonus)' : '');
-  ['show', 'jam', 'strike'].forEach(k => { const el = $('[data-left="' + k + '"]', v); if (el) el.textContent = S.uses[k][side] ? '1 left' : 'used'; });
+  $('[data-dronecount]', v).textContent = jammed(S, side) ? 'Jammed until ' + hhmm(S.jam[side]) : S.uses.drone[side] + ' ready' + (S.sites.airstrip.holder === side ? ' (Airstrip bonus)' : '');
+  ['show', 'strike'].forEach(k => { const el = $('[data-left="' + k + '"]', v); if (el) el.textContent = S.uses[k][side] ? '1 left' : 'used'; });
   const lock = !S.clock.started || S.endex;
+  const jl = S.jamLast[side], jamReady = jl == null || S.g - jl >= JAM_EVERY - 1e-9;
+  $('[data-jamstate]', v).textContent = jamReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(jl + JAM_EVERY));
   const uavL = S.uav[side], uavReady = !uavL || S.g - uavL.g >= UAV_EVERY - 1e-9;
   $('[data-uavstate]', v).textContent = uavReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(uavL.g + UAV_EVERY));
   $$('form[data-f] button[type="submit"]', v).forEach(b => {
@@ -2400,7 +2466,9 @@ function renderWing(S, side, now){
     let off = lock;
     if (f === 'drone') off = off || S.uses.drone[side] < 1;
     if (f === 'uav') off = off || !uavReady;
-    if (f === 'show' || f === 'jam' || f === 'strike') off = off || S.uses[f][side] < 1;
+    if (f === 'show' || f === 'strike') off = off || S.uses[f][side] < 1;
+    if (f === 'jam') off = off || !jamReady;
+    if (f === 'drone') off = off || jammed(S, side);
     if (f === 'aid') off = off || !(S.office[side] && S.access[side]) || S.aidTick[side] === S.tickIdx;
     b.disabled = off;
   });
@@ -2410,7 +2478,7 @@ function renderWing(S, side, now){
 /* ---------- public view ---------- */
 function buildPublic(){
   if (app.built === 'public') return; app.built = 'public';
-  $('#vPublic').innerHTML = `<div class="strip"><div class="stat clock"><span class="k">Board time</span><span class="bigclock" data-clock>0620</span><span class="s" data-next></span></div>
+  $('#vPublic').innerHTML = `<div class="strip"><div class="stat clock"><span class="k">Board time</span><span class="bigclock" data-clock>—</span><span class="s" data-next></span></div>
     <div class="stat wide"><span class="k">Shared escalation</span><span class="biglvl" data-biglvl></span><span data-ladder></span></div></div>
     <div data-warbar></div><div class="panel"><h2>Public news</h2><div class="feed" data-feed></div></div>`;
 }
@@ -2467,7 +2535,7 @@ function buildWhite(){
   v.innerHTML = `
   <div class="app">
     <div class="strip">
-      <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>0620</span><span class="s" data-next></span></div>
+      <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
       <div class="panel stat wide" style="min-width:0"><h2>Clock</h2>
         <div class="row" style="align-items:center">
@@ -2529,7 +2597,7 @@ function buildWhite(){
     if (k === 'detonation') writeEvent('detonation', null, { grid:String(fd.get('grid')).toUpperCase(), truth:fd.get('truth'), casualties:!!fd.get('cas') });
     if (k === 'msg') writeEvent('msg', null, { to:fd.get('to'), text:fd.get('text'), label:fd.get('label') || 'Higher headquarters' });
     if (k === 'window'){ const st = parseHHMM(fd.get('start')), len = Math.round(+fd.get('len')); if (st == null || !(len >= 30 && len <= 300)){ toast('Use 24-hour time like 0830 and a length from 30 to 300 minutes.', true); return; } if (app.S && app.S.clock.started){ toast('The game has already started. Use Set board time instead.', true); return; } writeEvent('window_set', null, { startG:st, lengthMin:len }); app.winKey = null; toast('Start time saved: ' + hhmm(st) + ', ' + len + ' minutes.'); return; }
-    if (k === 'clockset'){ const m = /^(\d{2})(\d{2})$/.exec(String(fd.get('t')).trim()); if (!m){ toast('Use 24-hour time like 0700.', true); return; } writeEvent('clock_set', null, { g:(+m[1]) * 60 + (+m[2]) - 360 }); }
+    if (k === 'clockset'){ const m = /^(\d{2})(\d{2})$/.exec(String(fd.get('t')).trim()); if (!m){ toast('Use 24-hour time like 0900.', true); return; } writeEvent('clock_set', null, { g:(+m[1]) * 60 + (+m[2]) - 360 }); }
     if (k !== 'adjust' && k !== 'msg') f.reset();
     if (k === 'msg') f.querySelector('textarea').value = '';
     toast('Logged.');
@@ -2644,7 +2712,7 @@ function refresh(force){
   const now = Date.now();
   const S = replay(app.cfg, app.events, now);
   app.S = S;
-  const sig = app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer + '|' + S.ver + '|' + uavPhase(S, 'B') + uavPhase(S, 'R');
+  const sig = app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer + '|' + S.ver + '|' + uavPhase(S, 'B') + uavPhase(S, 'R') + jammed(S, 'B') + jammed(S, 'R');
   if (force || sig !== app.sig){
     app.sig = sig;
     if (app.role === 'W') renderWhite(S, now);
