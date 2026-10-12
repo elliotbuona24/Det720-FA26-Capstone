@@ -1444,9 +1444,32 @@ function apply(S, e, cfg){
       break; }
   }
 }
+const VOID_NAMES = { claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+function voidNotice(S, t, e, restore){
+  if (!t || !VOID_NAMES[t.type]) return;
+  const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
+  let what = VOID_NAMES[t.type];
+  if (t.type === 'claim') what += ' (' + (p.site === 'town' ? 'Marala Town' : SITES[p.site] ? SITES[p.site].name : 'site') + ')';
+  if (t.type === 'contact' && p.grid) what += ' at ' + p.grid;
+  if (t.type === 'detonation' && p.grid) what += ' at ' + p.grid;
+  if (t.type === 'adjust') what = (p.field === 'esc' ? 'escalation' : p.field === 'hn' ? 'host-nation' : 'points') + ' adjustment of ' + (p.delta > 0 ? '+' : '') + p.delta;
+  const at = t.ts ? hhmm(gameAt(S, t.ts)) : '';
+  const to = sd || (t.type === 'msg' ? (p.to === 'public' ? 'both' : p.to) : t.type === 'verdict' || t.type === 'resolve' ? null : 'both');
+  let dest = to;
+  if (!dest && t.type === 'verdict'){ const c = S.contacts.find(x => x.id === p.contact); dest = c ? c.side : 'both'; }
+  if (!dest && t.type === 'resolve'){ const r = S.requests.find(x => x.id === p.req); dest = r ? r.side : 'both'; }
+  const mine = dest === 'B' || dest === 'R';
+  const text = 'White cell ' + (restore ? 'restored ' : 'voided ') + (mine && sd ? 'your ' : 'the ') + what + (at ? ' from ' + at : '') + (restore ? '.' : '. The board has recalculated as if it never happened.');
+  pushFeed(S, dest || 'both', text, restore ? 'hq' : 'alert', { label:'White cell', team:false });
+  pushLog(S, (restore ? 'Restored: ' : 'Voided: ') + what + (at ? ' from ' + at : '') + (sd ? ' (' + SIDES[sd].name + ')' : ''), sd, e);
+}
 function replay(cfg, events, now, step){
-  const voided = new Set(events.filter(e => e.type === 'void').map(e => e.p && e.p.target));
-  const evs = events.filter(e => e.type !== 'void' && !voided.has(e.id)).slice().sort((a, b) => (a.ts - b.ts) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const byId = new Map(events.map(e => [e.id, e]));
+  const allVoids = events.filter(e => e.type === 'void' && e.p && byId.has(e.p.target));
+  const undone = new Set(allVoids.map(v => v.p.target));
+  const liveVoids = allVoids.filter(v => !undone.has(v.id));
+  const voided = new Set(liveVoids.map(v => v.p.target));
+  const evs = events.filter(e => (e.type !== 'void' && !voided.has(e.id)) || (e.type === 'void' && byId.has(e.p && e.p.target))).slice().sort((a, b) => (a.ts - b.ts) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const firstStart = evs.find(e => e.type === 'clock_start');
   const ws = evs.filter(e => e.type === 'window_set' && e.p && (!firstStart || e.ts < firstStart.ts)).pop();
   setWindow(ws ? Object.assign({}, cfg, { startG:ws.p.startG, lengthMin:ws.p.lengthMin }) : cfg);
@@ -1456,6 +1479,7 @@ function replay(cfg, events, now, step){
     const g = gameAt(S, e.ts);
     runTicks(S, g);
     S.g = Math.max(S.g, Math.min(g, END_G));
+    if (e.type === 'void'){ const t = byId.get(e.p.target); if (t.type === 'void') voidNotice(S, byId.get(t.p && t.p.target), e, true); else voidNotice(S, t, e, false); if (step) step(S, e); continue; }
     if (S.endex && e.by !== 'W' && e.by !== 'white' && /^act_|^contact|^claim/.test(e.type)){ pushLog(S, SIDES[e.side].name + ' action after ENDEX ignored', e.side, e, 'rejected'); continue; }
     apply(S, e, cfg);
     if (step) step(S, e);
@@ -2701,7 +2725,7 @@ function renderWhite(S, now){
     return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b> <span class="small muted">intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · false piece ' + tr.f + ' (' + esc((P.items.find(x => x.k === tr.f) || {}).disc || '') + ')</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
   }).join('');
   ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Host nation ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · escalation caused ' + S.escBy[s]; });
-  $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · from ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">Void</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
+  $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · from ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
   const voids = app.events.filter(e => e.type === 'void').length;
   $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · saved on this computer' : ' · shared');
 }
