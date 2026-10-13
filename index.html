@@ -297,12 +297,17 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label for="sStart">Board clock starts at<input id="sStart" value="0830" maxlength="5" inputmode="numeric" required></label>
         <label for="sLen">Game length (minutes)<input id="sLen" type="number" min="30" max="300" step="5" value="165" required></label>
       </div>
+      <p class="small muted" style="margin:0">Code words: separate several with commas. Each capture word (from the site's harder activity) and each defense word (from the easier cipher) works once. If you leave a site's defense words blank, its capture words work for defense too.</p>
       <div class="row">
-        <label for="cHarbor">Harbor code word<input id="cHarbor" required autocomplete="off"></label>
-        <label for="cFuel">Fuel Depot code word<input id="cFuel" required autocomplete="off"></label>
-        <label for="cRadar">Radar Ridge code word<input id="cRadar" required autocomplete="off"></label>
-        <label for="cAirstrip">Airstrip code word<input id="cAirstrip" required autocomplete="off"></label>
-        <label for="cTown">Marala Town code word<input id="cTown" required autocomplete="off"></label>
+        <label for="cHarbor">Harbor capture words<input id="cHarbor" required autocomplete="off" placeholder="Example: ANCHOR, KEEL, TIDE"></label><label for="dHarbor">Harbor defense words<input id="dHarbor" autocomplete="off" placeholder="Example: ROPE, NET"></label>
+        <label for="cFuel">Fuel Depot capture words<input id="cFuel" required autocomplete="off"></label><label for="dFuel">Fuel Depot defense words<input id="dFuel" autocomplete="off"></label>
+      </div>
+      <div class="row">
+        <label for="cRadar">Radar Ridge capture words<input id="cRadar" required autocomplete="off"></label><label for="dRadar">Radar Ridge defense words<input id="dRadar" autocomplete="off"></label>
+        <label for="cAirstrip">Airstrip capture words<input id="cAirstrip" required autocomplete="off"></label><label for="dAirstrip">Airstrip defense words<input id="dAirstrip" autocomplete="off"></label>
+      </div>
+      <div class="row">
+        <label for="cTown">Marala Town code words (reusable)<input id="cTown" required autocomplete="off"></label>
       </div>
       <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto">Create game</button><button type="button" id="setupCancel" style="flex:0 0 auto">Cancel</button></div>
       <p id="setupErr" class="small" style="color:var(--bad);margin:0" hidden></p>
@@ -1077,14 +1082,18 @@ function setWindow(cfg){
 }
 setWindow(null);
 const CONTEST_MIN = 10;
-const UAV_EVERY = 20, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 3, JAM_EVERY = 45, JAM_MIN = 5.5;
+const ESC_DECAY = 0.15;
+const UAV_EVERY = 25, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 3, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5;
+function droneEvery(S, side){ const a = S.sites.airstrip; return a.holder === side && !a.contested ? DRONE_EVERY_AIR : DRONE_EVERY; }
+function droneReady(S, side){ const l = S.droneLast[side]; return l == null || S.g - l >= droneEvery(S, side) - 1e-9; }
+function codeMatch(cfg, k, h){ const c = cfg && cfg.codes ? cfg.codes[k] : null; if (!c) return { cap:false, def:false, reuse:true }; if (typeof c === 'string') return { cap:c === h, def:c === h, reuse:true }; if (Array.isArray(c)) return { cap:c.includes(h), def:c.includes(h), reuse:true }; const cap = (c.cap || []).includes(h), def = ((c.def && c.def.length) ? c.def : (c.cap || [])).includes(h); return { cap, def, reuse:k === 'town' }; }
 function liveTeams(S, side){ return Object.values(S.teams[side]).filter(t => !t.removed); }
 function jammed(S, side){ return !!(S.jam && S.jam[side] != null && S.g < S.jam[side] && !S.reveal); }
 function uavPhase(S, side){ const u = S.uav && S.uav[side]; if (!u) return ''; const d = S.g - u.g; return d < 1 ? 'live' : d < 6 ? 'fade' : ''; }
 const LEVELS = [
   { name:'Competition', min:0 }, { name:'Tension', min:25 }, { name:'Crisis', min:50 }, { name:'Brink', min:75 }, { name:'War', min:100 }
 ];
-const PROBLEMS = [{"id":"p1","at":5,"win":15,"title":"The airstrip gate bomb","q":"Who planted the bomb at the airstrip gate two nights ago?","opts":["BLUFOR (the Coalition)","REDFOR (North Korea)","The Marala First Front (militia)","Not enough information"],"items":[{"k":"A","disc":"SIGINT","rating":"A2","dtg":"032358R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"Gift is at the gate. Walk home through the paddies.\" Direction finding puts the transmitter within 500 m of the gate."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"040214R DEC 26","src":"Airstrip gate camera, still frame","text":"Two men in civilian fishing gear, no uniforms or weapons, leave a bag at the gate and walk west toward the fishing village."},{"k":"C","disc":"HUMINT","rating":"F6","dtg":"041900R DEC 26","src":"Walk-in source, first contact, reunification party member, asked to be paid","text":"\"I watched Coalition soldiers carry a bag to the airstrip gate around 0200.\""},{"k":"D","disc":"GEOINT","rating":"B2","dtg":"Terrain study, current","src":"Road and foot-path analysis","text":"The only vehicle road to the gate runs through the Coalition checkpoint, which logged no traffic from 0100 to 0400. A foot path along the paddy dikes links the fishing village to the gate: 400 m, about 6 minutes on foot."}],"a":"4uviw2t474","f":"25bfal3rpyq"},{"id":"p2","at":20,"win":15,"title":"Where are the mayor's meetings?","q":"Where will the mayor meet each foreign force today?","opts":["The harbor fish market","Town Hall","The church","The airstrip"],"items":[{"k":"A","disc":"SIGINT","rating":"F3","dtg":"05{+18}R DEC 26","src":"Intercepted cell call, unregistered phone near the harbor","text":"\"Tell the foreigners the mayor moved her meetings to the fish market.\""},{"k":"B","disc":"HUMINT","rating":"B2","dtg":"05{+12}R DEC 26","src":"Mayor's driver, regular contact","text":"Told to keep the car at Town Hall from {+50} to {+90} for two meetings."},{"k":"C","disc":"IMINT","rating":"A2","dtg":"05{+15}R DEC 26","src":"Drone video, Marala Town and harbor","text":"Police setting up a cordon and chairs outside Town Hall. The harbor fish market is empty, stalls shuttered."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Tide tables and road survey","src":"Harbor road","text":"The harbor road floods at high tide from {+10} to {+100}. No vehicle can reach the fish market until it drains."}],"a":"2dj32folanx","f":"10ylo7q1h9c"},{"id":"p3","at":30,"win":12,"title":"The roadside explosion","q":"Who set off the explosion at {+25}?","opts":["BLUFOR (the Coalition)","The Marala First Front (militia)","REDFOR (North Korea)","An accident"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"05{+29}R DEC 26","src":"Shopkeeper near the blast, met once before","text":"At {+20} a man on a motorbike left a sack at the roadside and rode north toward the quarry."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+23}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The bird flies in two minutes. Ride north after.\" Direction finding: transmitter near the blast site."},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"05{+10}R DEC 26","src":"Weather station on the ridge, with terrain overlay","text":"Dense fog over the blast area from {+10} to {+40}. Visibility under 20 m."},{"k":"D","disc":"IMINT","rating":"F6","dtg":"05{+24}R DEC 26 (as posted)","src":"Photo posted online, metadata stripped","text":"Clear, sunny photo of armed soldiers standing at the blast site."}],"a":"1bncd0lno9j","f":"f2igowkl9o"},{"id":"p4","at":45,"win":15,"title":"The militia cache","q":"Where is the militia hiding its weapons cache?","opts":["The church basement in town","The harbor warehouse","The old quarry shed","The fuel depot"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"05{-30}R DEC 26","src":"Quarry foreman, regular contact","text":"The stolen explosive was loaded into a red van with no plates."},{"k":"B","disc":"GEOINT","rating":"A1","dtg":"Terrain database, 2019 survey","src":"Structures near the quarry","text":"The old quarry shed was torn down in 2020. The nearest standing building that could hide a cache is the church in Marala Town."},{"k":"C","disc":"SIGINT","rating":"B2","dtg":"05{-38}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The van is in the barn by the stones. Keep the doors shut.\" Direction finding: bearing crosses the quarry."},{"k":"D","disc":"IMINT","rating":"A1","dtg":"05{+40}R DEC 26","src":"Drone still, quarry area","text":"A red van with no plates parked inside the open doors of a shed at the quarry. Fresh tire tracks lead in."}],"a":"20dazhp7ngh","f":"14d6b7eo0cf"},{"id":"p5","at":60,"win":14,"title":"The north-road device","q":"Is there a live device on the north road, and where?","opts":["No, it's a hoax","Yes, at the north-road culvert","Yes, but on the coast road","Not enough information"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"05{-90}R DEC 26","src":"Fisherman, met once before","text":"Saw two men digging at the north-road culvert before dawn."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+52}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The gift under the north road is wrapped. Wait for a patrol.\""},{"k":"C","disc":"IMINT","rating":"A1","dtg":"011030R DEC 26","src":"Satellite image, north road","text":"The road is under water. The culvert can't be seen."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"River gauge and road survey, current","src":"North road","text":"The water dropped below the road on 3 December, and the road has been passable since. The culvert is the only place on this stretch where something could be hidden."}],"a":"24zbs04alk3","f":"2aqfn1cwyoi"},{"id":"p6","at":85,"win":15,"title":"The fisherman's death","q":"What killed the fisherman found on the coast footpath this morning?","opts":["A Coalition patrol shot him","A North Korean patrol shot him","A militia mine on the footpath","He drowned"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"05{+70}R DEC 26","src":"Village doctor, regular contact","text":"Wounds to the legs and lower body from blast fragments. No bullet wounds."},{"k":"B","disc":"SIGINT","rating":"C4","dtg":"05{-55}R DEC 26","src":"Intercepted phone call between two villagers","text":"\"The patrol opened fire on him near the jetty. Everyone heard the shots.\""},{"k":"C","disc":"IMINT","rating":"A2","dtg":"05{-20}R DEC 26","src":"Drone still, coast footpath","text":"A small fresh crater on the footpath. No vehicle tracks, and no soldiers within 1 km."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Hazard map, updated monthly","src":"Coast footpath","text":"The footpath is a known militia mine belt. Two blasts there since August."}],"a":"1te7463vlc1","f":"146dci2oh7e"},{"id":"p7","at":105,"win":15,"title":"The ambush","q":"Where will the militia ambush the next patrol?","opts":["The north road","The coast road bend","The quarry road cut","No ambush is planned"],"items":[{"k":"A","disc":"GEOINT","rating":"B2","dtg":"Line-of-sight study, 2019 elevation data","src":"Island roads","text":"The coast road bend is open ground with no cover. The only spot with cover for an ambush is the quarry road cut."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"05{+98}R DEC 26","src":"Drone still, coast road bend","text":"Fresh boulders piled where the coast road meets the sea. Three motorbikes hidden behind them."},{"k":"C","disc":"HUMINT","rating":"C2","dtg":"05{+90}R DEC 26","src":"Fisherman, met twice before","text":"\"Men told us to keep our boats off the beach at the road bend today.\""},{"k":"D","disc":"SIGINT","rating":"A2","dtg":"05{+101}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"Wait at the big rocks where the road meets the sea. Let the first truck pass.\""}],"a":"1o7tzdbealm","f":"10dxsd5hl1r"},{"id":"p8","at":125,"win":15,"title":"The rally threat","q":"What is the militia planning for the election rally?","opts":["A car bomb at the town gate","An attack on the mayor's stage","A peaceful protest only","Nothing; the rally is cancelled"],"items":[{"k":"A","disc":"IMINT","rating":"A1","dtg":"05{+115}R DEC 26","src":"Drone video, town square","text":"Crews building a stage in the square with crowd barriers. The back of the stage opens onto an alley."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+118}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"When she starts speaking, the stage comes down. Come in through the alley.\""},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"Town plan and police posts, current","src":"Town square","text":"The alley behind the stage is the only approach not covered by the town gate checkpoint."},{"k":"D","disc":"HUMINT","rating":"B2","dtg":"042000R DEC 26","src":"Mayor's aide, regular contact","text":"\"The rally is cancelled because of the protests.\""}],"a":"1todrsj1mx6","f":"1d4vxhwehca"}];
+const PROBLEMS = [{"id":"p1","at":5,"win":15,"title":"The airstrip gate bomb","q":"Who planted the bomb at the airstrip gate two nights ago?","opts":["BLUFOR (the Coalition)","REDFOR (North Korea)","The Marala First Front (militia)","Not enough information"],"items":[{"k":"A","disc":"SIGINT","rating":"A2","dtg":"032358R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"Gift is at the gate. Walk home through the paddies.\" Direction finding puts the transmitter within 500 m of the gate."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"040214R DEC 26","src":"Airstrip gate camera, still frame","text":"Two men in civilian fishing gear, no uniforms or weapons, leave a bag at the gate and walk west toward the fishing village."},{"k":"C","disc":"HUMINT","rating":"F6","dtg":"041900R DEC 26","src":"Walk-in source, first contact, reunification party member, asked to be paid","text":"\"I watched Coalition soldiers carry a bag to the airstrip gate around 0200.\""},{"k":"D","disc":"GEOINT","rating":"B2","dtg":"Terrain study, current","src":"Road and foot-path analysis","text":"The only vehicle road to the gate runs through the Coalition checkpoint, which logged no traffic from 0100 to 0400. A foot path along the paddy dikes links the fishing village to the gate: 400 m, about 6 minutes on foot."}],"a":"4uviw2t474","f":"25bfal3rpyq"},{"id":"p2","at":20,"win":15,"title":"Where are the mayor's meetings?","q":"Where will the mayor meet each foreign force today?","opts":["The harbor fish market","Town Hall","The church","The airstrip"],"items":[{"k":"A","disc":"SIGINT","rating":"F3","dtg":"05{+18}R DEC 26","src":"Intercepted cell call, unregistered phone near the harbor","text":"\"Tell the foreigners the mayor moved her meetings to the fish market.\""},{"k":"B","disc":"HUMINT","rating":"B2","dtg":"05{+12}R DEC 26","src":"Mayor's driver, regular contact","text":"Told to keep the car at Town Hall from {+50} to {+90} for two meetings."},{"k":"C","disc":"IMINT","rating":"A2","dtg":"05{+15}R DEC 26","src":"Drone video, Marala Town and harbor","text":"Police setting up a cordon and chairs outside Town Hall. The harbor fish market is empty, stalls shuttered."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Tide tables and road survey","src":"Harbor road","text":"The harbor road floods at high tide from {+10} to {+100}. No vehicle can reach the fish market until it drains."}],"a":"2dj32folanx","f":"10ylo7q1h9c"},{"id":"p3","at":30,"win":12,"title":"The roadside explosion","q":"Who set off the explosion at {+25}?","opts":["BLUFOR (the Coalition)","The Marala First Front (militia)","REDFOR (North Korea)","An accident"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"05{+29}R DEC 26","src":"Shopkeeper near the blast, met once before","text":"At {+20} a man on a motorbike left a sack at the roadside and rode north toward the quarry."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+23}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The bird flies in two minutes. Ride north after.\" Direction finding: transmitter near the blast site."},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"05{+10}R DEC 26","src":"Weather station on the ridge, with terrain overlay","text":"Dense fog over the blast area from {+10} to {+40}. Visibility under 20 m."},{"k":"D","disc":"IMINT","rating":"F6","dtg":"05{+24}R DEC 26 (as posted)","src":"Photo posted online, metadata stripped","text":"Clear, sunny photo of armed soldiers standing at the blast site."}],"a":"1bncd0lno9j","f":"f2igowkl9o","blast":{"grid":"C3","truth":"militia","cas":false}},{"id":"p4","at":45,"win":15,"title":"The militia cache","q":"Where is the militia hiding its weapons cache?","opts":["The church basement in town","The harbor warehouse","The old quarry shed","The fuel depot"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"05{-30}R DEC 26","src":"Quarry foreman, regular contact","text":"The stolen explosive was loaded into a red van with no plates."},{"k":"B","disc":"GEOINT","rating":"A1","dtg":"Terrain database, 2019 survey","src":"Structures near the quarry","text":"The old quarry shed was torn down in 2020. The nearest standing building that could hide a cache is the church in Marala Town."},{"k":"C","disc":"SIGINT","rating":"B2","dtg":"05{-38}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The van is in the barn by the stones. Keep the doors shut.\" Direction finding: bearing crosses the quarry."},{"k":"D","disc":"IMINT","rating":"A1","dtg":"05{+40}R DEC 26","src":"Drone still, quarry area","text":"A red van with no plates parked inside the open doors of a shed at the quarry. Fresh tire tracks lead in."}],"a":"20dazhp7ngh","f":"14d6b7eo0cf"},{"id":"p5","at":60,"win":14,"title":"The north-road device","q":"Is there a live device on the north road, and where?","opts":["No, it's a hoax","Yes, at the north-road culvert","Yes, but on the coast road","Not enough information"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"05{-90}R DEC 26","src":"Fisherman, met once before","text":"Saw two men digging at the north-road culvert before dawn."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+52}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The gift under the north road is wrapped. Wait for a patrol.\""},{"k":"C","disc":"IMINT","rating":"A1","dtg":"011030R DEC 26","src":"Satellite image, north road","text":"The road is under water. The culvert can't be seen."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"River gauge and road survey, current","src":"North road","text":"The water dropped below the road on 3 December, and the road has been passable since. The culvert is the only place on this stretch where something could be hidden."}],"a":"24zbs04alk3","f":"2aqfn1cwyoi"},{"id":"p6","at":85,"win":15,"title":"The fisherman's death","q":"What killed the fisherman found on the coast footpath this morning?","opts":["A Coalition patrol shot him","A North Korean patrol shot him","A militia mine on the footpath","He drowned"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"05{+70}R DEC 26","src":"Village doctor, regular contact","text":"Wounds to the legs and lower body from blast fragments. No bullet wounds."},{"k":"B","disc":"SIGINT","rating":"C4","dtg":"05{-55}R DEC 26","src":"Intercepted phone call between two villagers","text":"\"The patrol opened fire on him near the jetty. Everyone heard the shots.\""},{"k":"C","disc":"IMINT","rating":"A2","dtg":"05{-20}R DEC 26","src":"Drone still, coast footpath","text":"A small fresh crater on the footpath. No vehicle tracks, and no soldiers within 1 km."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Hazard map, updated monthly","src":"Coast footpath","text":"The footpath is a known militia mine belt. Two blasts there since August."}],"a":"1te7463vlc1","f":"146dci2oh7e"},{"id":"p7","at":105,"win":15,"title":"The ambush","q":"Where will the militia ambush the next patrol?","opts":["The north road","The coast road bend","The quarry road cut","No ambush is planned"],"items":[{"k":"A","disc":"GEOINT","rating":"B2","dtg":"Line-of-sight study, 2019 elevation data","src":"Island roads","text":"The coast road bend is open ground with no cover. The only spot with cover for an ambush is the quarry road cut."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"05{+98}R DEC 26","src":"Drone still, coast road bend","text":"Fresh boulders piled where the coast road meets the sea. Three motorbikes hidden behind them."},{"k":"C","disc":"HUMINT","rating":"C2","dtg":"05{+90}R DEC 26","src":"Fisherman, met twice before","text":"\"Men told us to keep our boats off the beach at the road bend today.\""},{"k":"D","disc":"SIGINT","rating":"A2","dtg":"05{+101}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"Wait at the big rocks where the road meets the sea. Let the first truck pass.\""}],"a":"1o7tzdbealm","f":"10dxsd5hl1r"},{"id":"p8","at":125,"win":15,"title":"The rally threat","q":"What is the militia planning for the election rally?","opts":["A car bomb at the town gate","An attack on the mayor's stage","A peaceful protest only","Nothing; the rally is cancelled"],"items":[{"k":"A","disc":"IMINT","rating":"A1","dtg":"05{+115}R DEC 26","src":"Drone video, town square","text":"Crews building a stage in the square with crowd barriers. The back of the stage opens onto an alley."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+118}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"When she starts speaking, the stage comes down. Come in through the alley.\""},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"Town plan and police posts, current","src":"Town square","text":"The alley behind the stage is the only approach not covered by the town gate checkpoint."},{"k":"D","disc":"HUMINT","rating":"B2","dtg":"042000R DEC 26","src":"Mayor's aide, regular contact","text":"\"The rally is cancelled because of the protests.\""}],"a":"1todrsj1mx6","f":"1d4vxhwehca"}];
 function fillT(str){ return String(str == null ? '' : str).replace(/\{([+-]\d+)\}/g, (_, n) => hhmm(START_G + Number(n))); }
 function allProblems(S){
   const cs = (S && S.customOrder ? S.customOrder : []).map(id => S.custom[id]).filter(Boolean), reps = {};
@@ -1111,12 +1120,12 @@ function secret(salt, text){ return hashStr(salt + '|' + String(text||'').trim()
 function newState(){
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   return {
-    esc:10, escBy:{B:0,R:0}, hn:{B:50,R:50},
+    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50},
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
     sites, office:{B:false,R:false}, access:{B:true,R:true},
-    uses:{ drone:{B:1,R:1}, show:{B:1,R:1}, strike:{B:1,R:1} }, jamLast:{B:null,R:null}, aidTick:{B:-1,R:-1},
+    uses:{ show:{B:1,R:1}, strike:{B:1,R:1}, cstrike:{B:CACHE_STRIKES,R:CACHE_STRIKES} }, jamLast:{B:null,R:null}, droneLast:{B:null,R:null}, usedCodes:{}, siteTimer:{}, blasts:{}, aidTick:{B:-1,R:-1},
     cacheDone:null, crisisCallAt:-999, war:false, warAt:null, raised:false, tickIdx:0,
     clock:{ started:false, running:false, anchorReal:0, anchorG:START_G },
     endex:false, reveal:false, jam:{B:null,R:null},
@@ -1145,7 +1154,7 @@ function checkAccess(S, side){
 function addHN(S, side, n){ if (!n) return; S.hn[side] += n; checkAccess(S, side); }
 function raise(S, side, n){
   S.esc = Math.min(100, S.esc + n);
-  if (side) S.escBy[side] += n;
+  if (side){ S.escBy[side] += n; S.raisedBy[side] = true; }
   S.raised = true;
   if (S.esc >= 100 && !S.war){
     S.war = true; S.warAt = S.g;
@@ -1160,9 +1169,12 @@ function tick(S, g){
   const parts = { B:[], R:[] };
   ['B','R'].forEach(side => {
     const air = S.sites.airstrip;
-    S.uses.drone[side] = 1 + (air.holder === side && !air.contested ? 1 : 0);
-    parts[side].push(S.uses.drone[side] + ' drone flight' + (S.uses.drone[side] > 1 ? 's' : '') + ' ready');
+    parts[side].push(droneReady(S, side) ? 'drone flight ready' : 'next drone flight ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side))));
     if (S.office[side] && S.access[side]){ addHN(S, side, 3); parts[side].push('host nation +3 (town office)'); }
+  });
+  ['B','R'].forEach(side => {
+    if (!S.raisedBy[side] && S.escBy[side] > 0){ const d = Math.min(S.escBy[side], Math.max(1, Math.round(S.escBy[side] * ESC_DECAY))); S.escBy[side] -= d; S.decayed[side] += d; }
+    S.raisedBy[side] = false;
   });
   if (!S.raised){ const before = S.esc; lower(S, ESC.quiet); if (S.esc !== before){ parts.B.push('escalation −' + (before - S.esc)); parts.R.push('escalation −' + (before - S.esc)); } }
   S.raised = false;
@@ -1191,12 +1203,20 @@ function intelClock(S, g){
 function contestClock(S, g){
   SITE_KEYS.forEach(k => {
     const s = S.sites[k];
-    if (s.contested && s.contestBy && s.contestUntil != null && s.contestUntil <= g + 1e-9 && !S.endex){
-      const keep = S.g, prev = s.holder, by = s.contestBy; S.g = s.contestUntil;
-      s.holder = by; s.contested = false; s.contestBy = null; s.contestUntil = null; s.since = S.g; S.ver++;
-      pushFeed(S, by, SITES[k].name + ' is yours: ' + (prev ? SIDES[prev].name : 'the other wing') + ' did not defend it in time.', 'good');
-      if (prev) pushFeed(S, prev, 'You lost ' + SITES[k].name + ': no team defended it in time.', 'alert');
-      pushLog(S, SIDES[by].name + ' took ' + SITES[k].name + ' (not defended within ' + CONTEST_MIN + ' minutes)', by);
+    if (!(s.contested && s.contestBy && s.contestUntil != null) || S.endex) return;
+    while (s.contestNext != null && s.contestNext < s.contestUntil - 1e-9 && s.contestNext <= g + 1e-9){
+      const keep = S.g; S.g = s.contestNext;
+      raise(S, s.contestBy, CONTEND_ESC);
+      pushLog(S, SIDES[s.contestBy].name + ' contention on ' + SITES[k].name + ' continues (escalation +' + CONTEND_ESC + ')', s.contestBy);
+      s.contestNext += 10; S.ver++; S.g = Math.max(keep, S.g);
+      if (S.step) S.step(S, null);
+    }
+    if (s.contestUntil <= g + 1e-9){
+      const keep = S.g, by = s.contestBy, holder = s.holder; S.g = s.contestUntil;
+      s.contested = false; s.contestBy = null; s.contestUntil = null; s.contestNext = null; S.ver++;
+      pushFeed(S, by, 'Contention on ' + SITES[k].name + ' failed: no capture code word in time. It stays with ' + (holder ? SIDES[holder].name : 'nobody') + '.', 'alert');
+      if (holder) pushFeed(S, holder, SIDES[by].name + '\u2019s contention on ' + SITES[k].name + ' ran out. The site is still yours.', 'good');
+      pushLog(S, SIDES[by].name + ' contention on ' + SITES[k].name + ' failed (time ran out)', by);
       S.g = Math.max(keep, S.g);
       if (S.step) S.step(S, null);
     }
@@ -1238,32 +1258,45 @@ function apply(S, e, cfg){
     case 'clock_set': if (S.clock.started && !S.endex){ S.clock.anchorG = Math.max(START_G, Math.min(END_G, p.g)); S.clock.anchorReal = e.ts; S.g = S.clock.anchorG; pushLog(S, 'Clock set to ' + hhmm(S.g), null, e); } break;
     case 'reveal': S.reveal = !!p.on; pushLog(S, p.on ? 'Fog of war lifted' : 'Fog of war enacted', null, e); pushFeed(S, 'public', p.on ? 'Fog of war lifted. Every position and both scores are now on every screen.' : 'Fog of war enacted.', 'public'); break;
     case 'site_set': { const s = S.sites[p.site]; if (!s) break; s.holder = p.holder || null; s.contested = false; s.contestBy = null; s.contestUntil = null; s.since = S.g; pushLog(S, SITES[p.site].name + (p.holder ? ' set to ' + SIDES[p.holder].name : ' set to nobody'), p.holder, e); break; }
-    case 'site_contested': { const s = S.sites[p.site]; if (!s) break; s.contested = !!p.on; if (!p.on){ s.contestBy = null; s.contestUntil = null; } pushLog(S, SITES[p.site].name + (p.on ? ' contested' : ' no longer contested'), null, e);
+    case 'site_contested': { const s = S.sites[p.site]; if (!s) break; s.contested = !!p.on; if (!p.on){ s.contestBy = null; s.contestUntil = null; s.contestNext = null; } pushLog(S, SITES[p.site].name + (p.on ? ' contested' : ' no longer contested'), null, e);
       if (p.on && s.holder) pushFeed(S, s.holder, 'The other wing is standing on your ' + SITES[p.site].name + '. It scores nothing while contested.', 'alert'); break; }
     case 'office': S.office[side] = !!p.on && S.access[side]; pushLog(S, nm + ' town office ' + (S.office[side] ? 'opened' : 'closed'), side, e); break;
     case 'claim': {
       const c = { id:e.id, side, site:p.site, g:S.g, status:'rejected', note:'' };
-      const ok = cfg && cfg.codes && p.code === cfg.codes[p.site];
+      const okm = codeMatch(cfg, p.site, p.code), ok = okm.cap || okm.def;
       if (!ok){ c.note = 'Code word did not match.'; }
       else if (p.site === 'town'){
         if (!S.access[side]) c.note = 'The mayor has closed your office for now.';
         else { c.status = 'accepted'; c.note = S.office[side] ? 'Office already open.' : 'Town office open.'; S.office[side] = true; }
       } else {
-        const s = S.sites[p.site], nmS = SITES[p.site].name;
-        if (s.holder === side && s.contested && s.contestBy){
-          const att = s.contestBy; s.contested = false; s.contestBy = null; s.contestUntil = null; c.status = 'accepted'; c.note = 'Defended. The other wing must pull back 100 m.';
-          pushFeed(S, att, SITES[p.site].name + ' was defended. Your team must pull back 100 m.', 'alert');
+        const s = S.sites[p.site], nmS = SITES[p.site].name, m = codeMatch(cfg, p.site, p.code), ck = p.site + ':' + p.code;
+        const spend = () => { if (!m.reuse) S.usedCodes[ck] = true; };
+        if (!m.cap && !m.def){ c.note = 'Code word did not match.'; }
+        else if (!m.reuse && S.usedCodes[ck]){ c.note = 'That code word was already used. Do the activity again for a new one.'; }
+        else if (s.holder === side && s.contested && s.contestBy){
+          if (!m.def){ c.note = 'To defend, enter a defense code word (from the easier cipher).'; }
+          else {
+            const att = s.contestBy; spend();
+            s.contested = false; s.contestBy = null; s.contestUntil = null; s.contestNext = null;
+            raise(S, att, CONTEND_ESC);
+            c.status = 'accepted'; c.note = 'Defended. ' + SIDES[att].name + ' must pull back and takes +' + CONTEND_ESC + ' escalation.';
+            pushFeed(S, att, nmS + ' was defended before you unlocked it. Your team must pull back. Escalation +' + CONTEND_ESC + '.', 'alert');
+          }
         }
         else if (s.holder === side){ c.status = 'accepted'; c.note = 'Already yours.'; }
-        else if (s.holder && s.contested && s.contestBy === side){ c.status = 'held'; c.note = 'Already contesting. It falls at ' + hhmm(s.contestUntil) + ' unless defended.'; }
-        else if (s.holder){
-          const holder = s.holder; S.lastSeen[side][p.site] = { holder, g:S.g };
-          s.contested = true; s.contestBy = side; s.contestUntil = Math.min(END_G, S.g + CONTEST_MIN);
-          raise(S, side, ESC.provocation);
-          c.status = 'contest'; c.note = 'Contest started (+5 escalation). It is yours at ' + hhmm(s.contestUntil) + ' unless ' + SIDES[holder].name + ' defends it.';
-          pushFeed(S, holder, SIDES[side].name + ' is contesting ' + nmS + '. Get a team there and enter its code word by ' + hhmm(s.contestUntil) + ', or you lose it.', 'alert');
+        else if (s.holder && s.contested && s.contestBy === side){
+          if (!m.cap){ c.note = 'To take the site, enter a capture code word.'; }
+          else {
+            const prev = s.holder; spend();
+            s.holder = side; s.contested = false; s.contestBy = null; s.contestUntil = null; s.contestNext = null; s.since = S.g;
+            c.status = 'accepted'; c.note = 'Code word unlocked in time. ' + nmS + ' is yours.';
+            S.lastSeen[side][p.site] = { holder:side, g:S.g };
+            pushFeed(S, prev, 'You lost ' + nmS + ': ' + SIDES[side].name + ' unlocked it before you defended.', 'alert');
+          }
         }
-        else { s.holder = side; s.contested = false; s.contestBy = null; s.contestUntil = null; s.since = S.g; c.status = 'accepted'; c.note = 'Site is yours.'; }
+        else if (s.holder){ c.note = 'The other wing holds it. Start contention first, then do the activity for a capture code word.'; S.lastSeen[side][p.site] = { holder:s.holder, g:S.g }; }
+        else if (!m.cap){ c.note = 'That is a defense code word. Capturing needs a capture code word.'; }
+        else { spend(); s.holder = side; s.contested = false; s.contestBy = null; s.contestUntil = null; s.contestNext = null; s.since = S.g; c.status = 'accepted'; c.note = 'Site is yours.'; }
       }
       S.claims.push(c);
       const where = p.site === 'town' ? 'Marala Town office' : SITES[p.site].name;
@@ -1304,10 +1337,25 @@ function apply(S, e, cfg){
       S.pts[c.side].reports += c.gain;
       pushLog(S, SIDES[c.side].name + ' report ' + ({ confirm:'confirmed (+2 points)', duplicate:'marked duplicate', false:'marked false' })[p.verdict], c.side, e);
       break; }
+    case 'act_contend': {
+      const st = S.sites[p.site];
+      if (!st || S.endex || !S.clock.started){ pushLog(S, nm + ' contention refused', side, e, 'rejected'); break; }
+      if (st.holder !== OTHER[side]){ pushLog(S, nm + ' contention on ' + SITES[p.site].name + ' refused: the other wing does not hold it', side, e, 'rejected'); pushFeed(S, side, SITES[p.site].name + (st.holder === side ? ' is already yours.' : ' is not held by the other wing. Capture it with a capture code word.'), 'alert'); if (st.holder !== side) S.lastSeen[side][p.site] = { holder:st.holder, g:S.g }; break; }
+      if (st.contestBy){ pushLog(S, nm + ' contention refused: already in contention', side, e, 'rejected'); pushFeed(S, side, SITES[p.site].name + ' is already in contention.', 'alert'); break; }
+      const mins = S.siteTimer[p.site] || 15;
+      st.contested = true; st.contestBy = side; st.contestUntil = Math.min(END_G, S.g + mins); st.contestNext = S.g + 10;
+      S.lastSeen[side][p.site] = { holder:st.holder, g:S.g };
+      raise(S, side, CONTEND_ESC); S.ver++;
+      pushFeed(S, side, 'Contention started on ' + SITES[p.site].name + '. Your team has until ' + hhmm(st.contestUntil) + ' to finish the activity and enter a capture code word. Escalation +' + CONTEND_ESC + ' now and every 10 minutes.', 'hq');
+      pushFeed(S, st.holder, SIDES[side].name + ' started contention on ' + SITES[p.site].name + '. Get a team there, solve the defense cipher and enter the defense code word before ' + hhmm(st.contestUntil) + '.', 'alert');
+      pushLog(S, nm + ' started contention on ' + SITES[p.site].name + ' until ' + hhmm(st.contestUntil) + ' (escalation +' + CONTEND_ESC + ')', side, e);
+      break; }
+    case 'site_timer': if (SITES[p.site] && (p.min === 15 || p.min === 20)){ S.siteTimer[p.site] = p.min; S.ver++; pushLog(S, SITES[p.site].name + ' contention timer set to ' + p.min + ' minutes', null, e); } break;
     case 'act_drone': if (jammed(S, side)){ pushLog(S, nm + ' drone flight refused: datalink jammed', side, e, 'rejected'); pushFeed(S, side, 'No drone flights while your datalink is jammed.', 'alert'); break; }
-      if (!useUp(S, side, 'drone', e, 'Drone flight')) break;
+      if (!droneReady(S, side)){ pushLog(S, nm + ' drone flight refused: not ready', side, e, 'rejected'); pushFeed(S, side, 'Drone flight not ready yet.', 'alert'); break; }
+      S.droneLast[side] = S.g; raise(S, side, 1);
       S.requests.push({ id:e.id, side, kind:'drone', text:p.text || '', status:'open', g:S.g });
-      pushLog(S, nm + ' drone flight: ' + (p.text || ''), side, e); break;
+      pushLog(S, nm + ' drone flight: ' + (p.text || '') + ' (escalation +1)', side, e); break;
     case 'act_aid':
       if (!S.office[side] || !S.access[side]){ pushLog(S, nm + ' aid refused: no town office', side, e, 'rejected'); pushFeed(S, side, 'Aid needs an open town office.', 'alert'); break; }
       if (S.aidTick[side] === S.tickIdx){ pushLog(S, nm + ' aid refused: already given this 10 minutes', side, e, 'rejected'); pushFeed(S, side, 'Aid is available again at the next board update.', 'alert'); break; }
@@ -1331,7 +1379,7 @@ function apply(S, e, cfg){
       S.requests.push({ id:e.id, side, kind:'show', text:p.text || '', status:'open', g:S.g });
       pushFeed(S, OTHER[side], 'Show of force by ' + SIDES[side].name + ': leave ' + (p.text || 'the named site') + ' by ' + hhmm(Math.min(END_G, S.g + 5)) + ' or take +10 escalation.', 'alert');
       pushLog(S, nm + ' show of force at ' + (p.text || '?') + ' (escalation +10)', side, e); break;
-    case 'act_strike': if (!useUp(S, side, 'strike', e, 'Strike')) break;
+    case 'act_strike': if (!useUp(S, side, p.target === 'cache' ? 'cstrike' : 'strike', e, p.target === 'cache' ? 'Cache strike' : 'Strike on the other wing')) break;
       S.requests.push({ id:e.id, side, kind:'strike', target:p.target, text:p.grid || '', status:'open', g:S.g });
       pushLog(S, nm + ' asked for a strike on ' + (p.target === 'cache' ? 'the militia cache' : SIDES[OTHER[side]].name) + ' at ' + (p.grid || '?'), side, e); break;
     case 'resolve': {
@@ -1362,6 +1410,13 @@ function apply(S, e, cfg){
         pushFeed(S, sd, 'New intel package ' + (i + 1) + ': ' + P.title + (/[?.!]$/.test(P.title) ? '' : '.') + ' Answer under Intel packages, below the map, by ' + hhmm(due) + '.', 'hq', { label:'Intel' });
       });
       S.intelVer++;
+      if (P.blast && P.blast.grid && !S.blasts[P.id]){
+        S.blasts[P.id] = true;
+        const inc = { id:'x-' + P.id, grid:String(P.blast.grid).toUpperCase(), truth:P.blast.truth || 'militia', g:S.g };
+        S.incidents.push(inc);
+        pushFeed(S, 'both', 'Explosion reported at ' + inc.grid + '. Cause unknown.' + (P.blast.cas ? ' Casualties reported.' : ''), 'alert');
+        pushLog(S, 'Explosion at ' + inc.grid + ' with intel package ' + (i + 1) + ' (really caused by ' + (inc.truth === 'militia' ? 'the militia' : SIDES[inc.truth].name) + ')', null, e);
+      }
       pushLog(S, 'Intel package ' + (i + 1) + ' (' + P.title + ') sent to ' + to.map(sd => SIDES[sd].name).join(' and ') + ', due ' + hhmm(due), null, e);
       break; }
     case 'intel_close': {
@@ -1747,6 +1802,8 @@ $('#adminForm').addEventListener('submit', ev => {
   if (!ok){ $('#adminErr').hidden = false; return; }
   $('#adminInput').value = ''; app.wantSetup = true; route();
 });
+function words(t){ return Array.from(new Set(String(t || '').split(/[,;\n]+/).map(w => w.trim().toUpperCase()).filter(Boolean))); }
+function codeList(salt, id){ return { cap:words($('#c' + id).value).map(w => secret(salt, w)), def:words($('#d' + id).value).map(w => secret(salt, w)) }; }
 $('#setupForm').addEventListener('submit', async ev => {
   ev.preventDefault();
   const salt = Math.random().toString(36).slice(2, 10);
@@ -1757,7 +1814,7 @@ $('#setupForm').addEventListener('submit', async ev => {
   if (startG == null || !(lengthMin >= 30 && lengthMin <= 300)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter the start as 24-hour time like 0830, and a length from 30 to 300 minutes.'; return; }
   const cfg = { name:val('#sName') || 'Game', salt, createdAt:Date.now(), startG, lengthMin,
     pins:{ W:secret(salt, pins.W), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR) },
-    codes:{ harbor:secret(salt, val('#cHarbor')), fuel:secret(salt, val('#cFuel')), radar:secret(salt, val('#cRadar')), airstrip:secret(salt, val('#cAirstrip')), town:secret(salt, val('#cTown')) } };
+    codes:{ harbor:codeList(salt, 'Harbor'), fuel:codeList(salt, 'Fuel'), radar:codeList(salt, 'Radar'), airstrip:codeList(salt, 'Airstrip'), town:{ cap:words(val('#cTown')).map(w => secret(salt, w)) } } };
   try {
     const gid = await createGame(cfg);
     LS.set('marala-role-' + gid, 'W');
@@ -1815,7 +1872,7 @@ function buildAAR(){
   const clean = o => JSON.parse(JSON.stringify(o));
   return { version:1, built:Date.now(), name:(app.cfg && app.cfg.name) || 'Game', startG:START_G, endG:END_G, levels:LEVELS, esc:ESC,
     sites:Object.fromEntries(SITE_KEYS.map(k => [k, { name:SITES[k].name, grid:SITES[k].grid }])),
-    final:{ B:score(S, 'B'), R:score(S, 'R'), esc:S.esc, hn:{ B:S.hn.B, R:S.hn.R }, war:S.war, warAt:S.warAt, endex:S.endex, g:S.g },
+    final:{ B:score(S, 'B'), R:score(S, 'R'), esc:S.esc, decayed:{ B:S.decayed.B, R:S.decayed.R }, hn:{ B:S.hn.B, R:S.hn.R }, war:S.war, warAt:S.warAt, endex:S.endex, g:S.g },
     steps, log:clean(S.log), contacts:clean(S.contacts), claims:clean(S.claims), incidents:clean(S.incidents), statements:clean(S.statements),
     requests:clean(S.requests), cacheDone:S.cacheDone, liaison:clean(S.liaison), offers:clean(S.offers), uavs:clean(S.uavs), jams:clean(S.jams), orders:clean(S.orders),
     teams:['B','R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const errs = t.fixes.filter(f => f.gps && f.rep).map(f => Math.round(GEO.dist(f.gps, f.rep))); return { side:sd, id:t.id, name:t.name, num:t.num || null, removed:!!t.removed, status:t.status || null, maps:t.mapN || 0, fixes:t.fixes.length, checks:errs.length, median:errs.length ? errs.slice().sort((a, b) => a - b)[Math.floor(errs.length / 2)] : null, worst:errs.length ? Math.max(...errs) : null }; })),
@@ -2389,7 +2446,7 @@ function buildWing(side){
           <button type="button" role="tab" aria-selected="false" data-tab="req">Requests</button>
         </div>
         <div data-pane="act" class="actions">
-          <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost" data-dronecount>1 ready</span></div>
+          <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> · every 20 minutes (10 with the Airstrip) · <span class="esc-up">+1 escalation</span></span></div>
             <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at D5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
           <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · once every 20 minutes · <span class="esc-up">+10 escalation</span></span></div>
             <p class="small muted" style="margin:0">Shows the other wing’s fireteams at their latest known positions, to you and your fireteams: live for 1 minute, then last seen for 5. The other wing is told it was spotted, but not how.</p>
@@ -2420,8 +2477,11 @@ function buildWing(side){
               <div class="row"><label for="ctT-${side}">T · Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="Example: 0842"></label><label for="ctEq-${side}" data-sal>E · Equipment<input id="ctEq-${side}" name="eq" maxlength="80" placeholder="Example: 2 rifles, a radio"></label></div>
               <label for="ctN-${side}" data-notesal>Notes<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: flag on the Radar Ridge mast"></label>
               <div><button class="btn-side" type="submit">Post report</button></div></form></div>
-          <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">code word from the site card</span></div>
-            <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
+          <div class="act"><div class="act-head"><b>Start contention</b><span class="cost"><span class="esc-up">+5 escalation now and every 10 minutes</span></span></div>
+            <p class="small muted" style="margin:0">For a site the other wing holds. Your team does the site activity for a capture code word and you enter it below before the timer runs out. If they enter a defense code word first, your team pulls back and you take +5 more.</p>
+            <form class="stack" data-f="contend"><div class="row"><label for="cnS-${side}">Site<select id="cnS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div><div><button class="btn-side" type="submit">Start contention</button></div></form></div>
+          <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">capture or defense code word</span></div>
+            <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word (each works once)<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
             <div class="list" data-claims></div></div>
         </div>
         <div data-pane="req" class="stack" hidden><div class="list" data-reqs></div></div>
@@ -2469,6 +2529,7 @@ function buildWing(side){
     const r = writeEvent('contact', side, { kind, site:kind === 'site' ? fd.get('site') : null, grid:String(fd.get('grid')).toUpperCase(), seen, note, salute });
     setTimeout(salSync, 0); return r;
   });
+  on('contend', fd => { if (!confirm('Start contention on ' + SITES[fd.get('site')].name + '? Escalation goes up by 5 now and every 10 minutes until it ends.')) return false; return writeEvent('act_contend', side, { site:fd.get('site') }); });
   on('claim', fd => writeEvent('claim', side, { site:fd.get('site'), code:secret(app.cfg.salt, fd.get('code')) }));
   on('order', fd => writeEvent('order', side, { team:fd.get('team'), text:fd.get('text') }));
   on('liaison', fd => { const site = fd.get('site') || null, ut = String(fd.get('until') || '').trim(); let until = null; if (ut){ until = parseHHMM(ut); if (until == null){ toast('Write the time like 0730.', true); return false; } } if (site && until == null){ toast('Add an “until” time when you declare a site.', true); return false; } return writeEvent('liaison', side, { text:fd.get('text'), site, until }); });
@@ -2575,8 +2636,9 @@ function renderWing(S, side, now){
   const reqs = S.requests.filter(r => r.side === side);
   const kindName = { drone:'Drone flight', show:'Show of force', strike:'Strike' };
   $('[data-reqs]', v).innerHTML = reqs.length ? reqs.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + kindName[r.kind] + '</b> <span class="muted small">' + hhmm(r.g) + '</span><div class="small">' + esc(r.text) + '</div>' + (r.answer ? '<div class="small muted">Answer: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : 'ok') + '">' + (r.status === 'open' ? 'With the white cell' : 'Done') + '</span></div>').join('') : '<div class="empty">Drone flights, shows of force and strikes wait here until the white cell answers.</div>';
-  $('[data-dronecount]', v).textContent = jammed(S, side) ? 'Jammed until ' + hhmm(S.jam[side]) : S.uses.drone[side] + ' ready' + (S.sites.airstrip.holder === side ? ' (Airstrip bonus)' : '');
-  ['show', 'strike'].forEach(k => { const el = $('[data-left="' + k + '"]', v); if (el) el.textContent = S.uses[k][side] ? '1 left' : 'used'; });
+  $('[data-dronecount]', v).textContent = jammed(S, side) ? 'Jammed until ' + hhmm(S.jam[side]) : droneReady(S, side) ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side)));
+  { const el = $('[data-left="show"]', v); if (el) el.textContent = S.uses.show[side] ? '1 left' : 'used'; }
+  { const el = $('[data-left="strike"]', v); if (el) el.textContent = S.uses.cstrike[side] + ' cache strike' + (S.uses.cstrike[side] === 1 ? '' : 's') + ' left · ' + (S.uses.strike[side] ? '1 strike on ' + SIDES[OTHER[side]].name : 'wing strike used'); }
   const lock = !S.clock.started || S.endex;
   const jl = S.jamLast[side], jamReady = jl == null || S.g - jl >= JAM_EVERY - 1e-9;
   $('[data-jamstate]', v).textContent = jamReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(jl + JAM_EVERY));
@@ -2585,9 +2647,10 @@ function renderWing(S, side, now){
   $$('form[data-f] button[type="submit"]', v).forEach(b => {
     const f = b.closest('form').dataset.f;
     let off = lock;
-    if (f === 'drone') off = off || S.uses.drone[side] < 1;
+    if (f === 'drone') off = off || !droneReady(S, side);
     if (f === 'uav') off = off || !uavReady;
-    if (f === 'show' || f === 'strike') off = off || S.uses[f][side] < 1;
+    if (f === 'show') off = off || S.uses.show[side] < 1;
+    if (f === 'strike') off = off || (S.uses.cstrike[side] < 1 && S.uses.strike[side] < 1);
     if (f === 'jam') off = off || !jamReady;
     if (f === 'drone') off = off || jammed(S, side);
     if (f === 'aid') off = off || !(S.office[side] && S.access[side]) || S.aidTick[side] === S.tickIdx;
@@ -2616,7 +2679,6 @@ const TEMPLATES = [
   { at:0, phase:'Phase 1', label:'STARTEX orders', to:'both', text:'Higher headquarters: secure the sites on your side of the island first and stay clear of the other force. The mayor will meet each force separately later this morning. The militia is active on island roads: report every suspected device with a 9-line.' },
   { at:10, phase:'Phase 1', label:'IED tip (BLUFOR)', to:'B', text:'Locals saw men burying something on your supply road. Check it before your next move.' },
   { at:15, phase:'Phase 1', label:'IED tip (REDFOR)', to:'R', text:'Locals saw men burying something on your supply road. Check it before your next move.' },
-  { at:25, phase:'Phase 1', label:'Roadside explosion', to:'both', text:'Explosion reported on an island road at {+25}. Cause unknown.' },
   { at:35, phase:'Phase 1', label:'Injured farmer (BLUFOR)', to:'B', text:'A farmer is hurt near your sector. Send a team to treat him (TCCC) and call in a MEDEVAC 9-line.' },
   { at:45, phase:'Phase 1', label:'Injured farmer (REDFOR)', to:'R', text:'A farmer is hurt near your sector. Send a team to treat him (TCCC) and call in a MEDEVAC 9-line.' },
   { at:50, phase:'Phase 2', label:'Mayor invitations', to:'both', text:'The mayor will meet the Coalition at Town Hall at {+60} and North Korea at {+75}. Send one team with your Wing Commander’s message. Weapons slung in town.' },
@@ -2650,7 +2712,6 @@ function buildWhite(){
         <button type="button" data-ev="returnfire" data-side="${s}">Returned fire<small>escalation +5</small></button>
         <button type="button" data-ev="office" data-side="${s}" data-on="0">Close town office<small>override</small></button>
       </div>
-      <form class="row" data-wf="sabotage" data-side="${s}"><label>Pulled the other wing's flag at<select name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label><button type="submit" style="flex:0 0 auto">Flag pulled<small class="mono muted"> +15</small></button></form>
       <form class="row" data-wf="adjust" data-side="${s}"><label>Adjust<select name="field"><option value="hn">Host nation</option><option value="pts">Points</option><option value="esc">Escalation (charged to them)</option></select></label><label>By<input name="delta" type="number" value="1" step="1"></label><label>Reason<input name="reason" maxlength="80"></label><button type="submit" style="flex:0 0 auto">Apply</button></form>
     </div>`;
   v.innerHTML = `
@@ -2710,6 +2771,7 @@ function buildWhite(){
           <p class="small" data-ipbmode style="margin:0"></p>
           <div class="row"><label>Title<input data-ipb="title" maxlength="80" placeholder="Example: The coast road ambush"></label><label style="flex:0 0 110px">Intended time (T+ min)<input data-ipb="at" type="number" min="0" max="300" value="60"></label><label style="flex:0 0 110px">Window (min)<input data-ipb="win" type="number" min="3" max="60" value="15"></label></div>
           <label>Question<input data-ipb="q" maxlength="200" placeholder="Example: Who set the ambush on the coast road?"></label>
+          <div class="row" style="align-items:end"><label>Explosion with this package (optional): grid<input data-ipb="bgrid" maxlength="24" placeholder="Example: C3"></label><label style="flex:0 0 170px">Really caused by<select data-ipb="btruth"><option value="militia">The militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-ipb="bcas"> Casualties</label></div>
           <fieldset class="ipb-piece"><legend>Answers (pick the right one)</legend><div class="ipb-opts">
             ${[0, 1, 2, 3].map(k => '<div class="row"><input type="radio" name="ipbA" value="' + k + '" aria-label="Correct answer ' + (k + 1) + '"><input data-ipbopt="' + k + '" maxlength="100" placeholder="Example: ' + ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'][k] + '"></div>').join('')}
           </div></fieldset>
@@ -2741,7 +2803,6 @@ function buildWhite(){
   });
   $$('form[data-wf]', v).forEach(f => f.addEventListener('submit', ev => {
     ev.preventDefault(); const fd = new FormData(f), k = f.dataset.wf, s = f.dataset.side || null;
-    if (k === 'sabotage') writeEvent('sabotage', s, { site:fd.get('site') });
     if (k === 'adjust') writeEvent('adjust', s, { field:fd.get('field'), delta:Number(fd.get('delta')) || 0, reason:fd.get('reason') });
     if (k === 'detonation') writeEvent('detonation', null, { grid:String(fd.get('grid')).toUpperCase(), truth:fd.get('truth'), casualties:!!fd.get('cas') });
     if (k === 'msg') writeEvent('msg', null, { to:fd.get('to'), text:fd.get('text'), label:fd.get('label') || 'Higher headquarters' });
@@ -2785,6 +2846,7 @@ function buildWhite(){
     $('[data-restore]', v).hidden = false;
     $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
   }
+  v.addEventListener('change', ev => { const t = ev.target.closest('[data-timer]'); if (t) { writeEvent('site_timer', null, { site:t.dataset.timer, min:+t.value }); toast(SITES[t.dataset.timer].name + ' contention timer: ' + t.value + ' minutes.'); } });
   v.addEventListener('click', ev => {
     const b = ev.target.closest('[data-act]'); if (!b) return;
     const a = b.dataset.act, id = b.dataset.id;
@@ -2811,6 +2873,7 @@ function ipbFill(P){
   $('[data-ipb="title"]', f).value = P ? fillT(P.title) : ''; $('[data-ipb="q"]', f).value = P ? fillT(P.q) : '';
   $('[data-ipb="at"]', f).value = P && P.at != null ? P.at : 60; $('[data-ipb="win"]', f).value = P && P.win ? P.win : 15;
   $('[data-ipb="note"]', f).value = P && P.note || '';
+  $('[data-ipb="bgrid"]', f).value = P && P.blast ? P.blast.grid : ''; $('[data-ipb="btruth"]', f).value = P && P.blast ? P.blast.truth : 'militia'; $('[data-ipb="bcas"]', f).checked = !!(P && P.blast && P.blast.cas);
   const tr = P && P.a ? intelTruth(P) : { a:-1, f:'' };
   [0, 1, 2, 3].forEach(k => { $('[data-ipbopt="' + k + '"]', f).value = P ? fillT(P.opts[k] || '') : ''; });
   $$('input[name="ipbA"]', f).forEach(r => r.checked = P ? +r.value === (P.aIdx != null ? P.aIdx : tr.a) : false);
@@ -3004,6 +3067,7 @@ async function ipbSave(){
       it.img = im.id;
     }
     const pkg = { id, custom:true, replaces:ipb.replaces || null, at:Math.max(0, Math.round(+val('[data-ipb="at"]') || 0)), win:Math.max(3, Math.round(+val('[data-ipb="win"]') || 15)), title, q, opts, items, note:val('[data-ipb="note"]'),
+      blast:val('[data-ipb="bgrid"]') ? { grid:val('[data-ipb="bgrid"]').toUpperCase(), truth:$('[data-ipb="btruth"]', f).value, cas:$('[data-ipb="bcas"]', f).checked } : null,
       a:intelKey(id, 'a', +aR.value), f:intelKey(id, 'f', fR.value) };
     await writeEvent('intel_custom', null, { pkg });
     ipb.id = id; ipbSetMode();
@@ -3068,7 +3132,7 @@ function renderWhite(S, now){
   const v = $('#vWhite'), lvl = levelIndex(S.esc);
   $('[data-esclvl]', v).innerHTML = '· <span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
   $('[data-ladder]', v).innerHTML = ladderHTML(S);
-  $('[data-escby]', v).textContent = 'Caused by BLUFOR ' + S.escBy.B + ' · REDFOR ' + S.escBy.R;
+  $('[data-escby]', v).textContent = 'Caused by BLUFOR ' + S.escBy.B + ' · REDFOR ' + S.escBy.R + (S.decayed.B || S.decayed.R ? ' (worn off so far: BLUFOR ' + S.decayed.B + ', REDFOR ' + S.decayed.R + ')' : '');
   $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + '. Play the casualty event.</div>' : '';
   $('[data-clk="start"]', v).disabled = S.clock.started;
   $('[data-clk="pause"]', v).disabled = !S.clock.running;
@@ -3089,9 +3153,9 @@ function renderWhite(S, now){
   if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TEMPLATES.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + ' · ' + t.phase : LEVELS[t.lvl].name + ' or higher') + ' · ' + ({ both:'both', B:'BLUFOR', R:'REDFOR', public:'public' })[t.to] + '</small></button>'; }).join(''); }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
   if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); }
-  $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + SITES[k].grid + '</span>' + (s.contested ? ' <span class="chip wait">Contested</span>' : '') + '</span>' +
+  $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + SITES[k].grid + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Both at site</span>' : '') + '</span>' +
     '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>REDFOR</option></select>' +
-    (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' takes it ' + hhmm(s.contestUntil) + '</span>' : '') + '<button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? 'Uncontest' : 'Contest') + '</button></div>'; }).join('') +
+    (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<select data-timer="' + k + '" aria-label="Contention timer for ' + SITES[k].name + '" style="flex:0 0 auto;width:auto"><option value="15"' + ((S.siteTimer[k] || 15) === 15 ? ' selected' : '') + '>15 min</option><option value="20"' + (S.siteTimer[k] === 20 ? ' selected' : '') + '>20 min</option></select><button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear') : 'Both at site') + '</button></div>'; }).join('') +
     '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
   const q = [];
   S.contacts.filter(c => !c.verdict).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid) + '</span> <span class="small muted">seen ' + esc(c.seen) + ' · posted ' + hhmm(c.g) + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' +
@@ -3115,7 +3179,7 @@ function renderWhite(S, now){
     if (!oB && !oR) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="B"' + (running ? '' : ' disabled') + '>BLUFOR only</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="R"' + (running ? '' : ' disabled') + '>REDFOR only</button>';
     else if (!oB || !oR) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>';
     if ((oB && !oB.done) || (oR && !oR.done)) btns += '<button type="button" data-act="ipclose" data-id="' + P.id + '">Close now</button>';
-    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img) ? ' <span class="chip">photo</span>' : '') + ' <span class="small muted">intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · false piece ' + tr.f + ' (' + esc((P.items.find(x => x.k === tr.f) || {}).disc || '') + ')</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
+    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · false piece ' + tr.f + ' (' + esc((P.items.find(x => x.k === tr.f) || {}).disc || '') + ')</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
   }).join('');
   ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Host nation ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · escalation caused ' + S.escBy[s]; });
   $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · from ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
