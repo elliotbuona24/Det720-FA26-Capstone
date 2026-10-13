@@ -294,6 +294,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
       <div class="row">
         <label for="sPinTB">BLUFOR fireteam PIN<input id="sPinTB" required autocomplete="off"></label>
         <label for="sPinTR">REDFOR fireteam PIN<input id="sPinTR" required autocomplete="off"></label>
+        <label for="sPinOC">POC PIN<input id="sPinOC" required autocomplete="off"></label>
         <label for="sStart">Board clock starts at<input id="sStart" value="0830" maxlength="5" inputmode="numeric" required></label>
         <label for="sLen">Game length (minutes)<input id="sLen" type="number" min="30" max="300" step="5" value="165" required></label>
       </div>
@@ -318,6 +319,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
   <section id="vWhite" class="side-W" hidden></section>
   <section id="vPublic" class="public-view" hidden></section>
   <section id="vTeam" hidden></section>
+  <section id="vOC" class="team-view side-W" hidden></section>
 </div>
 
 <style id="leaflet-css">
@@ -1124,6 +1126,24 @@ function validPkg(k){
 }
 function intelKey(pid, kind, val){ return secret('marala-intel', pid + ':' + kind + ':' + val); }
 const IPB_KINDS = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT', 'OSINT'];
+const OC_CALLS = {
+  good:{ ev:'conduct', p:{ good:true }, name:'Good conduct', sub:'diplomatic points +5' },
+  poor:{ ev:'conduct', p:{ good:false }, name:'Poor conduct', sub:'diplomatic points −5' },
+  civaid:{ ev:'civaid', p:{}, name:'Helped a civilian', sub:'diplomatic points +5' },
+  ied_real:{ ev:'ied', p:{ result:'real' }, name:'Real IED cleared', sub:'+2 points · diplomatic points +5' },
+  ied_hoax:{ ev:'ied', p:{ result:'hoax' }, name:'Hoax called correctly', sub:'+2 points' },
+  cache:{ ev:'cache', p:{}, name:'Militia cache cleared', sub:'+5 points · diplomatic points +5' },
+  provocation:{ ev:'provocation', p:{}, name:'Aimed at or crowded the other wing', sub:'escalation +5' },
+  firstfire:{ ev:'firstfire', p:{}, name:'Fired first', sub:'escalation +30 · diplomatic points −15' },
+  returnfire:{ ev:'returnfire', p:{}, name:'Returned fire', sub:'escalation +5' }
+};
+function ocWhere(S, o){ if (!o) return ''; if (o.mayor) return 'Mayor'; if (o.side && o.team){ const t = S.teams[o.side][o.team]; return SIDES[o.side].name + ' · ' + (t ? (t.num ? '#' + t.num + ' ' : '') + t.name : 'fireteam'); } return 'not attached'; }
+function nineText(n){ return (n.target === 'cache' ? 'militia cache' : SIDES[OTHER[n.side]].name + ' position') + ' at ' + (n.loc || '?'); }
+function ocReqText(S, r){
+  if (r.kind === 'call') return OC_CALLS[r.call].name + ' for ' + SIDES[r.side].name + (r.text ? ' (' + r.text + ')' : '');
+  if (r.kind === 'site') return (r.who === 'both' ? 'Both wings' : r.side ? SIDES[r.side].name : 'A team') + ' at ' + (r.site === 'town' ? 'Marala Town' : SITES[r.site] ? SITES[r.site].name : 'a site') + (r.text ? ' (' + r.text + ')' : '');
+  return 'Message: "' + r.text + '"';
+}
 const ESC = { provocation:5, sabotage:15, firstfire:30, returnfire:5, falseblame:15, show:10, defied:10, jam:5, strikewing:40, quiet:3, trueblame:5 };
 
 function levelIndex(esc){ return esc >= 100 ? 4 : esc >= 75 ? 3 : esc >= 50 ? 2 : esc >= 25 ? 1 : 0; }
@@ -1140,7 +1160,7 @@ function secret(salt, text){ return hashStr(salt + '|' + String(text||'').trim()
 function newState(){
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   return {
-    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, wcPos:null, pings:[],
+    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[],
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
@@ -1400,7 +1420,8 @@ function apply(S, e, cfg){
       pushFeed(S, OTHER[side], 'Show of force by ' + SIDES[side].name + ': leave ' + (p.text || 'the named site') + ' by ' + hhmm(Math.min(END_G, S.g + 5)) + ' or take +10 escalation.', 'alert');
       pushLog(S, nm + ' show of force at ' + (p.text || '?') + ' (escalation +10)', side, e); break;
     case 'act_strike': if (!useUp(S, side, p.target === 'cache' ? 'cstrike' : 'strike', e, p.target === 'cache' ? 'Cache strike' : 'Strike on the other wing')) break;
-      S.requests.push({ id:e.id, side, kind:'strike', target:p.target, text:p.grid || '', status:'open', g:S.g });
+      { const n9 = p.nine ? S.nines.find(x => x.id === p.nine && x.side === side && x.status === 'ok') : null; if (n9) n9.used = e.id;
+        S.requests.push({ id:e.id, side, kind:'strike', target:p.target, text:p.grid || '', status:'open', g:S.g, nineBy:n9 ? n9.by + ', from ' + n9.name : null }); }
       pushLog(S, nm + ' asked for a strike on ' + (p.target === 'cache' ? 'the militia cache' : SIDES[OTHER[side]].name) + ' at ' + (p.grid || '?'), side, e); break;
     case 'resolve': {
       const r = S.requests.find(x => x.id === p.req); if (!r || r.status !== 'open') break;
@@ -1562,6 +1583,50 @@ function apply(S, e, cfg){
       pushLog(S, nm + ' launched a UAV: ' + spots.length + ' enemy fireteam' + (spots.length === 1 ? '' : 's') + ' located (escalation +' + UAV_ESC + ')', side, e);
       S.ver++;
       break; }
+    case 'oc_join': case 'oc_assign': {
+      const id = String(p.oc || ''); if (!/^o[\w-]{3,40}$/.test(id)) break;
+      const o = S.ocs[id] || (S.ocs[id] = { id, name:'POC', side:null, team:null, mayor:false, removed:false, g:S.g });
+      if (e.type === 'oc_join'){ o.removed = false; if (p.name) o.name = String(p.name).slice(0, 40); }
+      if (o.removed) break;
+      o.mayor = !!p.mayor; o.side = !o.mayor && (p.side === 'B' || p.side === 'R') ? p.side : null; o.team = o.side && p.team ? String(p.team) : null;
+      S.ver++;
+      pushLog(S, (e.type === 'oc_join' ? 'POC signed in: ' : 'POC now with ') + (e.type === 'oc_join' ? o.name + ' · ' : o.name + ': ') + ocWhere(S, o), null, e);
+      break; }
+    case 'oc_edit': {
+      const o = S.ocs[p.oc]; if (!o) break;
+      if (p.name && String(p.name).trim()){ const was = o.name; o.name = String(p.name).trim().slice(0, 40); if (was !== o.name) pushLog(S, 'POC renamed: ' + was + ' to ' + o.name, null, e); }
+      if (p.remove){ o.removed = true; pushLog(S, 'POC removed: ' + o.name, null, e); }
+      S.ver++; break; }
+    case 'oc_req': {
+      const o = S.ocs[p.oc]; if (!o || o.removed){ pushLog(S, 'POC request refused: that POC is not signed in', null, e, 'rejected'); break; }
+      const k = ['call', 'site', 'msg'].includes(p.kind) ? p.kind : 'msg';
+      const r = { id:e.id, oc:o.id, kind:k, g:S.g, status:'open', text:String(p.text || '').trim().slice(0, 300) };
+      if (k === 'call'){ if (!OC_CALLS[p.call] || !(p.side === 'B' || p.side === 'R')) break; r.call = p.call; r.side = p.side; }
+      if (k === 'site'){ r.site = SITES[p.site] || p.site === 'town' ? p.site : null; r.who = p.who === 'both' ? 'both' : 'one'; r.side = r.who === 'one' && (p.side === 'B' || p.side === 'R') ? p.side : null; }
+      if (k === 'msg' && !r.text) break;
+      S.ocReqs.push(r); S.ver++;
+      pushLog(S, 'POC ' + o.name + ' (' + ocWhere(S, o) + '): ' + ocReqText(S, r), null, e);
+      break; }
+    case 'oc_res': {
+      const r = S.ocReqs.find(x => x.id === p.req); if (!r || r.status !== 'open') break;
+      r.status = p.ok ? 'ok' : 'no'; r.resG = S.g; S.ver++;
+      if (r.kind === 'call' && p.ok){ const c = OC_CALLS[r.call]; apply(S, { id:e.id, ts:e.ts, type:c.ev, side:r.side, p:Object.assign({}, c.p), by:e.by }, cfg); }
+      else pushLog(S, (r.kind === 'call' ? 'Denied' : 'Acknowledged') + ' POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + ocReqText(S, r), null, e);
+      break; }
+    case 'nine': {
+      if (!side || !p.team) break;
+      const t = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:String(p.name || 'Team').slice(0, 40), fixes:[] });
+      const n = { id:e.id, side, team:p.team, name:t.name, target:p.target === 'other' ? 'other' : 'cache', loc:String(p.loc || '').trim().slice(0, 40).toUpperCase(), g:S.g, status:'open' };
+      S.nines.push(n); S.ver++;
+      pushLog(S, nm + ' ' + t.name + ' sent a strike 9-line for checking: ' + nineText(n), side, e);
+      break; }
+    case 'nine_res': {
+      const n = S.nines.find(x => x.id === p.nine); if (!n || n.status !== 'open') break;
+      n.status = p.ok ? 'ok' : 'no'; n.by = String(p.by || 'White cell').slice(0, 50); n.resG = S.g; S.ver++;
+      if (p.ok) pushFeed(S, n.side, 'Strike 9-line from ' + n.name + ' checked by ' + n.by + ': ' + nineText(n) + '. C2: use it under Pressure options, Strike.', 'hq', { label:'9-line', team:true, tid:n.team });
+      else pushFeed(S, n.side, n.name + ': your strike 9-line was not accepted. Check it and send it again.', 'alert', { label:'9-line', team:true, tid:n.team, only:true });
+      pushLog(S, '9-line from ' + n.name + (p.ok ? ' accepted and sent to ' : ' denied, not sent to ') + SIDES[n.side].name + ' C2 (' + n.by + ')', n.side, e);
+      break; }
     case 'ping': {
       const to = p.to === 'B' || p.to === 'R' ? p.to : 'both', team = to !== 'both' && p.team ? String(p.team) : null;
       S.pings.push({ id:e.id, ts:e.ts, g:S.g, to, team }); S.ver++;
@@ -1586,7 +1651,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -1781,8 +1846,8 @@ function toast(msg, bad){
 }
 
 /* ---------- routing ---------- */
-function show(id){ ['#gate', '#setup', '#vWing', '#vWhite', '#vPublic', '#vTeam'].forEach(s => $(s).hidden = s !== id); if (id !== '#vWing' && id !== '#vWhite') closeFullMap(); }
-function roleLabel(r){ return r === 'W' ? 'White cell' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
+function show(id){ ['#gate', '#setup', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC'].forEach(s => $(s).hidden = s !== id); if (id !== '#vWing' && id !== '#vWhite') closeFullMap(); }
+function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'W' ? 'White cell' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
   if (!app.role && saved && app.cfg) app.role = saved;
@@ -1791,9 +1856,10 @@ function route(){
   if (!app.cfg){ app.role = null; renderGate(); return; }
   if (!app.role){ renderGate(); return; }
   $('#switchRole').hidden = false;
-  $('#roleBadge').innerHTML = '<span class="badge side-' + (app.role === 'P' ? 'W' : app.role[0] === 'T' ? app.role[1] : app.role) + '">' + esc(roleLabel(app.role)) + '</span>';
+  $('#roleBadge').innerHTML = '<span class="badge side-' + (app.role === 'P' || app.role === 'OC' ? 'W' : app.role[0] === 'T' ? app.role[1] : app.role) + '">' + esc(roleLabel(app.role)) + '</span>';
   if (app.role === 'W'){ show('#vWhite'); buildWhite(); }
   else if (app.role === 'P'){ show('#vPublic'); buildPublic(); }
+  else if (app.role === 'OC'){ show('#vOC'); buildOC(); }
   else if (app.role[0] === 'T'){ show('#vTeam'); buildTeam(app.role[1]); }
   else { show('#vWing'); buildWing(app.role); }
   refresh(true);
@@ -1815,15 +1881,16 @@ function renderGate(){
     ['R', 'REDFOR · North Korea', 'The North Korean Wing Commander’s board: sites, reports, actions and points.'],
     ['P', 'Public screen', 'Clock, escalation meter and public news. No PIN needed.'],
     ['TB', 'BLUFOR fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
-    ['TR', 'REDFOR fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.']
+    ['TR', 'REDFOR fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
+    ['OC', 'POC', 'Phone screen for POCs and the mayor: check 9-lines, send calls, site arrivals and messages to the white cell.']
   ];
-  roles.innerHTML = cards.map(([k, t, d]) => '<button type="button" class="role side-' + (k === 'P' ? 'W' : k[0] === 'T' ? k[1] : k) + '" data-role="' + k + '"><b>' + esc(t) + '</b><p>' + esc(d) + '</p></button>').join('');
+  roles.innerHTML = cards.map(([k, t, d]) => '<button type="button" class="role side-' + (k === 'P' || k === 'OC' ? 'W' : k[0] === 'T' ? k[1] : k) + '" data-role="' + k + '"><b>' + esc(t) + '</b><p>' + esc(d) + '</p></button>').join('');
   $$('.role', roles).forEach(b => b.onclick = () => pickRole(b.dataset.role));
 }
 let pendingRole = null;
 function pickRole(r){
   if (r === 'P'){ setRole('P'); return; }
-  pendingRole = r; $('#pinForm').hidden = false; $('#pinForm').className = 'panel side-' + (r[0] === 'T' ? r[1] : r); $('#pinTitle').textContent = 'PIN for the ' + roleLabel(r) + ' view'; $('#pinErr').hidden = true; $('#pinInput').value = ''; $('#pinInput').focus();
+  pendingRole = r; $('#pinForm').hidden = false; $('#pinForm').className = 'panel side-' + (r === 'OC' ? 'W' : r[0] === 'T' ? r[1] : r); $('#pinTitle').textContent = 'PIN for the ' + roleLabel(r) + ' view'; $('#pinErr').hidden = true; $('#pinInput').value = ''; $('#pinInput').focus();
 }
 function setRole(r){ app.role = r; LS.set('marala-role-' + (app.gid || 'none'), r); $('#pinForm').hidden = true; route(); }
 $('#pinForm').addEventListener('submit', ev => {
@@ -1831,7 +1898,7 @@ $('#pinForm').addEventListener('submit', ev => {
   const r = pendingRole; if (!r || !app.cfg) return;
   const want = app.cfg.pins[r] || (r[0] === 'T' ? app.cfg.pins[r[1]] : null);
   const ok = !!want && secret(app.cfg.salt, $('#pinInput').value) === want;
-  if (!ok){ $('#pinErr').hidden = false; return; }
+  if (!ok){ $('#pinErr').hidden = false; $('#pinErr').textContent = r === 'OC' && !want ? 'This game was set up before the POC screen existed. Set up a new game to use it.' : 'That PIN is not right.'; return; }
   setRole(r);
 });
 $('#pinCancel').onclick = () => { $('#pinForm').hidden = true; pendingRole = null; };
@@ -1855,12 +1922,12 @@ $('#setupForm').addEventListener('submit', async ev => {
   ev.preventDefault();
   const salt = Math.random().toString(36).slice(2, 10);
   const val = id => $(id).value.trim();
-  const pins = { W:val('#sPinW'), B:val('#sPinB'), R:val('#sPinR'), TB:val('#sPinTB'), TR:val('#sPinTR') };
-  if (new Set(Object.values(pins)).size < 5){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use five different PINs so each view stays separate.'; return; }
+  const pins = { W:val('#sPinW'), B:val('#sPinB'), R:val('#sPinR'), TB:val('#sPinTB'), TR:val('#sPinTR'), OC:val('#sPinOC') };
+  if (new Set(Object.values(pins)).size < 6){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use six different PINs so each view stays separate.'; return; }
   const startG = parseHHMM(val('#sStart')), lengthMin = Math.round(+val('#sLen'));
   if (startG == null || !(lengthMin >= 30 && lengthMin <= 300)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter the start as 24-hour time like 0830, and a length from 30 to 300 minutes.'; return; }
   const cfg = { name:val('#sName') || 'Game', salt, createdAt:Date.now(), startG, lengthMin,
-    pins:{ W:secret(salt, pins.W), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR) },
+    pins:{ W:secret(salt, pins.W), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR), OC:secret(salt, pins.OC) },
     codes:{ harbor:codeList(salt, 'Harbor'), fuel:codeList(salt, 'Fuel'), radar:codeList(salt, 'Radar'), airstrip:codeList(salt, 'Airstrip'), town:{ cap:words(val('#cTown')).map(w => secret(salt, w)) } } };
   try {
     const gid = await createGame(cfg);
@@ -2387,6 +2454,89 @@ function teamIdKey(side){ return 'marala-team-' + (app.gid || 'none') + '-' + si
 function teamGet(side){ try { return JSON.parse(localStorage.getItem(teamIdKey(side)) || 'null'); } catch(e){ return null; } }
 function teamSet(side, v){ try { localStorage.setItem(teamIdKey(side), JSON.stringify(v)); } catch(e){} }
 let teamAutoTimer = null;
+function ocOpts(S){
+  return '<option value="">Not attached</option><option value="mayor">Mayor (Marala Town)</option>' + ['B', 'R'].map(sd => liveTeams(S, sd).filter(t => t.status !== 'Left the game').map(t => '<option value="' + sd + ':' + esc(t.id) + '">' + SIDES[sd].name + ' · ' + esc(teamLabel(t)) + '</option>').join('')).join('');
+}
+function ocVal(o){ return !o ? '' : o.mayor ? 'mayor' : o.side && o.team ? o.side + ':' + o.team : ''; }
+function ocParse(v){ if (v === 'mayor') return { mayor:true, side:null, team:null }; const m = /^([BR]):(.+)$/.exec(v || ''); return m ? { mayor:false, side:m[1], team:m[2] } : { mayor:false, side:null, team:null }; }
+function ocKey(){ return 'marala-oc-' + (app.gid || 'none'); }
+function ocGet(){ try { return JSON.parse(localStorage.getItem(ocKey()) || 'null'); } catch(e){ return null; } }
+function ocSet(v){ try { if (v) localStorage.setItem(ocKey(), JSON.stringify(v)); else localStorage.removeItem(ocKey()); } catch(e){} }
+function ocStat(st){ return '<span class="chip ' + (st === 'ok' ? 'ok' : st === 'no' ? 'no' : 'wait') + '">'; }
+function buildOC(){
+  if (app.built === 'oc') return; app.built = 'oc';
+  const v = $('#vOC'), me = ocGet();
+  if (!me){
+    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>Sign in as a POC</h2><p class="small muted" style="margin:0">The white cell sees your name and who you are with, so it knows where each call comes from.</p><form class="stack" data-ocjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><label>Attached to<select name="assign" data-ocjoinassign></select></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div></div>';
+    $('[data-ocjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const fd = new FormData(ev.target), name = String(fd.get('name') || '').trim(); if (!name) return; const id = 'o' + uid(); ocSet({ id, name }); writeEvent('oc_join', null, Object.assign({ oc:id, name }, ocParse(fd.get('assign')))); app.built = null; buildOC(); refresh(true); });
+    return;
+  }
+  v.innerHTML = `
+  <div class="stack">
+    <div class="panel"><div class="act-head"><h2 data-ocname>${esc(me.name)}</h2><span class="small muted">POC · <b class="mono" data-clock>—</b></span></div>
+      <div class="row" style="align-items:end"><label>Attached to<select data-ocassign></select></label><button type="button" data-ocsignout style="flex:0 0 auto">Sign out</button></div></div>
+    <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Listen to your team read the full 9-line. If it is right, send it up to their C2.</p><div class="list" data-ocnines></div></div>
+    <div class="panel stack"><h2>Calls for the white cell</h2><p class="small muted" style="margin:0">Pick the wing, then tap what you saw. The white cell approves or denies it.</p>
+      <div class="row"><label>Wing<select data-ocside><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: helped a farmer at the culvert"></label></div>
+      <div class="evgrid">${Object.entries(OC_CALLS).map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div></div>
+    <div class="panel stack"><h2>At a site</h2>
+      <div class="row"><label>Site<select data-ocsite>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select></label></div>
+      <label>Note (optional)<input data-ocsitenote maxlength="120" placeholder="Example: starting the cipher now"></label>
+      <button type="button" class="btn-side" data-ocsitesend>Tell the white cell</button></div>
+    <div class="panel stack"><h2>Message to the white cell</h2><textarea data-ocmsg rows="2" maxlength="300" placeholder="Example: Alpha 1 has a twisted ankle, walking it off"></textarea><button type="button" class="btn-side" data-ocmsgsend>Send</button></div>
+    <div class="panel stack"><h2>Your requests</h2><div class="list" data-ocmine></div></div>
+  </div>`;
+  const send = async (p, msg) => { if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return false; } await writeEvent('oc_req', null, Object.assign({ oc:me.id }, p)); toast(msg || 'Sent to the white cell.'); return true; };
+  $('[data-ocassign]', v).onchange = ev => writeEvent('oc_assign', null, Object.assign({ oc:me.id }, ocParse(ev.target.value)));
+  $('[data-ocsignout]', v).onclick = () => { if (!confirm('Sign out on this phone? The white cell keeps your name until it removes you.')) return; ocSet(null); app.built = null; buildOC(); refresh(true); };
+  v.addEventListener('click', async ev => {
+    const c = ev.target.closest('[data-occall]');
+    if (c){ const k = c.dataset.occall, sd = $('[data-ocside]', v).value; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; if (await send({ kind:'call', call:k, side:sd, text:$('[data-ocnote]', v).value })) $('[data-ocnote]', v).value = ''; return; }
+    const n = ev.target.closest('[data-ocnine]');
+    if (n){ const o = app.S && app.S.ocs[me.id]; await writeEvent('nine_res', null, { nine:n.dataset.ocnine, ok:n.dataset.ok === '1', by:(o ? o.name : me.name) }); toast(n.dataset.ok === '1' ? 'Sent to their C2.' : 'Sent back to the team.'); return; }
+    if (ev.target.closest('[data-ocsitesend]')){ const who = $('[data-ocwho]', v).value; if (await send({ kind:'site', site:$('[data-ocsite]', v).value, who:who === 'both' ? 'both' : 'one', side:who === 'both' ? null : who, text:$('[data-ocsitenote]', v).value })) $('[data-ocsitenote]', v).value = ''; return; }
+    if (ev.target.closest('[data-ocmsgsend]')){ const t = $('[data-ocmsg]', v).value.trim(); if (!t){ toast('Type a message first.', true); return; } if (await send({ kind:'msg', text:t })) $('[data-ocmsg]', v).value = ''; return; }
+  });
+  app.ocSideSet = false;
+}
+function renderOC(S){
+  const v = $('#vOC'), me = ocGet();
+  if (!me){ const sel = $('[data-ocjoinassign]', v); if (sel && document.activeElement !== sel) keepSelect(sel, ocOpts(S)); return; }
+  const o = S.ocs[me.id];
+  if (o && o.removed){ ocSet(null); toast('The white cell removed you. Sign in again if that was a mistake.', true); app.built = null; buildOC(); renderOC(S); return; }
+  if (!$('[data-ocmine]', v)) return;
+  if (o) $('[data-ocname]', v).textContent = o.name;
+  const as = $('[data-ocassign]', v);
+  if (document.activeElement !== as){ as.innerHTML = ocOpts(S); as.value = ocVal(o); }
+  if (o && o.side && !app.ocSideSet){ app.ocSideSet = true; $('[data-ocside]', v).value = o.side; $('[data-ocwho]', v).value = o.side; }
+  const mine = S.nines.filter(n => n.status === 'open' && o && n.side === o.side && n.team === o.team);
+  $('[data-ocnines]', v).innerHTML = !o || !o.team ? '<div class="empty">Attach yourself to a fireteam to check its 9-lines.</div>' : mine.length ? mine.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.g) + '</span><div>' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocnine="' + n.id + '" data-ok="1">Correct · send to C2</button><button type="button" data-ocnine="' + n.id + '" data-ok="0">Not right</button></div></div>').join('') : '<div class="empty">Nothing to check right now.</div>';
+  const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
+  $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
+}
+function renderOCWhite(S, v){
+  const q = [], who = id => { const o = S.ocs[id]; return o ? esc(o.name) + ' <span class="muted">(' + esc(ocWhere(S, o)) + ')</span>' : 'POC'; };
+  const ocsFor = n => Object.values(S.ocs).filter(o => !o.removed && o.side === n.side && o.team === n.team).map(o => esc(o.name)).join(', ');
+  S.nines.filter(n => n.status === 'open').forEach(n => q.push('<div class="li"><div class="grow"><span class="chip ' + n.side + '">' + SIDES[n.side].name + '</span> <b>Strike 9-line</b> <span class="small muted">' + hhmm(n.g) + ' · ' + esc(n.name) + (ocsFor(n) ? ' · POC ' + ocsFor(n) : ' · no POC attached') + '</span><div class="small">' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-nineres="' + n.id + '" data-ok="1">Correct · send to C2</button><button type="button" data-nineres="' + n.id + '" data-ok="0">Deny</button></div></div>'));
+  S.ocReqs.filter(r => r.status === 'open').forEach(r => {
+    let ctl = r.kind === 'call' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button>' : '<button type="button" data-ocres="' + r.id + '" data-ok="1">Got it</button>';
+    if (r.kind === 'site' && r.who === 'both' && SITES[r.site] && !S.sites[r.site].contested) ctl = '<button type="button" data-act="contest" data-id="' + r.site + '" data-on="1">Mark both at site</button>' + ctl;
+    const head = r.kind === 'call' ? '<span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + esc(OC_CALLS[r.call].name) + '</b> <span class="small muted">' + esc(OC_CALLS[r.call].sub) + '</span>' : r.kind === 'site' ? '<b>At a site</b>' : '<b>Message</b>';
+    q.push('<div class="li"><div class="grow">' + head + ' <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + (r.kind === 'call' ? (r.text ? ': ' + esc(r.text) : '') : ': ' + esc(r.kind === 'site' ? ocReqText(S, r) : r.text)) + '</div></div><div class="row" style="flex:0 0 auto">' + ctl + '</div></div>');
+  });
+  $('[data-ocq]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing from the POCs right now.</div>';
+  const live = Object.values(S.ocs).filter(o => !o.removed);
+  $('[data-occount]', v).textContent = q.length ? q.length + ' waiting' : '';
+  $('[data-ocn]', v).textContent = '(' + live.length + ' signed in)';
+  const key = JSON.stringify(live.map(o => [o.id, o.name, ocVal(o)])) + '|' + ['B', 'R'].map(sd => liveTeams(S, sd).map(t => t.id + t.name + (t.num || '')).join()).join('|');
+  const box = $('[data-ocrows]', v);
+  if (key !== app.ocRosterKey && !box.contains(document.activeElement)){
+    app.ocRosterKey = key;
+    const opts = ocOpts(S);
+    box.innerHTML = live.length ? live.map(o => '<div class="li"><input data-ocnamein="' + o.id + '" value="' + esc(o.name) + '" maxlength="40" aria-label="Name" style="flex:1 1 120px"><select data-ocassignin="' + o.id + '" aria-label="Attached to" style="flex:1 1 160px">' + opts + '</select><button type="button" data-ocsave="' + o.id + '" style="flex:0 0 auto">Save</button><button type="button" data-ocdel="' + o.id + '" style="flex:0 0 auto">Remove</button></div>').join('') : '<div class="empty">No POCs signed in yet. They open the board on a phone and pick POC.</div>';
+    live.forEach(o => { const sel = $('[data-ocassignin="' + o.id + '"]', box); if (sel) sel.value = ocVal(o); });
+  }
+}
 const pingDone = new Set();
 function answerPings(S, side){
   const me = teamGet(side); if (!me || !S.clock.started || S.endex || document.visibilityState !== 'visible') return;
@@ -2424,7 +2574,7 @@ function buildTeam(side){
   if (!me){
     v.innerHTML = '<div class="stack"><div class="panel stack"><h2>Create a new fireteam</h2><p class="small muted" style="margin:0">Your C2 sees this name on the map and sends orders to it.</p><form class="stack" data-tjoin><label>Fireteam name<input name="name" maxlength="40" required placeholder="Input fireteam name"></label><div><button class="btn-side team-big" type="submit">Create ' + esc(SIDES[side].name) + ' fireteam</button></div></form></div><div class="panel stack"><h2>Or join an existing fireteam</h2><p class="small muted" style="margin:0">For a second phone on a team that already signed in.</p><div class="list" data-tjoinlist></div></div></div>';
     $('[data-tjoinlist]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tjoinid]'); if (!b) return; teamSet(side, { id:b.dataset.tjoinid, name:b.dataset.name }); app.built = null; buildTeam(side); refresh(true); toast('Joined ' + b.dataset.name + '.'); });
-    $('[data-tjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const name = new FormData(ev.target).get('name').trim(); if (!name) return; teamSet(side, { id:'t' + uid(), name }); app.built = null; buildTeam(side); refresh(true); });
+    $('[data-tjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const name = new FormData(ev.target).get('name').trim(); if (!name) return; const tid = 't' + uid(); teamSet(side, { id:tid, name }); writeEvent('pos', side, { team:tid, name }); app.built = null; buildTeam(side); refresh(true); });
     return;
   }
   v.innerHTML = `
@@ -2443,9 +2593,21 @@ function buildTeam(side){
       <button type="button" class="btn-side team-big" data-send>Send position</button>
       <label class="chk"><input type="checkbox" data-auto> Also send GPS by itself every 10 minutes</label>
       <div class="small muted" data-tlast></div></div>
+    <div class="panel stack"><h2>Strike 9-line</h2>
+      <p class="small muted" style="margin:0">Read the full 9-line out loud to your POC. Then send the target and location here. Your POC or the white cell checks it before it goes to your C2.</p>
+      <div class="row"><label>Target<select data-ntarget><option value="cache">Militia weapons cache</option><option value="other">${esc(SIDES[OTHER[side]].name)} position</option></select></label><label>Location<input data-nloc maxlength="40" autocomplete="off" placeholder="Example: 5892 2345 or D4"></label></div>
+      <button type="button" class="btn-side team-big" data-nsend>Send 9-line for checking</button>
+      <div class="list" data-nlist></div></div>
     <div class="panel"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
   </div>`;
   $('[data-send]', v).onclick = () => sendTeamPos(side, {});
+  $('[data-nsend]', v).onclick = async () => {
+    const loc = $('[data-nloc]', v).value.trim();
+    if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; }
+    if (!loc){ toast('Add the target location first.', true); return; }
+    await writeEvent('nine', side, { team:me.id, name:me.name, target:$('[data-ntarget]', v).value, loc });
+    $('[data-nloc]', v).value = ''; toast('Sent. Your POC or the white cell will check it.');
+  };
   $('[data-rename]', v).onclick = () => { const n = prompt('Fireteam name', me.name); if (n && n.trim()){ teamSet(side, { id:me.id, name:n.trim().slice(0, 40) }); app.built = null; buildTeam(side); refresh(true); } };
   $('[data-leave]', v).onclick = async () => {
     if (!confirm('Leave ' + me.name + ' on this phone? The team stays on the map; your C2 can remove it. You can then create or join a fireteam.')) return;
@@ -2486,7 +2648,8 @@ function renderTeam(S, side){
   $('[data-tlvl]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
   const t = S.teams[side][me.id], f = t && t.last;
   $('[data-tlast]', v).textContent = f ? 'Last sent ' + hhmm(f.g) + (f.rep ? ' with your map grid' + (f.repText ? ' ' + f.repText : '') : '') + (f.gps ? ' and GPS' + (f.acc ? ' (±' + f.acc + ' m)' : '') : '') + '.' : 'Nothing sent yet.';
-  const al = S.feed.filter(f => f.team && f.to === side).slice(-5).reverse();
+  const al = S.feed.filter(f => f.team && f.to === side && (!f.tid || f.tid === me.id)).slice(-5).reverse();
+  { const nl = $('[data-nlist]', v); if (nl){ const ns = S.nines.filter(n => n.side === side && n.team === me.id).slice(-3).reverse(); nl.innerHTML = ns.map(n => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(n.g) + '</span> ' + esc(nineText(n)) + '</div><span class="chip ' + (n.status === 'ok' ? 'ok' : n.status === 'no' ? 'no' : 'wait') + '">' + (n.status === 'ok' ? 'sent to C2' : n.status === 'no' ? 'not accepted' : 'waiting for check') + '</span></div>').join(''); } }
   $('[data-talerts]', v).innerHTML = al.length ? al.map(f => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(f.g) + '</span><div>' + esc(f.text) + '</div></div></div>').join('') : '<div class="empty">Nothing yet. UAV sightings and warnings show here.</div>';
   const ph = jammed(S, side) ? '' : uavPhase(S, side), u = S.uav[side];
   $('[data-tuav]', v).innerHTML = jammed(S, side) ? '<div class="li"><div class="grow"><b>Datalink jammed until ' + hhmm(S.jam[side]) + '</b><div class="small muted">No map and no UAV picture. Keep reporting by radio.</div></div></div>' : ph ? '<div class="li" style="border-left:3px solid var(--' + (side === 'B' ? 'red' : 'blu') + ');padding-left:8px"><div class="grow"><b>' + (ph === 'live' ? 'Enemy fireteams now' : 'Enemy fireteams last seen ' + hhmm(u.g)) + '</b>' + (u.spots.length ? u.spots.map(x => '<div class="mono small">' + (x.num ? '#' + esc(x.num) + ' ' : '') + esc(GEO.toMGRS(x.pt[0], x.pt[1], 3)) + '</div>').join('') : '<div class="small muted">The UAV found no one.</div>') + '</div></div>' : '';
@@ -2517,7 +2680,7 @@ function teamTick(S, side, now){
   }
 }
 function uavNotify(S){
-  const r = app.role; if (!r || r === 'W' || r === 'P') return;
+  const r = app.role; if (!r || r === 'W' || r === 'P' || r === 'OC') return;
   const sd = r[0] === 'T' ? r[1] : r, u = S.uav[sd], sp = S.spotted[sd];
   if (app.uavRole !== r){ app.uavRole = r; app.uavSeen = u ? u.id : null; app.spotSeen = sp ? sp.id : null; return; }
   const buzz = () => { try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} };
@@ -2575,7 +2738,8 @@ function buildWing(side){
               <p class="small muted" style="margin:0">Their live map and drone flights go down for 5.5 minutes. Their radios still work.</p>
               <form data-f="jam"><button type="submit">Jam datalink</button></form>
               <div class="act-head"><b>Strike</b><span class="cost"><span data-left="strike"></span> · needs a correct 9-line</span></div>
-              <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="8" placeholder="Example: C4-6" required></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="nine" required style="width:auto"> A team has sent the strike 9-line</label><div><button type="submit">Ask for strike</button></div></form>
+              <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="40" placeholder="Example: C4-6" required></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="nine" required style="width:auto"> A team has sent the strike 9-line</label><div><button type="submit">Ask for strike</button></div></form>
+              <div class="list" data-nines></div>
             </div></details>
         </div>
         <div data-pane="rep" class="stack" hidden>
@@ -2625,7 +2789,13 @@ function buildWing(side){
   on('uav', () => { if (!confirm('Launch a UAV? Escalation goes up by 10, and the other wing is told it was spotted.')) return false; return writeEvent('act_uav', side, {}); });
   on('show', fd => writeEvent('act_show', side, { text:fd.get('t') }));
   on('jam', () => { if (!confirm('Jam the enemy datalink? Escalation goes up by 5.')) return false; return writeEvent('act_jam', side, {}); });
-  on('strike', fd => writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase() }));
+  on('strike', fd => { const sf = $('form[data-f="strike"]', v), nine = sf.dataset.nine || null; delete sf.dataset.nine; return writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase(), nine }); });
+  v.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-usenine]'); if (!b || !app.S) return;
+    const n = app.S.nines.find(x => x.id === b.dataset.usenine); if (!n) return;
+    const sf = $('form[data-f="strike"]', v); sf.target.value = n.target; sf.grid.value = n.loc; sf.nine.checked = true; sf.dataset.nine = n.id;
+    toast('Strike form filled from ' + n.name + '’s 9-line. Press Ask for strike.');
+  });
   const ctF = $('[data-f="contact"]', v), salSync = () => { const team = ctF.elements.kind.value === 'team'; $$('[data-sal]', ctF).forEach(x => x.hidden = !team); $('[data-notesal]', ctF).hidden = team; $('[data-salnote]', ctF).hidden = !team; ['sz', 'act', 'uni', 'eq', 'seen'].forEach(n => ctF.elements[n].required = team); };
   ctF.elements.kind.addEventListener('change', salSync); salSync();
   on('contact', fd => {
@@ -2758,6 +2928,7 @@ function renderWing(S, side, now){
   $('[data-jamstate]', v).textContent = jamReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(jl + JAM_EVERY));
   const uavL = S.uav[side], uavReady = !uavL || S.g - uavL.g >= UAV_EVERY - 1e-9;
   $('[data-uavstate]', v).textContent = uavReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(uavL.g + UAV_EVERY));
+  { const nb = $('[data-nines]', v); if (nb){ const ns = S.nines.filter(n => n.side === side && n.status === 'ok' && !n.used).slice(-4).reverse(); nb.innerHTML = ns.length ? '<div class="small muted">Checked 9-lines from your fireteams</div>' + ns.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.resG) + ' · checked by ' + esc(n.by) + '</span><div class="small">' + esc(nineText(n)) + '</div></div><button type="button" data-usenine="' + n.id + '" style="flex:0 0 auto">Use</button></div>').join('') : ''; } }
   $$('form[data-f] button[type="submit"]', v).forEach(b => {
     const f = b.closest('form').dataset.f;
     let off = lock;
@@ -2770,7 +2941,7 @@ function renderWing(S, side, now){
     if (f === 'aid') off = off || !(S.office[side] && S.access[side]) || S.aidTick[side] === S.tickIdx;
     b.disabled = off;
   });
-  $('[data-feed]', v).innerHTML = feedHTML(S.feed.filter(f => f.to === side || f.to === 'both' || f.to === 'public'), 'Messages from higher headquarters, board updates and public news appear here.');
+  $('[data-feed]', v).innerHTML = feedHTML(S.feed.filter(f => !f.only && (f.to === side || f.to === 'both' || f.to === 'public')), 'Messages from higher headquarters, board updates and public news appear here.');
 }
 
 /* ---------- public view ---------- */
@@ -2856,6 +3027,8 @@ function buildWhite(){
         </div>
       </div>
       <div class="stack" style="gap:14px;min-width:0">
+        <div class="panel"><div class="act-head"><h2>POCs</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
+          <details data-ocroster style="margin-top:8px"><summary class="small"><b>Manage POCs</b> <span class="muted" data-ocn></span></summary><div class="list" data-ocrows style="margin-top:6px"></div></details></div>
         <div class="panel"><h2>Waiting on you</h2><div class="list" data-queue></div></div>
         <div class="panel"><h2>Send a message</h2>
           <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="Higher headquarters" maxlength="30"></label></div>
@@ -2933,6 +3106,16 @@ function buildWhite(){
   $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'); if (!b) return; const t = TEMPLATES[+b.dataset.tpl], f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = t.from || 'Higher headquarters'; f.text.value = fillT(t.text); f.text.focus(); });
   $('[data-fullmap]', v).onclick = () => openFullMap(null);
   ipbWire(v);
+  v.addEventListener('click', ev => {
+    const nr = ev.target.closest('[data-nineres]'); if (nr){ writeEvent('nine_res', null, { nine:nr.dataset.nineres, ok:nr.dataset.ok === '1', by:'White cell' }); return; }
+    const orq = ev.target.closest('[data-ocres]'); if (orq){ writeEvent('oc_res', null, { req:orq.dataset.ocres, ok:orq.dataset.ok === '1' }); return; }
+    const sv = ev.target.closest('[data-ocsave]');
+    if (sv){ const id = sv.dataset.ocsave, S = app.S, o = S && S.ocs[id]; if (!o) return; const nm = $('[data-ocnamein="' + id + '"]', v).value.trim(), as = ocParse($('[data-ocassignin="' + id + '"]', v).value);
+      if (nm && nm !== o.name) writeEvent('oc_edit', null, { oc:id, name:nm });
+      if (as.mayor !== o.mayor || as.side !== o.side || as.team !== o.team) writeEvent('oc_assign', null, Object.assign({ oc:id }, as));
+      app.ocRosterKey = null; toast('POC updated.'); return; }
+    const dl = ev.target.closest('[data-ocdel]'); if (dl){ const o = app.S && app.S.ocs[dl.dataset.ocdel]; if (o && confirm('Remove ' + o.name + '? Their phone goes back to the sign-in screen.')){ writeEvent('oc_edit', null, { oc:o.id, remove:true }); app.ocRosterKey = null; } return; }
+  });
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-ping]'); if (!b) return; if (!app.S || !app.S.clock.started){ toast('Start the game first.', true); return; } writeEvent('ping', null, { to:b.dataset.ping, team:b.dataset.pingteam || null }); toast('Position request sent silently.'); });
   const wcMove = pt => { const M = mapCfg(app.S), sq = squareOf(M, pt); writeEvent('wc_pos', null, { pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt) }); toast('White cell moved. Every map shows it.'); };
   $('[data-wctap]', v).onclick = () => { if (!app.lastClick){ toast('Tap the spot on the map first.', true); return; } wcMove(app.lastClick.slice()); };
@@ -3316,6 +3499,7 @@ function renderWhite(S, now){
     '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>REDFOR</option></select>' +
     (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<select data-timer="' + k + '" aria-label="Contention timer for ' + SITES[k].name + '" style="flex:0 0 auto;width:auto"><option value="15"' + ((S.siteTimer[k] || 15) === 15 ? ' selected' : '') + '>15 min</option><option value="20"' + (S.siteTimer[k] === 20 ? ' selected' : '') + '>20 min</option></select><button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear') : 'Both at site') + '</button></div>'; }).join('') +
     '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
+  renderOCWhite(S, v);
   const q = [];
   S.contacts.filter(c => !c.verdict).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid) + '</span> <span class="small muted">seen ' + esc(c.seen) + ' · posted ' + hhmm(c.g) + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' +
     '<div class="row" style="flex:0 0 auto"><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="confirm">True · +2</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="duplicate">Duplicate</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="false">False</button></div></div>'));
@@ -3324,7 +3508,7 @@ function renderWhite(S, now){
     let ctl = '';
     if (r.kind === 'drone') ctl = '<input id="ans-' + r.id + '" placeholder="Type the true answer" maxlength="200"><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="answer">Send answer</button>';
     if (r.kind === 'show') ctl = '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="complied">' + SIDES[OTHER[r.side]].name + ' left</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="defied">Stayed · +10 to them</button>';
-    if (r.kind === 'strike') ctl = '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="hit">9-line correct · strike</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="invalid">9-line wrong</button>';
+    if (r.kind === 'strike') ctl = (r.nineBy ? '<span class="chip ok">9-line checked by ' + esc(r.nineBy) + '</span>' : '') + '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="hit">9-line correct · strike</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="invalid">9-line wrong</button>';
     q.push('<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + kindName[r.kind] + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + r.text : r.text) + '</div></div><div class="row" style="flex:1 1 260px">' + ctl + '</div></div>');
   });
   $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force and strikes land here.</div>';
@@ -3357,6 +3541,7 @@ function refresh(force){
     app.sig = sig;
     if (app.role === 'W') renderWhite(S, now);
     else if (app.role === 'P') renderPublic(S);
+    else if (app.role === 'OC') renderOC(S);
     else if (app.role[0] === 'T') renderTeam(S, app.role[1]);
     else renderWing(S, app.role, now);
     if (app.fsEl && app.fsEl._lm && mapCfg(S)) drawDyn(app.fsEl._lm, S, app.fsSide);
