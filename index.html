@@ -139,6 +139,11 @@ svg.map{width:100%;min-width:420px;height:auto;display:block}
 .ip-items{display:grid;gap:6px;margin:0;padding:0;list-style:none}
 .ip-items li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline;border-left:3px solid var(--line);padding:2px 0 2px 8px}
 .ip-items li b{font-family:var(--mono);font-size:13px}
+.ip-img{display:block;max-width:min(100%,420px);max-height:260px;object-fit:contain;border-radius:6px;border:1px solid var(--line);margin:4px 0 6px;cursor:zoom-in;background:#000}
+.ip-lightbox{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.88);display:grid;place-items:center;cursor:zoom-out;padding:16px}.ip-lightbox img{max-width:100%;max-height:100%;object-fit:contain}
+.ipb-piece{border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px}.ipb-piece legend{font-weight:600;padding:0 4px}
+.ipb-prev{max-width:240px;max-height:160px;border-radius:6px;border:1px solid var(--line);display:block}
+.ipb-opts{display:grid;gap:6px}.ipb-opts .row{align-items:center}.ipb-opts input[type=radio]{width:auto;flex:0 0 auto}
 .ip-items li .src{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.02em;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
 .ip-tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink);background:var(--panel)}
 .ipw button{flex:0 0 auto;padding:5px 9px;font-size:13px}
@@ -1077,6 +1082,14 @@ const LEVELS = [
 ];
 const PROBLEMS = [{"id":"p1","at":5,"win":15,"title":"The airstrip gate bomb","q":"Who planted the bomb at the airstrip gate two nights ago?","opts":["BLUFOR (the Coalition)","REDFOR (North Korea)","The Marala First Front (militia)","Not enough information"],"items":[{"k":"A","disc":"SIGINT","rating":"A2","dtg":"102358R NOV 26","src":"Intercept, known militia handheld frequency","text":"\"Gift is at the gate. Walk home through the paddies.\" Direction finding puts the transmitter within 500 m of the gate."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"110214R NOV 26","src":"Airstrip gate camera, still frame","text":"Two men in civilian fishing gear, no uniforms or weapons, leave a bag at the gate and walk west toward the fishing village."},{"k":"C","disc":"HUMINT","rating":"F6","dtg":"111900R NOV 26","src":"Walk-in source, first contact, reunification party member, asked to be paid","text":"\"I watched Coalition soldiers carry a bag to the airstrip gate around 0200.\""},{"k":"D","disc":"GEOINT","rating":"B2","dtg":"Terrain study, current","src":"Road and foot-path analysis","text":"The only vehicle road to the gate runs through the Coalition checkpoint, which logged no traffic from 0100 to 0400. A foot path along the paddy dikes links the fishing village to the gate: 400 m, about 6 minutes on foot."}],"a":"4uviw2t474","f":"25bfal3rpyq"},{"id":"p2","at":20,"win":15,"title":"Where are the mayor's meetings?","q":"Where will the mayor meet each foreign force today?","opts":["The harbor fish market","Town Hall","The church","The airstrip"],"items":[{"k":"A","disc":"SIGINT","rating":"F3","dtg":"12{+18}R NOV 26","src":"Intercepted cell call, unregistered phone near the harbor","text":"\"Tell the foreigners the mayor moved her meetings to the fish market.\""},{"k":"B","disc":"HUMINT","rating":"B2","dtg":"12{+12}R NOV 26","src":"Mayor's driver, regular contact","text":"Told to keep the car at Town Hall from {+50} to {+90} for two meetings."},{"k":"C","disc":"IMINT","rating":"A2","dtg":"12{+15}R NOV 26","src":"Drone video, Marala Town and harbor","text":"Police setting up a cordon and chairs outside Town Hall. The harbor fish market is empty, stalls shuttered."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Tide tables and road survey","src":"Harbor road","text":"The harbor road floods at high tide from {+10} to {+100}. No vehicle can reach the fish market until it drains."}],"a":"2dj32folanx","f":"10ylo7q1h9c"},{"id":"p3","at":30,"win":12,"title":"The roadside explosion","q":"Who set off the explosion at {+25}?","opts":["BLUFOR (the Coalition)","The Marala First Front (militia)","REDFOR (North Korea)","An accident"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"12{+29}R NOV 26","src":"Shopkeeper near the blast, met once before","text":"At {+20} a man on a motorbike left a sack at the roadside and rode north toward the quarry."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"12{+23}R NOV 26","src":"Intercept, known militia handheld frequency","text":"\"The bird flies in two minutes. Ride north after.\" Direction finding: transmitter near the blast site."},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"12{+10}R NOV 26","src":"Weather station on the ridge, with terrain overlay","text":"Dense fog over the blast area from {+10} to {+40}. Visibility under 20 m."},{"k":"D","disc":"IMINT","rating":"F6","dtg":"12{+24}R NOV 26 (as posted)","src":"Photo posted online, metadata stripped","text":"Clear, sunny photo of armed soldiers standing at the blast site."}],"a":"1bncd0lno9j","f":"f2igowkl9o"},{"id":"p4","at":45,"win":15,"title":"The militia cache","q":"Where is the militia hiding its weapons cache?","opts":["The church basement in town","The harbor warehouse","The old quarry shed","The fuel depot"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"12{-30}R NOV 26","src":"Quarry foreman, regular contact","text":"The stolen explosive was loaded into a red van with no plates."},{"k":"B","disc":"GEOINT","rating":"A1","dtg":"Terrain database, 2019 survey","src":"Structures near the quarry","text":"The old quarry shed was torn down in 2020. The nearest standing building that could hide a cache is the church in Marala Town."},{"k":"C","disc":"SIGINT","rating":"B2","dtg":"12{-38}R NOV 26","src":"Intercept, known militia handheld frequency","text":"\"The van is in the barn by the stones. Keep the doors shut.\" Direction finding: bearing crosses the quarry."},{"k":"D","disc":"IMINT","rating":"A1","dtg":"12{+40}R NOV 26","src":"Drone still, quarry area","text":"A red van with no plates parked inside the open doors of a shed at the quarry. Fresh tire tracks lead in."}],"a":"20dazhp7ngh","f":"14d6b7eo0cf"},{"id":"p5","at":60,"win":14,"title":"The north-road device","q":"Is there a live device on the north road, and where?","opts":["No, it's a hoax","Yes, at the north-road culvert","Yes, but on the coast road","Not enough information"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"12{-90}R NOV 26","src":"Fisherman, met once before","text":"Saw two men digging at the north-road culvert before dawn."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"12{+52}R NOV 26","src":"Intercept, known militia handheld frequency","text":"\"The gift under the north road is wrapped. Wait for a patrol.\""},{"k":"C","disc":"IMINT","rating":"A1","dtg":"081030R NOV 26","src":"Satellite image, north road","text":"The road is under water. The culvert can't be seen."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"River gauge and road survey, current","src":"North road","text":"The water dropped below the road on 10 November, and the road has been passable since. The culvert is the only place on this stretch where something could be hidden."}],"a":"24zbs04alk3","f":"2aqfn1cwyoi"},{"id":"p6","at":85,"win":15,"title":"The fisherman's death","q":"What killed the fisherman found on the coast footpath this morning?","opts":["A Coalition patrol shot him","A North Korean patrol shot him","A militia mine on the footpath","He drowned"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"12{+70}R NOV 26","src":"Village doctor, regular contact","text":"Wounds to the legs and lower body from blast fragments. No bullet wounds."},{"k":"B","disc":"SIGINT","rating":"C4","dtg":"12{-55}R NOV 26","src":"Intercepted phone call between two villagers","text":"\"The patrol opened fire on him near the jetty. Everyone heard the shots.\""},{"k":"C","disc":"IMINT","rating":"A2","dtg":"12{-20}R NOV 26","src":"Drone still, coast footpath","text":"A small fresh crater on the footpath. No vehicle tracks, and no soldiers within 1 km."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Hazard map, updated monthly","src":"Coast footpath","text":"The footpath is a known militia mine belt. Two blasts there since August."}],"a":"1te7463vlc1","f":"146dci2oh7e"},{"id":"p7","at":105,"win":15,"title":"The ambush","q":"Where will the militia ambush the next patrol?","opts":["The north road","The coast road bend","The quarry road cut","No ambush is planned"],"items":[{"k":"A","disc":"GEOINT","rating":"B2","dtg":"Line-of-sight study, 2019 elevation data","src":"Island roads","text":"The coast road bend is open ground with no cover. The only spot with cover for an ambush is the quarry road cut."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"12{+98}R NOV 26","src":"Drone still, coast road bend","text":"Fresh boulders piled where the coast road meets the sea. Three motorbikes hidden behind them."},{"k":"C","disc":"HUMINT","rating":"C2","dtg":"12{+90}R NOV 26","src":"Fisherman, met twice before","text":"\"Men told us to keep our boats off the beach at the road bend today.\""},{"k":"D","disc":"SIGINT","rating":"A2","dtg":"12{+101}R NOV 26","src":"Intercept, known militia handheld frequency","text":"\"Wait at the big rocks where the road meets the sea. Let the first truck pass.\""}],"a":"1o7tzdbealm","f":"10dxsd5hl1r"},{"id":"p8","at":125,"win":15,"title":"The rally threat","q":"What is the militia planning for the election rally?","opts":["A car bomb at the town gate","An attack on the mayor's stage","A peaceful protest only","Nothing; the rally is cancelled"],"items":[{"k":"A","disc":"IMINT","rating":"A1","dtg":"12{+115}R NOV 26","src":"Drone video, town square","text":"Crews building a stage in the square with crowd barriers. The back of the stage opens onto an alley."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"12{+118}R NOV 26","src":"Intercept, known militia handheld frequency","text":"\"When she starts speaking, the stage comes down. Come in through the alley.\""},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"Town plan and police posts, current","src":"Town square","text":"The alley behind the stage is the only approach not covered by the town gate checkpoint."},{"k":"D","disc":"HUMINT","rating":"B2","dtg":"112000R NOV 26","src":"Mayor's aide, regular contact","text":"\"The rally is cancelled because of the protests.\""}],"a":"1todrsj1mx6","f":"1d4vxhwehca"}];
 function fillT(str){ return String(str == null ? '' : str).replace(/\{([+-]\d+)\}/g, (_, n) => hhmm(START_G + Number(n))); }
+function allProblems(S){
+  const cs = (S && S.customOrder ? S.customOrder : []).map(id => S.custom[id]).filter(Boolean), reps = {};
+  cs.forEach(c => { if (c.replaces) reps[c.replaces] = c; });
+  return PROBLEMS.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !PROBLEMS.some(P => P.id === c.replaces)));
+}
+function validPkg(k){
+  return k && typeof k.id === 'string' && /^c[\w-]{3,40}$/.test(k.id) && Array.isArray(k.opts) && k.opts.length === 4 && Array.isArray(k.items) && k.items.length === 4 && typeof k.a === 'string' && typeof k.f === 'string';
+}
 function intelKey(pid, kind, val){ return secret('marala-intel', pid + ':' + kind + ':' + val); }
 const ESC = { provocation:5, sabotage:15, firstfire:30, returnfire:5, falseblame:15, show:10, defied:10, jam:5, strikewing:40, quiet:3, trueblame:5 };
 
@@ -1096,7 +1109,7 @@ function newState(){
   return {
     esc:10, escBy:{B:0,R:0}, hn:{B:50,R:50},
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
-    intel:{B:{},R:{}}, intelOut:{}, intelVer:0,
+    intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
     sites, office:{B:false,R:false}, access:{B:true,R:true},
     uses:{ drone:{B:1,R:1}, show:{B:1,R:1}, strike:{B:1,R:1} }, jamLast:{B:null,R:null}, aidTick:{B:-1,R:-1},
@@ -1169,7 +1182,7 @@ function gradeIntel(S, P, i, side, o){
   if (S.step) S.step(S, null);
 }
 function intelClock(S, g){
-  PROBLEMS.forEach((P, i) => ['B','R'].forEach(side => { const o = intelOpen(S, P.id, side); if (o && !o.done && o.due <= g + 1e-9) gradeIntel(S, P, i, side, o); }));
+  allProblems(S).forEach((P, i) => ['B','R'].forEach(side => { const o = intelOpen(S, P.id, side); if (o && !o.done && o.due <= g + 1e-9) gradeIntel(S, P, i, side, o); }));
 }
 function contestClock(S, g){
   SITE_KEYS.forEach(k => {
@@ -1333,7 +1346,7 @@ function apply(S, e, cfg){
       }
       break; }
     case 'intel_deploy': {
-      const i = PROBLEMS.findIndex(x => x.id === p.pid), P = PROBLEMS[i];
+      const AP = allProblems(S), i = AP.findIndex(x => x.id === p.pid), P = AP[i];
       if (!P) break;
       if (!S.clock.started || S.endex){ pushLog(S, 'Intel package ' + (i + 1) + ' not sent: the game is not running', null, e, 'rejected'); break; }
       const to = (p.to === 'B' || p.to === 'R' ? [p.to] : ['B','R']).filter(sd => !intelOpen(S, P.id, sd));
@@ -1348,7 +1361,7 @@ function apply(S, e, cfg){
       pushLog(S, 'Intel package ' + (i + 1) + ' (' + P.title + ') sent to ' + to.map(sd => SIDES[sd].name).join(' and ') + ', due ' + hhmm(due), null, e);
       break; }
     case 'intel_close': {
-      const i = PROBLEMS.findIndex(x => x.id === p.pid), P = PROBLEMS[i];
+      const AP = allProblems(S), i = AP.findIndex(x => x.id === p.pid), P = AP[i];
       if (!P) break;
       const open = ['B','R'].filter(sd => { const o = intelOpen(S, P.id, sd); return o && !o.done; });
       if (!open.length){ pushLog(S, 'Intel package ' + (i + 1) + ' is not open', null, e, 'rejected'); break; }
@@ -1356,7 +1369,7 @@ function apply(S, e, cfg){
       open.forEach(sd => { const o = intelOpen(S, P.id, sd); o.due = S.g; gradeIntel(S, P, i, sd, o); });
       break; }
     case 'intel_answer': {
-      const i = PROBLEMS.findIndex(x => x.id === p.pid), P = PROBLEMS[i], o = P ? intelOpen(S, P.id, side) : null;
+      const AP = allProblems(S), i = AP.findIndex(x => x.id === p.pid), P = AP[i], o = P ? intelOpen(S, P.id, side) : null;
       if (!P || !o){ pushLog(S, nm + ' intel answer refused: that package was not sent to them', side, e, 'rejected'); break; }
       if (o.done){ pushLog(S, nm + ' intel package ' + (i + 1) + ' answer refused: past the ' + hhmm(o.due) + ' deadline', side, e, 'rejected'); pushFeed(S, side, 'Too late: intel package ' + (i + 1) + ' closed at ' + hhmm(o.due) + '.', 'alert', { label:'Intel' }); break; }
       if (S.intel[side][P.id]){ pushLog(S, nm + ' intel package ' + (i + 1) + ' answer refused: already answered', side, e, 'rejected'); break; }
@@ -1405,6 +1418,22 @@ function apply(S, e, cfg){
       if (fix.gps || fix.rep){ t.fixes.push(fix); if (t.fixes.length > 60) t.fixes.shift(); t.last = fix; }
       if (p.status) t.status = p.status;
       t.g = S.g; S.ver++;
+      break; }
+    case 'intel_image': {
+      if (p.id && typeof p.data === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(p.data) && p.data.length < 900000) S.images[p.id] = p.data;
+      break; }
+    case 'intel_custom': {
+      const k = p.pkg;
+      if (!validPkg(k)){ pushLog(S, 'Intel package refused: incomplete', null, e, 'rejected'); break; }
+      if (S.intelOut[k.id] || (k.replaces && S.intelOut[k.replaces])){ pushLog(S, 'Intel package "' + k.title + '" not changed: already sent', null, e, 'rejected'); break; }
+      S.custom[k.id] = k; if (!S.customOrder.includes(k.id)) S.customOrder.push(k.id); S.intelVer++;
+      pushLog(S, 'Intel package saved: ' + k.title + (k.replaces ? ' (replaces built-in package ' + (PROBLEMS.findIndex(P => P.id === k.replaces) + 1) + ')' : ''), null, e);
+      break; }
+    case 'intel_custom_del': {
+      const k = S.custom[p.id];
+      if (!k || S.intelOut[k.id]){ pushLog(S, 'Intel package delete refused', null, e, 'rejected'); break; }
+      delete S.custom[k.id]; S.customOrder = S.customOrder.filter(x => x !== k.id); S.intelVer++;
+      pushLog(S, 'Intel package deleted: ' + k.title, null, e);
       break; }
     case 'team_num': {
       const t = side && p.team ? S.teams[side][p.team] : null;
@@ -1506,7 +1535,7 @@ function score(S, side){
   const war = S.war ? Math.trunc(sub / 2) - sub : 0;
   return { sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
 }
-if (typeof module !== 'undefined') module.exports = { setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, JAM_EVERY, JAM_MIN, jammed, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
+if (typeof module !== 'undefined') module.exports = { allProblems, setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, JAM_EVERY, JAM_MIN, jammed, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
 </script>
 
 <script>
@@ -1786,7 +1815,7 @@ function buildAAR(){
     steps, log:clean(S.log), contacts:clean(S.contacts), claims:clean(S.claims), incidents:clean(S.incidents), statements:clean(S.statements),
     requests:clean(S.requests), cacheDone:S.cacheDone, liaison:clean(S.liaison), offers:clean(S.offers), uavs:clean(S.uavs), jams:clean(S.jams), orders:clean(S.orders),
     teams:['B','R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const errs = t.fixes.filter(f => f.gps && f.rep).map(f => Math.round(GEO.dist(f.gps, f.rep))); return { side:sd, id:t.id, name:t.name, num:t.num || null, removed:!!t.removed, status:t.status || null, maps:t.mapN || 0, fixes:t.fixes.length, checks:errs.length, median:errs.length ? errs.slice().sort((a, b) => a - b)[Math.floor(errs.length / 2)] : null, worst:errs.length ? Math.max(...errs) : null }; })),
-    intel:PROBLEMS.map((P, i) => { const tr = intelTruth(P); const r = s => { const o = intelOpen(S, P.id, s), m = S.intel[s][P.id]; const base = o ? { sent:true, sentAt:o.g, due:o.due, closed:!!o.done } : { sent:false }; return Object.assign(base, m ? { answered:true, g:m.g, okA:!!m.okA, okF:!!m.okF, pts:m.pts || 0 } : { answered:false, pts:0 }); };
+    intel:allProblems(S).map((P, i) => { const tr = intelTruth(P); const r = s => { const o = intelOpen(S, P.id, s), m = S.intel[s][P.id]; const base = o ? { sent:true, sentAt:o.g, due:o.due, closed:!!o.done } : { sent:false }; return Object.assign(base, m ? { answered:true, g:m.g, okA:!!m.okA, okF:!!m.okF, pts:m.pts || 0 } : { answered:false, pts:0 }); };
       const os = ['B','R'].map(s => intelOpen(S, P.id, s)).filter(Boolean);
       return { n:i + 1, id:P.id, title:fillT(P.title), intended:START_G + P.at, t:os.length ? Math.min(...os.map(o => o.g)) : START_G + P.at, due:os.length ? Math.max(...os.map(o => o.due)) : START_G + P.at + P.win, released:os.length > 0, closed:os.length > 0 && os.every(o => o.done), answer:fillT(P.opts[tr.a] || ''), fake:tr.f, fakeDisc:(P.items.find(x => x.k === tr.f) || {}).disc || '', fakeSrc:(P.items.find(x => x.k === tr.f) || {}).src || '', B:r('B'), R:r('R') }; }) };
 }
@@ -2453,7 +2482,7 @@ function intelTruth(P){
 }
 function renderIntel(S, side, v){
   const box = $('[data-intel]', v);
-  const out = PROBLEMS.map((P, i) => ({ P, i })).filter(x => intelOpen(S, x.P.id, side)).sort((a, b) => intelOpen(S, a.P.id, side).g - intelOpen(S, b.P.id, side).g);
+  const out = allProblems(S).map((P, i) => ({ P, i })).filter(x => intelOpen(S, x.P.id, side)).sort((a, b) => intelOpen(S, a.P.id, side).g - intelOpen(S, b.P.id, side).g);
   let open = 0;
   $$('[id^="ip-' + side + '-"]', box).forEach(c => { if (!intelOpen(S, c.id.slice(4 + side.length), side)) c.remove(); });
   if (out.length && box.querySelector('.empty')) box.innerHTML = '';
@@ -2464,7 +2493,7 @@ function renderIntel(S, side, v){
     if (!card){
       card = document.createElement('div'); card.className = 'act'; card.id = id;
       card.innerHTML = '<div class="act-head"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b><span class="cost" data-ipdue></span></div>' +
-        '<ul class="ip-items">' + P.items.map(it => '<li><b>' + it.k + '</b><span class="src"><span class="ip-tag">' + esc(it.disc) + '</span><span class="ip-tag" title="Source rating">' + esc(it.rating) + '</span><span class="mono">' + esc(fillT(it.dtg)) + '</span><span>' + esc(it.src) + '</span></span><span class="txt">' + esc(fillT(it.text)) + '</span></li>').join('') + '</ul>' +
+        '<ul class="ip-items">' + P.items.map(it => '<li><b>' + it.k + '</b><span class="src"><span class="ip-tag">' + esc(it.disc) + '</span><span class="ip-tag" title="Source rating">' + esc(it.rating) + '</span><span class="mono">' + esc(fillT(it.dtg)) + '</span><span>' + esc(it.src) + '</span></span><span class="txt">' + (it.img && S.images[it.img] ? '<img class="ip-img" src="' + S.images[it.img] + '" alt="' + esc(it.src || 'Image') + '">' : '') + esc(fillT(it.text)) + '</span></li>').join('') + '</ul>' +
         '<p class="ip-q">' + esc(fillT(P.q)) + '</p>' +
         '<form class="stack" data-ipf="' + P.id + '"><div class="ip-row">' +
         '<fieldset class="ip-set"><legend>Answer</legend>' + P.opts.map((o, k) => '<label><input type="radio" name="a" value="' + k + '">' + esc(fillT(o)) + '</label>').join('') + '</fieldset>' +
@@ -2660,6 +2689,26 @@ function buildWhite(){
           ${MAP_POINTS.map(([k, n]) => '<div class="li"><label>' + esc(n) + '<input data-mp="' + k + '"></label><button type="button" data-muse="' + k + '">Use last click</button></div>').join('')}
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-msave style="flex:0 0 auto">Save the map for every screen</button><span class="small muted" data-mmsg></span></div>
         </div></details>
+      <details class="panel span2 mapset" data-ipbuild><summary><b>Intel package builder</b> <span class="small muted">(write your own packages, add photos)</span></summary>
+        <div class="stack" style="margin-top:10px">
+          <p class="small muted" style="margin:0">Fill in a question, four answers and four pieces of intel, one per discipline. Mark the right answer and the false or misleading piece. Saved packages join the list above and deploy like the others. You can also start from a built-in package to add a photo to it; your version replaces it.</p>
+          <div class="row" style="align-items:end"><label>Start from<select data-ipbsrc><option value="">A blank package</option></select></label><button type="button" data-ipbload style="flex:0 0 auto">Load</button><button type="button" class="btn-side" data-ipbgen style="flex:0 0 auto">Generate a draft</button><button type="button" data-ipbclear style="flex:0 0 auto">Clear</button></div>
+          <p class="small" data-ipbmode style="margin:0"></p>
+          <div class="row"><label>Title<input data-ipb="title" maxlength="80" placeholder="Example: The coast road ambush"></label><label style="flex:0 0 110px">Intended time (T+ min)<input data-ipb="at" type="number" min="0" max="300" value="60"></label><label style="flex:0 0 110px">Window (min)<input data-ipb="win" type="number" min="3" max="60" value="15"></label></div>
+          <label>Question<input data-ipb="q" maxlength="200" placeholder="Example: Who set the ambush on the coast road?"></label>
+          <fieldset class="ipb-piece"><legend>Answers (pick the right one)</legend><div class="ipb-opts">
+            ${[0, 1, 2, 3].map(k => '<div class="row"><input type="radio" name="ipbA" value="' + k + '" aria-label="Correct answer ' + (k + 1) + '"><input data-ipbopt="' + k + '" maxlength="100" placeholder="Example: ' + ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'][k] + '"></div>').join('')}
+          </div></fieldset>
+          ${['A', 'B', 'C', 'D'].map((k, i) => '<fieldset class="ipb-piece" data-ipbpiece="' + k + '"><legend>Piece ' + k + '</legend>' +
+            '<div class="row"><label style="flex:0 0 130px">Discipline<select data-f="disc"><option>HUMINT</option><option>SIGINT</option><option>IMINT</option><option>GEOINT</option></select></label><label style="flex:0 0 110px">Rating<input data-f="rating" maxlength="4" placeholder="Example: B2"></label><label style="flex:0 0 160px">Date-time group<input data-f="dtg" maxlength="30" placeholder="Example: 111400R NOV 26"></label></div>' +
+            '<label>Source<input data-f="src" maxlength="120" placeholder="Example: Village elder, reliable in the past"></label>' +
+            '<label>What it says (for IMINT, describe the image)<textarea data-f="text" rows="2" maxlength="600"></textarea></label>' +
+            '<div class="row" data-imgrow style="align-items:center"><label style="flex:1 1 220px">Image (IMINT)<input type="file" accept="image/*" data-f="img"></label><img class="ipb-prev" data-f="prev" hidden alt="Image preview"><button type="button" data-f="imgdel" hidden style="flex:0 0 auto">Remove image</button></div>' +
+            '<label class="chk"><input type="radio" name="ipbF" value="' + k + '"> This is the false or misleading piece</label></fieldset>').join('')}
+          <label>White cell note (why the false piece is false; only you see it)<input data-ipb="note" maxlength="300" placeholder="Example: The photo is two days older than the attack."></label>
+          <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-ipbsave style="flex:0 0 auto">Save package</button><span class="small muted" data-ipbmsg></span></div>
+          <h3 class="small muted" style="margin:6px 0 0">Packages built here</h3><div class="list" data-ipblist></div>
+        </div></details>
       <div class="panel"><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
   </div>`;
@@ -2691,6 +2740,7 @@ function buildWhite(){
   });
   $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'); if (!b) return; const t = TEMPLATES[+b.dataset.tpl], f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = t.from || 'Higher headquarters'; f.text.value = fillT(t.text); f.text.focus(); });
   $('[data-fullmap]', v).onclick = () => openFullMap(null);
+  ipbWire(v);
   const ms = $('[data-mapsetup]', v);
   $('[data-mshow]', ms).onclick = () => { const pt = GEO.parsePoint($('[data-mcenter]', ms).value); if (!pt){ toast('That point didn’t read.', true); return; } const d = 0.006; app.previewMap = { sw:[pt[0] - d, pt[1] - d * 1.3], ne:[pt[0] + d, pt[1] + d * 1.3], preview:true }; refresh(true); toast('Showing the area. Click the map to read grids.'); };
   $$('[data-muse]', ms).forEach(b => b.onclick = () => { if (!app.lastClick){ toast('Click a point on the map first.', true); return; } $('[data-mp="' + b.dataset.muse + '"]', ms).value = fmtPt(app.lastClick); });
@@ -2728,6 +2778,170 @@ function buildWhite(){
     if (a === 'office') writeEvent('office', b.dataset.side, { on:b.dataset.on === '1' });
   });
 }
+const IPB_DISC = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT'];
+const ipb = { id:null, replaces:null, imgs:{} };
+function ipbForm(){ return $('[data-ipbuild]'); }
+function ipbSetMode(){
+  const f = ipbForm(); if (!f) return;
+  const P = ipb.replaces ? PROBLEMS.find(x => x.id === ipb.replaces) : null;
+  $('[data-ipbmode]', f).textContent = ipb.id ? 'Editing a package you built. Saving updates it.' : P ? 'Editing built-in package ' + (PROBLEMS.indexOf(P) + 1) + '. Saving replaces it with your version.' : 'New package.';
+}
+function ipbFill(P){
+  const f = ipbForm();
+  $('[data-ipb="title"]', f).value = P ? fillT(P.title) : ''; $('[data-ipb="q"]', f).value = P ? fillT(P.q) : '';
+  $('[data-ipb="at"]', f).value = P && P.at != null ? P.at : 60; $('[data-ipb="win"]', f).value = P && P.win ? P.win : 15;
+  $('[data-ipb="note"]', f).value = P && P.note || '';
+  const tr = P && P.a ? intelTruth(P) : { a:-1, f:'' };
+  [0, 1, 2, 3].forEach(k => { $('[data-ipbopt="' + k + '"]', f).value = P ? fillT(P.opts[k] || '') : ''; });
+  $$('input[name="ipbA"]', f).forEach(r => r.checked = P ? +r.value === (P.aIdx != null ? P.aIdx : tr.a) : false);
+  $$('input[name="ipbF"]', f).forEach(r => r.checked = P ? r.value === (P.fKey || tr.f) : false);
+  ipb.imgs = {};
+  ['A', 'B', 'C', 'D'].forEach((k, i) => {
+    const it = P ? P.items[i] || {} : { disc:IPB_DISC[i] }, box = $('[data-ipbpiece="' + k + '"]', f);
+    $('[data-f="disc"]', box).value = it.disc || IPB_DISC[i];
+    ['rating', 'dtg', 'src', 'text'].forEach(n => $('[data-f="' + n + '"]', box).value = it[n] ? fillT(it[n]) : '');
+    $('[data-f="img"]', box).value = '';
+    ipb.imgs[k] = it.img ? { id:it.img } : null;
+  });
+  ipbSync();
+}
+function ipbSync(){
+  const f = ipbForm(); if (!f) return;
+  ['A', 'B', 'C', 'D'].forEach(k => {
+    const box = $('[data-ipbpiece="' + k + '"]', f), im = ipb.imgs[k], src = im ? (im.data || (app.S && app.S.images[im.id])) : null;
+    const isImint = $('[data-f="disc"]', box).value === 'IMINT';
+    $('[data-imgrow]', box).hidden = !isImint && !im;
+    const pv = $('[data-f="prev"]', box); pv.hidden = !src; if (src) pv.src = src; else pv.removeAttribute('src');
+    $('[data-f="imgdel"]', box).hidden = !im;
+  });
+  ipbSetMode();
+}
+function shrinkImage(file){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onerror = () => rej(new Error('read'));
+    fr.onload = () => {
+      const img = new Image();
+      img.onerror = () => rej(new Error('decode'));
+      img.onload = () => {
+        const make = (max, q) => { const sc = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', q); };
+        let d = make(900, .68); if (d.length > 450000) d = make(720, .55); if (d.length > 700000) d = make(560, .45);
+        res(d);
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+function ipbGenerate(){
+  const r = a => a[Math.floor(Math.random() * a.length)];
+  const places = [['harbor', 'the Harbor pier'], ['fuel', 'the Fuel Depot fence'], ['radar', 'the Radar Ridge mast'], ['airstrip', 'the airstrip gate'], ['town', 'the Marala Town hall'], ['quarry', 'the quarry shed'], ['coast', 'the coast road bridge'], ['culvert', 'the north road culvert']];
+  const kinds = [
+    { t:'bombing', title:p => 'The ' + p + ' bombing', q:p => 'Who planted the bomb at ' + p + ' last night?' },
+    { t:'theft', title:p => 'Fuel stolen at ' + p, q:p => 'Who stole the fuel drums from ' + p + '?' },
+    { t:'cable', title:p => 'The cut cable at ' + p, q:p => 'Who cut the phone cable near ' + p + '?' },
+    { t:'cache', title:p => 'Weapons moved through ' + p, q:p => 'Who is moving weapons through ' + p + '?' }
+  ];
+  const who = ['B', 'R', 'M'];
+  const opts = ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'];
+  const truth = r(who), decoy = r(who.filter(x => x !== truth));
+  const [, place] = r(places), kind = r(kinds);
+  const day = 11, hr = 1 + Math.floor(Math.random() * 4), mm = String(Math.floor(Math.random() * 6) * 10).padStart(2, '0');
+  const dtg = (d, h, m) => String(d).padStart(2, '0') + String(h).padStart(2, '0') + m + 'R NOV 26';
+  const look = { B:'tan uniforms with Coalition patches', R:'dark uniforms, speaking Korean', M:'fishing clothes and red armbands' };
+  const veh = { B:'a tan Coalition 4x4 with a unit number on the door', R:'a dark green truck with no plates, the kind REDFOR uses', M:'two men on foot carrying sacks, no vehicle' };
+  const sig = { B:'Coalition patrol net: "Task done at the site, returning to base."', R:'Korean-language net: "Package placed. Return to the depot by the north road."', M:'Known militia handheld: "The foreigners will blame each other. Walk home through the paddies."' };
+  const geo = { B:'The only vehicle route from the Coalition camp to the site passes their own checkpoint, which logged one vehicle out at the time.', R:'The REDFOR camp sits 600 m away with a covered track straight to the site; a vehicle makes it in 4 minutes.', M:'A footpath from the fishing village reaches the site in about 6 minutes on foot, out of sight of both camps.' };
+  const hum = { B:'"I saw soldiers in ' + look.B + ' at the site that night."', R:'"Men in ' + look.R + ' were at the site around ' + hr + ' in the morning."', M:'"My cousin\u2019s friends in ' + look.M + ' came back from the site laughing before dawn."' };
+  const fKey = r(['A', 'B', 'C', 'D']);
+  const discs = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT'].sort(() => Math.random() - .5);
+  const imintFalse = discs[['A', 'B', 'C', 'D'].indexOf(fKey)] === 'IMINT';
+  const items = ['A', 'B', 'C', 'D'].map((k, i) => {
+    const d = discs[i], lie = k === fKey, c = lie ? decoy : truth;
+    if (d === 'HUMINT') return { k, disc:d, rating:lie ? r(['F6', 'E5', 'D4']) : r(['B2', 'C2', 'B3']), dtg:dtg(day, 9 + i, mm), src:lie ? 'Walk-in source, first contact, asked to be paid' : 'Village elder, reported reliably before', text:hum[c] };
+    if (d === 'SIGINT') return { k, disc:d, rating:lie ? 'C3' : r(['A2', 'B2']), dtg:lie ? dtg(day - 2, 22, '15') : dtg(day, hr, mm), src:'Intercept with direction finding near the site', text:sig[c] + (lie ? '' : ' Direction finding puts the transmitter within 400 m.') };
+    if (d === 'IMINT') return { k, disc:d, rating:lie ? 'B3' : 'A1', dtg:lie ? dtg(day - 2, hr, mm) : dtg(day, hr, mm), src:lie ? 'Photo passed on by a local journalist' : 'Site security camera, still frame', text:'The image shows ' + veh[c] + ' beside the site.' + (lie ? '' : ' Time stamp matches the incident.') };
+    return { k, disc:d, rating:lie ? 'C4' : 'B2', dtg:lie ? 'Map dated 2019' : 'Terrain study, current', src:lie ? 'Old route study' : 'Road and foot-path analysis', text:geo[c] };
+  });
+  const why = { HUMINT:'the source is new, unproven and wanted money', SIGINT:'the intercept is from two days before the incident', IMINT:'the photo is time-stamped two days before the incident and came from an unverified source', GEOINT:'the route study uses an old map' };
+  const fd = items.find(x => x.k === fKey).disc;
+  const place2 = place;
+  ipb.id = null; ipb.replaces = null;
+  ipbFill({ title:kind.title(place2), q:kind.q(place2), at:+($('[data-ipb="at"]', ipbForm()).value || 60), win:15, opts, items, aIdx:who.indexOf(truth), fKey, note:'False: piece ' + fKey + ' (' + fd + ') points at ' + opts[who.indexOf(decoy)].split(' (')[0] + ', but ' + why[fd] + '.' + (imintFalse ? ' Add a photo that looks convincing but is the wrong place or time.' : ' Add a photo to the IMINT piece that matches its description.') });
+  toast('Draft generated. Edit anything, add the IMINT photo, then save.');
+}
+async function ipbSave(){
+  const f = ipbForm(), S = app.S, val = sel => ($(sel, f).value || '').trim();
+  const title = val('[data-ipb="title"]'), q = val('[data-ipb="q"]');
+  const opts = [0, 1, 2, 3].map(k => val('[data-ipbopt="' + k + '"]'));
+  const aR = $('input[name="ipbA"]:checked', f), fR = $('input[name="ipbF"]:checked', f);
+  const items = ['A', 'B', 'C', 'D'].map(k => { const b = $('[data-ipbpiece="' + k + '"]', f), g = n => ($('[data-f="' + n + '"]', b).value || '').trim(); return { k, disc:g('disc'), rating:g('rating') || '?', dtg:g('dtg'), src:g('src'), text:g('text') }; });
+  const msg = t => { $('[data-ipbmsg]', f).textContent = t; toast(t, true); };
+  if (!title || !q) return msg('Add a title and a question.');
+  if (opts.some(o => !o)) return msg('Fill in all four answers.');
+  if (!aR) return msg('Pick the right answer.');
+  if (!fR) return msg('Pick the false or misleading piece.');
+  if (items.some(it => !it.src || !it.text)) return msg('Every piece needs a source and what it says.');
+  const imint = items.filter(it => it.disc === 'IMINT');
+  if (imint.some(it => !ipb.imgs[it.k]) && !confirm('An IMINT piece has no image. Save anyway?')) return;
+  const id = ipb.id || ('c' + uid());
+  if (S && (S.intelOut[id] || (ipb.replaces && S.intelOut[ipb.replaces]))) return msg('That package was already sent, so it can\u2019t be changed now.');
+  $('[data-ipbsave]', f).disabled = true;
+  try {
+    for (const it of items){
+      const im = ipb.imgs[it.k];
+      if (!im) continue;
+      if (im.data && !im.id){ im.id = 'i' + uid(); await writeEvent('intel_image', null, { id:im.id, data:im.data }); }
+      it.img = im.id;
+    }
+    const pkg = { id, custom:true, replaces:ipb.replaces || null, at:Math.max(0, Math.round(+val('[data-ipb="at"]') || 0)), win:Math.max(3, Math.round(+val('[data-ipb="win"]') || 15)), title, q, opts, items, note:val('[data-ipb="note"]'),
+      a:intelKey(id, 'a', +aR.value), f:intelKey(id, 'f', fR.value) };
+    await writeEvent('intel_custom', null, { pkg });
+    ipb.id = id; ipbSetMode();
+    $('[data-ipbmsg]', f).textContent = 'Saved.';
+    toast('Intel package saved. It is in the Intel packages list, ready to deploy.');
+  } catch(err){ msg('Save failed. Check the connection and try again.'); }
+  $('[data-ipbsave]', f).disabled = false;
+}
+function ipbWire(v){
+  const f = $('[data-ipbuild]', v); if (!f) return;
+  $('[data-ipbgen]', f).onclick = ipbGenerate;
+  $('[data-ipbclear]', f).onclick = () => { ipb.id = null; ipb.replaces = null; ipbFill(null); };
+  $('[data-ipbload]', f).onclick = () => {
+    const pid = $('[data-ipbsrc]', f).value; if (!pid){ ipb.id = null; ipb.replaces = null; ipbFill(null); return; }
+    const S = app.S, P = allProblems(S).find(x => x.id === pid) || PROBLEMS.find(x => x.id === pid); if (!P) return;
+    if (S.intelOut[P.id]){ toast('That package was already sent. Loading a copy as a new package instead.'); ipb.id = null; ipb.replaces = null; }
+    else if (P.custom){ ipb.id = P.id; ipb.replaces = P.replaces || null; }
+    else { ipb.id = null; ipb.replaces = P.id; }
+    ipbFill(P);
+  };
+  $('[data-ipbsave]', f).onclick = ipbSave;
+  f.addEventListener('change', async ev => {
+    const t = ev.target;
+    if (t.matches('[data-f="disc"]')) ipbSync();
+    if (t.matches('[data-f="img"]') && t.files && t.files[0]){
+      const k = t.closest('[data-ipbpiece]').dataset.ipbpiece;
+      try { const d = await shrinkImage(t.files[0]); ipb.imgs[k] = { data:d }; ipbSync(); toast('Image ready (' + Math.round(d.length / 1024) + ' KB). Save the package to upload it.'); }
+      catch(e){ toast('That image could not be read. Try a JPG or PNG.', true); }
+    }
+  });
+  f.addEventListener('click', ev => {
+    const d = ev.target.closest('[data-f="imgdel"]'); if (d){ const k = d.closest('[data-ipbpiece]').dataset.ipbpiece; ipb.imgs[k] = null; $('[data-f="img"]', d.closest('[data-ipbpiece]')).value = ''; ipbSync(); }
+    const e = ev.target.closest('[data-ipbedit]'); if (e){ $('[data-ipbsrc]', f).value = e.dataset.ipbedit; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    const x = ev.target.closest('[data-ipbdel]'); if (x && confirm('Delete this package?')){ writeEvent('intel_custom_del', null, { id:x.dataset.ipbdel }); if (ipb.id === x.dataset.ipbdel){ ipb.id = null; ipbSetMode(); } }
+  });
+  ipbFill(null);
+}
+function ipbRender(S, v){
+  const f = $('[data-ipbuild]', v); if (!f) return;
+  const AP = allProblems(S);
+  keepSelect($('[data-ipbsrc]', f), '<option value="">A blank package</option>' + AP.map((P, i) => '<option value="' + P.id + '">' + (i + 1) + '. ' + esc(fillT(P.title)) + (P.custom ? ' (built here)' : '') + '</option>').join(''));
+  const cs = S.customOrder.map(id => S.custom[id]).filter(Boolean);
+  $('[data-ipblist]', f).innerHTML = cs.length ? cs.map(c => { const n = AP.indexOf(c) + 1, sent = !!S.intelOut[c.id]; return '<div class="li"><div class="grow"><b>' + n + '. ' + esc(c.title) + '</b> <span class="small muted">' + (c.replaces ? 'replaces built-in ' + (PROBLEMS.findIndex(P => P.id === c.replaces) + 1) + ' · ' : '') + (c.items.some(it => it.img) ? 'has a photo · ' : '') + (sent ? 'sent' : 'not sent') + '</span>' + (c.note ? '<div class="small muted">Note: ' + esc(c.note) + '</div>' : '') + '</div>' + (sent ? '' : '<button type="button" data-ipbedit="' + c.id + '" style="flex:0 0 auto">Edit</button><button type="button" data-ipbdel="' + c.id + '" style="flex:0 0 auto">Delete</button>') + '</div>'; }).join('') : '<div class="empty">None yet.</div>';
+}
+document.addEventListener('click', ev => {
+  const im = ev.target.closest('.ip-img'); if (im){ const o = document.createElement('div'); o.className = 'ip-lightbox'; o.innerHTML = '<img alt="">'; o.firstChild.src = im.src; o.onclick = () => o.remove(); document.body.appendChild(o); }
+});
 function renderWhite(S, now){
   const v = $('#vWhite'), lvl = levelIndex(S.esc);
   $('[data-esclvl]', v).innerHTML = '· <span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
@@ -2771,14 +2985,15 @@ function renderWhite(S, now){
   $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force and strikes land here.</div>';
   $('[data-score]', v).innerHTML = scoreTable(S, ['B', 'R']);
   const running = S.clock.started && !S.endex;
-  $('[data-intelw]', v).innerHTML = PROBLEMS.map((P, i) => {
+  ipbRender(S, v);
+  $('[data-intelw]', v).innerHTML = allProblems(S).map((P, i) => {
     const tr = intelTruth(P), oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R');
     const st = s => { const o = s === 'B' ? oB : oR, m = S.intel[s][P.id]; return '<span class="chip ' + s + '" style="flex:0 0 auto">' + SIDES[s].name + ': ' + (!o ? 'not sent' : o.done ? (m ? '+' + (m.pts || 0) : 'no answer') : m ? 'locked ' + hhmm(m.g) : 'working, due ' + hhmm(o.due)) + '</span>'; };
     let btns = '';
     if (!oB && !oR) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="B"' + (running ? '' : ' disabled') + '>BLUFOR only</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="R"' + (running ? '' : ' disabled') + '>REDFOR only</button>';
     else if (!oB || !oR) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>';
     if ((oB && !oB.done) || (oR && !oR.done)) btns += '<button type="button" data-act="ipclose" data-id="' + P.id + '">Close now</button>';
-    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b> <span class="small muted">intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · false piece ' + tr.f + ' (' + esc((P.items.find(x => x.k === tr.f) || {}).disc || '') + ')</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
+    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img) ? ' <span class="chip">photo</span>' : '') + ' <span class="small muted">intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · false piece ' + tr.f + ' (' + esc((P.items.find(x => x.k === tr.f) || {}).disc || '') + ')</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
   }).join('');
   ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Host nation ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · escalation caused ' + S.escBy[s]; });
   $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · from ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
