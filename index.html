@@ -1173,7 +1173,7 @@ function newState(){
   resetSites();
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   const S = {
-    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[], ctReqs:[], tchats:[], wps:[], sitePts:{}, siteCodes:{},
+    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[], ctReqs:[], tchats:[], occhats:[], ocAnns:[], wps:[], sitePts:{}, siteCodes:{},
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
@@ -1684,9 +1684,21 @@ function apply(S, e, cfg){
       S.ocReqs.push(r); S.ver++;
       pushLog(S, 'POC ' + o.name + ' (' + ocWhere(S, o) + '): ' + ocReqText(S, r), null, e);
       break; }
+    case 'occhat': {
+      const o = S.ocs[p.oc], tx = String(p.text || '').trim().slice(0, 300); if (!o || o.removed || !tx) break;
+      const from = p.from === 'wc' ? 'wc' : 'oc';
+      S.occhats.push({ id:e.id, oc:o.id, from, text:tx, g:S.g }); S.ver++;
+      pushLog(S, from === 'wc' ? 'White cell to POC ' + o.name + ': ' + tx : 'POC ' + o.name + ' to white cell: ' + tx, null, e);
+      break; }
+    case 'ocann': {
+      const tx = String(p.text || '').trim().slice(0, 400); if (!tx) break;
+      S.ocAnns.push({ id:e.id, text:tx, g:S.g }); S.ver++;
+      pushLog(S, 'Announcement to all POCs: ' + tx, null, e);
+      break; }
     case 'oc_res': {
       const r = S.ocReqs.find(x => x.id === p.req); if (!r || r.status !== 'open') break;
       r.status = p.ok ? 'ok' : 'no'; r.resG = S.g; S.ver++;
+      { const rp = String(p.reply || '').trim().slice(0, 300); if (rp){ r.reply = rp; pushLog(S, 'White cell reply to POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + rp, null, e); } }
       if (r.kind === 'call' && p.ok){ const c = OC_CALLS[r.call]; apply(S, { id:e.id, ts:e.ts, type:c.ev, side:r.side, p:Object.assign({}, c.p), by:e.by }, cfg); }
       else pushLog(S, (r.kind === 'call' ? 'Denied' : 'Acknowledged') + ' POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + ocReqText(S, r), null, e);
       break; }
@@ -1785,7 +1797,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -2699,6 +2711,7 @@ function buildOC(){
       <div class="row" style="align-items:end"><label>Attached to<select data-ocassign></select></label><button type="button" data-ocsignout style="flex:0 0 auto">Sign out</button></div>
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <div class="ip-status" data-ocwarn hidden style="color:var(--bad);font-weight:600"></div></div>
+    <div class="panel stack" data-ocannbox hidden><h2>Announcements</h2><div class="list" data-ocanns></div></div>
     <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
     <div class="panel stack"><h2>Calls for the white cell</h2><p class="small muted" style="margin:0">Calls take effect only after white cell approval.</p>
       <div class="row"><label>Wing<select data-ocside><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
@@ -2707,7 +2720,7 @@ function buildOC(){
       <div class="row"><label>Site<select data-ocsite data-siteopts data-town="Marala Town">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select></label></div>
       <label>Note (optional)<input data-ocsitenote maxlength="120" placeholder="Example: Starting the cipher now"></label>
       <button type="button" class="btn-side" data-ocsitesend>Tell the white cell</button></div>
-    <div class="panel stack"><h2>Message to the white cell</h2><textarea data-ocmsg rows="2" maxlength="300"></textarea><button type="button" class="btn-side" data-ocmsgsend>Send</button></div>
+    <div class="panel stack"><h2>Messages with the white cell</h2><div class="chatlog" data-occlog></div><form class="row" data-occf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
     <div class="panel stack"><h2>Your requests</h2><div class="list" data-ocmine></div></div>
     <details class="panel" data-ocmapbox><summary><b>Map</b> <span class="small muted">(same view as the white cell)</span></summary>
       <div class="stack" style="margin-top:10px"><p class="small muted" style="margin:0">No fog of war. Not for cadet viewing.</p>
@@ -2715,6 +2728,7 @@ function buildOC(){
       <div class="map-wrap" data-ocmap></div><div data-oclegend></div></div></details>
   </div>`;
   $('[data-ocmapbox]', v).addEventListener('toggle', () => refresh(true));
+  $('[data-occf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return; } await writeEvent('occhat', null, { oc:me.id, from:'oc', text:tx }); f.text.value = ''; });
   $('[data-ocfull]', v).onclick = () => openFullMap(null);
   const send = async (p, msg) => { if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return false; } await writeEvent('oc_req', null, Object.assign({ oc:me.id }, p)); toast(msg || 'Sent to the white cell.'); return true; };
   $('[data-ocassign]', v).onchange = ev => writeEvent('oc_assign', null, Object.assign({ oc:me.id }, ocParse(ev.target.value)));
@@ -2725,7 +2739,6 @@ function buildOC(){
     const n = ev.target.closest('[data-ocnine]');
     if (n){ const o = app.S && app.S.ocs[me.id]; await writeEvent('nine_res', null, { nine:n.dataset.ocnine, ok:n.dataset.ok === '1', by:(o ? o.name : me.name) }); toast(n.dataset.ok === '1' ? 'Sent to their C2.' : 'Sent back to the team.'); return; }
     if (ev.target.closest('[data-ocsitesend]')){ const who = $('[data-ocwho]', v).value; if (await send({ kind:'site', site:$('[data-ocsite]', v).value, who:who === 'both' ? 'both' : 'one', side:who === 'both' ? null : who, text:$('[data-ocsitenote]', v).value })) $('[data-ocsitenote]', v).value = ''; return; }
-    if (ev.target.closest('[data-ocmsgsend]')){ const t = $('[data-ocmsg]', v).value.trim(); if (!t){ toast('Type a message first.', true); return; } if (await send({ kind:'msg', text:t })) $('[data-ocmsg]', v).value = ''; return; }
   });
   app.ocSideSet = false;
 }
@@ -2740,6 +2753,13 @@ function renderOC(S){
   const o = S.ocs[me.id];
   if (o && o.removed){ ocSet(null); toast('The white cell removed you. Sign in again if that was a mistake.', true); app.built = null; buildOC(); renderOC(S); return; }
   if (!$('[data-ocmine]', v)) return;
+  { const lg = $('[data-occlog]', v), ms = S.occhats.filter(m => m.oc === me.id), k = String(ms.length);
+    if (lg.dataset.k !== k){ lg.dataset.k = k; lg.innerHTML = ms.length ? ms.slice(-40).map(m => '<div class="chatmsg' + (m.from === 'oc' ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' · ' + (m.from === 'wc' ? 'White cell' : esc(o ? o.name : 'You')) + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages.</div>'; lg.scrollTop = lg.scrollHeight; }
+    const an = S.ocAnns, ab = $('[data-ocannbox]', v); ab.hidden = !an.length; if (ab.dataset.k !== String(an.length)){ ab.dataset.k = String(an.length); $('[data-ocanns]', v).innerHTML = an.slice().reverse().map(a => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(a.g) + '</span> ' + esc(a.text) + '</div></div>').join(''); }
+    const nIn = ms.filter(m => m.from === 'wc').length + an.length;
+    if (app.ocInFor !== me.id){ app.ocInFor = me.id; app.ocInN = nIn; }
+    else if (nIn > app.ocInN){ app.ocInN = nIn; const last = [...ms.filter(m => m.from === 'wc'), ...an].sort((a, b) => a.g - b.g).pop(); toast((an.includes(last) ? 'Announcement: ' : 'White cell: ') + last.text); try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} }
+  }
   wakeShow(); refreshSiteSelects(v);
   if (o) $('[data-ocname]', v).textContent = o.name;
   const as = $('[data-ocassign]', v);
@@ -2753,19 +2773,39 @@ function renderOC(S){
   const mb = $('[data-ocmapbox]', v);
   if (mb && mb.open){ const real = renderMapInto($('[data-ocmap]', v), S, null); $('[data-oclegend]', v).innerHTML = real ? realLegend() : legendHTML(null); }
   const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
-  $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
+  $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + (r.reply ? '<div class="small"><b>White cell ' + hhmm(r.resG) + ':</b> ' + esc(r.reply) + '</div>' : '') + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : r.reply ? 'replied' : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
+  { const reps = S.ocReqs.filter(r => r.oc === me.id && r.reply), n = reps.length; if (app.ocRepN == null || app.ocRepFor !== me.id){ app.ocRepFor = me.id; app.ocRepN = n; } else if (n > app.ocRepN){ app.ocRepN = n; toast('White cell reply: ' + reps[n - 1].reply); try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} } }
+}
+function occSeenKey(id){ return 'marala-occhat-' + (app.gid || 'none') + '-' + id; }
+function occUnread(S, id){ const n = S.occhats.filter(m => m.oc === id && m.from === 'oc').length; let seen = 0; try { seen = +localStorage.getItem(occSeenKey(id)) || 0; } catch(e){} return Math.max(0, n - seen); }
+function renderOCChatWhite(S, v){
+  const live = Object.values(S.ocs).filter(o => !o.removed), id = app.occOpen;
+  if (id && (!S.ocs[id] || S.ocs[id].removed)){ app.occOpen = null; $('[data-occbox]', v).hidden = true; }
+  const visible = !$('[data-occbox]', v).closest('[data-off]');
+  if (app.occOpen && visible){ const n = S.occhats.filter(m => m.oc === app.occOpen && m.from === 'oc').length; try { localStorage.setItem(occSeenKey(app.occOpen), String(n)); } catch(e){} }
+  const un = {}; let tot = 0; live.forEach(o => { un[o.id] = occUnread(S, o.id); tot += un[o.id]; });
+  const key = JSON.stringify(live.map(o => [o.id, o.name, ocWhere(S, o), un[o.id], S.occhats.filter(m => m.oc === o.id).length])) + app.occOpen;
+  if (key !== app.occKey){ app.occKey = key;
+    $('[data-occhatlist]', v).innerHTML = live.length ? live.map(o => { const n = S.occhats.filter(m => m.oc === o.id), last = n[n.length - 1]; return '<div class="li"><div class="grow"><b>' + esc(o.name) + '</b> <span class="small muted">' + esc(ocWhere(S, o)) + '</span>' + (last ? '<div class="small muted">' + hhmm(last.g) + ' · ' + (last.from === 'wc' ? 'You: ' : '') + esc(last.text.slice(0, 80)) + '</div>' : '') + '</div><button type="button" data-occopen="' + o.id + '" style="flex:0 0 auto"' + (app.occOpen === o.id ? ' class="btn-side"' : '') + '>Messages' + (un[o.id] ? ' <span class="cnt" style="display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center">' + un[o.id] + '</span>' : '') + '</button></div>'; }).join('') : '<div class="empty">No POCs signed in.</div>';
+    $('[data-occhatn]', v).textContent = tot ? tot + ' unread' : '';
+  }
+  if (app.occOpen){ const o = S.ocs[app.occOpen], ms = S.occhats.filter(m => m.oc === app.occOpen), lg = $('[data-occwlog]', v), k = app.occOpen + '|' + ms.length;
+    $('[data-occhead]', v).textContent = 'Messages with ' + o.name;
+    if (lg.dataset.k !== k){ lg.dataset.k = k; lg.innerHTML = ms.length ? ms.slice(-60).map(m => '<div class="chatmsg' + (m.from === 'wc' ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' · ' + (m.from === 'wc' ? 'White cell' : esc(o.name)) + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages.</div>'; lg.scrollTop = lg.scrollHeight; } }
+  { const box = $('[data-ocannw]', v), k = String(S.ocAnns.length); if (box.dataset.k !== k){ box.dataset.k = k; box.innerHTML = S.ocAnns.slice(-3).reverse().map(a => '<div class="li"><div class="grow"><span class="small muted">Sent ' + hhmm(a.g) + '</span> ' + esc(a.text) + '</div></div>').join(''); } }
+  return tot;
 }
 function renderOCWhite(S, v){
   const q = [], who = id => { const o = S.ocs[id]; return o ? esc(o.name) + ' <span class="muted">(' + esc(ocWhere(S, o)) + ')</span>' : 'POC'; };
   const ocsFor = n => Object.values(S.ocs).filter(o => !o.removed && o.side === n.side && o.team === n.team).map(o => esc(o.name)).join(', ');
   S.nines.filter(n => n.status === 'open').forEach(n => q.push('<div class="li"><div class="grow"><span class="chip ' + n.side + '">' + SIDES[n.side].name + '</span> <b>Strike 9-line</b> <span class="small muted">' + hhmm(n.g) + ' · ' + esc(n.name) + (ocsFor(n) ? ' · POC ' + ocsFor(n) : ' · No POC attached') + '</span><div class="small">' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-nineres="' + n.id + '" data-ok="1">Correct · Send to C2</button><button type="button" data-nineres="' + n.id + '" data-ok="0">Deny</button></div></div>'));
   S.ocReqs.filter(r => r.status === 'open').forEach(r => {
-    let ctl = r.kind === 'call' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button>' : '<button type="button" data-ocres="' + r.id + '" data-ok="1">Got it</button>';
+    let ctl = r.kind === 'call' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button>' : (r.kind === 'msg' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Send reply</button>' : '') + '<button type="button" data-ocres="' + r.id + '" data-ok="1">Got it</button>';
     if (r.kind === 'site' && r.who === 'both' && SITES[r.site] && !S.sites[r.site].contested) ctl = '<button type="button" data-act="contest" data-id="' + r.site + '" data-on="1">Mark both at site</button>' + ctl;
     const head = r.kind === 'call' ? '<span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + esc(OC_CALLS[r.call].name) + '</b> <span class="small muted">' + esc(OC_CALLS[r.call].sub) + '</span>' : r.kind === 'site' ? '<b>At a site</b>' : '<b>Message</b>';
-    q.push('<div class="li"><div class="grow">' + head + ' <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + (r.kind === 'call' ? (r.text ? ': ' + esc(r.text) : '') : ': ' + esc(r.kind === 'site' ? ocReqText(S, r) : r.text)) + '</div></div><div class="row" style="flex:0 0 auto">' + ctl + '</div></div>');
+    q.push('<div class="li"><div class="grow">' + head + ' <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + (r.kind === 'call' ? (r.text ? ': ' + esc(r.text) : '') : ': ' + esc(r.kind === 'site' ? ocReqText(S, r) : r.text)) + '</div><input data-ocreply="' + r.id + '" maxlength="300" autocomplete="off" aria-label="Reply to ' + esc((S.ocs[r.oc] || {}).name || 'POC') + '" placeholder="Reply (optional)" style="margin-top:6px"></div><div class="row" style="flex:0 0 auto">' + ctl + '</div></div>');
   });
-  $('[data-ocq]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing from the POCs right now.</div>';
+  { const box = $('[data-ocq]', v), html = q.length ? q.join('') : '<div class="empty">Nothing from the POCs right now.</div>'; if (box.dataset.h !== html && !typingIn(box)){ box.dataset.h = html; box.innerHTML = html; } }
   const live = Object.values(S.ocs).filter(o => !o.removed);
   $('[data-occount]', v).textContent = q.length ? q.length + ' waiting' : '';
   $('[data-ocn]', v).textContent = '(' + live.length + ' signed in)';
@@ -3358,6 +3398,11 @@ function buildWhite(){
       <div class="stack" style="gap:14px;min-width:0" data-sec="queue msg">
         <div class="panel" data-sec="queue"><div class="act-head"><h2>POCs</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
           <details data-ocroster style="margin-top:8px"><summary class="small"><b>Manage POCs</b> <span class="muted" data-ocn></span></summary><div class="list" data-ocrows style="margin-top:6px"></div></details></div>
+        <div class="panel stack" data-sec="queue msg"><div class="act-head"><h2>POC messages</h2><span class="small muted" data-occhatn></span></div>
+          <div class="list" data-occhatlist></div>
+          <div class="act stack" data-occbox hidden><div class="act-head"><b data-occhead>Messages</b><button type="button" data-occclose style="flex:0 0 auto">Close</button></div><div class="chatlog" data-occwlog></div><form class="row" data-occwf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
+          <form class="stack" data-ocannf style="border-top:1px dashed var(--line);padding-top:8px"><label>Announcement to all POCs<textarea name="text" rows="2" maxlength="400" required></textarea></label><div><button type="submit" style="flex:0 0 auto">Send announcement</button></div></form>
+          <div class="list" data-ocannw></div></div>
         <div class="panel" data-sec="queue"><div class="act-head"><h2>Waiting on you</h2><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-chime> Sound alert</label></div><div class="list" data-queue></div></div>
         <div class="panel" data-sec="msg"><h2>Send a message</h2>
           <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="Higher headquarters" maxlength="30"></label></div>
@@ -3466,7 +3511,7 @@ function buildWhite(){
     const iv = ev.target.closest('[data-ipview]');
     if (iv){ const cur = $('[data-wtab][aria-selected="true"]', v); if (cur && !['all', 'intel'].includes(cur.dataset.wtab)) $('[data-wtab="intel"]', v).click(); const f = $('[data-ipbuild]', v); $('[data-ipbsrc]', f).value = iv.dataset.ipview; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); return; }
     const nr = ev.target.closest('[data-nineres]'); if (nr){ writeEvent('nine_res', null, { nine:nr.dataset.nineres, ok:nr.dataset.ok === '1', by:'White cell' }); return; }
-    const orq = ev.target.closest('[data-ocres]'); if (orq){ writeEvent('oc_res', null, { req:orq.dataset.ocres, ok:orq.dataset.ok === '1' }); return; }
+    const orq = ev.target.closest('[data-ocres]'); if (orq){ const inp = orq.closest('.li') && orq.closest('.li').querySelector('[data-ocreply]'); writeEvent('oc_res', null, { req:orq.dataset.ocres, ok:orq.dataset.ok === '1', reply:inp ? inp.value.trim() : '' }); return; }
     const sv = ev.target.closest('[data-ocsave]');
     if (sv){ const id = sv.dataset.ocsave, S = app.S, o = S && S.ocs[id]; if (!o) return; const nm = $('[data-ocnamein="' + id + '"]', v).value.trim(), as = ocParse($('[data-ocassignin="' + id + '"]', v).value);
       if (nm && nm !== o.name) writeEvent('oc_edit', null, { oc:id, name:nm });
@@ -3539,6 +3584,11 @@ function buildWhite(){
     if (dl && confirm('Delete "' + w.label + '"?' + (w.to !== 'none' ? ' The wings it was shared with are told it was withdrawn.' : ''))){ writeEvent('wp_del', null, { id:w.id }); if (app.wpEdit === w.id) wpReset(); }
     app.wpKey = null;
   });
+  const occOpen = id => { app.occOpen = id; $('[data-occbox]', v).hidden = !id; $('[data-occwlog]', v).dataset.k = ''; app.occKey = null; refresh(true); if (id) setTimeout(() => $('[data-occwf] input', v).focus({ preventScroll:true }), 60); };
+  v.addEventListener('click', ev => { const b = ev.target.closest('[data-occopen]'); if (b) occOpen(b.dataset.occopen); });
+  $('[data-occclose]', v).onclick = () => occOpen(null);
+  $('[data-occwf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx || !app.occOpen) return; await writeEvent('occhat', null, { oc:app.occOpen, from:'wc', text:tx }); f.text.value = ''; });
+  $('[data-ocannf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!confirm('Send this announcement to every POC?')) return; await writeEvent('ocann', null, { text:tx }); f.text.value = ''; toast('Announcement sent to all POCs.'); });
   const wcMove = pt => { const M = mapCfg(app.S), sq = squareOf(M, pt); writeEvent('wc_pos', null, { pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt) }); toast('White cell moved. Every map shows it.'); };
   $('[data-wctap]', v).onclick = () => { if (!app.lastClick){ toast('Tap the spot on the map first.', true); return; } wcMove(app.lastClick.slice()); };
   $('[data-wcset]', v).onclick = () => { const pt = locate(mapCfg(app.S), $('[data-wcgrid]', v).value); if (!pt){ toast('That grid didn\u2019t read.', true); return; } $('[data-wcgrid]', v).value = ''; wcMove(pt); };
@@ -3982,7 +4032,8 @@ function renderWhite(S, now){
     q.push('<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + kindName[r.kind] + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + r.text : r.text) + '</div></div><div class="row" style="flex:1 1 260px">' + ctl + '</div></div>');
   });
   { const ne = $('[data-wnesc]', v); if (ne) ne.textContent = '· Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ')'; }
-  { const pend = q.length + S.nines.filter(n => n.status === 'open').length + S.ocReqs.filter(r => r.status === 'open').length; whiteAttention(pend); const cb = $('[data-chime]', v); if (cb && !cb.dataset.wired){ cb.dataset.wired = '1'; cb.checked = pref.get('marala-chime', '1') === '1'; cb.onchange = () => { pref.set('marala-chime', cb.checked ? '1' : '0'); if (cb.checked){ chimeAt = 0; chime(); } }; } }
+  const occUn = renderOCChatWhite(S, v);
+  { const pend = occUn + q.length + S.nines.filter(n => n.status === 'open').length + S.ocReqs.filter(r => r.status === 'open').length; whiteAttention(pend); const cb = $('[data-chime]', v); if (cb && !cb.dataset.wired){ cb.dataset.wired = '1'; cb.checked = pref.get('marala-chime', '1') === '1'; cb.onchange = () => { pref.set('marala-chime', cb.checked ? '1' : '0'); if (cb.checked){ chimeAt = 0; chime(); } }; } }
   $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force, strikes and waypoint requests land here.</div>';
   $('[data-score]', v).innerHTML = scoreTable(S, ['B', 'R']);
   const running = S.clock.started && !S.endex;
