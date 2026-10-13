@@ -161,7 +161,7 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .teammap{height:62vh;min-height:300px}
 [hidden]{display:none!important}
 .jambox{height:340px;border-radius:8px;border:2px dashed var(--bad);display:grid;place-content:center;gap:6px;text-align:center;padding:16px;background:repeating-linear-gradient(45deg,transparent 0 12px,rgba(200,40,40,.06) 12px 24px)}.jambox b{color:var(--bad);letter-spacing:.08em}
-.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--sans,system-ui);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 system-ui,sans-serif;cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.poi{background:none;border:0}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
+.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--sans,system-ui);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 system-ui,sans-serif;cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.poi{background:none;border:0}.wcicon{background:none;border:0;filter:drop-shadow(0 0 4px rgba(124,255,107,.9))}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
 .gl.m{color:#8fe6ff;font-size:10px}.gl.f{color:#bdf0ff;font-size:9px;font-weight:500}.leaflet-pane.contour-pane img{filter:brightness(1.7) saturate(1.3) drop-shadow(0 0 1px rgba(0,0,0,.9))}.cursor-grid{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:3px 8px;font:600 12px/1.3 var(--mono,monospace);pointer-events:none}.gridtog select{width:100%;font-size:13px;padding:2px 4px;margin:0 0 2px;color:#111;background:#fff}
 .leaflet-tooltip.sitelbl,.leaflet-tooltip.teamlbl{background:rgba(10,14,12,.72);color:#fff;border:0;box-shadow:none;font:600 12px/1.2 var(--body);padding:2px 6px}
@@ -1140,7 +1140,7 @@ function secret(salt, text){ return hashStr(salt + '|' + String(text||'').trim()
 function newState(){
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   return {
-    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50},
+    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, wcPos:null,
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
@@ -1548,6 +1548,13 @@ function apply(S, e, cfg){
       pushLog(S, nm + ' launched a UAV: ' + spots.length + ' enemy fireteam' + (spots.length === 1 ? '' : 's') + ' located (escalation +' + UAV_ESC + ')', side, e);
       S.ver++;
       break; }
+    case 'wc_pos': {
+      const pt = Array.isArray(p.pt) && p.pt.length === 2 && p.pt.every(Number.isFinite) ? p.pt : null;
+      S.wcPos = pt; S.ver++;
+      const where = String(p.grid || '').slice(0, 60);
+      if (pt){ pushFeed(S, 'both', 'The white cell has moved' + (where ? ' to ' + where : '') + '. It shows on your map as the alien.', 'hq', { label:'White cell' }); pushLog(S, 'White cell moved' + (where ? ' to ' + where : ''), null, e); }
+      else { pushFeed(S, 'both', 'The white cell is back at its planned spot' + (where ? ', ' + where : '') + '.', 'hq', { label:'White cell' }); pushLog(S, 'White cell back at its planned spot', null, e); }
+      break; }
     case 'map_config': S.map = p && p.sw && p.ne ? p : null; S.ver++; pushLog(S, 'Map updated', null, e); break;
     case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:p.label || 'Higher headquarters' }); pushLog(S, 'Message to ' + ({ B:'BLUFOR', R:'REDFOR', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
     case 'adjust': {
@@ -1559,7 +1566,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -2054,7 +2061,9 @@ const ContourLayer = L.TileLayer.extend({
     return CONTOUR_URL + '?bbox=' + [x0, y1 - t, x0 + t, y1].map(v => v.toFixed(2)).join(',') + '&bboxSR=3857&imageSR=3857&size=256,256&dpi=96&format=png32&transparent=true&f=image';
   }
 });
-const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ']];
+const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ'], ['wc', 'White cell (planned spot)']];
+function wcSpot(S){ const M = mapCfg(S); return (S && S.wcPos) || (M && M.sites && M.sites.wc) || null; }
+const WC_ICON = () => L.divIcon({ className:'wcicon', html:'<svg width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15.5" fill="#0b1a10" fill-opacity=".85" stroke="#7cff6b" stroke-width="2"/><path d="M17 5.5c-5.7 0-9.8 4.1-9.8 9.5 0 5.8 5.2 12.2 9.8 13.3 4.6-1.1 9.8-7.5 9.8-13.3 0-5.4-4.1-9.5-9.8-9.5z" fill="#7cff6b" stroke="#1d4d16" stroke-width="1"/><path d="M10.4 15.1c2.8-.5 5.2 1 5.6 3.7-2.9.5-5.2-1-5.6-3.7z" fill="#06100a"/><path d="M23.6 15.1c-2.8-.5-5.2 1-5.6 3.7 2.9.5 5.2-1 5.6-3.7z" fill="#06100a"/><circle cx="12.6" cy="16.4" r=".7" fill="#fff" fill-opacity=".8"/><circle cx="21.4" cy="16.4" r=".7" fill="#fff" fill-opacity=".8"/><path d="M15.4 23.4q1.6.8 3.2 0" stroke="#1d4d16" stroke-width="1" fill="none" stroke-linecap="round"/></svg>', iconSize:[34, 34], iconAnchor:[17, 17] });
 function siteSquare(S, k){ const M = mapCfg(S), pt = M && M.sites && M.sites[k]; return (pt && squareOf(M, pt)) || SITES[k].grid; }
 function mapCfg(S){ return S && S.map && S.map.sw && S.map.ne ? S.map : DEFAULT_MAP; }
 function gridDims(M){ return { cols:Math.max(1, Math.min(12, +M.cols || 6)), rows:Math.max(1, Math.min(12, +M.rows || 5)) }; }
@@ -2098,7 +2107,7 @@ function shortMGRS(M, t){
 }
 function fmtPt(pt){ return pt ? GEO.toMGRS(pt[0], pt[1], 5) : ''; }
 const DEFAULT_MAP = { sw:[40.82478, -77.86239], ne:[40.82853, -77.85727], cols:6, rows:5, step:100, field:true,
-  sites:{ harbor:[40.8256542, -77.8587108], fuel:[40.82743, -77.85964], radar:[40.8278642, -77.8582106], airstrip:[40.8251434, -77.8611404], town:[40.8266949, -77.8587905], lzB:[40.82726, -77.86027], lzR:[40.8270209, -77.8577496] },
+  sites:{ harbor:[40.8256542, -77.8587108], fuel:[40.82743, -77.85964], radar:[40.8278642, -77.8582106], airstrip:[40.8251434, -77.8611404], town:[40.8266949, -77.8587905], lzB:[40.82726, -77.86027], lzR:[40.8270209, -77.8577496], wc:[40.8260081, -77.8581213] },
   pois:[{ name:'Interest point (probably IED)', pt:[40.8266521, -77.8579746] }, { name:'Interest point', pt:[40.82522, -77.86064] }, { name:'Roadside interest point', pt:[40.8281669, -77.8600516] }, { name:'Interest area (southwest)', pt:[40.8257776, -77.8619106] }, { name:'Interest area (west)', pt:[40.8267134, -77.8611174] }] };
 function lmapEnsure(el, M){
   const key = JSON.stringify([M.sw, M.ne, M.cols, M.rows, M.step, !!M.preview]);
@@ -2109,7 +2118,7 @@ function lmapEnsure(el, M){
     const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true, zoomSnap:0.25 });
     map.createPane('contour-pane'); map.getPane('contour-pane').style.zIndex = 250; map.getPane('contour-pane').classList.add('contour-pane');
     const contours = new ContourLayer('', { pane:'contour-pane', maxZoom:20, maxNativeZoom:18, minZoom:12, attribution:'Contours: USGS 3DEP' });
-    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup() }, key:null };
+    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup(), wc:L.layerGroup() }, key:null };
     applyGridPref(st);
     const tog = L.control({ position:'topright' });
     tog.onAdd = () => {
@@ -2144,8 +2153,8 @@ function lmapEnsure(el, M){
   drawFine(st);
   return st;
 }
-const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['poi', 'Points of interest (white cell)', '#ffcf5a']];
-const LAYER_DEFAULTS = { base:'sat', play:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true };
+const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['poi', 'Points of interest (white cell)', '#ffcf5a'], ['wc', 'White cell location', '#7cff6b']];
+const LAYER_DEFAULTS = { base:'sat', play:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true };
 function gridPref(){ try { return Object.assign({}, LAYER_DEFAULTS, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return Object.assign({}, LAYER_DEFAULTS); } }
 function applyGridPref(st){
   const pr = gridPref();
@@ -2231,6 +2240,8 @@ function drawDyn(st, S, side, opts){
     const hollow = v.unknown || v.reported || v.stale || !v.holder;
     tip(L.circleMarker(pt, { radius:11, color:v.holder ? SIDE_HEX[v.holder] : '#ffffff', weight:3, dashArray:(v.reported || v.stale) ? '4 3' : null, fillColor:hollow ? '#111' : SIDE_HEX[v.holder], fillOpacity:hollow ? .45 : .9 }), SITES[k].name + ' · ' + sub).addTo(LS.sites);
   });
+  const wcp = wcSpot(S);
+  if (wcp) L.marker(wcp, { icon:WC_ICON(), zIndexOffset:900 }).bindTooltip('White cell' + (S.wcPos ? ' (moved)' : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[14, 0] }).bindPopup('<b>White cell</b><br><span class="mono">' + esc(fmtPt(wcp)) + '</span>' + (squareOf(M, wcp) ? '<br>Play square ' + squareOf(M, wcp) : '')).addTo(LS.wc);
   if (!side) (M.pois || []).forEach(x => { if (!x || !x.pt) return; L.marker(x.pt, { icon:L.divIcon({ className:'poi', html:'<svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 1L15 8L8 15L1 8Z" fill="#ffcf5a" fill-opacity=".85" stroke="#000" stroke-width="1.2"/></svg>', iconSize:[16, 16], iconAnchor:[8, 8] }) }).bindTooltip(esc(x.name), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[8, 0] }).bindPopup('<b>' + esc(x.name) + '</b><br><span class="mono">' + esc(fmtPt(x.pt)) + '</span>' + (squareOf(M, x.pt) ? '<br>Play square ' + squareOf(M, x.pt) : '')).addTo(LS.poi); });
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
@@ -2804,6 +2815,10 @@ function buildWhite(){
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
         <div class="sitectl" data-sitectl></div>
+        <div class="stack wcctl" data-wcctl style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
+          <div class="small"><b>White cell location</b> <span class="muted">(everyone sees it on their map as the alien)</span>: <span class="mono" data-wcnow>—</span></div>
+          <div class="row" style="justify-content:flex-start;align-items:end"><button type="button" data-wcgps style="flex:0 0 auto">Use my GPS</button><button type="button" data-wctap style="flex:0 0 auto">Move to last map tap</button><label style="flex:1 1 180px">Or type a grid<input data-wcgrid placeholder="Example: 5893 2334 or 40.82601, -77.85812"></label><button type="button" data-wcset style="flex:0 0 auto">Move</button><button type="button" data-wcback style="flex:0 0 auto">Back to planned spot</button></div>
+        </div>
       </div>
       <div class="stack" style="gap:14px;min-width:0">
         <div class="panel"><h2>Waiting on you</h2><div class="list" data-queue></div></div>
@@ -2883,6 +2898,15 @@ function buildWhite(){
   $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'); if (!b) return; const t = TEMPLATES[+b.dataset.tpl], f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = t.from || 'Higher headquarters'; f.text.value = fillT(t.text); f.text.focus(); });
   $('[data-fullmap]', v).onclick = () => openFullMap(null);
   ipbWire(v);
+  const wcMove = pt => { const M = mapCfg(app.S), sq = squareOf(M, pt); writeEvent('wc_pos', null, { pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt) }); toast('White cell moved. Every map shows it.'); };
+  $('[data-wctap]', v).onclick = () => { if (!app.lastClick){ toast('Tap the spot on the map first.', true); return; } wcMove(app.lastClick.slice()); };
+  $('[data-wcset]', v).onclick = () => { const pt = locate(mapCfg(app.S), $('[data-wcgrid]', v).value); if (!pt){ toast('That grid didn\u2019t read.', true); return; } $('[data-wcgrid]', v).value = ''; wcMove(pt); };
+  $('[data-wcback]', v).onclick = () => { const M = mapCfg(app.S), pt = M && M.sites && M.sites.wc; writeEvent('wc_pos', null, { pt:null, grid:pt ? ((squareOf(M, pt) ? squareOf(M, pt) + ', ' : '') + fmtPt(pt)) : '' }); toast('White cell back at its planned spot.'); };
+  $('[data-wcgps]', v).onclick = () => {
+    if (!navigator.geolocation){ toast('This device has no GPS access.', true); return; }
+    toast('Getting your position…');
+    navigator.geolocation.getCurrentPosition(pos => wcMove([pos.coords.latitude, pos.coords.longitude]), () => toast('Couldn\u2019t get a GPS fix. Allow location for this site or tap the map instead.', true), { enableHighAccuracy:true, timeout:15000, maximumAge:30000 });
+  };
   const ms = $('[data-mapsetup]', v);
   $('[data-mshow]', ms).onclick = () => { const pt = GEO.parsePoint($('[data-mcenter]', ms).value); if (!pt){ toast('That point didn’t read.', true); return; } const d = 0.006; app.previewMap = { sw:[pt[0] - d, pt[1] - d * 1.3], ne:[pt[0] + d, pt[1] + d * 1.3], preview:true }; refresh(true); toast('Showing the area. Click the map to read grids.'); };
   $('[data-mpoiadd]', ms).onclick = () => { if (!app.lastClick){ toast('Click a point on the map first.', true); return; } const ta = $('[data-mpois]', ms); ta.value = (ta.value.trim() ? ta.value.trim() + '\n' : '') + 'New point | ' + fmtPt(app.lastClick); ta.focus(); };
@@ -3251,6 +3275,7 @@ function renderWhite(S, now){
   if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TEMPLATES.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + ' · ' + t.phase : LEVELS[t.lvl].name + ' or higher') + ' · ' + ({ both:'both', B:'BLUFOR', R:'REDFOR', public:'public' })[t.to] + '</small></button>'; }).join(''); }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
   if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); $('[data-mpois]', ms).value = (M0.pois || []).map(x => x.name + ' | ' + fmtPt(x.pt)).join('\n'); }
+  { const wp = wcSpot(S), M = mapCfg(S); $('[data-wcnow]', v).textContent = wp ? (squareOf(M, wp) ? squareOf(M, wp) + ' · ' : '') + fmtPt(wp) + (S.wcPos ? ' (moved)' : ' (planned spot)') : 'not set'; $('[data-wcback]', v).disabled = !S.wcPos; }
   $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Both at site</span>' : '') + '</span>' +
     '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>REDFOR</option></select>' +
     (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<select data-timer="' + k + '" aria-label="Contention timer for ' + SITES[k].name + '" style="flex:0 0 auto;width:auto"><option value="15"' + ((S.siteTimer[k] || 15) === 15 ? ' selected' : '') + '>15 min</option><option value="20"' + (S.siteTimer[k] === 20 ? ' selected' : '') + '>20 min</option></select><button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear') : 'Both at site') + '</button></div>'; }).join('') +
