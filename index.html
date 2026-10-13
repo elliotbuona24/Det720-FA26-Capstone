@@ -1792,6 +1792,18 @@ function downloadBackup(){
     document.body.appendChild(a); a.click(); a.remove(); toast('Backup downloaded.');
   } catch(e){ toast('The backup could not be saved here.', true); }
 }
+async function uploadBackup(d){
+  if (!confirm('Load "' + (d.cfg.name || 'game') + '" (' + d.events.length + ' events) as the current game on every screen? The game running now stays in the database but every screen switches to this one.')) return;
+  const gid = 'g' + Date.now().toString(36);
+  try {
+    toast('Uploading ' + d.events.length + ' events…');
+    await app.db.doc('games/' + gid).set(d.cfg);
+    const evs = d.events.filter(e => e && e.id);
+    for (let i = 0; i < evs.length; i += 25) await Promise.all(evs.slice(i, i + 25).map(e => app.db.doc('games/' + gid + '/events/' + e.id).set(e)));
+    await app.db.doc('meta/current').set({ gameId:gid, at:Date.now() });
+    toast('Backup loaded on every screen: ' + (d.cfg.name || 'game') + '.');
+  } catch(err){ toast('Upload failed partway. Check the connection and try again.', true); }
+}
 function importBackup(file){
   if (!file) return;
   const r = new FileReader();
@@ -1799,6 +1811,7 @@ function importBackup(file){
     try {
       const d = JSON.parse(r.result);
       if (!d || !d.cfg || !Array.isArray(d.events)) throw new Error('bad');
+      if (app.mode === 'remote'){ uploadBackup(d); return; }
       app.gid = d.gid || ('g' + Date.now().toString(36)); app.cfg = d.cfg; app.events = d.events; app.role = null; app.built = null;
       localSave(); toast('Backup loaded: ' + (d.cfg.name || 'game') + ', ' + d.events.length + ' events.'); route();
     } catch(e){ toast('That file isn\u2019t a Marala board backup.', true); }
@@ -2655,7 +2668,7 @@ function buildWhite(){
     $('[data-backup]', v).hidden = false;
     $('[data-backup]', v).onclick = downloadBackup;
   }
-  if (app.mode === 'local'){
+  if (app.mode === 'local' || app.online === 'firebase'){
     $('[data-restore]', v).hidden = false;
     $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
   }
