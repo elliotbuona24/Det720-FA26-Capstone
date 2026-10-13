@@ -22,11 +22,11 @@ Live game board for the Marala Island capstone (BLUFOR vs. REDFOR).
 6. Click **Start the game**. Until then you can change the start time and length in the white cell's **Clock** panel (default 0830, 165 minutes). The Capstone field (the 13 Oct points, with the five points of interest on the white cell map only) loads by default; change it under **Map setup**.
 7. After ENDEX: **Download backup**.
 
-Lost the white cell PIN? Use **Start a new game** on the main menu with the recovery code (ask the exercise officers).
+Lost the white cell PIN? Use **Start a new game** on the main menu with the recovery code C/Buona.
 
 ## After-action report
 
-One-time setup: install Python from python.org (tick **Add to PATH**), then:
+One-time setup: install anything Python then:
 
 ```
 pip install matplotlib
