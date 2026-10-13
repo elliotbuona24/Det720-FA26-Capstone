@@ -2467,7 +2467,8 @@ function buildOC(){
   if (app.built === 'oc') return; app.built = 'oc';
   const v = $('#vOC'), me = ocGet();
   if (!me){
-    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>Sign in as a POC</h2><p class="small muted" style="margin:0">The white cell sees your name and who you are with, so it knows where each call comes from.</p><form class="stack" data-ocjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><label>Attached to<select name="assign" data-ocjoinassign></select></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div></div>';
+    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>Sign in as a POC</h2><p class="small muted" style="margin:0">The white cell sees your name and who you are with, so it knows where each call comes from.</p><form class="stack" data-ocjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><label>Attached to<select name="assign" data-ocjoinassign></select></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div><div class="panel stack"><h2>Already signed in before?</h2><p class="small muted" style="margin:0">If your phone restarted or you switched phones, tap your name to pick up where you left off.</p><div class="list" data-ocrejoin></div></div></div>';
+    $('[data-ocrejoin]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-ocrejoinid]'); if (!b) return; ocSet({ id:b.dataset.ocrejoinid, name:b.dataset.name }); app.built = null; buildOC(); refresh(true); toast('Welcome back, ' + b.dataset.name + '.'); });
     $('[data-ocjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const fd = new FormData(ev.target), name = String(fd.get('name') || '').trim(); if (!name) return; const id = 'o' + uid(); ocSet({ id, name }); writeEvent('oc_join', null, Object.assign({ oc:id, name }, ocParse(fd.get('assign')))); app.built = null; buildOC(); refresh(true); });
     return;
   }
@@ -2501,7 +2502,12 @@ function buildOC(){
 }
 function renderOC(S){
   const v = $('#vOC'), me = ocGet();
-  if (!me){ const sel = $('[data-ocjoinassign]', v); if (sel && document.activeElement !== sel) keepSelect(sel, ocOpts(S)); return; }
+  if (!me){
+    const sel = $('[data-ocjoinassign]', v); if (sel && document.activeElement !== sel) keepSelect(sel, ocOpts(S));
+    const rj = $('[data-ocrejoin]', v), list = Object.values(S.ocs).filter(o => !o.removed);
+    if (rj) rj.innerHTML = list.length ? list.map(o => '<div class="li"><div class="grow"><b>' + esc(o.name) + '</b> <span class="small muted">' + esc(ocWhere(S, o)) + '</span></div><button type="button" data-ocrejoinid="' + esc(o.id) + '" data-name="' + esc(o.name) + '" style="flex:0 0 auto">This is me</button></div>').join('') : '<div class="empty">No POCs have signed in yet.</div>';
+    return;
+  }
   const o = S.ocs[me.id];
   if (o && o.removed){ ocSet(null); toast('The white cell removed you. Sign in again if that was a mistake.', true); app.built = null; buildOC(); renderOC(S); return; }
   if (!$('[data-ocmine]', v)) return;
