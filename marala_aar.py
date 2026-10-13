@@ -385,7 +385,7 @@ def build_html(data, aar, charts):
     ) or "<tr><td colspan='4' class='muted'>No UAV launches.</td></tr>"
     teams = aar.get("teams", [])
     tm_rows = "".join(
-        f"<tr>{side_cell(t['side'], NAMES[t['side']])}<td>{esc(t['name'])}{' <i>(removed)</i>' if t.get('removed') else ''}</td><td class='num'>{t.get('maps', 0)}</td><td class='num'>{t['fixes']}</td><td class='num'>{t['checks']}</td><td class='num'>{(str(t['median']) + ' m') if t['median'] is not None else '–'}</td><td class='num'>{(str(t['worst']) + ' m') if t['worst'] is not None else '–'}</td></tr>"
+        f"<tr>{side_cell(t['side'], NAMES[t['side']])}<td>{('#' + esc(t['num']) + ' ') if t.get('num') else ''}{esc(t['name'])}{' <i>(removed)</i>' if t.get('removed') else ''}</td><td class='num'>{t.get('maps', 0)}</td><td class='num'>{t['fixes']}</td><td class='num'>{t['checks']}</td><td class='num'>{(str(t['median']) + ' m') if t['median'] is not None else '–'}</td><td class='num'>{(str(t['worst']) + ' m') if t['worst'] is not None else '–'}</td></tr>"
         for t in sorted(teams, key=lambda t: (t["side"], t["name"]))
     ) or "<tr><td colspan='7' class='muted'>No fireteams signed in.</td></tr>"
     esc_rows = "".join(f"<tr><td>{t}</td>{side_cell(sd, who)}<td class='num'>{d}</td><td>{esc(txt)}</td></tr>" for t, who, d, txt, sd in esc_table(jumps)) \

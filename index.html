@@ -152,7 +152,7 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .teammap{height:62vh;min-height:300px}
 [hidden]{display:none!important}
 .jambox{height:340px;border-radius:8px;border:2px dashed var(--bad);display:grid;place-content:center;gap:6px;text-align:center;padding:16px;background:repeating-linear-gradient(45deg,transparent 0 12px,rgba(200,40,40,.06) 12px 24px)}.jambox b{color:var(--bad);letter-spacing:.08em}
-.gridtog{background:rgba(0,0,0,.72);color:#fff;border-radius:6px;padding:6px 8px;font:500 13px/1.3 var(--sans,system-ui);display:grid;gap:4px}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
+.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--sans,system-ui);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 system-ui,sans-serif;cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
 .gl.m{color:#8fe6ff;font-size:10px}
 .leaflet-tooltip.sitelbl,.leaflet-tooltip.teamlbl{background:rgba(10,14,12,.72);color:#fff;border:0;box-shadow:none;font:600 12px/1.2 var(--body);padding:2px 6px}
@@ -1406,6 +1406,13 @@ function apply(S, e, cfg){
       if (p.status) t.status = p.status;
       t.g = S.g; S.ver++;
       break; }
+    case 'team_num': {
+      const t = side && p.team ? S.teams[side][p.team] : null;
+      if (!t || t.removed) break;
+      const num = String(p.num == null ? '' : p.num).trim().slice(0, 3);
+      t.num = num || null; S.ver++;
+      pushLog(S, nm + ' fireteam ' + t.name + (num ? ' numbered #' + num : ' number cleared'), side, e);
+      break; }
     case 'team_remove': {
       const t = side && p.team ? S.teams[side][p.team] : null;
       if (!t || t.removed){ pushLog(S, 'Fireteam removal refused: no such team', side, e, 'rejected'); break; }
@@ -1423,7 +1430,7 @@ function apply(S, e, cfg){
       const last = S.uav[side];
       if (!S.clock.started || (last && S.g - last.g < UAV_EVERY - 1e-9)){ pushLog(S, nm + ' UAV not ready yet', side, e, 'rejected'); break; }
       const o = OTHER[side];
-      const spots = liveTeams(S, o).filter(t => t.last && t.status !== 'Left the game').map(t => ({ name:t.name, pt:t.last.gps || t.last.rep, at:t.last.g })).filter(x => x.pt);
+      const spots = liveTeams(S, o).filter(t => t.last && t.status !== 'Left the game').map(t => ({ name:t.name, num:t.num || null, pt:t.last.gps || t.last.rep, at:t.last.g })).filter(x => x.pt);
       raise(S, side, UAV_ESC);
       S.uav[side] = { id:e.id, g:S.g, spots };
       S.spotted[o] = { id:e.id, g:S.g };
@@ -1778,7 +1785,7 @@ function buildAAR(){
     final:{ B:score(S, 'B'), R:score(S, 'R'), esc:S.esc, hn:{ B:S.hn.B, R:S.hn.R }, war:S.war, warAt:S.warAt, endex:S.endex, g:S.g },
     steps, log:clean(S.log), contacts:clean(S.contacts), claims:clean(S.claims), incidents:clean(S.incidents), statements:clean(S.statements),
     requests:clean(S.requests), cacheDone:S.cacheDone, liaison:clean(S.liaison), offers:clean(S.offers), uavs:clean(S.uavs), jams:clean(S.jams), orders:clean(S.orders),
-    teams:['B','R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const errs = t.fixes.filter(f => f.gps && f.rep).map(f => Math.round(GEO.dist(f.gps, f.rep))); return { side:sd, id:t.id, name:t.name, removed:!!t.removed, status:t.status || null, maps:t.mapN || 0, fixes:t.fixes.length, checks:errs.length, median:errs.length ? errs.slice().sort((a, b) => a - b)[Math.floor(errs.length / 2)] : null, worst:errs.length ? Math.max(...errs) : null }; })),
+    teams:['B','R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const errs = t.fixes.filter(f => f.gps && f.rep).map(f => Math.round(GEO.dist(f.gps, f.rep))); return { side:sd, id:t.id, name:t.name, num:t.num || null, removed:!!t.removed, status:t.status || null, maps:t.mapN || 0, fixes:t.fixes.length, checks:errs.length, median:errs.length ? errs.slice().sort((a, b) => a - b)[Math.floor(errs.length / 2)] : null, worst:errs.length ? Math.max(...errs) : null }; })),
     intel:PROBLEMS.map((P, i) => { const tr = intelTruth(P); const r = s => { const o = intelOpen(S, P.id, s), m = S.intel[s][P.id]; const base = o ? { sent:true, sentAt:o.g, due:o.due, closed:!!o.done } : { sent:false }; return Object.assign(base, m ? { answered:true, g:m.g, okA:!!m.okA, okF:!!m.okF, pts:m.pts || 0 } : { answered:false, pts:0 }); };
       const os = ['B','R'].map(s => intelOpen(S, P.id, s)).filter(Boolean);
       return { n:i + 1, id:P.id, title:fillT(P.title), intended:START_G + P.at, t:os.length ? Math.min(...os.map(o => o.g)) : START_G + P.at, due:os.length ? Math.max(...os.map(o => o.due)) : START_G + P.at + P.win, released:os.length > 0, closed:os.length > 0 && os.every(o => o.done), answer:fillT(P.opts[tr.a] || ''), fake:tr.f, fakeDisc:(P.items.find(x => x.k === tr.f) || {}).disc || '', fakeSrc:(P.items.find(x => x.k === tr.f) || {}).src || '', B:r('B'), R:r('R') }; }) };
@@ -1980,10 +1987,17 @@ function lmapEnsure(el, M){
     el.innerHTML = ''; el.classList.add('lmap');
     const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true, zoomSnap:0.25 });
     const base = L.tileLayer(TILE_URL, { maxZoom:20, maxNativeZoom:19, attribution:'Imagery © Esri, Maxar' }).addTo(map);
-    st = el._lm = { map, base, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), dyn:L.layerGroup().addTo(map), key:null };
+    st = el._lm = { map, base, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup() }, key:null };
     applyGridPref(st);
     const tog = L.control({ position:'topright' });
-    tog.onAdd = () => { const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref(); d.innerHTML = '<label><input type="checkbox" data-gt="play"' + (pr.play ? ' checked' : '') + '> <span style="color:#ffd400">▬</span> Play grid</label><label><input type="checkbox" data-gt="mgrs"' + (pr.mgrs ? ' checked' : '') + '> <span style="color:#6fdcff">▬</span> MGRS lines</label>'; L.DomEvent.disableClickPropagation(d); d.addEventListener('change', ev => { const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.lmap').forEach(x => { if (x._lm) applyGridPref(x._lm); }); $$('.gridtog [data-gt="' + k + '"]').forEach(c => c.checked = ev.target.checked); }); return d; };
+    tog.onAdd = () => {
+      const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref();
+      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden>' + MAP_LAYERS.map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
+      L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
+      d.querySelector('[data-gtbtn]').onclick = () => { const l = d.querySelector('.gt-list'); l.hidden = !l.hidden; };
+      d.addEventListener('change', ev => { const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gt="' + k + '"]').forEach(x => x.checked = ev.target.checked); $$('.lmap').forEach(x => { if (!x._lm) return; applyGridPref(x._lm); if (x._lm.args && app.S) drawDyn(x._lm, app.S, x._lm.args[0], x._lm.args[1]); }); });
+      return d;
+    };
     tog.addTo(map);
     map.on('click', ev => {
       const pt = [ev.latlng.lat, ev.latlng.lng]; app.lastClick = pt;
@@ -2000,8 +2014,23 @@ function lmapEnsure(el, M){
   if (!M.preview) st.map.setMaxBounds(b.pad(1.5)); else st.map.setMaxBounds(null);
   return st;
 }
-function gridPref(){ try { return Object.assign({ play:true, mgrs:true }, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return { play:true, mgrs:true }; } }
-function applyGridPref(st){ const pr = gridPref(); [['play', st.gPlay], ['mgrs', st.gMgrs]].forEach(([k, g]) => { if (pr[k] && !st.map.hasLayer(g)) g.addTo(st.map); if (!pr[k] && st.map.hasLayer(g)) st.map.removeLayer(g); }); }
+const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['sites', 'Sites, HQ and town', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b']];
+const LAYER_DEFAULTS = { play:true, mgrs:true, sites:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true };
+function gridPref(){ try { return Object.assign({}, LAYER_DEFAULTS, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return Object.assign({}, LAYER_DEFAULTS); } }
+function applyGridPref(st){
+  const pr = gridPref();
+  [['play', st.gPlay], ['mgrs', st.gMgrs]].forEach(([k, g]) => { if (pr[k] && !st.map.hasLayer(g)) g.addTo(st.map); if (!pr[k] && st.map.hasLayer(g)) st.map.removeLayer(g); });
+  if (st.lay) Object.entries(st.lay).forEach(([k, g]) => { if (pr[k] && !st.dyn.hasLayer(g)) st.dyn.addLayer(g); if (!pr[k] && st.dyn.hasLayer(g)) st.dyn.removeLayer(g); });
+}
+function teamIcon(sd, num, opts){
+  const o = opts || {}, col = SIDE_HEX[sd], fo = o.hollow ? .12 : .55, dash = o.dashed ? ' stroke-dasharray="3 2"' : '', n = num != null && num !== '' ? String(num) : '';
+  const txt = n ? '<text x="16" y="' + (sd === 'B' ? 16 : 19) + '" text-anchor="middle" font-size="' + (n.length > 2 ? 9 : 11) + '" font-weight="700" font-family="system-ui,sans-serif" fill="#fff" stroke="#000" stroke-width="2.5" paint-order="stroke">' + esc(n) + '</text>' : '';
+  const body = sd === 'B'
+    ? '<rect x="2" y="4" width="28" height="19" fill="' + col + '" fill-opacity="' + fo + '" stroke="' + col + '" stroke-width="2"' + dash + '/><rect x="2" y="4" width="28" height="19" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".8"/><path d="M2 4L30 23M30 4L2 23" stroke="#fff" stroke-opacity=".85" stroke-width="1.2"/>'
+    : '<path d="M16 2L30 16L16 30L2 16Z" fill="' + col + '" fill-opacity="' + fo + '" stroke="' + col + '" stroke-width="2"' + dash + '/><path d="M16 2L30 16L16 30L2 16Z" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".8"/><path d="M9 9L23 23M23 9L9 23" stroke="#fff" stroke-opacity=".85" stroke-width="1.2"/>';
+  return L.divIcon({ className:'nato', html:'<svg width="32" height="32" viewBox="0 0 32 32" style="opacity:' + (o.op != null ? o.op : 1) + '">' + body + txt + '</svg>', iconSize:[32, 32], iconAnchor:[16, 16] });
+}
+function teamLabel(t){ return (t.num ? '#' + t.num + ' ' : '') + t.name; }
 function drawGrid(layer, M, mlayer){
   const { cols, rows } = gridDims(M);
   const s = M.sw[0], w = M.sw[1], n = M.ne[0], e = M.ne[1];
@@ -2030,34 +2059,40 @@ function drawGrid(layer, M, mlayer){
 }
 const SIDE_HEX = { B:'#3d7dff', R:'#ff4d42' };
 function drawDyn(st, S, side, opts){
-  const M = mapCfg(S), layer = st.dyn; layer.clearLayers();
+  st.args = [side, opts];
+  const M = mapCfg(S);
+  if (!st.lay) return;
+  Object.values(st.lay).forEach(g => g.clearLayers());
+  applyGridPref(st);
   if (!M) return;
-  const pts = M.sites || {};
+  const pr = gridPref(), LS = st.lay, pts = M.sites || {};
   const tip = (m, text, dir, off) => m.bindTooltip(esc(text), { permanent:true, direction:dir || 'top', className:'sitelbl', offset:off || [0, -10] });
-  [['lzB', 'BLUFOR HQ', 'B'], ['lzR', 'REDFOR HQ', 'R']].forEach(([k, name, sd]) => { if (side && sd !== side && !S.reveal) return; if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name).addTo(layer); });
+  [['lzB', 'BLUFOR HQ', 'B'], ['lzR', 'REDFOR HQ', 'R']].forEach(([k, name, sd]) => { if (side && sd !== side && !S.reveal) return; if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name).addTo(LS.sites); });
   SITE_KEYS.forEach(k => {
     const pt = pts[k]; if (!pt) return;
     const v = siteView(S, side, k), raw = S.sites[k];
-    if (v.contested) L.circle(pt, { radius:45, color:'#ff9b3d', weight:3, dashArray:'6 5', fill:false, interactive:false }).addTo(layer);
+    if (v.contested) L.circle(pt, { radius:45, color:'#ff9b3d', weight:3, dashArray:'6 5', fill:false, interactive:false }).addTo(LS.sites);
     const dec = S.declared[k];
-    if (dec && dec.until > S.g) L.circle(pt, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(layer);
+    if (dec && dec.until > S.g) L.circle(pt, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(LS.sites);
     const sub = v.unknown ? 'unknown' : v.reported ? 'reported ' + hhmm(v.at) : v.stale ? 'seen ' + hhmm(v.at) : v.contested ? 'contested' + (raw.contestUntil && (!side || raw.holder === side || raw.contestBy === side) ? ' until ' + hhmm(raw.contestUntil) : '') : v.holder ? SIDES[v.holder].name : 'neutral';
     const hollow = v.unknown || v.reported || v.stale || !v.holder;
-    tip(L.circleMarker(pt, { radius:11, color:v.holder ? SIDE_HEX[v.holder] : '#ffffff', weight:3, dashArray:(v.reported || v.stale) ? '4 3' : null, fillColor:hollow ? '#111' : SIDE_HEX[v.holder], fillOpacity:hollow ? .45 : .9 }), SITES[k].name + ' · ' + sub).addTo(layer);
+    tip(L.circleMarker(pt, { radius:11, color:v.holder ? SIDE_HEX[v.holder] : '#ffffff', weight:3, dashArray:(v.reported || v.stale) ? '4 3' : null, fillColor:hollow ? '#111' : SIDE_HEX[v.holder], fillOpacity:hollow ? .45 : .9 }), SITES[k].name + ' · ' + sub).addTo(LS.sites);
   });
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
     const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' · BLUFOR office' : '') + (open('R') ? ' · REDFOR office' : '') : (open(side) ? ' · your office is open' : ''));
     const dec = S.declared.town;
-    if (dec && dec.until > S.g) L.circle(pts.town, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(layer);
-    tip(L.circleMarker(pts.town, { radius:11, color:'#ffffff', weight:2, fillColor:'#888', fillOpacity:.75 }), txt).addTo(layer);
+    if (dec && dec.until > S.g) L.circle(pts.town, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(LS.sites);
+    tip(L.circleMarker(pts.town, { radius:11, color:'#ffffff', weight:2, fillColor:'#888', fillOpacity:.75 }), txt).addTo(LS.sites);
   }
-  S.incidents.forEach(inc => { const pt = locate(M, inc.grid); if (pt) L.marker(pt, { icon:L.divIcon({ className:'', html:'<div class="mk-x">✸</div>', iconSize:[24, 24], iconAnchor:[12, 12] }) }).bindTooltip('Explosion ' + hhmm(inc.g)).addTo(layer); });
+  S.incidents.forEach(inc => { const pt = locate(M, inc.grid); if (pt) L.marker(pt, { icon:L.divIcon({ className:'', html:'<div class="mk-x">✸</div>', iconSize:[24, 24], iconAnchor:[12, 12] }) }).bindTooltip('Explosion ' + hhmm(inc.g)).addTo(LS.blasts); });
   S.contacts.filter(c => (!side || S.reveal || c.side === side) && c.kind !== 'site').forEach(c => {
+    const age = Math.max(0, Math.floor(S.g - c.seenG));
+    if (age > 20 && !pr.oldrep) return;
     const pt = locate(M, c.grid); if (!pt) return;
-    const age = Math.max(0, Math.floor(S.g - c.seenG)), color = SIDE_HEX[OTHER[c.side]];
+    const color = SIDE_HEX[OTHER[c.side]];
     L.marker(pt, { opacity:age > 15 ? .45 : 1, icon:L.divIcon({ className:'', html:'<div class="mk-tri" style="border-bottom-color:' + color + '"></div>', iconSize:[16, 14], iconAnchor:[8, 7] }) })
-      .bindTooltip(esc((side ? 'Reported ' : SIDES[c.side].name + ' reported ') + SIDES[OTHER[c.side]].name + (c.note ? ': ' + c.note : '') + ' · ' + age + ' min ago')).addTo(layer);
+      .bindTooltip(esc((side ? 'Reported ' : SIDES[c.side].name + ' reported ') + SIDES[OTHER[c.side]].name + (c.note ? ': ' + c.note : '') + ' · ' + age + ' min ago')).addTo(LS.reports);
   });
   ['B', 'R'].forEach(sd => {
     if (opts && opts.team) return;
@@ -2065,22 +2100,22 @@ function drawDyn(st, S, side, opts){
     liveTeams(S, sd).forEach(t => {
       const f = t.last; if (!f) return; const pt = f.gps || f.rep; if (!pt) return;
       const age = Math.max(0, Math.floor(S.g - f.g));
-      L.circleMarker(pt, { radius:7, color:'#ffffff', weight:2, fillColor:SIDE_HEX[sd], fillOpacity:age > 10 ? .4 : 1 })
-        .bindTooltip(esc(t.name + ' · ' + age + 'm' + (t.status ? ' · ' + t.status : '')), { permanent:true, direction:'right', className:'teamlbl', offset:[8, 0] }).addTo(layer);
+      const m = L.marker(pt, { icon:teamIcon(sd, t.num, { op:age > 10 ? .5 : 1 }), zIndexOffset:500 });
+      m.bindTooltip(esc(teamLabel(t) + ' · ' + age + 'm' + (t.status ? ' · ' + t.status : '')), { permanent:!!pr.names, direction:'right', className:'teamlbl', offset:[14, 0] }).addTo(LS.teams);
     });
   });
   const ph = side ? uavPhase(S, side) : '';
   if (ph){
-    const u = S.uav[side], col = SIDE_HEX[OTHER[side]], fade = ph === 'fade', op = fade ? Math.max(.35, 1 - (S.g - u.g - 1) / 5) : 1;
-    u.spots.forEach(x => L.circleMarker(x.pt, { radius:8, color:col, weight:3, opacity:op, dashArray:fade ? '4 3' : null, fillColor:col, fillOpacity:fade ? .15 : .85 })
-      .bindTooltip(esc((fade ? 'Last seen ' + hhmm(u.g) : 'UAV now') + ' · ' + x.name), { permanent:true, direction:'right', className:'teamlbl', offset:[8, 0] }).addTo(layer));
+    const u = S.uav[side], o = OTHER[side], fade = ph === 'fade', op = fade ? Math.max(.35, 1 - (S.g - u.g - 1) / 5) : 1;
+    u.spots.forEach(x => L.marker(x.pt, { icon:teamIcon(o, x.num, { op, hollow:fade, dashed:fade }), zIndexOffset:400 })
+      .bindTooltip(esc((fade ? 'Last seen ' + hhmm(u.g) : 'UAV now') + ' · ' + (x.num ? '#' + x.num + ' ' : '') + x.name), { permanent:!!pr.names, direction:'right', className:'teamlbl', offset:[14, 0] }).addTo(LS.uav));
   }
 }
 function renderMapInto(el, S, side, opts){
   const M = (app.role === 'W' && app.previewMap) || mapCfg(S);
   if (M && window.L){
     const st = lmapEnsure(el, M);
-    if (!M.preview) drawDyn(st, S, side, opts); else st.dyn.clearLayers();
+    if (!M.preview) drawDyn(st, S, side, opts); else if (st.lay) Object.values(st.lay).forEach(g => g.clearLayers());
     return true;
   }
   if (el._lm){ el._lm.map.remove(); el._lm = null; el.classList.remove('lmap'); }
@@ -2088,7 +2123,7 @@ function renderMapInto(el, S, side, opts){
   return false;
 }
 function realLegend(){
-  return '<div class="legend"><span><i class="sw" style="background:#3d7dff;border-color:#3d7dff"></i>BLUFOR</span><span><i class="sw" style="background:#ff4d42;border-color:#ff4d42"></i>REDFOR</span><span><i class="sw" style="border-style:dashed;border-color:var(--muted)"></i>Reported or last seen</span><span style="color:#b38f00">▬ Play grid</span><span style="color:#1f9cc4">▬ MGRS grid</span><span>● Your fireteams</span><span>▲ Reported sighting</span><span>◉ UAV sighting</span><span style="color:var(--e2)">✸ Explosion</span><span>Tap the map for a grid</span></div>';
+  return '<div class="legend"><span><i class="sw" style="background:#3d7dff;border-color:#3d7dff"></i>BLUFOR</span><span><i class="sw" style="background:#ff4d42;border-color:#ff4d42"></i>REDFOR</span><span><i class="sw" style="border-style:dashed;border-color:var(--muted)"></i>Reported or last seen</span><span style="color:#b38f00">▬ Play grid</span><span style="color:#1f9cc4">▬ MGRS grid</span><span><svg width="18" height="13" viewBox="2 4 28 19" style="vertical-align:-2px"><rect x="2" y="4" width="28" height="19" fill="#3d7dff" fill-opacity=".55" stroke="#3d7dff" stroke-width="2"/><path d="M2 4L30 23M30 4L2 23" stroke="#fff" stroke-width="1.5"/></svg> BLUFOR fireteam</span><span><svg width="15" height="15" viewBox="2 2 28 28" style="vertical-align:-3px"><path d="M16 2L30 16L16 30L2 16Z" fill="#ff4d42" fill-opacity=".55" stroke="#ff4d42" stroke-width="2"/><path d="M9 9L23 23M23 9L9 23" stroke="#fff" stroke-width="1.5"/></svg> REDFOR fireteam</span><span>▲ Reported sighting</span><span>Dashed symbol: UAV last seen</span><span>Layers ▾ on the map hides any of these</span><span style="color:var(--e2)">✸ Explosion</span><span>Tap the map for a grid</span></div>';
 }
 function jamMapInto(el, S, side){
   if (el._lm){ el._lm.map.remove(); el._lm = null; el.classList.remove('lmap'); }
@@ -2140,10 +2175,17 @@ function teamRows(S, side, forWhite){
     const sq = pt ? squareOf(M, pt) : null;
     let nav = '';
     if (forWhite && f && f.gps && f.rep){ const d = Math.round(GEO.dist(f.gps, f.rep)); nav = '<span class="chip ' + (d <= 100 ? 'ok' : d <= 250 ? 'wait' : 'no') + '">map grid off by ' + d + ' m</span>'; }
-    return '<div class="li"><div class="grow"><b>' + esc(t.name) + '</b> <span class="small muted">' + (t.status ? esc(t.status) + ' · ' : '') + (f ? 'updated ' + hhmm(f.g) + ' (' + age + ' min ago)' : 'no position yet') + '</span>' + (pt ? '<div class="small mono">' + esc(fmtPt(pt)) + (sq ? ' · square ' + sq : '') + (f.gps ? '' : ' · from map reading') + '</div>' : '') + '</div>' + nav + (age != null && age > 10 ? '<span class="chip wait">stale</span>' : '') + '<button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>';
+    return '<div class="li"><div class="grow"><b>' + esc(teamLabel(t)) + '</b> <span class="small muted">' + (t.status ? esc(t.status) + ' · ' : '') + (f ? 'updated ' + hhmm(f.g) + ' (' + age + ' min ago)' : 'no position yet') + '</span>' + (pt ? '<div class="small mono">' + esc(fmtPt(pt)) + (sq ? ' · square ' + sq : '') + (f.gps ? '' : ' · from map reading') + '</div>' : '') + '</div>' + nav + (age != null && age > 10 ? '<span class="chip wait">stale</span>' : '') + '<button type="button" data-tnum data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" data-cur="' + esc(t.num || '') + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">' + (t.num ? 'Number #' + esc(t.num) : 'Give number') + '</button><button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>';
   }).join('');
 }
 
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-tnum]'); if (!b) return;
+  if (!(app.role === 'W' || app.role === b.dataset.side)) return;
+  const v = prompt('Map number for ' + b.dataset.name + ' (up to 3 characters, blank to clear)', b.dataset.cur || '');
+  if (v === null) return;
+  writeEvent('team_num', b.dataset.side, { team:b.dataset.id, num:v.trim() }); toast(v.trim() ? b.dataset.name + ' is now #' + v.trim() + '.' : 'Number cleared.');
+});
 document.addEventListener('click', ev => {
   const b = ev.target.closest('[data-tremove]'); if (!b) return;
   if (!(app.role === 'W' || app.role === b.dataset.side)) return;
@@ -2188,7 +2230,7 @@ function buildTeam(side){
   }
   v.innerHTML = `
   <div class="stack">
-    <div class="panel"><div class="act-head"><h2>${esc(me.name)}</h2><span class="small muted">${esc(SIDES[side].long)}</span></div>
+    <div class="panel"><div class="act-head"><h2>${esc(me.name)} <span data-tnumshow></span></h2><span class="small muted">${esc(SIDES[side].long)}</span></div>
       <div class="row" style="align-items:baseline;justify-content:space-between"><span><span class="k small muted">Board time</span> <b class="mono" data-clock>—</b></span><span data-tlvl></span><span class="row" style="flex:0 0 auto;gap:6px"><button type="button" data-rename style="flex:0 0 auto;padding:4px 10px;font-size:13px">Rename</button><button type="button" data-leave style="flex:0 0 auto;padding:4px 10px;font-size:13px">Leave this fireteam</button></span></div></div>
     <div class="panel stack"><h2>Alerts</h2><div data-tuav></div><div class="list" data-talerts></div></div>
     <div class="panel stack"><div class="act-head"><h2>Map</h2><span class="small muted" data-tmapstate></span></div>
@@ -2239,6 +2281,7 @@ function renderTeam(S, side){
     app.built = null; buildTeam(side); renderTeam(S, side); return;
   }
   if (!$('[data-torders]', v)) return;
+  $('[data-tnumshow]', v).textContent = mine && mine.num ? '· #' + mine.num : '';
   const lvl = levelIndex(S.esc);
   $('[data-tlvl]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
   const t = S.teams[side][me.id], f = t && t.last;
@@ -2246,7 +2289,7 @@ function renderTeam(S, side){
   const al = S.feed.filter(f => f.team && f.to === side).slice(-5).reverse();
   $('[data-talerts]', v).innerHTML = al.length ? al.map(f => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(f.g) + '</span><div>' + esc(f.text) + '</div></div></div>').join('') : '<div class="empty">Nothing yet. UAV sightings and warnings show here.</div>';
   const ph = jammed(S, side) ? '' : uavPhase(S, side), u = S.uav[side];
-  $('[data-tuav]', v).innerHTML = jammed(S, side) ? '<div class="li"><div class="grow"><b>Datalink jammed until ' + hhmm(S.jam[side]) + '</b><div class="small muted">No map and no UAV picture. Keep reporting by radio.</div></div></div>' : ph ? '<div class="li" style="border-left:3px solid var(--' + (side === 'B' ? 'red' : 'blu') + ');padding-left:8px"><div class="grow"><b>' + (ph === 'live' ? 'Enemy fireteams now' : 'Enemy fireteams last seen ' + hhmm(u.g)) + '</b>' + (u.spots.length ? u.spots.map(x => '<div class="mono small">' + esc(GEO.toMGRS(x.pt[0], x.pt[1], 3)) + '</div>').join('') : '<div class="small muted">The UAV found no one.</div>') + '</div></div>' : '';
+  $('[data-tuav]', v).innerHTML = jammed(S, side) ? '<div class="li"><div class="grow"><b>Datalink jammed until ' + hhmm(S.jam[side]) + '</b><div class="small muted">No map and no UAV picture. Keep reporting by radio.</div></div></div>' : ph ? '<div class="li" style="border-left:3px solid var(--' + (side === 'B' ? 'red' : 'blu') + ');padding-left:8px"><div class="grow"><b>' + (ph === 'live' ? 'Enemy fireteams now' : 'Enemy fireteams last seen ' + hhmm(u.g)) + '</b>' + (u.spots.length ? u.spots.map(x => '<div class="mono small">' + (x.num ? '#' + esc(x.num) + ' ' : '') + esc(GEO.toMGRS(x.pt[0], x.pt[1], 3)) + '</div>').join('') : '<div class="small muted">The UAV found no one.</div>') + '</div></div>' : '';
   const tm = $('[data-tmap]', v);
   if (tm && !tm.hidden && tm._lm) drawDyn(tm._lm, S, side, { team:true });
   const os = S.orders.filter(o => o.side === side && (o.team === 'all' || o.team === me.id));
@@ -2471,7 +2514,7 @@ function renderWing(S, side, now){
   $('[data-teams]', v).innerHTML = jm ? '<div class="empty">Datalink jammed until ' + hhmm(S.jam[side]) + '. Fireteam positions are unavailable; use the radio.</div>' + liveTeams(S, side).map(t => '<div class="li"><b class="grow">' + esc(t.name) + '</b><button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>').join('') : teamRows(S, side, false);
   const tl = liveTeams(S, side);
   $('[data-teamcount]', v).textContent = tl.length ? ' · ' + tl.length : '';
-  keepSelect($('[data-teamsel]', v), '<option value="all">All fireteams</option>' + tl.map(t => '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>').join(''));
+  keepSelect($('[data-teamsel]', v), '<option value="all">All fireteams</option>' + tl.map(t => '<option value="' + esc(t.id) + '">' + esc(teamLabel(t)) + '</option>').join(''));
   $('[data-liaison]', v).innerHTML = liaisonHTML(S, side);
   const lin = S.liaison.filter(m => m.side !== side).length;
   $('[data-liaisoncount]', v).textContent = lin ? ' · ' + lin : '';
