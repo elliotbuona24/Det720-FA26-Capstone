@@ -1148,6 +1148,7 @@ function ocWhere(S, o){ if (!o) return ''; if (o.mayor) return 'Mayor'; if (o.si
 function nineText(n){ return (n.target === 'cache' ? 'Militia cache' : SIDES[OTHER[n.side]].name + ' position') + ' at ' + (n.loc || '?'); }
 function ocReqText(S, r){
   if (r.kind === 'call') return OC_CALLS[r.call].name + ' for ' + SIDES[r.side].name + (r.text ? ' (' + r.text + ')' : '');
+  if (r.kind === 'stale') return 'Stalemate at ' + (SITES[r.site] ? SITES[r.site].name : 'a site') + (r.text ? ' (' + r.text + ')' : '');
   if (r.kind === 'site') return (r.who === 'both' ? 'Both wings' : r.side ? SIDES[r.side].name : 'A team') + ' at ' + (r.site === 'town' ? 'Marala Town' : SITES[r.site] ? SITES[r.site].name : 'a site') + (r.text ? ' (' + r.text + ')' : '');
   return 'Message: "' + r.text + '"';
 }
@@ -1328,6 +1329,7 @@ function apply(S, e, cfg){
         const spend = () => { if (!m.reuse) S.usedCodes[ck] = true; };
         if (!m.cap && !m.def){ c.note = 'Code word did not match.'; }
         else if (!m.reuse && S.usedCodes[ck]){ c.note = 'Code word already used.'; }
+        else if (s.contested && !s.contestBy){ c.note = 'Stalemate: both wings are at the site. It cannot be captured until one wing leaves and the white cell clears the stalemate.'; }
         else if (s.holder === side && s.contested && s.contestBy){
           if (!m.def){ c.note = 'Defense code word required.'; }
           else {
@@ -1676,10 +1678,11 @@ function apply(S, e, cfg){
       S.ver++; break; }
     case 'oc_req': {
       const o = S.ocs[p.oc]; if (!o || o.removed){ pushLog(S, 'POC request refused: that POC is not signed in', null, e, 'rejected'); break; }
-      const k = ['call', 'site', 'msg'].includes(p.kind) ? p.kind : 'msg';
+      const k = ['call', 'site', 'msg', 'stale'].includes(p.kind) ? p.kind : 'msg';
       const r = { id:e.id, oc:o.id, kind:k, g:S.g, status:'open', text:String(p.text || '').trim().slice(0, 300) };
       if (k === 'call'){ if (!OC_CALLS[p.call] || !(p.side === 'B' || p.side === 'R')) break; r.call = p.call; r.side = p.side; }
       if (k === 'site'){ r.site = SITES[p.site] || p.site === 'town' ? p.site : null; r.who = p.who === 'both' ? 'both' : 'one'; r.side = r.who === 'one' && (p.side === 'B' || p.side === 'R') ? p.side : null; }
+      if (k === 'stale'){ if (!SITES[p.site]) break; r.site = p.site; }
       if (k === 'msg' && !r.text) break;
       S.ocReqs.push(r); S.ver++;
       pushLog(S, 'POC ' + o.name + ' (' + ocWhere(S, o) + '): ' + ocReqText(S, r), null, e);
@@ -1700,6 +1703,8 @@ function apply(S, e, cfg){
       r.status = p.ok ? 'ok' : 'no'; r.resG = S.g; S.ver++;
       { const rp = String(p.reply || '').trim().slice(0, 300); if (rp){ r.reply = rp; pushLog(S, 'White cell reply to POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + rp, null, e); } }
       if (r.kind === 'call' && p.ok){ const c = OC_CALLS[r.call]; apply(S, { id:e.id, ts:e.ts, type:c.ev, side:r.side, p:Object.assign({}, c.p), by:e.by }, cfg); }
+      else if (r.kind === 'stale' && p.ok){ const st = S.sites[r.site]; if (st && !st.contestBy && !st.contested) apply(S, { id:e.id, ts:e.ts, type:'site_contested', side:null, p:{ site:r.site, on:true }, by:e.by }, cfg); else pushLog(S, 'Stalemate report from POC ' + ((S.ocs[r.oc] || {}).name || '') + ' not applied: ' + (SITES[r.site] ? SITES[r.site].name : 'site') + (st && st.contestBy ? ' is under contention' : ' is already in stalemate'), null, e, 'rejected'); }
+      else if (r.kind === 'stale') pushLog(S, 'Stalemate report from POC ' + ((S.ocs[r.oc] || {}).name || '') + ' declined: ' + (SITES[r.site] ? SITES[r.site].name : 'site'), null, e);
       else pushLog(S, (r.kind === 'call' ? 'Denied' : 'Acknowledged') + ' POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + ocReqText(S, r), null, e);
       break; }
     case 'nine': {
@@ -2716,6 +2721,10 @@ function buildOC(){
     <div class="panel stack"><h2>Calls for the white cell</h2><p class="small muted" style="margin:0">Calls take effect only after white cell approval.</p>
       <div class="row"><label>Wing<select data-ocside><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
       <div class="evgrid">${Object.entries(OC_CALLS).map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div></div>
+    <div class="panel stack"><h2>Stalemate</h2>
+      <p class="small muted" style="margin:0">Both wings at the same neutral site before either team has started the activity. Not used during contention.</p>
+      <div class="row"><label>Site<select data-ocstalesite data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
+      <button type="button" class="btn-side" data-ocstalesend>Report stalemate</button></div>
     <div class="panel stack"><h2>At a site</h2>
       <div class="row"><label>Site<select data-ocsite data-siteopts data-town="Marala Town">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select></label></div>
       <label>Note (optional)<input data-ocsitenote maxlength="120" placeholder="Example: Starting the cipher now"></label>
@@ -2738,6 +2747,7 @@ function buildOC(){
     if (c){ const k = c.dataset.occall, sd = $('[data-ocside]', v).value; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; if (await send({ kind:'call', call:k, side:sd, text:$('[data-ocnote]', v).value })) $('[data-ocnote]', v).value = ''; return; }
     const n = ev.target.closest('[data-ocnine]');
     if (n){ const o = app.S && app.S.ocs[me.id]; await writeEvent('nine_res', null, { nine:n.dataset.ocnine, ok:n.dataset.ok === '1', by:(o ? o.name : me.name) }); toast(n.dataset.ok === '1' ? 'Sent to their C2.' : 'Sent back to the team.'); return; }
+    if (ev.target.closest('[data-ocstalesend]')){ const k = $('[data-ocstalesite]', v).value; if (!SITES[k]) return; if (!confirm('Report a stalemate at ' + SITES[k].name + '?')) return; await send({ kind:'stale', site:k }, 'Stalemate reported to the white cell.'); return; }
     if (ev.target.closest('[data-ocsitesend]')){ const who = $('[data-ocwho]', v).value; if (await send({ kind:'site', site:$('[data-ocsite]', v).value, who:who === 'both' ? 'both' : 'one', side:who === 'both' ? null : who, text:$('[data-ocsitenote]', v).value })) $('[data-ocsitenote]', v).value = ''; return; }
   });
   app.ocSideSet = false;
@@ -2773,7 +2783,7 @@ function renderOC(S){
   const mb = $('[data-ocmapbox]', v);
   if (mb && mb.open){ const real = renderMapInto($('[data-ocmap]', v), S, null); $('[data-oclegend]', v).innerHTML = real ? realLegend() : legendHTML(null); }
   const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
-  $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + (r.reply ? '<div class="small"><b>White cell ' + hhmm(r.resG) + ':</b> ' + esc(r.reply) + '</div>' : '') + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : r.reply ? 'replied' : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
+  $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + (r.reply ? '<div class="small"><b>White cell ' + hhmm(r.resG) + ':</b> ' + esc(r.reply) + '</div>' : '') + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'stale' ? (r.status === 'ok' ? 'marked' : 'not marked') : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : r.reply ? 'replied' : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
   { const reps = S.ocReqs.filter(r => r.oc === me.id && r.reply), n = reps.length; if (app.ocRepN == null || app.ocRepFor !== me.id){ app.ocRepFor = me.id; app.ocRepN = n; } else if (n > app.ocRepN){ app.ocRepN = n; toast('White cell reply: ' + reps[n - 1].reply); try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} } }
 }
 function occSeenKey(id){ return 'marala-occhat-' + (app.gid || 'none') + '-' + id; }
@@ -2800,10 +2810,10 @@ function renderOCWhite(S, v){
   const ocsFor = n => Object.values(S.ocs).filter(o => !o.removed && o.side === n.side && o.team === n.team).map(o => esc(o.name)).join(', ');
   S.nines.filter(n => n.status === 'open').forEach(n => q.push('<div class="li"><div class="grow"><span class="chip ' + n.side + '">' + SIDES[n.side].name + '</span> <b>Strike 9-line</b> <span class="small muted">' + hhmm(n.g) + ' · ' + esc(n.name) + (ocsFor(n) ? ' · POC ' + ocsFor(n) : ' · No POC attached') + '</span><div class="small">' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-nineres="' + n.id + '" data-ok="1">Correct · Send to C2</button><button type="button" data-nineres="' + n.id + '" data-ok="0">Deny</button></div></div>'));
   S.ocReqs.filter(r => r.status === 'open').forEach(r => {
-    let ctl = r.kind === 'call' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button>' : (r.kind === 'msg' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Send reply</button>' : '') + '<button type="button" data-ocres="' + r.id + '" data-ok="1">Got it</button>';
+    let ctl = r.kind === 'stale' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Mark stalemate</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Not a stalemate</button>' : r.kind === 'call' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button>' : (r.kind === 'msg' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Send reply</button>' : '') + '<button type="button" data-ocres="' + r.id + '" data-ok="1">Got it</button>';
     if (r.kind === 'site' && r.who === 'both' && SITES[r.site] && !S.sites[r.site].contested) ctl = '<button type="button" data-act="contest" data-id="' + r.site + '" data-on="1">Mark stalemate</button>' + ctl;
-    const head = r.kind === 'call' ? '<span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + esc(OC_CALLS[r.call].name) + '</b> <span class="small muted">' + esc(OC_CALLS[r.call].sub) + '</span>' : r.kind === 'site' ? '<b>At a site</b>' : '<b>Message</b>';
-    q.push('<div class="li"><div class="grow">' + head + ' <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + (r.kind === 'call' ? (r.text ? ': ' + esc(r.text) : '') : ': ' + esc(r.kind === 'site' ? ocReqText(S, r) : r.text)) + '</div><input data-ocreply="' + r.id + '" maxlength="300" autocomplete="off" aria-label="Reply to ' + esc((S.ocs[r.oc] || {}).name || 'POC') + '" placeholder="Reply (optional)" style="margin-top:6px"></div><div class="row" style="flex:0 0 auto">' + ctl + '</div></div>');
+    const head = r.kind === 'call' ? '<span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + esc(OC_CALLS[r.call].name) + '</b> <span class="small muted">' + esc(OC_CALLS[r.call].sub) + '</span>' : r.kind === 'stale' ? '<b>Stalemate reported</b>' : r.kind === 'site' ? '<b>At a site</b>' : '<b>Message</b>';
+    q.push('<div class="li"><div class="grow">' + head + ' <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + (r.kind === 'call' ? (r.text ? ': ' + esc(r.text) : '') : ': ' + esc(r.kind === 'site' || r.kind === 'stale' ? ocReqText(S, r) : r.text)) + '</div><input data-ocreply="' + r.id + '" maxlength="300" autocomplete="off" aria-label="Reply to ' + esc((S.ocs[r.oc] || {}).name || 'POC') + '" placeholder="Reply (optional)" style="margin-top:6px"></div><div class="row" style="flex:0 0 auto">' + ctl + '</div></div>');
   });
   { const box = $('[data-ocq]', v), html = q.length ? q.join('') : '<div class="empty">Nothing from the POCs right now.</div>'; if (box.dataset.h !== html && !typingIn(box)){ box.dataset.h = html; box.innerHTML = html; } }
   const live = Object.values(S.ocs).filter(o => !o.removed);
