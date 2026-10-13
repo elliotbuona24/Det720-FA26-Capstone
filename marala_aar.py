@@ -229,7 +229,7 @@ def chart_sites(aar):
     ax.grid(axis="x", color=GRID, linewidth=0.8)
     ax.grid(axis="y", visible=False)
     ax.legend(handles=[Patch(color=BLUE, label="BLUFOR"), Patch(color=RED, label="REDFOR"),
-                       Patch(facecolor="#9aa0a6", hatch="////", edgecolor="white", label="Contested (scores nothing)")],
+                       Patch(facecolor="#9aa0a6", hatch="////", edgecolor="white", label="Contention or stalemate (scores nothing)")],
               frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=3)
     return fig_to_png(fig)
 
@@ -424,7 +424,7 @@ def build_html(data, aar, charts):
         f"<td>{esc(c.get('grid') or '')}</td><td>{report_detail(c)}</td><td>{esc(verdicts.get(c.get('verdict'), 'Not judged'))}</td></tr>"
         for c in sorted(aar.get("contacts", []), key=lambda x: x["g"])
     ) or "<tr><td colspan='7' class='muted'>No reports were filed.</td></tr>"
-    claim_res = {"accepted": "Accepted", "contest": "Contest started", "held": "Already contesting", "rejected": "Refused"}
+    claim_res = {"accepted": "Accepted", "contest": "Contest started", "held": "Already under contention", "rejected": "Refused"}
     claim_rows = "".join(
         f"<tr><td>{hhmm(c['g'])}</td>{side_cell(c['side'], NAMES[c['side']])}<td>{esc(site_names.get(c['site'], c['site']) + (' office' if c['site'] == 'town' else ''))}</td>"
         f"<td>{esc(claim_res.get(c['status'], c['status']))}</td><td>{esc(c.get('note') or '')}</td></tr>"
@@ -533,7 +533,7 @@ table.log{{font-size:10pt}}
 <figure>{img(charts['hn'], 'Diplomatic points over time')}<figcaption>Figure 3. Diplomatic points: each wing's standing with the mayor and the people of Marala. Below 20, the mayor closes that wing's town office.</figcaption></figure>
 
 <h2>5. Site Control</h2>
-<figure>{img(charts['sites'], 'Who held each site')}<figcaption>Figure 4. Control of each site over the game. Hatched bars were contested and scored nothing.</figcaption></figure>
+<figure>{img(charts['sites'], 'Who held each site')}<figcaption>Figure 4. Control of each site over the game. Hatched bars were under contention or stalemate and scored nothing.</figcaption></figure>
 <h3>Every site and town-office claim</h3>
 <table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Site</th><th>Result</th><th>Board note</th></tr></thead><tbody>{claim_rows}</tbody></table>
 <h3>Site handovers</h3>

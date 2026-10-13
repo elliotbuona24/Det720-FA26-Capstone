@@ -1313,8 +1313,8 @@ function apply(S, e, cfg){
     case 'clock_set': if (S.clock.started && !S.endex){ S.clock.anchorG = Math.max(START_G, Math.min(END_G, p.g)); S.clock.anchorReal = e.ts; S.g = S.clock.anchorG; pushLog(S, 'Clock set to ' + hhmm(S.g), null, e); } break;
     case 'reveal': S.reveal = !!p.on; pushLog(S, p.on ? 'Fog of war lifted' : 'Fog of war enacted', null, e); pushFeed(S, 'public', p.on ? 'Fog of war lifted. Every position and both scores are now on every screen.' : 'Fog of war enacted.', 'public'); break;
     case 'site_set': { const s = S.sites[p.site]; if (!s) break; s.holder = p.holder || null; s.contested = false; s.contestBy = null; s.contestUntil = null; s.since = S.g; pushLog(S, SITES[p.site].name + (p.holder ? ' set to ' + SIDES[p.holder].name : ' set to nobody'), p.holder, e); break; }
-    case 'site_contested': { const s = S.sites[p.site]; if (!s) break; s.contested = !!p.on; if (!p.on){ s.contestBy = null; s.contestUntil = null; s.contestNext = null; } pushLog(S, SITES[p.site].name + (p.on ? ' contested' : ' no longer contested'), null, e);
-      if (p.on && s.holder) pushFeed(S, s.holder, 'The other wing is standing on your ' + SITES[p.site].name + '. It scores nothing while contested.', 'alert'); break; }
+    case 'site_contested': { const s = S.sites[p.site]; if (!s) break; const wasBy = s.contestBy; s.contested = !!p.on; if (!p.on){ s.contestBy = null; s.contestUntil = null; s.contestNext = null; } pushLog(S, SITES[p.site].name + (p.on ? ': stalemate, both wings at the site' : wasBy ? ': contention ended' : ': stalemate cleared'), null, e); S.ver++;
+      if (p.on && s.holder) pushFeed(S, s.holder, 'Stalemate at your ' + SITES[p.site].name + ': both wings are at the site. It scores nothing until one wing leaves.', 'alert'); break; }
     case 'office': S.office[side] = !!p.on && S.access[side]; pushLog(S, nm + ' town office ' + (S.office[side] ? 'opened' : 'closed'), side, e); break;
     case 'claim': {
       const c = { id:e.id, side, site:p.site, g:S.g, status:'rejected', note:'' };
@@ -1797,7 +1797,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'stalemate change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -2243,10 +2243,10 @@ function parseGrid(gs){
 }
 function siteView(S, side, k){
   const s = S.sites[k];
-  if (!side || S.reveal) return { holder:s.holder, contested:s.contested, known:true };
-  if (s.holder === side) return { holder:side, contested:s.contested, known:true };
+  if (!side || S.reveal) return { holder:s.holder, contested:s.contested, contestBy:s.contestBy, known:true };
+  if (s.holder === side) return { holder:side, contested:s.contested, contestBy:s.contestBy, known:true };
   const radar = S.sites.radar;
-  if (radar.holder === side && !radar.contested) return { holder:s.holder, contested:s.contested, known:true, via:'radar' };
+  if (radar.holder === side && !radar.contested) return { holder:s.holder, contested:s.contested, contestBy:s.contestBy, known:true, via:'radar' };
   const seen = S.lastSeen[side][k];
   const rep = S.contacts.filter(c => c.side === side && c.kind === 'site' && c.site === k).pop();
   if (seen && (!rep || seen.g >= rep.g)) return { holder:seen.holder, known:false, stale:true, at:seen.g };
@@ -2280,7 +2280,7 @@ function mapSVG(S, side){
     o += '<circle cx="' + x + '" cy="' + y + '" r="18" fill="' + ((v.reported || v.stale) ? 'var(--panel)' : f) + '" stroke="' + (v.holder ? fill(v.holder) : 'var(--muted)') + '" stroke-width="2.5"' + dash + '/>';
     o += '<text x="' + x + '" y="' + (y + 5) + '" text-anchor="middle" style="font-family:var(--display);font-weight:700;font-size:15px" fill="' + ((v.holder && !v.reported && !v.stale) ? 'var(--panel)' : 'var(--ink)') + '">' + (v.unknown ? '?' : s.letter) + '</text>';
     o += '<text class="lbl" x="' + x + '" y="' + (y + 34) + '" text-anchor="middle">' + esc(s.name) + '</text>';
-    const sub = v.unknown ? 'Unknown' : v.reported ? 'Reported ' + hhmm(v.at) : v.stale ? 'Seen ' + hhmm(v.at) : v.contested ? 'Contested' : v.holder ? SIDES[v.holder].name + (v.via ? ' (radar)' : '') : 'neutral';
+    const sub = v.unknown ? 'Unknown' : v.reported ? 'Reported ' + hhmm(v.at) : v.stale ? 'Seen ' + hhmm(v.at) : v.contested ? (v.contestBy ? 'Contention' : 'Stalemate') : v.holder ? SIDES[v.holder].name + (v.via ? ' (radar)' : '') : 'neutral';
     o += '<text class="sub" x="' + x + '" y="' + (y + 47) + '" text-anchor="middle">' + esc(s.grid + ' · ' + sub) + '</text></g>';
   });
   S.incidents.forEach(inc => { const pt = parseGrid(inc.grid); if (!pt) return; o += '<g><path d="M' + pt.x + ',' + (pt.y - 11) + ' l3,7 l8,-3 l-4,8 l7,4 l-8,2 l1,8 l-7,-5 l-7,5 l1,-8 l-8,-2 l7,-4 l-4,-8 l8,3 z" fill="var(--e2)" stroke="var(--panel)" stroke-width="1"/></g>'; });
@@ -2301,7 +2301,7 @@ function legendHTML(side){
     '<span><i class="sw" style="background:var(--blu);border-color:var(--blu)"></i>BLUFOR held</span>' +
     '<span><i class="sw" style="background:var(--red);border-color:var(--red)"></i>REDFOR held</span>' +
     (side ? '<span><i class="sw" style="border-style:dashed;border-color:var(--muted)"></i>Reported or last seen</span><span><i class="sw"></i>Unknown</span>' : '<span><i class="sw"></i>Neutral</span>') +
-    '<span><i class="sw" style="border-color:var(--e2);border-style:dashed"></i>Contested</span>' +
+    '<span><i class="sw" style="border-color:var(--e2);border-style:dashed"></i>Contention or stalemate</span>' +
     '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
 }
 function scoreTable(S, sides){
@@ -2549,7 +2549,7 @@ function drawDyn(st, S, side, opts){
     if (v.contested) L.circle(pt, { radius:45, color:'#ff9b3d', weight:3, dashArray:'6 5', fill:false, interactive:false }).addTo(LS.sites);
     const dec = S.declared[k];
     if (dec && dec.until > S.g) L.circle(pt, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(LS.sites);
-    const sub = v.unknown ? 'Unknown' : v.reported ? 'Reported ' + hhmm(v.at) : v.stale ? 'Seen ' + hhmm(v.at) : v.contested ? 'Contested' + (raw.contestUntil && (!side || raw.holder === side || raw.contestBy === side) ? ' until ' + hhmm(raw.contestUntil) : '') : v.holder ? SIDES[v.holder].name : 'Neutral';
+    const sub = v.unknown ? 'Unknown' : v.reported ? 'Reported ' + hhmm(v.at) : v.stale ? 'Seen ' + hhmm(v.at) : v.contested ? (raw.contestBy ? 'Contention' : 'Stalemate') + (raw.contestUntil && (!side || raw.holder === side || raw.contestBy === side) ? ' until ' + hhmm(raw.contestUntil) : '') : v.holder ? SIDES[v.holder].name : 'Neutral';
     const hollow = v.unknown || v.reported || v.stale || !v.holder;
     tip(L.circleMarker(pt, { radius:11, color:v.holder ? SIDE_HEX[v.holder] : '#ffffff', weight:3, dashArray:(v.reported || v.stale) ? '4 3' : null, fillColor:hollow ? '#111' : SIDE_HEX[v.holder], fillOpacity:hollow ? .45 : .9 }), SITES[k].name + ' · ' + sub).addTo(LS.sites);
   });
@@ -2801,7 +2801,7 @@ function renderOCWhite(S, v){
   S.nines.filter(n => n.status === 'open').forEach(n => q.push('<div class="li"><div class="grow"><span class="chip ' + n.side + '">' + SIDES[n.side].name + '</span> <b>Strike 9-line</b> <span class="small muted">' + hhmm(n.g) + ' · ' + esc(n.name) + (ocsFor(n) ? ' · POC ' + ocsFor(n) : ' · No POC attached') + '</span><div class="small">' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-nineres="' + n.id + '" data-ok="1">Correct · Send to C2</button><button type="button" data-nineres="' + n.id + '" data-ok="0">Deny</button></div></div>'));
   S.ocReqs.filter(r => r.status === 'open').forEach(r => {
     let ctl = r.kind === 'call' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button>' : (r.kind === 'msg' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Send reply</button>' : '') + '<button type="button" data-ocres="' + r.id + '" data-ok="1">Got it</button>';
-    if (r.kind === 'site' && r.who === 'both' && SITES[r.site] && !S.sites[r.site].contested) ctl = '<button type="button" data-act="contest" data-id="' + r.site + '" data-on="1">Mark both at site</button>' + ctl;
+    if (r.kind === 'site' && r.who === 'both' && SITES[r.site] && !S.sites[r.site].contested) ctl = '<button type="button" data-act="contest" data-id="' + r.site + '" data-on="1">Mark stalemate</button>' + ctl;
     const head = r.kind === 'call' ? '<span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + esc(OC_CALLS[r.call].name) + '</b> <span class="small muted">' + esc(OC_CALLS[r.call].sub) + '</span>' : r.kind === 'site' ? '<b>At a site</b>' : '<b>Message</b>';
     q.push('<div class="li"><div class="grow">' + head + ' <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + (r.kind === 'call' ? (r.text ? ': ' + esc(r.text) : '') : ': ' + esc(r.kind === 'site' ? ocReqText(S, r) : r.text)) + '</div><input data-ocreply="' + r.id + '" maxlength="300" autocomplete="off" aria-label="Reply to ' + esc((S.ocs[r.oc] || {}).name || 'POC') + '" placeholder="Reply (optional)" style="margin-top:6px"></div><div class="row" style="flex:0 0 auto">' + ctl + '</div></div>');
   });
@@ -3055,9 +3055,10 @@ function buildWing(side){
               <div><button class="btn-side" type="submit">Post report</button></div></form></div>
           <div class="act" data-ctbox hidden><div class="act-head"><b>Contention requests from fireteams</b><span class="cost"><span class="esc-up">+5 escalation now and every 10 minutes if started</span></span></div><div class="list" data-ctreqs></div></div>
           <div class="act"><div class="act-head"><b>Start contention</b><span class="cost"><span class="esc-up">+5 escalation now and every 10 minutes</span></span></div>
-            <p class="small muted" style="margin:0">Applies to a site the other wing holds. A capture code word must be entered before the timer expires. If the holder enters a defense code word first, contention ends and you take +5 escalation.</p>
+            <p class="small muted" style="margin:0">Applies to a site the other wing holds. The attacking team must earn and enter a capture code word before the site's timer expires. The holder may defend: if it enters a defense code word first, it keeps the site, the attackers pull back 100 m, and the attacking wing takes +5 escalation. If the timer expires, the holder keeps the site.</p>
             <form class="stack" data-f="contend"><div class="row"><label for="cnS-${side}">Site<select id="cnS-${side}" name="site" data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div><div><button class="btn-side" type="submit">Start contention</button></div></form></div>
           <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">Capture or defense code word</span></div>
+            <p class="small muted" style="margin:0">A capture code word claims a neutral site, or a site under contention. A defense code word keeps a held site under contention. Each code word works once.</p>
             <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site" data-siteopts data-town="Marala Town office">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word (each works once)<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
             <div class="list" data-claims></div></div>
         </div>
@@ -3254,7 +3255,7 @@ function renderWing(S, side, now){
   const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id]);
   keepSelect($('[name="inc"]', v), incs.length ? incs.map(i => '<option value="' + i.id + '">' + esc(i.grid) + ' explosion, ' + hhmm(i.g) + '</option>').join('') : '<option value="">No incidents yet</option>');
   const claims = S.claims.filter(c => c.side === side);
-  $('[data-claims]', v).innerHTML = claims.slice(-4).reverse().map(c => '<div class="li"><span class="grow">' + esc(c.site === 'town' ? 'Marala Town' : SITES[c.site].name) + ' · ' + hhmm(c.g) + ' <span class="small muted">' + esc(c.note) + '</span></span><span class="chip ' + (c.status === 'accepted' ? 'ok' : c.status === 'contest' ? 'wait' : 'no') + '">' + (c.status === 'accepted' ? 'Confirmed' : c.status === 'contest' ? 'Contesting' : 'Refused') + '</span></div>').join('');
+  $('[data-claims]', v).innerHTML = claims.slice(-4).reverse().map(c => '<div class="li"><span class="grow">' + esc(c.site === 'town' ? 'Marala Town' : SITES[c.site].name) + ' · ' + hhmm(c.g) + ' <span class="small muted">' + esc(c.note) + '</span></span><span class="chip ' + (c.status === 'accepted' ? 'ok' : c.status === 'contest' ? 'wait' : 'no') + '">' + (c.status === 'accepted' ? 'Confirmed' : c.status === 'contest' ? 'Contention' : 'Refused') + '</span></div>').join('');
   const reqs = S.requests.filter(r => r.side === side);
   { const n = reqs.filter(r => r.status === 'open').length, c = $('[data-cnreq]', v); if (c){ c.hidden = !n; c.textContent = n; } const ne = $('[data-cnesc]', v); if (ne) ne.textContent = '· Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ') · Diplomatic points ' + S.hn[side] + ' · Points ' + sc.total; }
   const kindName = { drone:'Drone flight', show:'Show of force', strike:'Strike', wp:'Waypoint request' };
@@ -3325,7 +3326,7 @@ const TEMPLATES = [
   { at:155, phase:'Phase 3', label:'Final report call', to:'both', text:'Report all known enemy positions and your final assessment by {+165}.' },
   { lvl:1, label:'Shared checkpoint', to:'both', text:'Higher headquarters orders you to inspect the bridge checkpoint within 15 minutes. The other force has the same order. Work out the timing with the other Wing Commander.' },
   { lvl:2, label:'Militia between you', to:'both', text:'Militia gunmen have opened fire near both forces at the center of the island. Do not fire on each other.' },
-  { lvl:3, label:'Off-ramp', to:'both', text:'Higher headquarters: pull back from your nearest contested site within 10 minutes. Coordinate the withdrawal with the other force.' }
+  { lvl:3, label:'Off-ramp', to:'both', text:'Higher headquarters: pull back from your nearest site under contention or stalemate within 10 minutes. Coordinate the withdrawal with the other force.' }
 ];
 function buildWhite(){
   if (app.built === 'white') return; app.built = 'white';
@@ -4014,9 +4015,9 @@ function renderWhite(S, now){
       box.innerHTML = dep.length ? dep.slice().reverse().map(w => '<div class="li">' + head(w) + vis(w) + tools(w) + '</div>').join('') : '<div class="empty">No deployed waypoints.</div>';
     } }
   { const wp = wcSpot(S), M = mapCfg(S); $('[data-wcnow]', v).textContent = wp ? (squareOf(M, wp) ? squareOf(M, wp) + ' · ' : '') + fmtPt(wp) + (S.wcPos ? ' (moved)' : ' (planned spot)') : 'not set'; $('[data-wcback]', v).disabled = !S.wcPos; }
-  if (!typingIn($('[data-sitectl]', v))) $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Both at site</span>' : '') + '</span>' +
+  if (!typingIn($('[data-sitectl]', v))) $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Stalemate</span>' : '') + '</span>' +
     '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>REDFOR</option></select>' +
-    (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<label class="small" style="flex:0 0 auto;display:flex;align-items:center;gap:4px;flex-direction:row;margin:0">Timer<input type="number" data-timer="' + k + '" min="3" max="90" step="1" value="' + (S.siteTimer[k] || 15) + '" aria-label="Contention timer for ' + SITES[k].name + ' in minutes" style="width:64px">min</label>' + (SITES[k].dyn ? '<button type="button" data-siterm="' + k + '">Remove site</button>' : '') + '<button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear') : 'Both at site') + '</button></div>'; }).join('') +
+    (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<label class="small" style="flex:0 0 auto;display:flex;align-items:center;gap:4px;flex-direction:row;margin:0">Timer<input type="number" data-timer="' + k + '" min="3" max="90" step="1" value="' + (S.siteTimer[k] || 15) + '" aria-label="Contention timer for ' + SITES[k].name + ' in minutes" style="width:64px">min</label>' + (SITES[k].dyn ? '<button type="button" data-siterm="' + k + '">Remove site</button>' : '') + '<button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear stalemate') : 'Mark stalemate') + '</button></div>'; }).join('') +
     '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">Town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
   renderOCWhite(S, v);
   const q = [];
