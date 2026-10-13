@@ -1560,6 +1560,7 @@ function apply(S, e, cfg){
       if (!t || t.removed){ pushLog(S, 'Fireteam removal refused: no such team', side, e, 'rejected'); break; }
       t.removed = true; t.status = 'Removed'; S.ver++;
       pushLog(S, nm + ' fireteam ' + t.name + ' removed by ' + (e.by === 'W' ? 'the white cell' : 'the Wing Commander'), side, e);
+      Object.values(S.ocs).forEach(o => { if (!o.removed && o.side === side && o.team === t.id){ o.side = null; o.team = null; o.detached = { name:t.name, g:S.g }; pushLog(S, 'POC ' + o.name + ' unattached: ' + t.name + ' was removed', null, e); } });
       break; }
     case 'window_set': pushLog(S, 'Game window set: clock starts ' + hhmm(START_G) + ', ' + (END_G - START_G) + ' minutes', null, e); break;
     case 'team_map': {
@@ -1588,7 +1589,7 @@ function apply(S, e, cfg){
       const o = S.ocs[id] || (S.ocs[id] = { id, name:'POC', side:null, team:null, mayor:false, removed:false, g:S.g });
       if (e.type === 'oc_join'){ o.removed = false; if (p.name) o.name = String(p.name).slice(0, 40); }
       if (o.removed) break;
-      o.mayor = !!p.mayor; o.side = !o.mayor && (p.side === 'B' || p.side === 'R') ? p.side : null; o.team = o.side && p.team ? String(p.team) : null;
+      o.mayor = !!p.mayor; o.side = !o.mayor && (p.side === 'B' || p.side === 'R') ? p.side : null; o.team = o.side && p.team ? String(p.team) : null; o.detached = null;
       S.ver++;
       pushLog(S, (e.type === 'oc_join' ? 'POC signed in: ' : 'POC now with ') + (e.type === 'oc_join' ? o.name + ' · ' : o.name + ': ') + ocWhere(S, o), null, e);
       break; }
@@ -2210,7 +2211,7 @@ function lmapEnsure(el, M){
     const tog = L.control({ position:'topright' });
     tog.onAdd = () => {
       const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref();
-      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => k !== 'poi' || app.role === 'W').map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
+      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => k !== 'poi' || app.role === 'W' || app.role === 'OC').map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
       L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
       d.querySelector('[data-gtbtn]').onclick = () => { const l = d.querySelector('.gt-list'); l.hidden = !l.hidden; };
       d.addEventListener('change', ev => { if (ev.target.matches('[data-gtbase]')){ const np = gridPref(); np.base = ev.target.value; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gtbase]').forEach(x => x.value = np.base); $$('.lmap').forEach(x => { if (x._lm) applyGridPref(x._lm); }); return; } const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gt="' + k + '"]').forEach(x => x.checked = ev.target.checked); $$('.lmap').forEach(x => { if (!x._lm) return; applyGridPref(x._lm); drawFine(x._lm); if (x._lm.args && app.S) drawDyn(x._lm, app.S, x._lm.args[0], x._lm.args[1]); }); });
@@ -2454,8 +2455,8 @@ function teamIdKey(side){ return 'marala-team-' + (app.gid || 'none') + '-' + si
 function teamGet(side){ try { return JSON.parse(localStorage.getItem(teamIdKey(side)) || 'null'); } catch(e){ return null; } }
 function teamSet(side, v){ try { localStorage.setItem(teamIdKey(side), JSON.stringify(v)); } catch(e){} }
 let teamAutoTimer = null;
-function ocOpts(S){
-  return '<option value="">Not attached</option><option value="mayor">Mayor (Marala Town)</option>' + ['B', 'R'].map(sd => liveTeams(S, sd).filter(t => t.status !== 'Left the game').map(t => '<option value="' + sd + ':' + esc(t.id) + '">' + SIDES[sd].name + ' · ' + esc(teamLabel(t)) + '</option>').join('')).join('');
+function ocOpts(S, keep){
+  return '<option value="">Not attached</option><option value="mayor">Mayor (Marala Town)</option>' + ['B', 'R'].map(sd => liveTeams(S, sd).filter(t => t.status !== 'Left the game' || (keep && keep.side === sd && keep.team === t.id)).map(t => '<option value="' + sd + ':' + esc(t.id) + '">' + SIDES[sd].name + ' · ' + esc(teamLabel(t)) + '</option>').join('')).join('');
 }
 function ocVal(o){ return !o ? '' : o.mayor ? 'mayor' : o.side && o.team ? o.side + ':' + o.team : ''; }
 function ocParse(v){ if (v === 'mayor') return { mayor:true, side:null, team:null }; const m = /^([BR]):(.+)$/.exec(v || ''); return m ? { mayor:false, side:m[1], team:m[2] } : { mayor:false, side:null, team:null }; }
@@ -2467,7 +2468,7 @@ function buildOC(){
   if (app.built === 'oc') return; app.built = 'oc';
   const v = $('#vOC'), me = ocGet();
   if (!me){
-    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>Sign in as a POC</h2><p class="small muted" style="margin:0">The white cell sees your name and who you are with, so it knows where each call comes from.</p><form class="stack" data-ocjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><label>Attached to<select name="assign" data-ocjoinassign></select></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div><div class="panel stack"><h2>Already signed in before?</h2><p class="small muted" style="margin:0">If your phone restarted or you switched phones, tap your name to pick up where you left off.</p><div class="list" data-ocrejoin></div></div></div>';
+    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>POC Sign In</h2><p class="small muted" style="margin:0">The white cell sees your name and who you are with, so it knows where each call comes from.</p><form class="stack" data-ocjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><label>Attached to<select name="assign" data-ocjoinassign></select></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div><div class="panel stack"><h2>Already signed in before?</h2><p class="small muted" style="margin:0">If your phone restarted or you switched phones, tap your name to pick up where you left off.</p><div class="list" data-ocrejoin></div></div></div>';
     $('[data-ocrejoin]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-ocrejoinid]'); if (!b) return; ocSet({ id:b.dataset.ocrejoinid, name:b.dataset.name }); app.built = null; buildOC(); refresh(true); toast('Welcome back, ' + b.dataset.name + '.'); });
     $('[data-ocjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const fd = new FormData(ev.target), name = String(fd.get('name') || '').trim(); if (!name) return; const id = 'o' + uid(); ocSet({ id, name }); writeEvent('oc_join', null, Object.assign({ oc:id, name }, ocParse(fd.get('assign')))); app.built = null; buildOC(); refresh(true); });
     return;
@@ -2475,7 +2476,8 @@ function buildOC(){
   v.innerHTML = `
   <div class="stack">
     <div class="panel"><div class="act-head"><h2 data-ocname>${esc(me.name)}</h2><span class="small muted">POC · <b class="mono" data-clock>—</b></span></div>
-      <div class="row" style="align-items:end"><label>Attached to<select data-ocassign></select></label><button type="button" data-ocsignout style="flex:0 0 auto">Sign out</button></div></div>
+      <div class="row" style="align-items:end"><label>Attached to<select data-ocassign></select></label><button type="button" data-ocsignout style="flex:0 0 auto">Sign out</button></div>
+      <div class="ip-status" data-ocwarn hidden style="color:var(--bad);font-weight:600"></div></div>
     <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Listen to your team read the full 9-line. If it is right, send it up to their C2.</p><div class="list" data-ocnines></div></div>
     <div class="panel stack"><h2>Calls for the white cell</h2><p class="small muted" style="margin:0">Pick the wing, then tap what you saw. The white cell approves or denies it.</p>
       <div class="row"><label>Wing<select data-ocside><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
@@ -2486,7 +2488,13 @@ function buildOC(){
       <button type="button" class="btn-side" data-ocsitesend>Tell the white cell</button></div>
     <div class="panel stack"><h2>Message to the white cell</h2><textarea data-ocmsg rows="2" maxlength="300" placeholder="Example: Alpha 1 has a twisted ankle, walking it off"></textarea><button type="button" class="btn-side" data-ocmsgsend>Send</button></div>
     <div class="panel stack"><h2>Your requests</h2><div class="list" data-ocmine></div></div>
+    <details class="panel" data-ocmapbox><summary><b>Map</b> <span class="small muted">(same view as the white cell)</span></summary>
+      <div class="stack" style="margin-top:10px"><p class="small muted" style="margin:0">Shows every fireteam, site and point of interest with no fog of war. Don't show it to cadets.</p>
+      <div class="row" style="justify-content:flex-start"><button type="button" data-ocfull style="flex:0 0 auto">Full screen map</button></div>
+      <div class="map-wrap" data-ocmap></div><div data-oclegend></div></div></details>
   </div>`;
+  $('[data-ocmapbox]', v).addEventListener('toggle', () => refresh(true));
+  $('[data-ocfull]', v).onclick = () => openFullMap(null);
   const send = async (p, msg) => { if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return false; } await writeEvent('oc_req', null, Object.assign({ oc:me.id }, p)); toast(msg || 'Sent to the white cell.'); return true; };
   $('[data-ocassign]', v).onchange = ev => writeEvent('oc_assign', null, Object.assign({ oc:me.id }, ocParse(ev.target.value)));
   $('[data-ocsignout]', v).onclick = () => { if (!confirm('Sign out on this phone? The white cell keeps your name until it removes you.')) return; ocSet(null); app.built = null; buildOC(); refresh(true); };
@@ -2513,10 +2521,15 @@ function renderOC(S){
   if (!$('[data-ocmine]', v)) return;
   if (o) $('[data-ocname]', v).textContent = o.name;
   const as = $('[data-ocassign]', v);
-  if (document.activeElement !== as){ as.innerHTML = ocOpts(S); as.value = ocVal(o); }
+  if (document.activeElement !== as){ as.innerHTML = ocOpts(S, o); as.value = ocVal(o); }
+  const wn = $('[data-ocwarn]', v), det = o && o.detached;
+  wn.hidden = !det; wn.textContent = det ? det.name + ' was removed from the game at ' + hhmm(det.g) + '. Pick the fireteam you are with now.' : '';
+  if (det && app.ocDetSeen !== det.g + det.name){ app.ocDetSeen = det.g + det.name; toast(det.name + ' was removed. Pick the fireteam you are with now.', true); try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} }
   if (o && o.side && !app.ocSideSet){ app.ocSideSet = true; $('[data-ocside]', v).value = o.side; $('[data-ocwho]', v).value = o.side; }
   const mine = S.nines.filter(n => n.status === 'open' && o && n.side === o.side && n.team === o.team);
   $('[data-ocnines]', v).innerHTML = !o || !o.team ? '<div class="empty">Attach yourself to a fireteam to check its 9-lines.</div>' : mine.length ? mine.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.g) + '</span><div>' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocnine="' + n.id + '" data-ok="1">Correct · Send to C2</button><button type="button" data-ocnine="' + n.id + '" data-ok="0">Not right</button></div></div>').join('') : '<div class="empty">Nothing to check right now.</div>';
+  const mb = $('[data-ocmapbox]', v);
+  if (mb && mb.open){ const real = renderMapInto($('[data-ocmap]', v), S, null); $('[data-oclegend]', v).innerHTML = real ? realLegend() : legendHTML(null); }
   const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
   $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
 }
@@ -2534,12 +2547,11 @@ function renderOCWhite(S, v){
   const live = Object.values(S.ocs).filter(o => !o.removed);
   $('[data-occount]', v).textContent = q.length ? q.length + ' waiting' : '';
   $('[data-ocn]', v).textContent = '(' + live.length + ' signed in)';
-  const key = JSON.stringify(live.map(o => [o.id, o.name, ocVal(o)])) + '|' + ['B', 'R'].map(sd => liveTeams(S, sd).map(t => t.id + t.name + (t.num || '')).join()).join('|');
+  const key = JSON.stringify(live.map(o => [o.id, o.name, ocVal(o), !!o.detached])) + '|' + ['B', 'R'].map(sd => liveTeams(S, sd).map(t => t.id + t.name + (t.num || '')).join()).join('|');
   const box = $('[data-ocrows]', v);
   if (key !== app.ocRosterKey && !box.contains(document.activeElement)){
     app.ocRosterKey = key;
-    const opts = ocOpts(S);
-    box.innerHTML = live.length ? live.map(o => '<div class="li"><input data-ocnamein="' + o.id + '" value="' + esc(o.name) + '" maxlength="40" aria-label="Name" style="flex:1 1 120px"><select data-ocassignin="' + o.id + '" aria-label="Attached to" style="flex:1 1 160px">' + opts + '</select><button type="button" data-ocsave="' + o.id + '" style="flex:0 0 auto">Save</button><button type="button" data-ocdel="' + o.id + '" style="flex:0 0 auto">Remove</button></div>').join('') : '<div class="empty">No POCs signed in yet. They open the board on a phone and pick POC.</div>';
+    box.innerHTML = live.length ? live.map(o => '<div class="li"><input data-ocnamein="' + o.id + '" value="' + esc(o.name) + '" maxlength="40" aria-label="Name" style="flex:1 1 120px"><select data-ocassignin="' + o.id + '" aria-label="Attached to" style="flex:1 1 160px">' + ocOpts(S, o) + '</select>' + (o.detached ? '<span class="chip no">' + esc(o.detached.name) + ' removed</span>' : '') + '<button type="button" data-ocsave="' + o.id + '" style="flex:0 0 auto">Save</button><button type="button" data-ocdel="' + o.id + '" style="flex:0 0 auto">Remove</button></div>').join('') : '<div class="empty">No POCs signed in yet. They open the board on a phone and pick POC.</div>';
     live.forEach(o => { const sel = $('[data-ocassignin="' + o.id + '"]', box); if (sel) sel.value = ocVal(o); });
   }
 }
