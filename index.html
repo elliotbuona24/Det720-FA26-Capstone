@@ -163,7 +163,7 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .jambox{height:340px;border-radius:8px;border:2px dashed var(--bad);display:grid;place-content:center;gap:6px;text-align:center;padding:16px;background:repeating-linear-gradient(45deg,transparent 0 12px,rgba(200,40,40,.06) 12px 24px)}.jambox b{color:var(--bad);letter-spacing:.08em}
 .gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--sans,system-ui);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 system-ui,sans-serif;cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
-.gl.m{color:#8fe6ff;font-size:10px}
+.gl.m{color:#8fe6ff;font-size:10px}.gl.f{color:#bdf0ff;font-size:9px;font-weight:500}.leaflet-pane.contour-pane img{filter:brightness(1.7) saturate(1.3) drop-shadow(0 0 1px rgba(0,0,0,.9))}.cursor-grid{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:3px 8px;font:600 12px/1.3 var(--mono,monospace);pointer-events:none}.gridtog select{width:100%;font-size:13px;padding:2px 4px;margin:0 0 2px;color:#111;background:#fff}
 .leaflet-tooltip.sitelbl,.leaflet-tooltip.teamlbl{background:rgba(10,14,12,.72);color:#fff;border:0;box-shadow:none;font:600 12px/1.2 var(--body);padding:2px 6px}
 .leaflet-tooltip.sitelbl:before,.leaflet-tooltip.teamlbl:before{display:none}
 .leaflet-container{font-family:var(--body)}
@@ -1049,11 +1049,30 @@ const GEO = (() => {
     while (N < minN - 100) N += 2000000;
     return fromUTM(zone, E, N, south);
   }
+  function parseDeg(str){
+    const t = String(str || '').trim().toUpperCase().replace(/[º˚]/g, '°').replace(/[’′‘`]/g, "'").replace(/[”″“]|''/g, '"');
+    const C = '([NSEW])?\\s*(-?\\d{1,3}(?:\\.\\d+)?)\\s*(?:°|DEG\\b)?\\s*(?:(\\d{1,2}(?:\\.\\d+)?)\\s*\'\\s*)?(?:(\\d{1,2}(?:\\.\\d+)?)\\s*"\\s*)?([NSEW])?';
+    const m = new RegExp('^' + C + '\\s*[,;/]?\\s*' + C + '$').exec(t);
+    if (!m) return null;
+    const one = (pre, d, mi, se, post) => {
+      const h = pre || post || null; if (pre && post && pre !== post) return null;
+      if ((mi != null || se != null) && /\./.test(d)) return null;
+      if (mi != null && +mi >= 60 || se != null && +se >= 60) return null;
+      let v = Math.abs(+d) + (mi ? +mi / 60 : 0) + (se ? +se / 3600 : 0);
+      if (/^-/.test(d) || h === 'S' || h === 'W') v = -v;
+      return { v, h };
+    };
+    let a = one(m[1], m[2], m[3], m[4], m[5]), b = one(m[6], m[7], m[8], m[9], m[10]);
+    if (!a || !b) return null;
+    const isLon = h => h === 'E' || h === 'W', isLat = h => h === 'N' || h === 'S';
+    if (isLon(a.h) && (isLat(b.h) || !b.h)) [a, b] = [b, a];
+    if ((a.h && !isLat(a.h)) || (b.h && !isLon(b.h))) return null;
+    if (Math.abs(a.v) > 90 || Math.abs(b.v) > 180) return null;
+    return [a.v, b.v];
+  }
   function parsePoint(str){
     const t = String(str || '').trim();
-    const m = /^(-?\d{1,3}(?:\.\d+)?)\s*[,\s]\s*(-?\d{1,3}(?:\.\d+)?)$/.exec(t);
-    if (m){ const la = +m[1], lo = +m[2]; if (Math.abs(la) <= 90 && Math.abs(lo) <= 180) return [la, lo]; }
-    return parseMGRS(t);
+    return parseDeg(t) || parseMGRS(t);
   }
   function dist(p, q){
     const R = 6371000, dLa = (q[0] - p[0]) * d2r, dLo = (q[1] - p[1]) * d2r;
@@ -1101,9 +1120,10 @@ function allProblems(S){
   return PROBLEMS.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !PROBLEMS.some(P => P.id === c.replaces)));
 }
 function validPkg(k){
-  return k && typeof k.id === 'string' && /^c[\w-]{3,40}$/.test(k.id) && Array.isArray(k.opts) && k.opts.length === 4 && Array.isArray(k.items) && k.items.length === 4 && typeof k.a === 'string' && typeof k.f === 'string';
+  return k && typeof k.id === 'string' && /^c[\w-]{3,40}$/.test(k.id) && Array.isArray(k.opts) && k.opts.length === 4 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string';
 }
 function intelKey(pid, kind, val){ return secret('marala-intel', pid + ':' + kind + ':' + val); }
+const IPB_KINDS = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT', 'OSINT'];
 const ESC = { provocation:5, sabotage:15, firstfire:30, returnfire:5, falseblame:15, show:10, defied:10, jam:5, strikewing:40, quiet:3, trueblame:5 };
 
 function levelIndex(esc){ return esc >= 100 ? 4 : esc >= 75 ? 3 : esc >= 50 ? 2 : esc >= 25 ? 1 : 0; }
@@ -1144,8 +1164,8 @@ function checkAccess(S, side){
   S.hn[side] = Math.max(0, Math.min(100, S.hn[side]));
   if (S.access[side] && S.hn[side] < 20){
     S.access[side] = false; S.office[side] = false;
-    pushFeed(S, side, 'The mayor has closed your town office. Raise the host-nation meter back to 20, then visit the mayor again.', 'alert');
-    pushLog(S, SIDES[side].name + ' town office closed by the mayor (host nation under 20)', side);
+    pushFeed(S, side, 'The mayor has closed your town office. Raise your diplomatic points back to 20, then visit the mayor again.', 'alert');
+    pushLog(S, SIDES[side].name + ' town office closed by the mayor (diplomatic points under 20)', side);
   } else if (!S.access[side] && S.hn[side] >= 20){
     S.access[side] = true;
     pushFeed(S, side, 'The mayor will see you again. Visit Marala Town to reopen your office.', 'good');
@@ -1170,7 +1190,7 @@ function tick(S, g){
   ['B','R'].forEach(side => {
     const air = S.sites.airstrip;
     parts[side].push(droneReady(S, side) ? 'drone flight ready' : 'next drone flight ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side))));
-    if (S.office[side] && S.access[side]){ addHN(S, side, 3); parts[side].push('host nation +3 (town office)'); }
+    if (S.office[side] && S.access[side]){ addHN(S, side, 3); parts[side].push('diplomatic points +3 (town office)'); }
   });
   ['B','R'].forEach(side => {
     if (!S.raisedBy[side] && S.escBy[side] > 0){ const d = Math.min(S.escBy[side], Math.max(1, Math.round(S.escBy[side] * ESC_DECAY))); S.escBy[side] -= d; S.decayed[side] += d; }
@@ -1192,8 +1212,8 @@ function gradeIntel(S, P, i, side, o){
   const okA = !!(ans && ans.a === P.a), okF = !!(ans && ans.f === P.f), pts = (okA ? 2 : 0) + (okF ? 2 : 0);
   if (ans){ ans.okA = okA; ans.okF = okF; ans.pts = pts; }
   S.pts[side].intel += pts;
-  pushFeed(S, side, 'Intel package ' + (i + 1) + ' results: ' + (ans ? 'answer ' + (okA ? 'right' : 'wrong') + ', false piece ' + (okF ? 'right' : 'wrong') + '. +' + pts + ' points.' : 'no answer in time. +0.'), pts ? 'good' : 'alert', { label:'Intel' });
-  pushLog(S, SIDES[side].name + ' intel package ' + (i + 1) + ': ' + (ans ? (okA ? 'answer right' : 'answer wrong') + ', ' + (okF ? 'false piece right' : 'false piece wrong') : 'no answer') + ' (+' + pts + ')', side);
+  pushFeed(S, side, 'Intel package ' + (i + 1) + ' results: ' + (ans ? 'answer ' + (okA ? 'right' : 'wrong') + ', false intel ' + (okF ? 'right' : 'wrong') + '. +' + pts + ' points.' : 'no answer in time. +0.'), pts ? 'good' : 'alert', { label:'Intel' });
+  pushLog(S, SIDES[side].name + ' intel package ' + (i + 1) + ': ' + (ans ? (okA ? 'answer right' : 'answer wrong') + ', ' + (okF ? 'false intel right' : 'false intel wrong') : 'no answer') + ' (+' + pts + ')', side);
   S.g = Math.max(keep, o.due);
   if (S.step) S.step(S, null);
 }
@@ -1245,9 +1265,9 @@ function useUp(S, side, key, e, label){
 function clearCache(S, side, how, e){
   if (S.cacheDone){ pushLog(S, 'Cache already handled by ' + SIDES[S.cacheDone].name, side, e, 'rejected'); return; }
   S.cacheDone = side; S.pts[side].cache += 5; addHN(S, side, 5);
-  pushFeed(S, side, 'Militia cache ' + how + '. +5 points, host nation +5.', 'good');
+  pushFeed(S, side, 'Militia cache ' + how + '. +5 points, diplomatic points +5.', 'good');
   pushFeed(S, OTHER[side], 'The militia cache has been ' + how + ' by the other wing.', 'hq');
-  pushLog(S, SIDES[side].name + ' ' + how + ' the militia cache (+5 points, host nation +5)', side, e);
+  pushLog(S, SIDES[side].name + ' ' + how + ' the militia cache (+5 points, diplomatic points +5)', side, e);
 }
 function apply(S, e, cfg){
   const side = e.side, p = e.p || {}, nm = side ? SIDES[side].name : '';
@@ -1304,9 +1324,9 @@ function apply(S, e, cfg){
       pushFeed(S, side, where + ': ' + (c.status === 'accepted' ? 'confirmed. ' : c.status === 'contest' ? '' : 'refused. ') + c.note, c.status === 'accepted' ? 'good' : c.status === 'contest' ? 'hq' : 'alert');
       S.ver++;
       break; }
-    case 'conduct': addHN(S, side, p.good ? 5 : -5); pushLog(S, nm + (p.good ? ' good conduct with locals (host nation +5)' : ' poor conduct with locals (host nation −5)'), side, e); break;
+    case 'conduct': addHN(S, side, p.good ? 5 : -5); pushLog(S, nm + (p.good ? ' good conduct with locals (diplomatic points +5)' : ' poor conduct with locals (diplomatic points −5)'), side, e); break;
     case 'ied': S.pts[side].ied += 2; if (p.result === 'real') addHN(S, side, 5);
-      pushLog(S, nm + (p.result === 'real' ? ' cleared a real IED (+2 points, host nation +5)' : ' called a hoax correctly (+2 points)') + (p.grid ? ' at ' + p.grid : ''), side, e);
+      pushLog(S, nm + (p.result === 'real' ? ' cleared a real IED (+2 points, diplomatic points +5)' : ' called a hoax correctly (+2 points)') + (p.grid ? ' at ' + p.grid : ''), side, e);
       if (p.result === 'real') pushFeed(S, side, 'IED' + (p.grid ? ' at ' + p.grid : '') + ' cleared after your 9-line. The locals noticed.', 'good');
       break;
     case 'cache': clearCache(S, side, 'cleared', e); break;
@@ -1316,15 +1336,15 @@ function apply(S, e, cfg){
       pushFeed(S, 'both', 'Explosion reported at ' + inc.grid + '. Cause unknown.' + (p.casualties ? ' Casualties reported.' : ''), 'alert');
       pushLog(S, 'Explosion at ' + inc.grid + ' (really caused by ' + (inc.truth === 'militia' ? 'the militia' : SIDES[inc.truth].name) + ')', null, e);
       break; }
-    case 'civaid': addHN(S, side, 5); pushLog(S, nm + ' helped an injured civilian (host nation +5)', side, e); pushFeed(S, side, 'Locals saw your team help an injured civilian.', 'good'); break;
+    case 'civaid': addHN(S, side, 5); pushLog(S, nm + ' helped an injured civilian (diplomatic points +5)', side, e); pushFeed(S, side, 'Locals saw your team help an injured civilian.', 'good'); break;
     case 'provocation': raise(S, side, ESC.provocation); pushLog(S, nm + ' aimed at or crowded the other wing (escalation +5)', side, e); break;
     case 'sabotage': { const s = S.sites[p.site]; const prev = s ? s.holder : null; if (s){ s.holder = null; s.contested = false; s.contestBy = null; s.contestUntil = null; s.since = S.g; }
       raise(S, side, ESC.sabotage); addHN(S, side, -5);
-      pushLog(S, nm + ' pulled the flag at ' + (s ? SITES[p.site].name : 'a site') + ' (escalation +15, host nation −5)', side, e);
+      pushLog(S, nm + ' pulled the flag at ' + (s ? SITES[p.site].name : 'a site') + ' (escalation +15, diplomatic points −5)', side, e);
       if (prev && prev !== side) pushFeed(S, prev, 'Your flag at ' + SITES[p.site].name + ' has been pulled down.', 'alert');
       break; }
     case 'firstfire': raise(S, side, ESC.firstfire); addHN(S, side, -15);
-      pushLog(S, nm + ' fired first' + (p.grid ? ' at ' + p.grid : '') + ' (escalation +30, host nation −15)', side, e);
+      pushLog(S, nm + ' fired first' + (p.grid ? ' at ' + p.grid : '') + ' (escalation +30, diplomatic points −15)', side, e);
       pushFeed(S, 'both', 'Shots fired' + (p.grid ? ' near ' + p.grid : '') + '. Casualties reported.', 'alert'); break;
     case 'returnfire': raise(S, side, ESC.returnfire); pushLog(S, nm + ' returned fire (escalation +5)', side, e); break;
     case 'contact':
@@ -1359,14 +1379,14 @@ function apply(S, e, cfg){
     case 'act_aid':
       if (!S.office[side] || !S.access[side]){ pushLog(S, nm + ' aid refused: no town office', side, e, 'rejected'); pushFeed(S, side, 'Aid needs an open town office.', 'alert'); break; }
       if (S.aidTick[side] === S.tickIdx){ pushLog(S, nm + ' aid refused: already given this 10 minutes', side, e, 'rejected'); pushFeed(S, side, 'Aid is available again at the next board update.', 'alert'); break; }
-      S.aidTick[side] = S.tickIdx; addHN(S, side, 5); pushLog(S, nm + ' delivered aid (host nation +5)', side, e); pushFeed(S, side, 'Aid delivered. Host nation +5.', 'good'); break;
+      S.aidTick[side] = S.tickIdx; addHN(S, side, 5); pushLog(S, nm + ' delivered aid (diplomatic points +5)', side, e); pushFeed(S, side, 'Aid delivered. Diplomatic points +5.', 'good'); break;
     case 'act_statement': {
       const inc = S.incidents.find(i => i.id === p.incident); const key = side + ':' + p.incident;
       if (!inc || S.statements[key]){ pushLog(S, nm + ' statement refused', side, e, 'rejected'); break; }
       S.statements[key] = p.blame;
       const correct = (p.blame === 'militia' && inc.truth === 'militia') || (p.blame === 'other' && inc.truth === OTHER[side]);
-      if (correct){ lower(S, ESC.trueblame); addHN(S, side, 5); pushLog(S, nm + ' told the truth about the ' + inc.grid + ' explosion (escalation −5, host nation +5)', side, e); }
-      else { raise(S, side, ESC.falseblame); addHN(S, side, -10); pushLog(S, nm + ' falsely blamed the other wing for the ' + inc.grid + ' explosion (escalation +15, host nation −10)', side, e); }
+      if (correct){ lower(S, ESC.trueblame); addHN(S, side, 5); pushLog(S, nm + ' told the truth about the ' + inc.grid + ' explosion (escalation −5, diplomatic points +5)', side, e); }
+      else { raise(S, side, ESC.falseblame); addHN(S, side, -10); pushLog(S, nm + ' falsely blamed the other wing for the ' + inc.grid + ' explosion (escalation +15, diplomatic points −10)', side, e); }
       pushFeed(S, 'public', SIDES[side].name + ' on the ' + inc.grid + ' explosion: ' + (p.blame === 'militia' ? '"The militia did this."' : '"' + SIDES[OTHER[side]].name + ' did this."'), 'public');
       break; }
     case 'act_jam': {
@@ -1393,7 +1413,7 @@ function apply(S, e, cfg){
       } else if (r.kind === 'strike'){
         if (p.result === 'hit'){
           if (r.target === 'cache') clearCache(S, r.side, 'destroyed by strike', e);
-          else { raise(S, r.side, ESC.strikewing); addHN(S, r.side, -20); pushFeed(S, 'both', 'Air strike on foreign forces at ' + r.text + '.', 'alert'); pushLog(S, rn + ' struck ' + SIDES[OTHER[r.side]].name + ' (escalation +40, host nation −20)', r.side, e); }
+          else { raise(S, r.side, ESC.strikewing); addHN(S, r.side, -20); pushFeed(S, 'both', 'Air strike on foreign forces at ' + r.text + '.', 'alert'); pushLog(S, rn + ' struck ' + SIDES[OTHER[r.side]].name + ' (escalation +40, diplomatic points −20)', r.side, e); }
         } else { pushFeed(S, r.side, 'No strike: the 9-line was not correct. Your strike is used up.', 'alert'); pushLog(S, rn + ' strike refused (9-line not correct)', r.side, e); }
       }
       break; }
@@ -1461,8 +1481,8 @@ function apply(S, e, cfg){
       o.status = 'accepted'; st.holder = side; st.contested = false; st.contestBy = null; st.contestUntil = null; st.since = S.g; S.ver++;
       S.lastSeen[o.from][o.site] = { holder:side, g:S.g };
       addHN(S, 'B', 2); addHN(S, 'R', 2);
-      pushFeed(S, 'both', SIDES[o.from].name + ' handed ' + SITES[o.site].name + ' to ' + SIDES[side].name + ' by agreement. Host nation +2 for both.', 'good', { label:'Liaison' });
-      pushLog(S, SIDES[o.from].name + ' handed ' + SITES[o.site].name + ' to ' + SIDES[side].name + ' by agreement (host nation +2 each)', side, e);
+      pushFeed(S, 'both', SIDES[o.from].name + ' handed ' + SITES[o.site].name + ' to ' + SIDES[side].name + ' by agreement. Diplomatic points +2 for both.', 'good', { label:'Liaison' });
+      pushLog(S, SIDES[o.from].name + ' handed ' + SITES[o.site].name + ' to ' + SIDES[side].name + ' by agreement (diplomatic points +2 each)', side, e);
       break; }
     case 'order': {
       S.orders.push({ id:e.id, side, team:p.team || 'all', text:String(p.text || '').slice(0, 300), g:S.g }); S.ver++;
@@ -1535,7 +1555,7 @@ function apply(S, e, cfg){
       if (p.field === 'esc'){ if (d > 0) raise(S, side || null, d); else lower(S, -d); }
       else if (p.field === 'hn') addHN(S, side, d);
       else if (p.field === 'pts') S.pts[side].adj += d;
-      pushLog(S, 'Adjustment: ' + (side ? nm + ' ' : '') + ({ esc:'escalation', hn:'host nation', pts:'points' })[p.field] + ' ' + (d >= 0 ? '+' : '') + d + (p.reason ? ' (' + p.reason + ')' : ''), side, e);
+      pushLog(S, 'Adjustment: ' + (side ? nm + ' ' : '') + ({ esc:'escalation', hn:'diplomatic points', pts:'points' })[p.field] + ' ' + (d >= 0 ? '+' : '') + d + (p.reason ? ' (' + p.reason + ')' : ''), side, e);
       break; }
   }
 }
@@ -1547,7 +1567,7 @@ function voidNotice(S, t, e, restore){
   if (t.type === 'claim') what += ' (' + (p.site === 'town' ? 'Marala Town' : SITES[p.site] ? SITES[p.site].name : 'site') + ')';
   if (t.type === 'contact' && p.grid) what += ' at ' + p.grid;
   if (t.type === 'detonation' && p.grid) what += ' at ' + p.grid;
-  if (t.type === 'adjust') what = (p.field === 'esc' ? 'escalation' : p.field === 'hn' ? 'host-nation' : 'points') + ' adjustment of ' + (p.delta > 0 ? '+' : '') + p.delta;
+  if (t.type === 'adjust') what = (p.field === 'esc' ? 'escalation' : p.field === 'hn' ? 'diplomatic points' : 'points') + ' adjustment of ' + (p.delta > 0 ? '+' : '') + p.delta;
   const at = t.ts ? hhmm(gameAt(S, t.ts)) : '';
   const to = sd || (t.type === 'msg' ? (p.to === 'public' ? 'both' : p.to) : t.type === 'verdict' || t.type === 'resolve' ? null : 'both');
   let dest = to;
@@ -1878,7 +1898,7 @@ function buildAAR(){
     teams:['B','R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const errs = t.fixes.filter(f => f.gps && f.rep).map(f => Math.round(GEO.dist(f.gps, f.rep))); return { side:sd, id:t.id, name:t.name, num:t.num || null, removed:!!t.removed, status:t.status || null, maps:t.mapN || 0, fixes:t.fixes.length, checks:errs.length, median:errs.length ? errs.slice().sort((a, b) => a - b)[Math.floor(errs.length / 2)] : null, worst:errs.length ? Math.max(...errs) : null }; })),
     intel:allProblems(S).map((P, i) => { const tr = intelTruth(P); const r = s => { const o = intelOpen(S, P.id, s), m = S.intel[s][P.id]; const base = o ? { sent:true, sentAt:o.g, due:o.due, closed:!!o.done } : { sent:false }; return Object.assign(base, m ? { answered:true, g:m.g, okA:!!m.okA, okF:!!m.okF, pts:m.pts || 0 } : { answered:false, pts:0 }); };
       const os = ['B','R'].map(s => intelOpen(S, P.id, s)).filter(Boolean);
-      return { n:i + 1, id:P.id, title:fillT(P.title), intended:START_G + P.at, t:os.length ? Math.min(...os.map(o => o.g)) : START_G + P.at, due:os.length ? Math.max(...os.map(o => o.due)) : START_G + P.at + P.win, released:os.length > 0, closed:os.length > 0 && os.every(o => o.done), answer:fillT(P.opts[tr.a] || ''), fake:tr.f, fakeDisc:(P.items.find(x => x.k === tr.f) || {}).disc || '', fakeSrc:(P.items.find(x => x.k === tr.f) || {}).src || '', B:r('B'), R:r('R') }; }) };
+      return { n:i + 1, id:P.id, title:fillT(P.title), intended:START_G + P.at, t:os.length ? Math.min(...os.map(o => o.g)) : START_G + P.at, due:os.length ? Math.max(...os.map(o => o.due)) : START_G + P.at + P.win, released:os.length > 0, closed:os.length > 0 && os.every(o => o.done), answer:fillT(P.opts[tr.a] || ''), fake:tr.fs.join(', ') || '?', fakeDisc:tr.fs.map(k => (P.items.find(x => x.k === k) || {}).disc || '').join(', '), fakeSrc:tr.fs.map(k => (P.items.find(x => x.k === k) || {}).src || '').join('; '), fakeList:tr.fs.map(k => { const it = P.items.find(x => x.k === k) || {}; return { k, disc:it.disc || '', src:it.src || '' }; }), pieces:P.items.length, B:r('B'), R:r('R') }; }) };
 }
 function downloadBackup(){
   try {
@@ -2005,7 +2025,7 @@ function legendHTML(side){
     '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
 }
 function scoreTable(S, sides){
-  const rows = [['sites', 'Sites held'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs and hoaxes'], ['cache', 'Militia cache'], ['hn', 'Host nation ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
+  const rows = [['sites', 'Sites held'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs and hoaxes'], ['cache', 'Militia cache'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
   const sc = {}; sides.forEach(s => sc[s] = score(S, s));
   let h = '<table class="score"><thead><tr><th>Points</th>' + sides.map(s => '<th><span class="chip ' + s + '">' + SIDES[s].name + '</span></th>').join('') + '</tr></thead><tbody>';
   rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if (k === 'adj' && sides.every(s => !sc[s].adj)) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
@@ -2021,6 +2041,19 @@ function keepSelect(sel, html){ const v = sel.value; sel.innerHTML = html; if ([
 /* ---------- real map ---------- */
 const COLS_L = 'ABCDEFGHIJKL';
 const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const BASEMAPS = {
+  sat:{ name:'Satellite', url:TILE_URL, nz:19, attr:'Imagery © Esri, Maxar' },
+  topo:{ name:'Topographic map (Esri)', url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', nz:19, attr:'Map © Esri, USGS' },
+  usgs:{ name:'USGS topo map', url:'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', nz:16, attr:'USGS The National Map' },
+  usgsimg:{ name:'USGS photo + topo', url:'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}', nz:16, attr:'USGS The National Map' }
+};
+const CONTOUR_URL = 'https://carto.nationalmap.gov/arcgis/rest/services/contours/MapServer/export';
+const ContourLayer = L.TileLayer.extend({
+  getTileUrl(c){
+    const W = 20037508.342789244, t = 2 * W / Math.pow(2, c.z), x0 = -W + c.x * t, y1 = W - c.y * t;
+    return CONTOUR_URL + '?bbox=' + [x0, y1 - t, x0 + t, y1].map(v => v.toFixed(2)).join(',') + '&bboxSR=3857&imageSR=3857&size=256,256&dpi=96&format=png32&transparent=true&f=image';
+  }
+});
 const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ']];
 function mapCfg(S){ return S && S.map && S.map.sw && S.map.ne ? S.map : DEFAULT_MAP; }
 function gridDims(M){ return { cols:Math.max(1, Math.min(12, +M.cols || 6)), rows:Math.max(1, Math.min(12, +M.rows || 5)) }; }
@@ -2076,19 +2109,27 @@ function lmapEnsure(el, M){
   if (!st){
     el.innerHTML = ''; el.classList.add('lmap');
     const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true, zoomSnap:0.25 });
-    const base = L.tileLayer(TILE_URL, { maxZoom:20, maxNativeZoom:19, attribution:'Imagery © Esri, Maxar' }).addTo(map);
-    st = el._lm = { map, base, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup() }, key:null };
+    map.createPane('contour-pane'); map.getPane('contour-pane').style.zIndex = 250; map.getPane('contour-pane').classList.add('contour-pane');
+    const contours = new ContourLayer('', { pane:'contour-pane', maxZoom:20, maxNativeZoom:18, minZoom:12, attribution:'Contours: USGS 3DEP' });
+    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup() }, key:null };
     applyGridPref(st);
     const tog = L.control({ position:'topright' });
     tog.onAdd = () => {
       const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref();
-      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden>' + MAP_LAYERS.map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
+      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
       L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
       d.querySelector('[data-gtbtn]').onclick = () => { const l = d.querySelector('.gt-list'); l.hidden = !l.hidden; };
-      d.addEventListener('change', ev => { const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gt="' + k + '"]').forEach(x => x.checked = ev.target.checked); $$('.lmap').forEach(x => { if (!x._lm) return; applyGridPref(x._lm); if (x._lm.args && app.S) drawDyn(x._lm, app.S, x._lm.args[0], x._lm.args[1]); }); });
+      d.addEventListener('change', ev => { if (ev.target.matches('[data-gtbase]')){ const np = gridPref(); np.base = ev.target.value; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gtbase]').forEach(x => x.value = np.base); $$('.lmap').forEach(x => { if (x._lm) applyGridPref(x._lm); }); return; } const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gt="' + k + '"]').forEach(x => x.checked = ev.target.checked); $$('.lmap').forEach(x => { if (!x._lm) return; applyGridPref(x._lm); drawFine(x._lm); if (x._lm.args && app.S) drawDyn(x._lm, app.S, x._lm.args[0], x._lm.args[1]); }); });
       return d;
     };
     tog.addTo(map);
+    const cur = L.control({ position:'bottomleft' });
+    cur.onAdd = () => { const d = L.DomUtil.create('div', 'cursor-grid'); d.hidden = true; return d; };
+    cur.addTo(map);
+    const curEl = cur.getContainer();
+    map.on('mousemove', ev => { curEl.hidden = false; curEl.textContent = GEO.toMGRS(ev.latlng.lat, ev.latlng.lng, 5); });
+    map.on('mouseout', () => { curEl.hidden = true; });
+    map.on('zoomend moveend', () => drawFine(st));
     map.on('click', ev => {
       const pt = [ev.latlng.lat, ev.latlng.lng]; app.lastClick = pt;
       const sq = squareOf((app.role === 'W' && app.previewMap) || mapCfg(app.S), pt);
@@ -2097,19 +2138,22 @@ function lmapEnsure(el, M){
     });
     setTimeout(() => map.invalidateSize(), 60);
   }
-  st.key = key; st.gPlay.clearLayers(); st.gMgrs.clearLayers();
+  st.key = key; st.M = M; st.gPlay.clearLayers(); st.gMgrs.clearLayers();
   if (!M.preview) drawGrid(st.gPlay, M, st.gMgrs);
   const b = L.latLngBounds([M.sw, M.ne]);
   st.map.fitBounds(b, { padding:[12, 12] });
   if (!M.preview) st.map.setMaxBounds(b.pad(1.5)); else st.map.setMaxBounds(null);
+  drawFine(st);
   return st;
 }
-const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b']];
-const LAYER_DEFAULTS = { play:true, mgrs:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true };
+const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b']];
+const LAYER_DEFAULTS = { base:'sat', play:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true };
 function gridPref(){ try { return Object.assign({}, LAYER_DEFAULTS, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return Object.assign({}, LAYER_DEFAULTS); } }
 function applyGridPref(st){
   const pr = gridPref();
-  [['play', st.gPlay], ['mgrs', st.gMgrs]].forEach(([k, g]) => { if (pr[k] && !st.map.hasLayer(g)) g.addTo(st.map); if (!pr[k] && st.map.hasLayer(g)) st.map.removeLayer(g); });
+  const bk = BASEMAPS[pr.base] ? pr.base : 'sat';
+  if (st.baseKey !== bk){ if (st.base) st.map.removeLayer(st.base); const B = BASEMAPS[bk]; st.base = L.tileLayer(B.url, { maxZoom:20, maxNativeZoom:B.nz, attribution:B.attr }).addTo(st.map); st.base.bringToBack(); st.baseKey = bk; }
+  [['play', st.gPlay], ['mgrs', st.gMgrs], ['fine', st.gFine], ['contours', st.contours]].forEach(([k, g]) => { if (pr[k] && !st.map.hasLayer(g)) g.addTo(st.map); if (!pr[k] && st.map.hasLayer(g)) st.map.removeLayer(g); });
   if (st.lay) Object.entries(st.lay).forEach(([k, g]) => { if (pr[k] && !st.dyn.hasLayer(g)) st.dyn.addLayer(g); if (!pr[k] && st.dyn.hasLayer(g)) st.dyn.removeLayer(g); });
 }
 function teamIcon(sd, num, opts){
@@ -2143,6 +2187,29 @@ function drawGrid(layer, M, mlayer){
     const pts = []; for (let i = 0; i <= 8; i++) pts.push(GEO.fromUTM(zone, minE + (maxE - minE) * i / 8, N, south));
     L.polyline(pts, ml).addTo(layer);
     L.marker(GEO.fromUTM(zone, maxE, N, south), { icon:L.divIcon({ className:'gl m', html:lab(N), iconSize:[30, 12], iconAnchor:[-6, 6] }), interactive:false }).addTo(layer);
+  }
+}
+function drawFine(st){
+  const g = st.gFine; g.clearLayers();
+  const M = st.M, map = st.map; if (!M || !map._loaded || !gridPref().fine) return;
+  const z = map.getZoom(); if (z < 18) return;
+  const vb = map.getBounds(), s = vb.getSouth(), w = vb.getWest(), n = vb.getNorth(), e = vb.getEast();
+  const zone = GEO.zoneOf((M.sw[1] + M.ne[1]) / 2), south = s < 0, step = 10, main = +M.step || 100;
+  const us = [[s, w], [s, e], [n, w], [n, e]].map(p => GEO.toUTM(p[0], p[1], zone));
+  const minE = Math.min(...us.map(u => u.e)), maxE = Math.max(...us.map(u => u.e)), minN = Math.min(...us.map(u => u.n)), maxN = Math.max(...us.map(u => u.n));
+  if ((maxE - minE) / step > 160 || (maxN - minN) / step > 160) return;
+  const ml = { color:'#bdf0ff', weight:.7, opacity:.5, interactive:false }, lbl = z >= 19.25;
+  const lab = v => String(Math.floor((Math.round(v) % 100000) / 10)).padStart(4, '0');
+  const pad = (maxN - minN) * .03, padE = (maxE - minE) * .03;
+  for (let E = Math.ceil(minE / step) * step; E <= maxE; E += step){
+    if (E % main === 0) continue;
+    L.polyline([GEO.fromUTM(zone, E, minN, south), GEO.fromUTM(zone, E, maxN, south)], ml).addTo(g);
+    if (lbl) L.marker(GEO.fromUTM(zone, E, maxN - pad * 2, south), { icon:L.divIcon({ className:'gl f', html:lab(E), iconSize:[30, 10], iconAnchor:[15, 0] }), interactive:false }).addTo(g);
+  }
+  for (let N = Math.ceil(minN / step) * step; N <= maxN; N += step){
+    if (N % main === 0) continue;
+    L.polyline([GEO.fromUTM(zone, minE, N, south), GEO.fromUTM(zone, maxE, N, south)], ml).addTo(g);
+    if (lbl) L.marker(GEO.fromUTM(zone, minE + padE * 2, N, south), { icon:L.divIcon({ className:'gl f', html:lab(N), iconSize:[30, 10], iconAnchor:[0, 5] }), interactive:false }).addTo(g);
   }
 }
 const SIDE_HEX = { B:'#3d7dff', R:'#ff4d42' };
@@ -2423,7 +2490,7 @@ function buildWing(side){
     <div class="strip">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next>—</span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escnote></span></div>
-      <div class="stat"><span class="k">Host nation</span><span class="v" data-hn>50</span><div class="meter"><i data-hnbar style="width:50%"></i></div><span class="s" data-hnnote></span></div>
+      <div class="stat"><span class="k">Diplomatic points</span><span class="v" data-hn>50</span><div class="meter"><i data-hnbar style="width:50%"></i></div><span class="s" data-hnnote></span></div>
       <div class="stat"><span class="k">Escalation you caused</span><span class="v" data-esccaused>0</span><span class="s">Each point costs 1 point at the end</span></div>
       <div class="stat"><span class="k">Points so far</span><span class="v" data-pts>0</span><span class="s">${esc(other)}'s points are hidden</span></div>
     </div>
@@ -2436,7 +2503,7 @@ function buildWing(side){
         <h2>Your reports of ${esc(other)}</h2>
         <div class="list" data-contacts></div>
       </div>
-      <div class="panel stack ip-panel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">for the Intel cell</span></div><p class="small muted" style="margin:0">Each package gives four pieces of intel, one from each discipline. Exactly one is false or misleading. Pick the answer and that piece before the deadline: +2 for each. One try per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 050915R DEC 26 is 5 December, 0915 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from higher headquarters arrive here during the game.</div></div></div></div>
+      <div class="panel stack ip-panel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">for the Intel cell</span></div><p class="small muted" style="margin:0">Each package gives several pieces of intel. At least one is false or misleading, and sometimes more than one. Pick the answer and check every false piece before the deadline: +2 for the right answer, +2 for catching all the false pieces and no true ones. One try per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>OSINT</dt><dd>Open-source intelligence: news, social media posts and other public information.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 050915R DEC 26 is 5 December, 0915 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from higher headquarters arrive here during the game.</div></div></div></div>
       <div class="panel">
         <div class="tabs" role="tablist">
           <button type="button" role="tab" aria-selected="true" data-tab="act">Commander's actions</button>
@@ -2453,7 +2520,7 @@ function buildWing(side){
             <form data-f="uav"><button class="btn-side" type="submit">Launch UAV</button></form></div>
           <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · true <span class="esc-down">−5</span> · false <span class="esc-up">+15</span></span></div>
             <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Incident<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">Who did it<select id="stB-${side}" name="blame"><option value="militia">The militia</option><option value="other">${esc(other)}</option></select></label></div><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
-          <div class="act"><div class="act-head"><b>Humanitarian aid</b><span class="cost">Once every 10 minutes · needs a town office · host nation +5</span></div>
+          <div class="act"><div class="act-head"><b>Humanitarian aid</b><span class="cost">Once every 10 minutes · needs a town office · diplomatic points +5</span></div>
             <form data-f="aid"><button class="btn-side" type="submit">Deliver aid</button></form></div>
           <details class="act"><summary>Pressure options (they raise escalation)</summary>
             <div class="stack" style="margin-top:8px">
@@ -2497,7 +2564,7 @@ function buildWing(side){
             <div class="row"><label for="lzS-${side}">Declare a site (optional)<select id="lzS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label for="lzU-${side}">Until<input id="lzU-${side}" name="until" maxlength="5" inputmode="numeric" placeholder="Example: 0900"></label></div>
             <div><button class="btn-side" type="submit">Send to the other wing</button></div></form></div>
           <div class="feed" data-liaison style="max-height:320px"></div>
-          <div class="act"><div class="act-head"><b>Hand over a site</b><span class="cost">no escalation · host nation +2 for both</span></div>
+          <div class="act"><div class="act-head"><b>Hand over a site</b><span class="cost">no escalation · diplomatic points +2 for both</span></div>
             <form class="stack" data-f="handover"><div class="row"><label for="hoS-${side}">Site you hold<select id="hoS-${side}" name="site" data-ownsites></select></label><label for="hoN-${side}">Note<input id="hoN-${side}" name="note" maxlength="200" placeholder="Example: In exchange for the Harbor"></label></div><div><button type="submit">Offer handover</button></div></form>
             <div class="list" data-offers></div></div>
         </div>
@@ -2539,9 +2606,12 @@ function buildWing(side){
 }
 function intelTruth(P){
   const a = P.opts.findIndex((_, i) => intelKey(P.id, 'a', i) === P.a);
-  const f = P.items.find(it => intelKey(P.id, 'f', it.k) === P.f);
-  return { a, f:f ? f.k : '?' };
+  const ks = P.items.map(it => it.k), n = Math.min(ks.length, 10);
+  let fs = null;
+  for (let m = 1; m < (1 << n) && !fs; m++){ const set = ks.filter((_, i) => m & (1 << i)); if (intelKey(P.id, 'f', set.join('')) === P.f) fs = set; }
+  return { a, fs:fs || [], f:fs ? fs.join('') : '?' };
 }
+function falseText(P, tr){ return tr.fs.length ? tr.fs.map(k => k + ' (' + ((P.items.find(x => x.k === k) || {}).disc || '') + ')').join(' and ') : '?'; }
 function ipImgSrc(S, it){
   if (it.img && S.images[it.img]) return S.images[it.img];
   if (it.imgUrl && /^https:\/\/[^\s"'<>]+$/.test(it.imgUrl)) return it.imgUrl;
@@ -2568,15 +2638,15 @@ function renderIntel(S, side, v){
         '<p class="ip-q">' + esc(fillT(P.q)) + '</p>' +
         '<form class="stack" data-ipf="' + P.id + '"><div class="ip-row">' +
         '<fieldset class="ip-set"><legend>Answer</legend>' + P.opts.map((o, k) => '<label><input type="radio" name="a" value="' + k + '">' + esc(fillT(o)) + '</label>').join('') + '</fieldset>' +
-        '<fieldset class="ip-set"><legend>Which piece is false or misleading?</legend>' + P.items.map(it => '<label><input type="radio" name="f" value="' + it.k + '">' + it.k + ' · ' + esc(it.disc) + '</label>').join('') + '</fieldset>' +
+        '<fieldset class="ip-set"><legend>Which pieces are false or misleading? Check every one.</legend>' + P.items.map(it => '<label><input type="checkbox" name="f" value="' + it.k + '">' + it.k + ' · ' + esc(it.disc) + '</label>').join('') + '</fieldset>' +
         '</div><div><button class="btn-side" type="submit">Lock in answer</button></div></form><div class="ip-status" data-ipstatus></div>';
       box.prepend(card);
       $('[data-ipexp]', card).onclick = () => { const o = card.classList.toggle('ip-open'); $('[data-ipexp]', card).textContent = o ? 'Hide intel' : 'Show intel'; };
       const f = $('form', card);
       f.addEventListener('submit', ev => {
         ev.preventDefault();
-        const fd = new FormData(f), a = fd.get('a'), fk = fd.get('f');
-        if (a === null || fk === null){ toast('Pick an answer and the false piece first.', true); return; }
+        const fd = new FormData(f), a = fd.get('a'), fk = fd.getAll('f').sort().join('');
+        if (a === null || !fk){ toast('Pick an answer and check at least one false piece first.', true); return; }
         writeEvent('intel_answer', side, { pid:P.id, a:intelKey(P.id, 'a', +a), f:intelKey(P.id, 'f', fk) });
         toast('Answer locked in.');
       });
@@ -2588,9 +2658,8 @@ function renderIntel(S, side, v){
     $$('input, button', f).forEach(el => el.disabled = !!mine || done || S.endex);
     if (done){
       const tr = intelTruth(P);
-      const res = mine ? ('Answer ' + (mine.okA ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · false piece ' + (mine.okF ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · <b>+' + (mine.pts || 0) + '</b>') : '<span class="chip no">No answer in time</span> · +0';
-      const fi = P.items.find(x => x.k === tr.f) || {};
-      st.innerHTML = res + '<div class="small muted">Correct: ' + esc(fillT(P.opts[tr.a] || '?')) + '. False piece: ' + tr.f + ' (' + esc(fi.disc || '') + ').</div>';
+      const res = mine ? ('Answer ' + (mine.okA ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · false intel ' + (mine.okF ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · <b>+' + (mine.pts || 0) + '</b>') : '<span class="chip no">No answer in time</span> · +0';
+      st.innerHTML = res + '<div class="small muted">Correct: ' + esc(fillT(P.opts[tr.a] || '?')) + '. False: ' + esc(falseText(P, tr)) + '.</div>';
     } else if (mine){
       st.innerHTML = '<span class="chip wait">Locked in ' + hhmm(mine.g) + '</span> <span class="small muted">Results at ' + hhmm(o.due) + '.</span>';
     } else { open++; st.innerHTML = ''; }
@@ -2701,18 +2770,18 @@ function buildWhite(){
     <div class="panel side-${s}">
       <div class="act-head"><span class="badge side-${s}">${SIDES[s].name}</span><span class="small muted" data-wstat="${s}"></span></div>
       <div class="evgrid">
-        <button type="button" data-ev="ied" data-side="${s}" data-r="real">Real IED cleared<small>+2 points · host nation +5</small></button>
+        <button type="button" data-ev="ied" data-side="${s}" data-r="real">Real IED cleared<small>+2 points · diplomatic points +5</small></button>
         <button type="button" data-ev="ied" data-side="${s}" data-r="hoax">Hoax called correctly<small>+2 points</small></button>
-        <button type="button" data-ev="cache" data-side="${s}">Militia cache cleared<small>+5 points · host nation +5</small></button>
-        <button type="button" data-ev="conduct" data-side="${s}" data-good="1">Good conduct<small>host nation +5</small></button>
-        <button type="button" data-ev="conduct" data-side="${s}" data-good="0">Poor conduct<small>host nation −5</small></button>
-        <button type="button" data-ev="civaid" data-side="${s}">Helped a civilian<small>host nation +5</small></button>
+        <button type="button" data-ev="cache" data-side="${s}">Militia cache cleared<small>+5 points · diplomatic points +5</small></button>
+        <button type="button" data-ev="conduct" data-side="${s}" data-good="1">Good conduct<small>diplomatic points +5</small></button>
+        <button type="button" data-ev="conduct" data-side="${s}" data-good="0">Poor conduct<small>diplomatic points −5</small></button>
+        <button type="button" data-ev="civaid" data-side="${s}">Helped a civilian<small>diplomatic points +5</small></button>
         <button type="button" data-ev="provocation" data-side="${s}">Aimed at or crowded the other wing<small>escalation +5</small></button>
-        <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>escalation +30 · host nation −15</small></button>
+        <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>escalation +30 · diplomatic points −15</small></button>
         <button type="button" data-ev="returnfire" data-side="${s}">Returned fire<small>escalation +5</small></button>
         <button type="button" data-ev="office" data-side="${s}" data-on="0">Close town office<small>override</small></button>
       </div>
-      <form class="row" data-wf="adjust" data-side="${s}"><label>Adjust<select name="field"><option value="hn">Host nation</option><option value="pts">Points</option><option value="esc">Escalation (charged to them)</option></select></label><label>By<input name="delta" type="number" value="1" step="1"></label><label>Reason<input name="reason" maxlength="80"></label><button type="submit" style="flex:0 0 auto">Apply</button></form>
+      <form class="row" data-wf="adjust" data-side="${s}"><label>Adjust<select name="field"><option value="hn">Diplomatic points</option><option value="pts">Points</option><option value="esc">Escalation (charged to them)</option></select></label><label>By<input name="delta" type="number" value="1" step="1"></label><label>Reason<input name="reason" maxlength="80"></label><button type="submit" style="flex:0 0 auto">Apply</button></form>
     </div>`;
   v.innerHTML = `
   <div class="app">
@@ -2756,7 +2825,7 @@ function buildWhite(){
       <div class="panel span2"><div class="act-head"><h2>Log</h2><span class="small muted">Void a mistake and every screen recalculates</span></div><div class="feed" data-log style="max-height:420px"></div></div>
       <details class="panel span2 mapset" data-mapsetup><summary><b>Map setup</b> <span class="small muted">(do this once, before the game)</span></summary>
         <div class="stack" style="margin-top:10px">
-          <p class="small muted" style="margin:0">Type an MGRS grid (for example 18T TL 59085 23533) or latitude, longitude for each point, or click the map above and press “Use last click”. Last click: <b class="mono" data-lastclick>—</b></p>
+          <p class="small muted" style="margin:0">Type an MGRS grid (for example 18T TL 59085 23533) or latitude and longitude for each point, in any common form (for example 40.82522° N, 77.86064° W, or 40.82522, -77.86064, or 40°49'30.8"N 77°51'38.3"W), or click the map above and press “Use last click”. Last click: <b class="mono" data-lastclick>—</b></p>
           <div class="li"><label>Find the field: center on<input data-mcenter placeholder="Example: 40.8275, -77.8570 or an MGRS grid"></label><button type="button" data-mshow>Show on the map</button></div>
           <div class="li"><label>Southwest corner of the play area<input data-mp="sw"></label><button type="button" data-muse="sw">Use last click</button></div>
           <div class="li"><label>Northeast corner of the play area<input data-mp="ne"></label><button type="button" data-muse="ne">Use last click</button></div>
@@ -2766,7 +2835,7 @@ function buildWhite(){
         </div></details>
       <details class="panel span2 mapset" data-ipbuild><summary><b>Intel package builder</b> <span class="small muted">(write your own packages, add photos)</span></summary>
         <div class="stack" style="margin-top:10px">
-          <p class="small muted" style="margin:0">Fill in a question, four answers and four pieces of intel, one per discipline. Mark the right answer and the false or misleading piece. Saved packages join the list above and deploy like the others. You can also start from a built-in package to add a photo to it; your version replaces it.</p>
+          <p class="small muted" style="margin:0">Fill in a question and four answers, then the intel. A package starts with four pieces (HUMINT, SIGINT, IMINT, GEOINT). To add more, choose the kind of intel under the last piece; extras can be removed. Mark the right answer and every piece that is false or misleading. There can be more than one. Saved packages join the list above and deploy like the others. You can also start from a built-in package to add a photo to it; your version replaces it.</p>
           <div class="row" style="align-items:end"><label>Start from<select data-ipbsrc><option value="">A blank package</option></select></label><button type="button" data-ipbload style="flex:0 0 auto">Load</button><button type="button" class="btn-side" data-ipbgen style="flex:0 0 auto">Generate a draft</button><button type="button" data-ipbclear style="flex:0 0 auto">Clear</button></div>
           <p class="small" data-ipbmode style="margin:0"></p>
           <div class="row"><label>Title<input data-ipb="title" maxlength="80" placeholder="Example: The coast road ambush"></label><label style="flex:0 0 110px">Intended time (T+ min)<input data-ipb="at" type="number" min="0" max="300" value="60"></label><label style="flex:0 0 110px">Window (min)<input data-ipb="win" type="number" min="3" max="60" value="15"></label></div>
@@ -2775,18 +2844,9 @@ function buildWhite(){
           <fieldset class="ipb-piece"><legend>Answers (pick the right one)</legend><div class="ipb-opts">
             ${[0, 1, 2, 3].map(k => '<div class="row"><input type="radio" name="ipbA" value="' + k + '" aria-label="Correct answer ' + (k + 1) + '"><input data-ipbopt="' + k + '" maxlength="100" placeholder="Example: ' + ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'][k] + '"></div>').join('')}
           </div></fieldset>
-          ${['A', 'B', 'C', 'D'].map((k, i) => '<fieldset class="ipb-piece" data-ipbpiece="' + k + '"><legend>Piece ' + k + '</legend>' +
-            '<div class="row"><label style="flex:0 0 130px">Discipline<select data-f="disc"><option>HUMINT</option><option>SIGINT</option><option>IMINT</option><option>GEOINT</option></select></label><label style="flex:0 0 110px">Rating<input data-f="rating" maxlength="4" placeholder="Example: B2"></label><label style="flex:0 0 160px">Date-time group<input data-f="dtg" maxlength="30" placeholder="Example: 041400R DEC 26"></label></div>' +
-            '<label>Source<input data-f="src" maxlength="120" placeholder="Example: Village elder, reliable in the past"></label>' +
-            '<label>What it says (for IMINT, describe the image)<textarea data-f="text" rows="2" maxlength="600"></textarea></label>' +
-            '<div class="stack" data-imgrow><div class="row" style="align-items:center"><b class="small" style="flex:1 1 100%">Image (IMINT)</b><img class="ipb-prev" data-f="prev" hidden alt="Image preview"><span class="small muted" data-f="credit"></span><button type="button" data-f="imgdel" hidden style="flex:0 0 auto">Remove image</button></div>' +
-            '<div class="ipb-src"><label>From this device<input type="file" accept="image/*" data-f="img"></label>' +
-            '<div class="row" style="align-items:end"><label>Or paste a photo link<input data-f="url" maxlength="600" placeholder="Example: https://upload.wikimedia.org/…/photo.jpg"></label><button type="button" data-f="usel" style="flex:0 0 auto">Use link</button></div>' +
-            '<div class="row" style="align-items:end"><label>Or search free photos (Wikimedia Commons)<input data-f="q" maxlength="80" placeholder="Example: abandoned truck"></label><button type="button" data-f="search" style="flex:0 0 auto">Search</button></div><div class="ipb-results" data-f="results"></div>' +
-            '<div class="row" style="align-items:end"><label style="flex:0 0 150px">Or snapshot the map<select data-f="zoom"><option value="16">Wide (about 2 km)</option><option value="17" selected>Medium (about 1 km)</option><option value="18">Close (about 500 m)</option><option value="19">Very close (about 250 m)</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-f="lbl" checked> Grid label</label><button type="button" data-f="snap" style="flex:0 0 auto">Snapshot at last map tap</button></div>' +
-            '<p class="small muted" style="margin:0">For a snapshot, tap the spot on the white cell map first. Last tap: <span class="mono" data-lastclick>—</span></p></div></div>' +
-            '<label class="chk"><input type="radio" name="ipbF" value="' + k + '"> This is the false or misleading piece</label></fieldset>').join('')}
-          <label>White cell note (why the false piece is false; only you see it)<input data-ipb="note" maxlength="300" placeholder="Example: The photo is two days older than the attack."></label>
+          <div class="stack" data-ipbpieces></div>
+          <div class="row" style="align-items:end" data-ipbaddrow><label>Add another piece of intel<select data-ipbadd><option value="">Choose the kind of intel…</option>${IPB_KINDS.map(d => '<option>' + d + '</option>').join('')}</select></label></div>
+          <label>White cell note (why the false pieces are false; only you see it)<input data-ipb="note" maxlength="300" placeholder="Example: The photo is two days older than the attack."></label>
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-ipbsave style="flex:0 0 auto">Save package</button><span class="small muted" data-ipbmsg></span></div>
           <h3 class="small muted" style="margin:6px 0 0">Packages built here</h3><div class="list" data-ipblist></div>
           <div class="row" style="justify-content:flex-start"><button type="button" data-ipbexport style="flex:0 0 auto">Download packages</button><label for="ipbImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload packages<input id="ipbImport" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted">Saves every package built here, photos included, as one file you can upload to another game or board.</span></div>
@@ -2861,6 +2921,38 @@ function buildWhite(){
   });
 }
 const IPB_DISC = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT'];
+const IPB_KEYS = 'ABCDEFGH', IPB_PIC = ['IMINT', 'OSINT'];
+function ipbPieceHTML(k){
+  return '<fieldset class="ipb-piece" data-ipbpiece="' + k + '"><legend>Piece ' + k + ' <button type="button" data-ipbrm style="padding:1px 8px;font-size:12px;margin-left:6px">Remove</button></legend>' +
+    '<div class="row"><label style="flex:0 0 130px">Discipline<select data-f="disc">' + IPB_KINDS.map(d => '<option>' + d + '</option>').join('') + '</select></label><label style="flex:0 0 110px">Rating<input data-f="rating" maxlength="4" placeholder="Example: B2"></label><label style="flex:0 0 160px">Date-time group<input data-f="dtg" maxlength="30" placeholder="Example: 041400R DEC 26"></label></div>' +
+            '<label>Source<input data-f="src" maxlength="120" placeholder="Example: Village elder, reliable in the past"></label>' +
+            '<label>What it says (if it has a photo, describe it)<textarea data-f="text" rows="2" maxlength="600"></textarea></label>' +
+            '<div class="stack" data-imgrow><div class="row" style="align-items:center"><b class="small" style="flex:1 1 100%">Image</b><img class="ipb-prev" data-f="prev" hidden alt="Image preview"><span class="small muted" data-f="credit"></span><button type="button" data-f="imgdel" hidden style="flex:0 0 auto">Remove image</button></div>' +
+            '<div class="ipb-src"><label>From this device<input type="file" accept="image/*" data-f="img"></label>' +
+            '<div class="row" style="align-items:end"><label>Or paste a photo link<input data-f="url" maxlength="600" placeholder="Example: https://upload.wikimedia.org/…/photo.jpg"></label><button type="button" data-f="usel" style="flex:0 0 auto">Use link</button></div>' +
+            '<div class="row" style="align-items:end"><label>Or search free photos (Wikimedia Commons)<input data-f="q" maxlength="80" placeholder="Example: abandoned truck"></label><button type="button" data-f="search" style="flex:0 0 auto">Search</button></div><div class="ipb-results" data-f="results"></div>' +
+            '<div class="row" style="align-items:end"><label style="flex:0 0 150px">Or snapshot the map<select data-f="zoom"><option value="16">Wide (about 2 km)</option><option value="17" selected>Medium (about 1 km)</option><option value="18">Close (about 500 m)</option><option value="19">Very close (about 250 m)</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-f="lbl" checked> Grid label</label><button type="button" data-f="snap" style="flex:0 0 auto">Snapshot at last map tap</button></div>' +
+            '<p class="small muted" style="margin:0">For a snapshot, tap the spot on the white cell map first. Last tap: <span class="mono" data-lastclick>—</span></p></div></div>' +
+    '<label class="chk"><input type="checkbox" data-f="false"> This piece is false or misleading</label></fieldset>';
+}
+function ipbRead(){
+  const f = ipbForm();
+  return $$('[data-ipbpiece]', f).map(b => { const g = n => ($('[data-f="' + n + '"]', b).value || '').trim(), k = b.dataset.ipbpiece; return { k, disc:g('disc'), rating:g('rating'), dtg:g('dtg'), src:g('src'), text:g('text'), bad:$('[data-f="false"]', b).checked, im:ipb.imgs[k] || null }; });
+}
+function ipbPieces(list){
+  const f = ipbForm(), box = $('[data-ipbpieces]', f);
+  box.innerHTML = list.map((_, i) => ipbPieceHTML(IPB_KEYS[i])).join('');
+  ipb.imgs = {};
+  list.forEach((it, i) => {
+    const k = IPB_KEYS[i], b = $('[data-ipbpiece="' + k + '"]', box);
+    $('[data-f="disc"]', b).value = it.disc || 'HUMINT';
+    ['rating', 'dtg', 'src', 'text'].forEach(n => $('[data-f="' + n + '"]', b).value = it[n] || '');
+    $('[data-f="false"]', b).checked = !!it.bad;
+    ipb.imgs[k] = it.im || null;
+  });
+  if (app.lastClick) $$('[data-lastclick]', box).forEach(x => x.textContent = fmtPt(app.lastClick));
+  ipbSync();
+}
 const ipb = { id:null, replaces:null, imgs:{} };
 function ipbForm(){ return $('[data-ipbuild]'); }
 function ipbSetMode(){
@@ -2874,31 +2966,24 @@ function ipbFill(P){
   $('[data-ipb="at"]', f).value = P && P.at != null ? P.at : 60; $('[data-ipb="win"]', f).value = P && P.win ? P.win : 15;
   $('[data-ipb="note"]', f).value = P && P.note || '';
   $('[data-ipb="bgrid"]', f).value = P && P.blast ? P.blast.grid : ''; $('[data-ipb="btruth"]', f).value = P && P.blast ? P.blast.truth : 'militia'; $('[data-ipb="bcas"]', f).checked = !!(P && P.blast && P.blast.cas);
-  const tr = P && P.a ? intelTruth(P) : { a:-1, f:'' };
+  const tr = P && P.a ? intelTruth(P) : { a:-1, f:'', fs:[] };
   [0, 1, 2, 3].forEach(k => { $('[data-ipbopt="' + k + '"]', f).value = P ? fillT(P.opts[k] || '') : ''; });
   $$('input[name="ipbA"]', f).forEach(r => r.checked = P ? +r.value === (P.aIdx != null ? P.aIdx : tr.a) : false);
-  $$('input[name="ipbF"]', f).forEach(r => r.checked = P ? r.value === (P.fKey || tr.f) : false);
-  ipb.imgs = {};
-  ['A', 'B', 'C', 'D'].forEach((k, i) => {
-    const it = P ? P.items[i] || {} : { disc:IPB_DISC[i] }, box = $('[data-ipbpiece="' + k + '"]', f);
-    $('[data-f="disc"]', box).value = it.disc || IPB_DISC[i];
-    ['rating', 'dtg', 'src', 'text'].forEach(n => $('[data-f="' + n + '"]', box).value = it[n] ? fillT(it[n]) : '');
-    $('[data-f="img"]', box).value = '';
-    ipb.imgs[k] = it.img ? { id:it.img, credit:it.credit || '' } : it.imgUrl ? { url:it.imgUrl, credit:it.credit || '' } : null;
-    $('[data-f="url"]', box).value = ''; $('[data-f="results"]', box).innerHTML = '';
-  });
-  ipbSync();
+  const bad = P ? (P.fKeys || tr.fs || []) : [];
+  ipbPieces(P ? P.items.map(it => ({ disc:it.disc, rating:fillT(it.rating || ''), dtg:fillT(it.dtg || ''), src:fillT(it.src || ''), text:fillT(it.text || ''), bad:bad.includes(it.k), im:it.img ? { id:it.img, credit:it.credit || '' } : it.imgUrl ? { url:it.imgUrl, credit:it.credit || '' } : null })) : IPB_DISC.map(d => ({ disc:d })));
 }
 function ipbSync(){
   const f = ipbForm(); if (!f) return;
-  ['A', 'B', 'C', 'D'].forEach(k => {
-    const box = $('[data-ipbpiece="' + k + '"]', f), im = ipb.imgs[k], src = im ? (im.data || im.url || (app.S && app.S.images[im.id])) : null;
+  const pcs = $$('[data-ipbpiece]', f);
+  pcs.forEach(box => {
+    const k = box.dataset.ipbpiece, im = ipb.imgs[k], src = im ? (im.data || im.url || (app.S && app.S.images[im.id])) : null;
     $('[data-f="credit"]', box).textContent = im && im.credit ? im.credit : '';
-    const isImint = $('[data-f="disc"]', box).value === 'IMINT';
-    $('[data-imgrow]', box).hidden = !isImint && !im;
+    $('[data-imgrow]', box).hidden = !IPB_PIC.includes($('[data-f="disc"]', box).value) && !im;
+    $('[data-ipbrm]', box).hidden = pcs.length <= 2;
     const pv = $('[data-f="prev"]', box); pv.hidden = !src; if (src) pv.src = src; else pv.removeAttribute('src');
     $('[data-f="imgdel"]', box).hidden = !im;
   });
+  $('[data-ipbaddrow]', f).hidden = pcs.length >= IPB_KEYS.length;
   ipbSetMode();
 }
 function shrinkImage(file){
@@ -3023,34 +3108,36 @@ function ipbGenerate(){
   const sig = { B:'Coalition patrol net: "Task done at the site, returning to base."', R:'Korean-language net: "Package placed. Return to the depot by the north road."', M:'Known militia handheld: "The foreigners will blame each other. Walk home through the paddies."' };
   const geo = { B:'The only vehicle route from the Coalition camp to the site passes their own checkpoint, which logged one vehicle out at the time.', R:'The REDFOR camp sits 600 m away with a covered track straight to the site; a vehicle makes it in 4 minutes.', M:'A footpath from the fishing village reaches the site in about 6 minutes on foot, out of sight of both camps.' };
   const hum = { B:'"I saw soldiers in ' + look.B + ' at the site that night."', R:'"Men in ' + look.R + ' were at the site around ' + hr + ' in the morning."', M:'"My cousin\u2019s friends in ' + look.M + ' came back from the site laughing before dawn."' };
-  const fKey = r(['A', 'B', 'C', 'D']);
-  const discs = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT'].sort(() => Math.random() - .5);
-  const imintFalse = discs[['A', 'B', 'C', 'D'].indexOf(fKey)] === 'IMINT';
-  const items = ['A', 'B', 'C', 'D'].map((k, i) => {
-    const d = discs[i], lie = k === fKey, c = lie ? decoy : truth;
+  const osi = { B:'Coalition trucks drove away from the site with their lights off last night.', R:'North Korean soldiers were at the site last night, everyone saw them.', M:'Front fighters say they hit the foreigners where it hurts last night.' };
+  const extra = Math.random() < .4, keys = IPB_KEYS.slice(0, extra ? 5 : 4).split('');
+  const discs = IPB_DISC.concat(extra ? ['OSINT'] : []).sort(() => Math.random() - .5);
+  const fKeys = keys.slice().sort(() => Math.random() - .5).slice(0, Math.random() < .35 ? 2 : 1).sort();
+  const items = keys.map((k, i) => {
+    const d = discs[i], lie = fKeys.includes(k), c = lie ? decoy : truth;
     if (d === 'HUMINT') return { k, disc:d, rating:lie ? r(['F6', 'E5', 'D4']) : r(['B2', 'C2', 'B3']), dtg:dtg(day, 9 + i, mm), src:lie ? 'Walk-in source, first contact, asked to be paid' : 'Village elder, reported reliably before', text:hum[c] };
     if (d === 'SIGINT') return { k, disc:d, rating:lie ? 'C3' : r(['A2', 'B2']), dtg:lie ? dtg(day - 2, 22, '15') : dtg(day, hr, mm), src:'Intercept with direction finding near the site', text:sig[c] + (lie ? '' : ' Direction finding puts the transmitter within 400 m.') };
     if (d === 'IMINT') return { k, disc:d, rating:lie ? 'B3' : 'A1', dtg:lie ? dtg(day - 2, hr, mm) : dtg(day, hr, mm), src:lie ? 'Photo passed on by a local journalist' : 'Site security camera, still frame', text:'The image shows ' + veh[c] + ' beside the site.' + (lie ? '' : ' Time stamp matches the incident.') };
+    if (d === 'OSINT') return { k, disc:d, rating:lie ? 'F6' : 'B3', dtg:dtg(day, 8, mm), src:lie ? 'Post on a local community page, account made this week' : 'Marala Daily News website, editor known to the embassy', text:(lie ? 'Post: "' : 'Residents told the paper: "') + osi[c] + '"' };
     return { k, disc:d, rating:lie ? 'C4' : 'B2', dtg:lie ? 'Map dated 2019' : 'Terrain study, current', src:lie ? 'Old route study' : 'Road and foot-path analysis', text:geo[c] };
   });
-  const why = { HUMINT:'the source is new, unproven and wanted money', SIGINT:'the intercept is from two days before the incident', IMINT:'the photo is time-stamped two days before the incident and came from an unverified source', GEOINT:'the route study uses an old map' };
-  const fd = items.find(x => x.k === fKey).disc;
+  const why = { HUMINT:'the source is new, unproven and wanted money', SIGINT:'the intercept is from two days before the incident', IMINT:'the photo is time-stamped two days before the incident and came from an unverified source', GEOINT:'the route study uses an old map', OSINT:'the account was made this week and nobody else reported it' };
+  const fds = fKeys.map(k => items.find(x => x.k === k).disc), imintFalse = fds.includes('IMINT');
   const place2 = place;
   ipb.id = null; ipb.replaces = null;
-  ipbFill({ title:kind.title(place2), q:kind.q(place2), at:+($('[data-ipb="at"]', ipbForm()).value || 60), win:15, opts, items, aIdx:who.indexOf(truth), fKey, note:'False: piece ' + fKey + ' (' + fd + ') points at ' + opts[who.indexOf(decoy)].split(' (')[0] + ', but ' + why[fd] + '.' + (imintFalse ? ' Add a photo that looks convincing but is the wrong place or time.' : ' Add a photo to the IMINT piece that matches its description.') });
+  ipbFill({ title:kind.title(place2), q:kind.q(place2), at:+($('[data-ipb="at"]', ipbForm()).value || 60), win:15, opts, items, aIdx:who.indexOf(truth), fKeys, note:'False: ' + fKeys.map((k, j) => 'piece ' + k + ' (' + fds[j] + ')').join(' and ') + (fKeys.length > 1 ? ' point' : ' points') + ' at ' + opts[who.indexOf(decoy)].split(' (')[0] + ', but ' + fds.map(d => why[d]).join('; and ') + '.' + (imintFalse ? ' Add a photo that looks convincing but is the wrong place or time.' : ' Add a photo to the IMINT piece that matches its description.') });
   toast('Draft generated. Edit anything, add the IMINT photo, then save.');
 }
 async function ipbSave(){
   const f = ipbForm(), S = app.S, val = sel => ($(sel, f).value || '').trim();
   const title = val('[data-ipb="title"]'), q = val('[data-ipb="q"]');
   const opts = [0, 1, 2, 3].map(k => val('[data-ipbopt="' + k + '"]'));
-  const aR = $('input[name="ipbA"]:checked', f), fR = $('input[name="ipbF"]:checked', f);
-  const items = ['A', 'B', 'C', 'D'].map(k => { const b = $('[data-ipbpiece="' + k + '"]', f), g = n => ($('[data-f="' + n + '"]', b).value || '').trim(); return { k, disc:g('disc'), rating:g('rating') || '?', dtg:g('dtg'), src:g('src'), text:g('text') }; });
+  const aR = $('input[name="ipbA"]:checked', f), read = ipbRead(), bad = read.filter(it => it.bad).map(it => it.k);
+  const items = read.map(it => ({ k:it.k, disc:it.disc, rating:it.rating || '?', dtg:it.dtg, src:it.src, text:it.text }));
   const msg = t => { $('[data-ipbmsg]', f).textContent = t; toast(t, true); };
   if (!title || !q) return msg('Add a title and a question.');
   if (opts.some(o => !o)) return msg('Fill in all four answers.');
   if (!aR) return msg('Pick the right answer.');
-  if (!fR) return msg('Pick the false or misleading piece.');
+  if (!bad.length) return msg('Mark at least one piece as false or misleading.');
   if (items.some(it => !it.src || !it.text)) return msg('Every piece needs a source and what it says.');
   const imint = items.filter(it => it.disc === 'IMINT');
   if (imint.some(it => !ipb.imgs[it.k]) && !confirm('An IMINT piece has no image. Save anyway?')) return;
@@ -3068,7 +3155,7 @@ async function ipbSave(){
     }
     const pkg = { id, custom:true, replaces:ipb.replaces || null, at:Math.max(0, Math.round(+val('[data-ipb="at"]') || 0)), win:Math.max(3, Math.round(+val('[data-ipb="win"]') || 15)), title, q, opts, items, note:val('[data-ipb="note"]'),
       blast:val('[data-ipb="bgrid"]') ? { grid:val('[data-ipb="bgrid"]').toUpperCase(), truth:$('[data-ipb="btruth"]', f).value, cas:$('[data-ipb="bcas"]', f).checked } : null,
-      a:intelKey(id, 'a', +aR.value), f:intelKey(id, 'f', fR.value) };
+      a:intelKey(id, 'a', +aR.value), f:intelKey(id, 'f', bad.join('')) };
     await writeEvent('intel_custom', null, { pkg });
     ipb.id = id; ipbSetMode();
     $('[data-ipbmsg]', f).textContent = 'Saved.';
@@ -3095,6 +3182,11 @@ function ipbWire(v){
   f.addEventListener('change', async ev => {
     const t = ev.target;
     if (t.matches('[data-f="disc"]')) ipbSync();
+    if (t.matches('[data-ipbadd]') && t.value){
+      const list = ipbRead(); if (list.length >= IPB_KEYS.length){ t.value = ''; return; }
+      list.push({ disc:t.value }); t.value = ''; ipbPieces(list);
+      const nb = $('[data-ipbpiece="' + IPB_KEYS[list.length - 1] + '"]', f); if (nb){ nb.scrollIntoView({ behavior:'smooth', block:'center' }); $('[data-f="rating"]', nb).focus({ preventScroll:true }); }
+    }
     if (t.matches('[data-f="img"]') && t.files && t.files[0]){
       const k = t.closest('[data-ipbpiece]').dataset.ipbpiece;
       try { const d = await shrinkImage(t.files[0]); ipb.imgs[k] = { data:d }; ipbSync(); toast('Image ready (' + Math.round(d.length / 1024) + ' KB). Save the package to upload it.'); }
@@ -3102,6 +3194,8 @@ function ipbWire(v){
     }
   });
   f.addEventListener('click', ev => {
+    const rm = ev.target.closest('[data-ipbrm]');
+    if (rm){ const list = ipbRead(), k = rm.closest('[data-ipbpiece]').dataset.ipbpiece, it = list.find(x => x.k === k); if (list.length <= 2 || ((it.src || it.text) && !confirm('Remove piece ' + k + '? The pieces after it move up a letter.'))) return; ipbPieces(list.filter(x => x.k !== k)); return; }
     const d = ev.target.closest('[data-f="imgdel"]'); if (d){ const k = d.closest('[data-ipbpiece]').dataset.ipbpiece; ipb.imgs[k] = null; $('[data-f="img"]', d.closest('[data-ipbpiece]')).value = ''; ipbSync(); }
     const e = ev.target.closest('[data-ipbedit]'); if (e){ $('[data-ipbsrc]', f).value = e.dataset.ipbedit; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); }
     const pc = ev.target.closest('[data-ipbpiece]'), k = pc ? pc.dataset.ipbpiece : null;
@@ -3123,7 +3217,7 @@ function ipbRender(S, v){
   const AP = allProblems(S);
   keepSelect($('[data-ipbsrc]', f), '<option value="">A blank package</option>' + AP.map((P, i) => '<option value="' + P.id + '">' + (i + 1) + '. ' + esc(fillT(P.title)) + (P.custom ? ' (built here)' : '') + '</option>').join(''));
   const cs = S.customOrder.map(id => S.custom[id]).filter(Boolean);
-  $('[data-ipblist]', f).innerHTML = cs.length ? cs.map(c => { const n = AP.indexOf(c) + 1, sent = !!S.intelOut[c.id]; return '<div class="li"><div class="grow"><b>' + n + '. ' + esc(c.title) + '</b> <span class="small muted">' + (c.replaces ? 'replaces built-in ' + (PROBLEMS.findIndex(P => P.id === c.replaces) + 1) + ' · ' : '') + (c.items.some(it => it.img) ? 'has a photo · ' : '') + (sent ? 'sent' : 'not sent') + '</span>' + (c.note ? '<div class="small muted">Note: ' + esc(c.note) + '</div>' : '') + '</div>' + (sent ? '' : '<button type="button" data-ipbedit="' + c.id + '" style="flex:0 0 auto">Edit</button><button type="button" data-ipbdel="' + c.id + '" style="flex:0 0 auto">Delete</button>') + '</div>'; }).join('') : '<div class="empty">None yet.</div>';
+  $('[data-ipblist]', f).innerHTML = cs.length ? cs.map(c => { const n = AP.indexOf(c) + 1, sent = !!S.intelOut[c.id]; return '<div class="li"><div class="grow"><b>' + n + '. ' + esc(c.title) + '</b> <span class="small muted">' + (c.replaces ? 'replaces built-in ' + (PROBLEMS.findIndex(P => P.id === c.replaces) + 1) + ' · ' : '') + c.items.length + ' pieces · ' + (c.items.some(it => it.img) ? 'has a photo · ' : '') + (sent ? 'sent' : 'not sent') + '</span>' + (c.note ? '<div class="small muted">Note: ' + esc(c.note) + '</div>' : '') + '</div>' + (sent ? '' : '<button type="button" data-ipbedit="' + c.id + '" style="flex:0 0 auto">Edit</button><button type="button" data-ipbdel="' + c.id + '" style="flex:0 0 auto">Delete</button>') + '</div>'; }).join('') : '<div class="empty">None yet.</div>';
 }
 document.addEventListener('click', ev => {
   const im = ev.target.closest('.ip-img'); if (im){ const o = document.createElement('div'); o.className = 'ip-lightbox'; o.innerHTML = '<img alt="">'; o.firstChild.src = im.src; o.onclick = () => o.remove(); document.body.appendChild(o); }
@@ -3179,9 +3273,9 @@ function renderWhite(S, now){
     if (!oB && !oR) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="B"' + (running ? '' : ' disabled') + '>BLUFOR only</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="R"' + (running ? '' : ' disabled') + '>REDFOR only</button>';
     else if (!oB || !oR) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>';
     if ((oB && !oB.done) || (oR && !oR.done)) btns += '<button type="button" data-act="ipclose" data-id="' + P.id + '">Close now</button>';
-    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · false piece ' + tr.f + ' (' + esc((P.items.find(x => x.k === tr.f) || {}).disc || '') + ')</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
+    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · false: ' + esc(falseText(P, tr)) + (P.items.length !== 4 ? ' · ' + P.items.length + ' pieces' : '') + '</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
   }).join('');
-  ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Host nation ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · escalation caused ' + S.escBy[s]; });
+  ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Diplomatic points ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · escalation caused ' + S.escBy[s]; });
   $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · from ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
   const voids = app.events.filter(e => e.type === 'void').length;
   $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · saved on this computer' : ' · shared');
