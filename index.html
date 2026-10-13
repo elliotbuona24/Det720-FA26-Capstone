@@ -161,7 +161,7 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .teammap{height:62vh;min-height:300px}
 [hidden]{display:none!important}
 .jambox{height:340px;border-radius:8px;border:2px dashed var(--bad);display:grid;place-content:center;gap:6px;text-align:center;padding:16px;background:repeating-linear-gradient(45deg,transparent 0 12px,rgba(200,40,40,.06) 12px 24px)}.jambox b{color:var(--bad);letter-spacing:.08em}
-.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--sans,system-ui);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 system-ui,sans-serif;cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
+.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--sans,system-ui);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 system-ui,sans-serif;cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.poi{background:none;border:0}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
 .gl.m{color:#8fe6ff;font-size:10px}.gl.f{color:#bdf0ff;font-size:9px;font-weight:500}.leaflet-pane.contour-pane img{filter:brightness(1.7) saturate(1.3) drop-shadow(0 0 1px rgba(0,0,0,.9))}.cursor-grid{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:3px 8px;font:600 12px/1.3 var(--mono,monospace);pointer-events:none}.gridtog select{width:100%;font-size:13px;padding:2px 4px;margin:0 0 2px;color:#111;background:#fff}
 .leaflet-tooltip.sitelbl,.leaflet-tooltip.teamlbl{background:rgba(10,14,12,.72);color:#fff;border:0;box-shadow:none;font:600 12px/1.2 var(--body);padding:2px 6px}
@@ -183,7 +183,7 @@ label.chk input{width:auto;margin:0}
 fieldset.ip-set{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0;display:grid;gap:6px;min-width:0;align-content:start}
 fieldset.ip-set legend{font-size:12px;color:var(--muted);padding:0 4px}
 .ip-set label{display:flex;align-items:flex-start;gap:8px;font-size:14px;color:var(--ink);line-height:1.3}
-.ip-set input[type=radio]{width:auto;margin:2px 0 0;flex:0 0 auto}
+.ip-set input[type=radio],.ip-set input[type=checkbox]{width:auto;margin:2px 0 0;flex:0 0 auto}
 .ip-row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:8px}
 @media (max-width:560px){.ip-row{grid-template-columns:minmax(0,1fr)}}
 .ip-status{font-size:13px}
@@ -1086,10 +1086,10 @@ const GEO = (() => {
 const SIDES = { B:{key:'B', name:'BLUFOR', long:'BLUFOR · US-led Coalition'}, R:{key:'R', name:'REDFOR', long:'REDFOR · North Korea'} };
 const OTHER = { B:'R', R:'B' };
 const SITES = {
-  harbor:  { name:'Harbor',      grid:'B5', col:1, row:4, letter:'H' },
-  fuel:    { name:'Fuel Depot',  grid:'E1', col:4, row:0, letter:'F' },
-  radar:   { name:'Radar Ridge', grid:'C1', col:2, row:0, letter:'R' },
-  airstrip:{ name:'Airstrip',    grid:'D5', col:3, row:4, letter:'A' }
+  harbor:  { name:'Harbor',      grid:'E4', col:4, row:3, letter:'H' },
+  fuel:    { name:'Fuel Depot',  grid:'D2', col:3, row:1, letter:'F' },
+  radar:   { name:'Radar Ridge', grid:'E1', col:4, row:0, letter:'R' },
+  airstrip:{ name:'Airstrip',    grid:'B5', col:1, row:4, letter:'A' }
 };
 const SITE_KEYS = Object.keys(SITES);
 let START_G = 20, END_G = 100, TICKS = [];
@@ -1863,7 +1863,7 @@ function loadSample(){
     ev(22, 'verdict', null, { contact:'s005', verdict:'confirm' }),
     ev(23, 'claim', 'R', { site:'airstrip', code:secret(salt, 'RUNWAY') }, 'R'),
     ev(25, 'detonation', null, { grid:'C2', truth:'militia' }),
-    ev(27, 'act_drone', 'B', { text:'Who holds the Airstrip at D5?' }, 'B'),
+    ev(27, 'act_drone', 'B', { text:'Who holds the Airstrip at B5?' }, 'B'),
     ev(28, 'claim', 'B', { site:'radar', code:secret(salt, 'ECHO') }, 'B'),
     ev(30, 'resolve', null, { req:'s009', text:'REDFOR flag at the Airstrip, 3 personnel on site.' }),
     ev(31, 'act_statement', 'R', { incident:'s008', blame:'other' }, 'R'),
@@ -1872,7 +1872,7 @@ function loadSample(){
     ev(37, 'act_aid', 'B', {}, 'B'),
     ev(40, 'claim', 'R', { site:'town', code:secret(salt, 'MAYOR') }, 'R'),
     ev(41, 'conduct', 'R', { good:true }),
-    ev(42, 'contact', 'R', { kind:'site', site:'radar', grid:'C1', seen:'0700', note:'Blue flag on the ridge' }, 'R'),
+    ev(42, 'contact', 'R', { kind:'site', site:'radar', grid:'E1', seen:'0700', note:'Blue flag on the ridge' }, 'R'),
     ev(44, 'clock_pause', null, {})
   ];
   app.localSample = true; localSave(); route();
@@ -1891,7 +1891,7 @@ function buildAAR(){
   snap(S, { id:'end', type:'end', side:null });
   const clean = o => JSON.parse(JSON.stringify(o));
   return { version:1, built:Date.now(), name:(app.cfg && app.cfg.name) || 'Game', startG:START_G, endG:END_G, levels:LEVELS, esc:ESC,
-    sites:Object.fromEntries(SITE_KEYS.map(k => [k, { name:SITES[k].name, grid:SITES[k].grid }])),
+    sites:Object.fromEntries(SITE_KEYS.map(k => [k, { name:SITES[k].name, grid:siteSquare(S, k) }])),
     final:{ B:score(S, 'B'), R:score(S, 'R'), esc:S.esc, decayed:{ B:S.decayed.B, R:S.decayed.R }, hn:{ B:S.hn.B, R:S.hn.R }, war:S.war, warAt:S.warAt, endex:S.endex, g:S.g },
     steps, log:clean(S.log), contacts:clean(S.contacts), claims:clean(S.claims), incidents:clean(S.incidents), statements:clean(S.statements),
     requests:clean(S.requests), cacheDone:S.cacheDone, liaison:clean(S.liaison), offers:clean(S.offers), uavs:clean(S.uavs), jams:clean(S.jams), orders:clean(S.orders),
@@ -2055,6 +2055,7 @@ const ContourLayer = L.TileLayer.extend({
   }
 });
 const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ']];
+function siteSquare(S, k){ const M = mapCfg(S), pt = M && M.sites && M.sites[k]; return (pt && squareOf(M, pt)) || SITES[k].grid; }
 function mapCfg(S){ return S && S.map && S.map.sw && S.map.ne ? S.map : DEFAULT_MAP; }
 function gridDims(M){ return { cols:Math.max(1, Math.min(12, +M.cols || 6)), rows:Math.max(1, Math.min(12, +M.rows || 5)) }; }
 function squareOf(M, pt){
@@ -2096,12 +2097,9 @@ function shortMGRS(M, t){
   return best;
 }
 function fmtPt(pt){ return pt ? GEO.toMGRS(pt[0], pt[1], 5) : ''; }
-const DEFAULT_MAP = (() => {
-  const c = [40.827469, -77.856957], dLat = 250 / 111320, dLon = 300 / (111320 * Math.cos(c[0] * Math.PI / 180));
-  const M = { sw:[c[0] - dLat, c[1] - dLon], ne:[c[0] + dLat, c[1] + dLon], cols:6, rows:5, step:100, placeholder:true, sites:{ town:c.slice() } };
-  [['harbor', 'B5'], ['fuel', 'E1'], ['radar', 'C1'], ['airstrip', 'D5'], ['lzB', 'A3'], ['lzR', 'F3']].forEach(([k, g]) => M.sites[k] = squareCenter(M, g));
-  return M;
-})();
+const DEFAULT_MAP = { sw:[40.82478, -77.86239], ne:[40.82853, -77.85727], cols:6, rows:5, step:100, field:true,
+  sites:{ harbor:[40.8256542, -77.8587108], fuel:[40.82743, -77.85964], radar:[40.8278642, -77.8582106], airstrip:[40.8251434, -77.8611404], town:[40.8266949, -77.8587905], lzB:[40.82726, -77.86027], lzR:[40.8270209, -77.8577496] },
+  pois:[{ name:'Interest point (probably IED)', pt:[40.8266521, -77.8579746] }, { name:'Interest point', pt:[40.82522, -77.86064] }, { name:'Roadside interest point', pt:[40.8281669, -77.8600516] }, { name:'Interest area (southwest)', pt:[40.8257776, -77.8619106] }, { name:'Interest area (west)', pt:[40.8267134, -77.8611174] }] };
 function lmapEnsure(el, M){
   const key = JSON.stringify([M.sw, M.ne, M.cols, M.rows, M.step, !!M.preview]);
   let st = el._lm;
@@ -2111,12 +2109,12 @@ function lmapEnsure(el, M){
     const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true, zoomSnap:0.25 });
     map.createPane('contour-pane'); map.getPane('contour-pane').style.zIndex = 250; map.getPane('contour-pane').classList.add('contour-pane');
     const contours = new ContourLayer('', { pane:'contour-pane', maxZoom:20, maxNativeZoom:18, minZoom:12, attribution:'Contours: USGS 3DEP' });
-    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup() }, key:null };
+    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup() }, key:null };
     applyGridPref(st);
     const tog = L.control({ position:'topright' });
     tog.onAdd = () => {
       const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref();
-      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
+      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => k !== 'poi' || app.role === 'W').map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
       L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
       d.querySelector('[data-gtbtn]').onclick = () => { const l = d.querySelector('.gt-list'); l.hidden = !l.hidden; };
       d.addEventListener('change', ev => { if (ev.target.matches('[data-gtbase]')){ const np = gridPref(); np.base = ev.target.value; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gtbase]').forEach(x => x.value = np.base); $$('.lmap').forEach(x => { if (x._lm) applyGridPref(x._lm); }); return; } const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gt="' + k + '"]').forEach(x => x.checked = ev.target.checked); $$('.lmap').forEach(x => { if (!x._lm) return; applyGridPref(x._lm); drawFine(x._lm); if (x._lm.args && app.S) drawDyn(x._lm, app.S, x._lm.args[0], x._lm.args[1]); }); });
@@ -2146,8 +2144,8 @@ function lmapEnsure(el, M){
   drawFine(st);
   return st;
 }
-const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b']];
-const LAYER_DEFAULTS = { base:'sat', play:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true };
+const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['poi', 'Points of interest (white cell)', '#ffcf5a']];
+const LAYER_DEFAULTS = { base:'sat', play:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true };
 function gridPref(){ try { return Object.assign({}, LAYER_DEFAULTS, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return Object.assign({}, LAYER_DEFAULTS); } }
 function applyGridPref(st){
   const pr = gridPref();
@@ -2233,6 +2231,7 @@ function drawDyn(st, S, side, opts){
     const hollow = v.unknown || v.reported || v.stale || !v.holder;
     tip(L.circleMarker(pt, { radius:11, color:v.holder ? SIDE_HEX[v.holder] : '#ffffff', weight:3, dashArray:(v.reported || v.stale) ? '4 3' : null, fillColor:hollow ? '#111' : SIDE_HEX[v.holder], fillOpacity:hollow ? .45 : .9 }), SITES[k].name + ' · ' + sub).addTo(LS.sites);
   });
+  if (!side) (M.pois || []).forEach(x => { if (!x || !x.pt) return; L.marker(x.pt, { icon:L.divIcon({ className:'poi', html:'<svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 1L15 8L8 15L1 8Z" fill="#ffcf5a" fill-opacity=".85" stroke="#000" stroke-width="1.2"/></svg>', iconSize:[16, 16], iconAnchor:[8, 8] }) }).bindTooltip(esc(x.name), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[8, 0] }).bindPopup('<b>' + esc(x.name) + '</b><br><span class="mono">' + esc(fmtPt(x.pt)) + '</span>' + (squareOf(M, x.pt) ? '<br>Play square ' + squareOf(M, x.pt) : '')).addTo(LS.poi); });
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
     const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' · BLUFOR office' : '') + (open('R') ? ' · REDFOR office' : '') : (open(side) ? ' · your office is open' : ''));
@@ -2365,7 +2364,7 @@ async function sendTeamPos(side, opts){
   const v = $('#vTeam'), M = mapCfg(app.S);
   const repText = opts.gpsOnly ? '' : $('[data-grid]', v).value.trim();
   const rep = repText ? locate(M, repText) : null;
-  if (repText && !rep){ toast('That grid didn’t read. Use MGRS like 5908 2353 or 18T TL 59085 23533, or a play square like D4.', true); return; }
+  if (repText && !rep){ toast('That grid didn’t read. Use MGRS like 5892 2345 or 18T TL 58927 23452, or a play square like D4.', true); return; }
   if (!opts.silent){ $('[data-send]', v).disabled = true; $('[data-send]', v).textContent = 'Getting GPS…'; }
   const g = await getGPS();
   if (!opts.silent){ $('[data-send]', v).disabled = false; $('[data-send]', v).textContent = 'Send position'; }
@@ -2394,7 +2393,7 @@ function buildTeam(side){
       <div class="lmap teammap" data-tmap hidden></div></div>
     <div class="panel stack"><h2>Report your position</h2>
       <p class="small muted" style="margin:0">Your navigator reads your grid off the map, types it here and sends it. The phone adds its GPS fix so your C2 can see you on the map.</p>
-      <label>Your grid from the map (MGRS or play square)<input data-grid autocomplete="off" placeholder="Example: 5908 2353, 18T TL 59085 23533 or D4"></label>
+      <label>Your grid from the map (MGRS or play square)<input data-grid autocomplete="off" placeholder="Example: 5892 2345, 18T TL 58927 23452 or D4"></label>
       <label>Status<select data-status><option>Moving</option><option>At objective</option><option>Holding</option><option>Halted: suspected IED</option><option>Treating a casualty</option><option>Need help</option></select></label>
       <button type="button" class="btn-side team-big" data-send>Send position</button>
       <label class="chk"><input type="checkbox" data-auto> Also send GPS by itself every 10 minutes</label>
@@ -2514,7 +2513,7 @@ function buildWing(side){
         </div>
         <div data-pane="act" class="actions">
           <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> · every 20 minutes (10 with the Airstrip) · <span class="esc-up">+1 escalation</span></span></div>
-            <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at D5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
+            <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at B5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
           <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · once every 20 minutes · <span class="esc-up">+10 escalation</span></span></div>
             <p class="small muted" style="margin:0">Shows the other wing’s fireteams at their latest known positions, to you and your fireteams: live for 1 minute, then last seen for 5. The other wing is told it was spotted, but not how.</p>
             <form data-f="uav"><button class="btn-side" type="submit">Launch UAV</button></form></div>
@@ -2525,7 +2524,7 @@ function buildWing(side){
           <details class="act"><summary>Pressure options (they raise escalation)</summary>
             <div class="stack" style="margin-top:8px">
               <div class="act-head"><b>Show of force</b><span class="cost"><span data-left="show"></span> · <span class="esc-up">+10 escalation</span></span></div>
-              <form class="stack" data-f="show"><label for="shT-${side}">Site the other wing must leave<input id="shT-${side}" name="t" maxlength="60" placeholder="Example: Radar Ridge, C1" required></label><div><button type="submit">Order show of force</button></div></form>
+              <form class="stack" data-f="show"><label for="shT-${side}">Site the other wing must leave<input id="shT-${side}" name="t" maxlength="60" placeholder="Example: Radar Ridge, E1" required></label><div><button type="submit">Order show of force</button></div></form>
               <div class="act-head"><b>Jam enemy datalink</b><span class="cost"><span data-jamstate>Ready</span> · once every 45 minutes · <span class="esc-up">+5 escalation</span> · 5.5 minutes</span></div>
               <p class="small muted" style="margin:0">Their live map and drone flights go down for 5.5 minutes. Their radios still work.</p>
               <form data-f="jam"><button type="submit">Jam datalink</button></form>
@@ -2540,7 +2539,7 @@ function buildWing(side){
               <label for="ctS-${side}">Which site (for a flag)<select id="ctS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
               <p class="small muted" style="margin:0" data-salnote>Enemy team: enter the full SALUTE report your fireteam radioed in.</p>
               <div class="row" data-sal><label for="ctSz-${side}">S · Size<input id="ctSz-${side}" name="sz" maxlength="60" placeholder="Example: 4 people"></label><label for="ctAc-${side}">A · Activity<input id="ctAc-${side}" name="act" maxlength="120" placeholder="Example: moving west along the tree line"></label></div>
-              <div class="row"><label for="ctG-${side}">L · Location (play square or MGRS)<input id="ctG-${side}" name="grid" maxlength="24" placeholder="Example: D4 or 5908 2353" required></label><label for="ctUn-${side}" data-sal>U · Uniform<input id="ctUn-${side}" name="uni" maxlength="80" placeholder="Example: red armbands, dark jackets"></label></div>
+              <div class="row"><label for="ctG-${side}">L · Location (play square or MGRS)<input id="ctG-${side}" name="grid" maxlength="24" placeholder="Example: D4 or 5892 2345" required></label><label for="ctUn-${side}" data-sal>U · Uniform<input id="ctUn-${side}" name="uni" maxlength="80" placeholder="Example: red armbands, dark jackets"></label></div>
               <div class="row"><label for="ctT-${side}">T · Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="Example: 0842"></label><label for="ctEq-${side}" data-sal>E · Equipment<input id="ctEq-${side}" name="eq" maxlength="80" placeholder="Example: 2 rifles, a radio"></label></div>
               <label for="ctN-${side}" data-notesal>Notes<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: flag on the Radar Ridge mast"></label>
               <div><button class="btn-side" type="submit">Post report</button></div></form></div>
@@ -2825,12 +2824,14 @@ function buildWhite(){
       <div class="panel span2"><div class="act-head"><h2>Log</h2><span class="small muted">Void a mistake and every screen recalculates</span></div><div class="feed" data-log style="max-height:420px"></div></div>
       <details class="panel span2 mapset" data-mapsetup><summary><b>Map setup</b> <span class="small muted">(do this once, before the game)</span></summary>
         <div class="stack" style="margin-top:10px">
-          <p class="small muted" style="margin:0">Type an MGRS grid (for example 18T TL 59085 23533) or latitude and longitude for each point, in any common form (for example 40.82522° N, 77.86064° W, or 40.82522, -77.86064, or 40°49'30.8"N 77°51'38.3"W), or click the map above and press “Use last click”. Last click: <b class="mono" data-lastclick>—</b></p>
+          <p class="small muted" style="margin:0">Type an MGRS grid (for example 18T TL 58927 23452) or latitude and longitude for each point, in any common form (for example 40.82522° N, 77.86064° W, or 40.82522, -77.86064, or 40°49'30.8"N 77°51'38.3"W), or click the map above and press “Use last click”. Last click: <b class="mono" data-lastclick>—</b></p>
           <div class="li"><label>Find the field: center on<input data-mcenter placeholder="Example: 40.8275, -77.8570 or an MGRS grid"></label><button type="button" data-mshow>Show on the map</button></div>
           <div class="li"><label>Southwest corner of the play area<input data-mp="sw"></label><button type="button" data-muse="sw">Use last click</button></div>
           <div class="li"><label>Northeast corner of the play area<input data-mp="ne"></label><button type="button" data-muse="ne">Use last click</button></div>
           <div class="row"><label>Play-grid columns<input data-mcols type="number" min="1" max="12" value="6"></label><label>Play-grid rows<input data-mrows type="number" min="1" max="12" value="5"></label><label>MGRS lines every<select data-mstep><option value="100">100 m</option><option value="1000">1 km</option></select></label></div>
           ${MAP_POINTS.map(([k, n]) => '<div class="li"><label>' + esc(n) + '<input data-mp="' + k + '"></label><button type="button" data-muse="' + k + '">Use last click</button></div>').join('')}
+          <label>Points of interest for injects and intel (white cell map only). One per line: name | point<textarea data-mpois rows="5" placeholder="Example: Culvert IED | 40.82665, -77.85797"></textarea></label>
+          <div class="row" style="justify-content:flex-start"><button type="button" data-mpoiadd style="flex:0 0 auto">Add last click as a point of interest</button></div>
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-msave style="flex:0 0 auto">Save the map for every screen</button><span class="small muted" data-mmsg></span></div>
         </div></details>
       <details class="panel span2 mapset" data-ipbuild><summary><b>Intel package builder</b> <span class="small muted">(write your own packages, add photos)</span></summary>
@@ -2884,6 +2885,7 @@ function buildWhite(){
   ipbWire(v);
   const ms = $('[data-mapsetup]', v);
   $('[data-mshow]', ms).onclick = () => { const pt = GEO.parsePoint($('[data-mcenter]', ms).value); if (!pt){ toast('That point didn’t read.', true); return; } const d = 0.006; app.previewMap = { sw:[pt[0] - d, pt[1] - d * 1.3], ne:[pt[0] + d, pt[1] + d * 1.3], preview:true }; refresh(true); toast('Showing the area. Click the map to read grids.'); };
+  $('[data-mpoiadd]', ms).onclick = () => { if (!app.lastClick){ toast('Click a point on the map first.', true); return; } const ta = $('[data-mpois]', ms); ta.value = (ta.value.trim() ? ta.value.trim() + '\n' : '') + 'New point | ' + fmtPt(app.lastClick); ta.focus(); };
   $$('[data-muse]', ms).forEach(b => b.onclick = () => { if (!app.lastClick){ toast('Click a point on the map first.', true); return; } $('[data-mp="' + b.dataset.muse + '"]', ms).value = fmtPt(app.lastClick); });
   $('[data-msave]', ms).onclick = () => {
     const get = k => { const t = $('[data-mp="' + k + '"]', ms).value.trim(); return t ? GEO.parsePoint(t) : null; };
@@ -2892,8 +2894,10 @@ function buildWhite(){
     const box = { sw:[Math.min(sw[0], ne[0]), Math.min(sw[1], ne[1])], ne:[Math.max(sw[0], ne[0]), Math.max(sw[1], ne[1])] };
     const sites = {}, bad = [];
     MAP_POINTS.forEach(([k, n]) => { const t = $('[data-mp="' + k + '"]', ms).value.trim(); if (!t) return; const pt = GEO.parsePoint(t); if (pt) sites[k] = pt; else bad.push(n); });
+    const pois = [];
+    $('[data-mpois]', ms).value.split('\n').map(l => l.trim()).filter(Boolean).forEach((l, i) => { const j = l.lastIndexOf('|'), name = (j >= 0 ? l.slice(0, j).trim() : '') || 'Point ' + (i + 1), pt = GEO.parsePoint(j >= 0 ? l.slice(j + 1) : l); if (pt) pois.push({ name:name.slice(0, 60), pt }); else bad.push('point of interest "' + l.slice(0, 30) + '"'); });
     if (bad.length){ toast('These didn’t read: ' + bad.join(', ') + '.', true); return; }
-    writeEvent('map_config', null, { sw:box.sw, ne:box.ne, cols:+$('[data-mcols]', ms).value || 6, rows:+$('[data-mrows]', ms).value || 5, step:+$('[data-mstep]', ms).value || 100, sites });
+    writeEvent('map_config', null, { sw:box.sw, ne:box.ne, cols:+$('[data-mcols]', ms).value || 6, rows:+$('[data-mrows]', ms).value || 5, step:+$('[data-mstep]', ms).value || 100, sites, pois:pois.slice(0, 30) });
     app.previewMap = null; app.mapFilled = false; toast('Map saved. Every screen now shows it.');
   };
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-act="hreply"]'); if (b) toast('Only the Wing Commanders can answer offers.', true); });
@@ -3235,7 +3239,7 @@ function renderWhite(S, now){
   const wf = $('form[data-wf="window"]', v), wk = START_G + '|' + END_G;
   if (wf && app.winKey !== wk && !wf.contains(document.activeElement)){ app.winKey = wk; wf.elements.start.value = hhmm(START_G); wf.elements.len.value = END_G - START_G; }
   if (wf) Array.from(wf.elements).forEach(x => x.disabled = S.clock.started);
-  $('[data-mapnote]', v).textContent = mapCfg(S).placeholder ? 'Placeholder map (O-course). Set the real area under Map setup.' : 'No fog of war: only this screen sees everything';
+  $('[data-mapnote]', v).textContent = mapCfg(S).field ? 'Capstone field from the 13 Oct points. Change it under Map setup. No fog of war here.' : 'No fog of war: only this screen sees everything';
   const real = renderMapInto($('[data-map]', v), S, null);
   $('[data-legend]', v).innerHTML = real ? realLegend() : legendHTML(null);
   $('[data-clk="start"]', v).textContent = 'Start the game (' + hhmm(START_G) + ')';
@@ -3246,8 +3250,8 @@ function renderWhite(S, now){
   const lvlNow = levelIndex(S.esc), tkey = START_G + '|' + lvlNow;
   if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TEMPLATES.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + ' · ' + t.phase : LEVELS[t.lvl].name + ' or higher') + ' · ' + ({ both:'both', B:'BLUFOR', R:'REDFOR', public:'public' })[t.to] + '</small></button>'; }).join(''); }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
-  if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); }
-  $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + SITES[k].grid + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Both at site</span>' : '') + '</span>' +
+  if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); $('[data-mpois]', ms).value = (M0.pois || []).map(x => x.name + ' | ' + fmtPt(x.pt)).join('\n'); }
+  $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Both at site</span>' : '') + '</span>' +
     '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>REDFOR</option></select>' +
     (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<select data-timer="' + k + '" aria-label="Contention timer for ' + SITES[k].name + '" style="flex:0 0 auto;width:auto"><option value="15"' + ((S.siteTimer[k] || 15) === 15 ? ' selected' : '') + '>15 min</option><option value="20"' + (S.siteTimer[k] === 20 ? ' selected' : '') + '>20 min</option></select><button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear') : 'Both at site') + '</button></div>'; }).join('') +
     '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
