@@ -1729,6 +1729,43 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&am
 const uid = () => Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
 const LS = { get(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }, set(k, v){ try { sessionStorage.setItem(k, v); } catch(e){} }, del(k){ try { sessionStorage.removeItem(k); } catch(e){} } };
 
+const pref = { get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : v; } catch(e){ return d; } }, set(k, v){ try { localStorage.setItem(k, v); } catch(e){} } };
+let wakeLock = null;
+function wakeWanted(){ return !!app.role && (app.role === 'OC' || app.role[0] === 'T') && pref.get('marala-wake', '1') === '1'; }
+async function wakeSync(){
+  const ok = 'wakeLock' in navigator;
+  try {
+    if (ok && wakeWanted() && document.visibilityState === 'visible'){ if (!wakeLock){ wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; wakeShow(); }); } }
+    else if (wakeLock){ const w = wakeLock; wakeLock = null; await w.release(); }
+  } catch(e){ wakeLock = null; }
+  wakeShow();
+}
+function wakeShow(){
+  const ok = 'wakeLock' in navigator;
+  $$('[data-wake]').forEach(el => { el.checked = pref.get('marala-wake', '1') === '1'; el.disabled = !ok; });
+  $$('[data-wakestate]').forEach(el => el.textContent = !ok ? 'Not supported by this browser. Set the phone’s auto-lock to a longer interval.' : wakeLock ? 'Active while this page is open.' : pref.get('marala-wake', '1') === '1' ? 'Activates when the page is in view.' : 'Off. The phone follows its normal auto-lock setting.');
+}
+document.addEventListener('visibilitychange', wakeSync);
+document.addEventListener('pointerdown', () => { if (wakeWanted() && !wakeLock) wakeSync(); });
+document.addEventListener('change', ev => { if (ev.target.matches && ev.target.matches('[data-wake]')){ pref.set('marala-wake', ev.target.checked ? '1' : '0'); wakeSync(); } });
+const BASE_TITLE = 'Marala Island Board';
+let chimeAt = 0, chimeN = null, audioCtx = null;
+function chime(){
+  if (pref.get('marala-chime', '1') !== '1' || Date.now() - chimeAt < 8000) return;
+  chimeAt = Date.now();
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain(), t = audioCtx.currentTime;
+    o.type = 'sine'; o.frequency.setValueAtTime(880, t); o.frequency.setValueAtTime(1175, t + 0.09);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+    o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.3);
+  } catch(e){}
+}
+function whiteAttention(n){
+  document.title = (n ? '(' + n + ') ' : '') + BASE_TITLE;
+  if (chimeN !== null && n > chimeN) chime();
+  chimeN = n;
+}
 const app = { mode:'connecting', db:null, gid:null, cfg:null, events:[], role:null, S:null, sig:'', unsub:[], localSample:false };
 const LKEY = 'marala-board-v1';
 function localLoad(){ try { return JSON.parse(localStorage.getItem(LKEY) || 'null'); } catch(e){ return null; } }
@@ -1869,6 +1906,8 @@ function route(){
   if (!app.role){ renderGate(); return; }
   $('#switchRole').hidden = false;
   $('#roleBadge').innerHTML = '<span class="badge side-' + (app.role === 'P' || app.role === 'OC' ? 'W' : app.role[0] === 'T' ? app.role[1] : app.role) + '">' + esc(roleLabel(app.role)) + '</span>';
+  if (app.role !== 'W'){ document.title = BASE_TITLE; chimeN = null; }
+  setTimeout(wakeSync, 0);
   if (app.role === 'W'){ show('#vWhite'); buildWhite(); }
   else if (app.role === 'P'){ show('#vPublic'); buildPublic(); }
   else if (app.role === 'OC'){ show('#vOC'); buildOC(); }
@@ -2488,6 +2527,7 @@ function buildOC(){
   <div class="stack">
     <div class="panel"><div class="act-head"><h2 data-ocname>${esc(me.name)}</h2><span class="small muted">POC · <b class="mono" data-clock>—</b></span></div>
       <div class="row" style="align-items:end"><label>Attached to<select data-ocassign></select></label><button type="button" data-ocsignout style="flex:0 0 auto">Sign out</button></div>
+      <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <div class="ip-status" data-ocwarn hidden style="color:var(--bad);font-weight:600"></div></div>
     <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Listen to your team read the full 9-line. If it is right, send it up to their C2.</p><div class="list" data-ocnines></div></div>
     <div class="panel stack"><h2>Calls for the white cell</h2><p class="small muted" style="margin:0">Pick the wing, then tap what you saw. The white cell approves or denies it.</p>
@@ -2530,6 +2570,7 @@ function renderOC(S){
   const o = S.ocs[me.id];
   if (o && o.removed){ ocSet(null); toast('The white cell removed you. Sign in again if that was a mistake.', true); app.built = null; buildOC(); renderOC(S); return; }
   if (!$('[data-ocmine]', v)) return;
+  wakeShow();
   if (o) $('[data-ocname]', v).textContent = o.name;
   const as = $('[data-ocassign]', v);
   if (document.activeElement !== as){ as.innerHTML = ocOpts(S, o); as.value = ocVal(o); }
@@ -2621,6 +2662,7 @@ function buildTeam(side){
       <label>Status<select data-status><option>Moving</option><option>At objective</option><option>Holding</option><option>Halted: suspected IED</option><option>Treating a casualty</option><option>Need help</option></select></label>
       <button type="button" class="btn-side team-big" data-send>Send position</button>
       <label class="chk"><input type="checkbox" data-auto> Also send GPS by itself every 10 minutes</label>
+      <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <div class="small muted" data-tlast></div></div>
     <div class="panel stack"><h2>Strike 9-line</h2>
       <p class="small muted" style="margin:0">Read the full 9-line out loud to your POC. Then send the target and location here. Your POC or the white cell checks it before it goes to your C2.</p>
@@ -2671,6 +2713,7 @@ function renderTeam(S, side){
     app.built = null; buildTeam(side); renderTeam(S, side); return;
   }
   if (!$('[data-torders]', v)) return;
+  wakeShow();
   answerPings(S, side);
   $('[data-tnumshow]', v).textContent = mine && mine.num ? '· #' + mine.num : '';
   const lvl = levelIndex(S.esc);
@@ -3058,7 +3101,7 @@ function buildWhite(){
       <div class="stack" style="gap:14px;min-width:0">
         <div class="panel"><div class="act-head"><h2>POCs</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
           <details data-ocroster style="margin-top:8px"><summary class="small"><b>Manage POCs</b> <span class="muted" data-ocn></span></summary><div class="list" data-ocrows style="margin-top:6px"></div></details></div>
-        <div class="panel"><h2>Waiting on you</h2><div class="list" data-queue></div></div>
+        <div class="panel"><div class="act-head"><h2>Waiting on you</h2><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-chime> Sound alert</label></div><div class="list" data-queue></div></div>
         <div class="panel"><h2>Send a message</h2>
           <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="Higher headquarters" maxlength="30"></label></div>
             <label>Message<textarea name="text" maxlength="400" required></textarea></label><div><button class="btn-side" type="submit">Send</button></div></form>
@@ -3550,6 +3593,7 @@ function renderWhite(S, now){
     if (r.kind === 'strike') ctl = (r.nineBy ? '<span class="chip ok">9-line checked by ' + esc(r.nineBy) + '</span>' : '') + '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="hit">9-line correct · strike</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="invalid">9-line wrong</button>';
     q.push('<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + kindName[r.kind] + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + r.text : r.text) + '</div></div><div class="row" style="flex:1 1 260px">' + ctl + '</div></div>');
   });
+  { const pend = q.length + S.nines.filter(n => n.status === 'open').length + S.ocReqs.filter(r => r.status === 'open').length; whiteAttention(pend); const cb = $('[data-chime]', v); if (cb && !cb.dataset.wired){ cb.dataset.wired = '1'; cb.checked = pref.get('marala-chime', '1') === '1'; cb.onchange = () => { pref.set('marala-chime', cb.checked ? '1' : '0'); if (cb.checked){ chimeAt = 0; chime(); } }; } }
   $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force and strikes land here.</div>';
   $('[data-score]', v).innerHTML = scoreTable(S, ['B', 'R']);
   const running = S.clock.started && !S.endex;
