@@ -1102,7 +1102,7 @@ function setWindow(cfg){
 setWindow(null);
 const CONTEST_MIN = 10;
 const ESC_DECAY = 0.15;
-const UAV_EVERY = 25, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 3, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5;
+const UAV_EVERY = 40, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 3, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5;
 function droneEvery(S, side){ const a = S.sites.airstrip; return a.holder === side && !a.contested ? DRONE_EVERY_AIR : DRONE_EVERY; }
 function droneReady(S, side){ const l = S.droneLast[side]; return l == null || S.g - l >= droneEvery(S, side) - 1e-9; }
 function codeMatch(cfg, k, h){ const c = cfg && cfg.codes ? cfg.codes[k] : null; if (!c) return { cap:false, def:false, reuse:true }; if (typeof c === 'string') return { cap:c === h, def:c === h, reuse:true }; if (Array.isArray(c)) return { cap:c.includes(h), def:c.includes(h), reuse:true }; const cap = (c.cap || []).includes(h), def = ((c.def && c.def.length) ? c.def : (c.cap || [])).includes(h); return { cap, def, reuse:k === 'town' }; }
@@ -1496,6 +1496,12 @@ function apply(S, e, cfg){
         if (!pg || !Array.isArray(p.gps)) break;
         const t0 = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:String(p.name || 'Team').slice(0, 40), fixes:[] });
         t0.pingFix = { g:S.g, ts:e.ts, gps:p.gps, acc:p.acc || null, ping:pg.id, pingG:pg.g, late:e.ts - pg.ts > 120000 }; S.ver++;
+        const u = pg.uav && S.uav[pg.uav];
+        if (u && u.id === pg.id && S.g - u.g < 1 && !t0.removed){
+          const sp = u.spots.find(x => x.id === p.team);
+          if (sp){ sp.pt = p.gps; sp.at = S.g; sp.fresh = true; }
+          else u.spots.push({ id:p.team, name:t0.name, num:t0.num || null, pt:p.gps, at:S.g, fresh:true });
+        }
         break;
       }
       const t = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:p.name || 'Team', fixes:[] });
@@ -1545,10 +1551,11 @@ function apply(S, e, cfg){
       const last = S.uav[side];
       if (!S.clock.started || (last && S.g - last.g < UAV_EVERY - 1e-9)){ pushLog(S, nm + ' UAV not ready yet', side, e, 'rejected'); break; }
       const o = OTHER[side];
-      const spots = liveTeams(S, o).filter(t => t.last && t.status !== 'Left the game').map(t => ({ name:t.name, num:t.num || null, pt:t.last.gps || t.last.rep, at:t.last.g })).filter(x => x.pt);
+      const spots = liveTeams(S, o).filter(t => t.last && t.status !== 'Left the game').map(t => ({ id:t.id, name:t.name, num:t.num || null, pt:t.last.gps || t.last.rep, at:t.last.g })).filter(x => x.pt);
       raise(S, side, UAV_ESC);
       S.uav[side] = { id:e.id, g:S.g, spots };
       S.spotted[o] = { id:e.id, g:S.g };
+      S.pings.push({ id:e.id, ts:e.ts, g:S.g, to:o, team:null, uav:side });
       S.uavs.push({ side, g:S.g, n:spots.length });
       pushFeed(S, side, 'UAV overhead: we have enemy fireteam locations now. They show on the map for 1 minute, then as last seen for 5 minutes.', 'alert', { team:true });
       pushFeed(S, o, 'Your fireteams have been spotted. Assume the other wing knows where you are.', 'alert', { team:true });
@@ -2554,7 +2561,7 @@ function buildWing(side){
           <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> · every 20 minutes (10 with the Airstrip) · <span class="esc-up">+1 escalation</span></span></div>
             <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at B5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
           <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · once every ${UAV_EVERY} minutes · <span class="esc-up">+10 escalation</span></span></div>
-            <p class="small muted" style="margin:0">Shows the other wing’s fireteams at their latest known positions, to you and your fireteams: live for 1 minute, then last seen for 5. The other wing is told it was spotted, but not how.</p>
+            <p class="small muted" style="margin:0">Shows the other wing’s fireteams to you and your fireteams. Their phones send fresh GPS the moment it launches, so the picture updates live for 1 minute, then shows as last seen for 5. The other wing is told it was spotted, but not how.</p>
             <form data-f="uav"><button class="btn-side" type="submit">Launch UAV</button></form></div>
           <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · true <span class="esc-down">−5</span> · false <span class="esc-up">+15</span></span></div>
             <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Incident<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">Who did it<select id="stB-${side}" name="blame"><option value="militia">The militia</option><option value="other">${esc(other)}</option></select></label></div><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
