@@ -68,7 +68,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
 .row>*{flex:1 1 140px}
 .stack{display:grid;gap:10px}
-.app{max-width:1500px;margin-inline:auto;display:grid;gap:14px}
+.app{max-width:1500px;margin-inline:auto;display:grid;gap:14px}.wnav{position:sticky;top:0;z-index:1100;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-bottom:1.5px solid var(--line);padding:8px 2px;box-shadow:0 6px 8px -8px rgba(0,0,0,.35)}.wnav-stat{display:flex;gap:8px;align-items:baseline;font-size:14px;white-space:nowrap}.wnav-stat b{font-size:18px}.wnav-tabs{display:flex;gap:6px;flex-wrap:wrap}.wnav-tabs button{padding:5px 11px;font-size:13.5px}.wnav-tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}.wnav .cnt{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center}.white-grid.filtered{grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr))}.white-grid.filtered .span2{grid-column:auto}[data-sec][data-off]{display:none!important}
 .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
 .brand{display:flex;align-items:baseline;gap:10px}
 .brand h1{font-size:22px;text-transform:uppercase;letter-spacing:.06em}
@@ -161,7 +161,7 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .teammap{height:62vh;min-height:300px}
 [hidden]{display:none!important}
 .jambox{height:340px;border-radius:8px;border:2px dashed var(--bad);display:grid;place-content:center;gap:6px;text-align:center;padding:16px;background:repeating-linear-gradient(45deg,transparent 0 12px,rgba(200,40,40,.06) 12px 24px)}.jambox b{color:var(--bad);letter-spacing:.08em}
-.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--body);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 var(--body);cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.poi{background:none;border:0}.wpicon{background:none;border:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}.wcicon{background:none;border:0;filter:drop-shadow(0 0 4px rgba(124,255,107,.9))}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
+.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--body);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 var(--body);cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.poi{background:none;border:0}.wpicon{background:none;border:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}.wpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:4px;max-height:132px;overflow:auto;padding:2px}.wpgrid button{padding:5px 0;display:flex;justify-content:center;align-items:center}.wpgrid button[aria-pressed="true"]{outline:2.5px solid var(--ink);outline-offset:-1px;background:var(--panel-2)}.wpsw{display:flex;gap:4px;flex-wrap:wrap;align-items:center}.wpsw button{width:24px;height:24px;padding:0;border-radius:50%;border:1.5px solid var(--line)}.wpsw input[type=color]{width:34px;height:28px;padding:0 2px}.wcicon{background:none;border:0;filter:drop-shadow(0 0 4px rgba(124,255,107,.9))}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
 .gl.m{color:#8fe6ff;font-size:10px}.gl.f{color:#bdf0ff;font-size:9px;font-weight:500}.leaflet-pane.contour-pane img{filter:brightness(1.7) saturate(1.3) drop-shadow(0 0 1px rgba(0,0,0,.9))}.cursor-grid{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:3px 8px;font:600 12px/1.3 var(--mono,monospace);pointer-events:none}.gridtog select{width:100%;font-size:13px;padding:2px 4px;margin:0 0 2px;color:#111;background:#fff}
 .leaflet-tooltip.sitelbl,.leaflet-tooltip.teamlbl{background:rgba(10,14,12,.72);color:#fff;border:0;box-shadow:none;font:600 12px/1.2 var(--body);padding:2px 6px}
@@ -254,11 +254,11 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
   <section id="gate" class="gate" hidden>
     <div class="stack">
       <h1>Marala Island Board</h1>
-      <p class="lede">The live game board for the capstone: BLUFOR, the US-led Coalition, against REDFOR, North Korea. Each Wing Commander opens their wing's screen, the white cell runs the game from its own screen, and a public screen shows the clock and the shared escalation meter.</p>
+      <p class="lede">Live game board for the Capstone exercise: BLUFOR (US-led Coalition) versus REDFOR (North Korea).</p>
     </div>
     <div id="gateNoGame" class="panel" hidden>
       <h2>No game set up yet</h2>
-      <p class="muted" style="margin:0">The white cell creates a game once, on its own laptop. Wing views can join after that.</p>
+      <p class="muted" style="margin:0">No game is active. The white cell creates the game.</p>
       <div><button type="button" class="btn-side side-W" id="gotoSetup">Set up a new game</button></div>
     </div>
     <div id="gateRoles" class="roles"></div>
@@ -283,7 +283,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 
   <section id="setup" class="panel side-W" hidden>
     <h2>Set up a new game</h2>
-    <p class="muted small" style="margin:0">Starting a new game replaces the current one on every screen. Site code words go on the hidden cards at each site; teams radio them to their command post to prove they got there. Only scrambled copies are stored.</p>
+    <p class="muted small" style="margin:0">Creating a game replaces the current game on every screen. PINs and code words are stored scrambled.</p>
     <form id="setupForm" class="stack">
       <div class="row">
         <label for="sName">Game name<input id="sName" value="Capstone" required></label>
@@ -298,7 +298,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label for="sStart">Board clock starts at<input id="sStart" value="0830" maxlength="5" inputmode="numeric" required></label>
         <label for="sLen">Game length (minutes)<input id="sLen" type="number" min="30" max="300" step="5" value="165" required></label>
       </div>
-      <p class="small muted" style="margin:0">Code words: separate several with commas. Each capture word (from the site's harder activity) and each defense word (from the easier cipher) works once. If you leave a site's defense words blank, its capture words work for defense too.</p>
+      <p class="small muted" style="margin:0">Separate code words with commas. Capture and defense words are single-use. If a site has no defense words, its capture words also defend.</p>
       <div class="row">
         <label for="cHarbor">Harbor capture words<input id="cHarbor" required autocomplete="off" placeholder="Example: ANCHOR, KEEL, TIDE"></label><label for="dHarbor">Harbor defense words<input id="dHarbor" autocomplete="off" placeholder="Example: ROPE, NET"></label>
         <label for="cFuel">Fuel Depot capture words<input id="cFuel" required autocomplete="off"></label><label for="dFuel">Fuel Depot defense words<input id="dFuel" autocomplete="off"></label>
@@ -1094,6 +1094,8 @@ const SITES = {
   airstrip:{ name:'Airstrip',    grid:'B5', col:1, row:4, letter:'A' }
 };
 const SITE_KEYS = Object.keys(SITES);
+const BASE_SITE_KEYS = SITE_KEYS.slice();
+function resetSites(){ SITE_KEYS.length = 0; BASE_SITE_KEYS.forEach(k => SITE_KEYS.push(k)); Object.keys(SITES).forEach(k => { if (!BASE_SITE_KEYS.includes(k)) delete SITES[k]; }); }
 let START_G = 20, END_G = 100, TICKS = [];
 function setWindow(cfg){
   const st = cfg && typeof cfg.startG === 'number' ? cfg.startG : 20, len = cfg && cfg.lengthMin ? cfg.lengthMin : 80;
@@ -1107,7 +1109,7 @@ const ESC_DECAY = 0.15;
 const UAV_EVERY = 40, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 3, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5;
 function droneEvery(S, side){ const a = S.sites.airstrip; return a.holder === side && !a.contested ? DRONE_EVERY_AIR : DRONE_EVERY; }
 function droneReady(S, side){ const l = S.droneLast[side]; return l == null || S.g - l >= droneEvery(S, side) - 1e-9; }
-function codeMatch(cfg, k, h){ const c = cfg && cfg.codes ? cfg.codes[k] : null; if (!c) return { cap:false, def:false, reuse:true }; if (typeof c === 'string') return { cap:c === h, def:c === h, reuse:true }; if (Array.isArray(c)) return { cap:c.includes(h), def:c.includes(h), reuse:true }; const cap = (c.cap || []).includes(h), def = ((c.def && c.def.length) ? c.def : (c.cap || [])).includes(h); return { cap, def, reuse:k === 'town' }; }
+function codeMatch(cfg, k, h, S){ const c = (S && S.siteCodes && S.siteCodes[k]) || (cfg && cfg.codes ? cfg.codes[k] : null); if (!c) return { cap:false, def:false, reuse:true }; if (typeof c === 'string') return { cap:c === h, def:c === h, reuse:true }; if (Array.isArray(c)) return { cap:c.includes(h), def:c.includes(h), reuse:true }; const cap = (c.cap || []).includes(h), def = ((c.def && c.def.length) ? c.def : (c.cap || [])).includes(h); return { cap, def, reuse:k === 'town' }; }
 function liveTeams(S, side){ return Object.values(S.teams[side]).filter(t => !t.removed); }
 function jammed(S, side){ return !!(S.jam && S.jam[side] != null && S.g < S.jam[side] && !S.reveal); }
 function uavPhase(S, side){ const u = S.uav && S.uav[side]; if (!u) return ''; const d = S.g - u.g; return d < 1 ? 'live' : d < 6 ? 'fade' : ''; }
@@ -1145,7 +1147,7 @@ function ocReqText(S, r){
   if (r.kind === 'site') return (r.who === 'both' ? 'Both wings' : r.side ? SIDES[r.side].name : 'A team') + ' at ' + (r.site === 'town' ? 'Marala Town' : SITES[r.site] ? SITES[r.site].name : 'a site') + (r.text ? ' (' + r.text + ')' : '');
   return 'Message: "' + r.text + '"';
 }
-const WP_SYMS = { pin:'Marker', obj:'Objective', rally:'Rally point', cp:'Checkpoint', hazard:'Hazard or IED', aid:'Aid or casualty', supply:'Supply point', danger:'Danger area', star:'Point of interest' };
+const WP_SYMS = { pin:'Marker', obj:'Objective', rally:'Rally point', cp:'Checkpoint', lz:'Landing zone', hazard:'Hazard or IED', aid:'Aid or casualty', supply:'Supply point', fuel:'Fuel', water:'Water', danger:'Danger area', star:'Point of interest', target:'Target', eye:'Observation post', camp:'Camp', building:'Building', vehicle:'Vehicle', radio:'Radio or comms', circle:'Circle', square:'Square', triangle:'Triangle', diamond:'Diamond', plus:'Plus', xmark:'X mark', question:'Unknown', info:'Information', arrow:'Arrow', home:'Home base' };
 function wpSides(to){ return to === 'both' ? ['B', 'R'] : to === 'B' || to === 'R' ? [to] : []; }
 function wpSeen(w, side){ return !side || wpSides(w.to).includes(side); }
 const ESC = { provocation:5, sabotage:15, firstfire:20, returnfire:5, falseblame:15, show:10, defied:10, jam:5, strikewing:40, quiet:3, trueblame:5 };
@@ -1162,9 +1164,10 @@ function hashStr(str, seed){
 function secret(salt, text){ return hashStr(salt + '|' + String(text||'').trim().toUpperCase()); }
 
 function newState(){
+  resetSites();
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   return {
-    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[], wps:[],
+    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[], wps:[], sitePts:{}, siteCodes:{},
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
@@ -1188,11 +1191,11 @@ function checkAccess(S, side){
   S.hn[side] = Math.max(0, Math.min(100, S.hn[side]));
   if (S.access[side] && S.hn[side] < 20){
     S.access[side] = false; S.office[side] = false;
-    pushFeed(S, side, 'The mayor has closed your town office. Raise your diplomatic points back to 20, then visit the mayor again.', 'alert');
+    pushFeed(S, side, 'The mayor has closed your town office. Reopening requires diplomatic points of 20 or more and a new visit to the mayor.', 'alert');
     pushLog(S, SIDES[side].name + ' town office closed by the mayor (diplomatic points under 20)', side);
   } else if (!S.access[side] && S.hn[side] >= 20){
     S.access[side] = true;
-    pushFeed(S, side, 'The mayor will see you again. Visit Marala Town to reopen your office.', 'good');
+    pushFeed(S, side, 'Diplomatic points are back at 20. A visit to Marala Town can reopen your office.', 'good');
   }
 }
 function addHN(S, side, n){ if (!n) return; S.hn[side] += n; checkAccess(S, side); }
@@ -1307,29 +1310,29 @@ function apply(S, e, cfg){
     case 'office': S.office[side] = !!p.on && S.access[side]; pushLog(S, nm + ' town office ' + (S.office[side] ? 'opened' : 'closed'), side, e); break;
     case 'claim': {
       const c = { id:e.id, side, site:p.site, g:S.g, status:'rejected', note:'' };
-      const okm = codeMatch(cfg, p.site, p.code), ok = okm.cap || okm.def;
+      const okm = codeMatch(cfg, p.site, p.code, S), ok = okm.cap || okm.def;
       if (!ok){ c.note = 'Code word did not match.'; }
       else if (p.site === 'town'){
-        if (!S.access[side]) c.note = 'The mayor has closed your office for now.';
+        if (!S.access[side]) c.note = 'Town office closed by the mayor.';
         else { c.status = 'accepted'; c.note = S.office[side] ? 'Office already open.' : 'Town office open.'; S.office[side] = true; }
       } else {
-        const s = S.sites[p.site], nmS = SITES[p.site].name, m = codeMatch(cfg, p.site, p.code), ck = p.site + ':' + p.code;
+        const s = S.sites[p.site], nmS = SITES[p.site].name, m = codeMatch(cfg, p.site, p.code, S), ck = p.site + ':' + p.code;
         const spend = () => { if (!m.reuse) S.usedCodes[ck] = true; };
         if (!m.cap && !m.def){ c.note = 'Code word did not match.'; }
-        else if (!m.reuse && S.usedCodes[ck]){ c.note = 'That code word was already used. Do the activity again for a new one.'; }
+        else if (!m.reuse && S.usedCodes[ck]){ c.note = 'Code word already used.'; }
         else if (s.holder === side && s.contested && s.contestBy){
-          if (!m.def){ c.note = 'To defend, enter a defense code word (from the easier cipher).'; }
+          if (!m.def){ c.note = 'Defense code word required.'; }
           else {
             const att = s.contestBy; spend();
             s.contested = false; s.contestBy = null; s.contestUntil = null; s.contestNext = null;
             raise(S, att, CONTEND_ESC);
             c.status = 'accepted'; c.note = 'Defended. ' + SIDES[att].name + ' must pull back and takes +' + CONTEND_ESC + ' escalation.';
-            pushFeed(S, att, nmS + ' was defended before you unlocked it. Your team must pull back. Escalation +' + CONTEND_ESC + '.', 'alert');
+            pushFeed(S, att, nmS + ' was defended before your capture code word. Contention ended. Escalation +' + CONTEND_ESC + '.', 'alert');
           }
         }
         else if (s.holder === side){ c.status = 'accepted'; c.note = 'Already yours.'; }
         else if (s.holder && s.contested && s.contestBy === side){
-          if (!m.cap){ c.note = 'To take the site, enter a capture code word.'; }
+          if (!m.cap){ c.note = 'Capture code word required.'; }
           else {
             const prev = s.holder; spend();
             s.holder = side; s.contested = false; s.contestBy = null; s.contestUntil = null; s.contestNext = null; s.since = S.g;
@@ -1338,8 +1341,8 @@ function apply(S, e, cfg){
             pushFeed(S, prev, 'You lost ' + nmS + ': ' + SIDES[side].name + ' unlocked it before you defended.', 'alert');
           }
         }
-        else if (s.holder){ c.note = 'The other wing holds it. Start contention first, then do the activity for a capture code word.'; S.lastSeen[side][p.site] = { holder:s.holder, g:S.g }; }
-        else if (!m.cap){ c.note = 'That is a defense code word. Capturing needs a capture code word.'; }
+        else if (s.holder){ c.note = 'Held by the other wing. Contention required first.'; S.lastSeen[side][p.site] = { holder:s.holder, g:S.g }; }
+        else if (!m.cap){ c.note = 'Defense code words cannot capture.'; }
         else { spend(); s.holder = side; s.contested = false; s.contestBy = null; s.contestUntil = null; s.contestNext = null; s.since = S.g; c.status = 'accepted'; c.note = 'Site is yours.'; }
       }
       S.claims.push(c);
@@ -1391,7 +1394,7 @@ function apply(S, e, cfg){
       S.lastSeen[side][p.site] = { holder:st.holder, g:S.g };
       raise(S, side, CONTEND_ESC); S.ver++;
       pushFeed(S, side, 'Contention started on ' + SITES[p.site].name + '. Your team has until ' + hhmm(st.contestUntil) + ' to finish the activity and enter a capture code word. Escalation +' + CONTEND_ESC + ' now and every 10 minutes.', 'hq');
-      pushFeed(S, st.holder, SIDES[side].name + ' started contention on ' + SITES[p.site].name + '. Get a team there, solve the defense cipher and enter the defense code word before ' + hhmm(st.contestUntil) + '.', 'alert');
+      pushFeed(S, st.holder, SIDES[side].name + ' started contention on ' + SITES[p.site].name + '. Defense code word deadline: ' + hhmm(st.contestUntil) + '.', 'alert');
       pushLog(S, nm + ' started contention on ' + SITES[p.site].name + ' until ' + hhmm(st.contestUntil) + ' (escalation +' + CONTEND_ESC + ')', side, e);
       break; }
     case 'site_timer': if (SITES[p.site] && Number.isInteger(p.min) && p.min >= 3 && p.min <= 90){ S.siteTimer[p.site] = p.min; S.ver++; pushLog(S, SITES[p.site].name + ' contention timer set to ' + p.min + ' minutes', null, e); } break;
@@ -1553,7 +1556,7 @@ function apply(S, e, cfg){
       S.edits[P.id] = { title:String(k.title).slice(0, 80), q:String(k.q).slice(0, 200), opts:k.opts.map(o => String(o).slice(0, 100)), items:k.items, note:String(k.note || '').slice(0, 300), a:k.a, f:k.f, v:(prev ? prev.v : 0) + 1 };
       S.intelVer++;
       const to = ['B', 'R'].filter(sd => intelOpen(S, P.id, sd));
-      to.forEach(sd => pushFeed(S, sd, 'Intel package ' + (i + 1) + ' was updated by higher headquarters. Read it again.', 'hq', { label:'Intel' }));
+      to.forEach(sd => pushFeed(S, sd, 'Intel package ' + (i + 1) + ' was updated by higher headquarters.', 'hq', { label:'Intel' }));
       pushLog(S, 'Intel package ' + (i + 1) + ' (' + k.title + ') edited' + (to.length ? ' after it was sent' : ''), null, e);
       break; }
     case 'intel_custom_del': {
@@ -1594,7 +1597,7 @@ function apply(S, e, cfg){
       S.pings.push({ id:e.id, ts:e.ts, g:S.g, to:o, team:null, uav:side });
       S.uavs.push({ side, g:S.g, n:spots.length });
       pushFeed(S, side, 'UAV overhead: we have enemy fireteam locations now. They show on the map for 1 minute, then as last seen for 5 minutes.', 'alert', { team:true });
-      pushFeed(S, o, 'Your fireteams have been spotted. Assume the other wing knows where you are.', 'alert', { team:true });
+      pushFeed(S, o, 'Your fireteams have been spotted. The other wing has your positions.', 'alert', { team:true });
       pushLog(S, nm + ' launched a UAV: ' + spots.length + ' enemy fireteam' + (spots.length === 1 ? '' : 's') + ' located (escalation +' + UAV_ESC + ')', side, e);
       S.ver++;
       break; }
@@ -1638,9 +1641,38 @@ function apply(S, e, cfg){
     case 'nine_res': {
       const n = S.nines.find(x => x.id === p.nine); if (!n || n.status !== 'open') break;
       n.status = p.ok ? 'ok' : 'no'; n.by = String(p.by || 'White cell').slice(0, 50); n.resG = S.g; S.ver++;
-      if (p.ok) pushFeed(S, n.side, 'Strike 9-line from ' + n.name + ' checked by ' + n.by + ': ' + nineText(n) + '. C2: use it under Pressure options, Strike.', 'hq', { label:'9-line', team:true, tid:n.team });
-      else pushFeed(S, n.side, n.name + ': your strike 9-line was not accepted. Check it and send it again.', 'alert', { label:'9-line', team:true, tid:n.team, only:true });
+      if (p.ok) pushFeed(S, n.side, 'Strike 9-line from ' + n.name + ' checked by ' + n.by + ': ' + nineText(n) + '. Available under Pressure options, Strike.', 'hq', { label:'9-line', team:true, tid:n.team });
+      else pushFeed(S, n.side, n.name + ': strike 9-line not accepted.', 'alert', { label:'9-line', team:true, tid:n.team, only:true });
       pushLog(S, '9-line from ' + n.name + (p.ok ? ' accepted and sent to ' : ' denied, not sent to ') + SIDES[n.side].name + ' C2 (' + n.by + ')', n.side, e);
+      break; }
+    case 'site_new': {
+      const k = String(p.k || ''), pt = p.pt, name = String(p.name || '').trim().slice(0, 40);
+      if (!/^x[\w-]{3,40}$/.test(k) || SITES[k] || !name || !(Array.isArray(pt) && pt.length === 2 && pt.every(Number.isFinite))){ pushLog(S, 'New site refused: incomplete', null, e, 'rejected'); break; }
+      const cap = Array.isArray(p.cap) ? p.cap.filter(x => typeof x === 'string').slice(0, 30) : [], def = Array.isArray(p.def) ? p.def.filter(x => typeof x === 'string').slice(0, 30) : [];
+      if (!cap.length){ pushLog(S, 'New site refused: no capture code words', null, e, 'rejected'); break; }
+      SITES[k] = { name, grid:String(p.square || '?'), col:Number.isInteger(p.col) ? p.col : 0, row:Number.isInteger(p.row) ? p.row : 0, letter:name[0].toUpperCase(), dyn:true };
+      SITE_KEYS.push(k);
+      S.sites[k] = { holder:null, contested:false, since:null };
+      S.sitePts[k] = pt; S.siteCodes[k] = { cap, def };
+      if (Number.isInteger(p.min) && p.min >= 3 && p.min <= 90) S.siteTimer[k] = p.min;
+      if (p.from){ const w = S.wps.find(x => x.id === p.from && !x.del); if (w) w.del = true; }
+      S.ver++;
+      pushFeed(S, 'both', 'New site: ' + name + (p.grid ? ' at ' + p.grid : '') + '. Worth 10 points to the wing holding it at ENDEX.', 'hq', { label:'White cell', team:true });
+      pushLog(S, 'New site created: ' + name + (p.grid ? ' at ' + p.grid : '') + ' (' + cap.length + ' capture, ' + def.length + ' defense code words)', null, e);
+      break; }
+    case 'site_remove': {
+      const k = p.k, i = SITE_KEYS.indexOf(k);
+      if (i < 0 || !SITES[k] || !SITES[k].dyn){ pushLog(S, 'Site removal refused', null, e, 'rejected'); break; }
+      const st = S.sites[k];
+      SITE_KEYS.splice(i, 1); SITES[k].removed = true; st.contested = false; st.contestBy = null; st.contestUntil = null; S.ver++;
+      pushFeed(S, 'both', 'Site removed: ' + SITES[k].name + '. It no longer scores.', 'hq', { label:'White cell', team:true });
+      pushLog(S, 'Site removed: ' + SITES[k].name + (st.holder ? ' (was held by ' + SIDES[st.holder].name + ')' : ''), null, e);
+      break; }
+    case 'wp_clear': {
+      const live = S.wps.filter(w => !w.del); if (!live.length) break;
+      const had = new Set(); live.forEach(w => { wpSides(w.to).forEach(sd => had.add(sd)); w.del = true; });
+      had.forEach(sd => pushFeed(S, sd, 'All white cell waypoints were withdrawn.', 'hq', { label:'Waypoint', team:true }));
+      S.ver++; pushLog(S, 'All waypoints cleared (' + live.length + ')', null, e);
       break; }
     case 'wp_add': case 'wp_edit': case 'wp_del': {
       const okPt = a => Array.isArray(a) && a.length === 2 && a.every(Number.isFinite) && Math.abs(a[0]) <= 90 && Math.abs(a[1]) <= 180;
@@ -1648,7 +1680,7 @@ function apply(S, e, cfg){
       let w, before = [], moved = false;
       if (e.type === 'wp_add'){
         if (!okPt(p.pt)) break;
-        w = { id:e.id, pt:p.pt, label:String(p.label || '').trim().slice(0, 60) || 'Waypoint', sym:WP_SYMS[p.sym] ? p.sym : 'pin', to:['B', 'R', 'both'].includes(p.to) ? p.to : 'none', g:S.g, grid };
+        w = { id:e.id, pt:p.pt, label:String(p.label || '').trim().slice(0, 60) || 'Waypoint', sym:WP_SYMS[p.sym] ? p.sym : 'pin', color:/^#[0-9a-f]{6}$/i.test(p.color || '') ? p.color : null, to:['B', 'R', 'both'].includes(p.to) ? p.to : 'none', g:S.g, grid };
         S.wps.push(w);
       } else {
         w = S.wps.find(x => x.id === p.id && !x.del); if (!w) break;
@@ -1657,7 +1689,8 @@ function apply(S, e, cfg){
         else {
           if (p.label != null && String(p.label).trim()) w.label = String(p.label).trim().slice(0, 60);
           if (p.sym && WP_SYMS[p.sym]) w.sym = p.sym;
-          if (okPt(p.pt)){ w.pt = p.pt; w.grid = grid; moved = true; }
+          if (/^#[0-9a-f]{6}$/i.test(p.color || '')) w.color = p.color;
+          if (okPt(p.pt) && (p.pt[0] !== w.pt[0] || p.pt[1] !== w.pt[1])){ w.pt = p.pt; w.grid = grid; moved = true; }
           if (p.to != null) w.to = ['B', 'R', 'both'].includes(p.to) ? p.to : 'none';
         }
       }
@@ -1692,7 +1725,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -1792,6 +1825,7 @@ function chime(){
 }
 function whiteAttention(n){
   document.title = (n ? '(' + n + ') ' : '') + BASE_TITLE;
+  $$('[data-wqcnt]').forEach(el => { el.hidden = !n; el.textContent = n; });
   if (chimeN !== null && n > chimeN) chime();
   chimeN = n;
 }
@@ -1950,7 +1984,7 @@ function renderGate(){
   $('#gateAdmin').hidden = !app.cfg; $('#adminErr').hidden = true; $('#adminInput').value = '';
   const roles = $('#gateRoles');
   if (!app.cfg){
-    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Load a sample game with example moves to see every screen work. PINs: white cell 0000, BLUFOR 1111, REDFOR 2222. Setting up a new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
+    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Sample game with recorded moves. PINs: white cell 0000, BLUFOR 1111, REDFOR 2222. A new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
     const gi = $('#gateImport'); if (gi) gi.onchange = () => importBackup(gi.files[0]);
     const ls = $('#loadSample'); if (ls) ls.onclick = loadSample;
     return;
@@ -2229,22 +2263,44 @@ const ContourLayer = L.TileLayer.extend({
   }
 });
 const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ'], ['wc', 'White cell (planned spot)']];
+const WP_DEF = { pin:'#ffcf5a', obj:'#ffcf5a', rally:'#2e7d32', cp:'#1565c0', lz:'#6a1b9a', hazard:'#ffb300', aid:'#c62828', supply:'#8d6e63', fuel:'#ef6c00', water:'#0288d1', danger:'#b71c1c', star:'#ffd54f', target:'#d32f2f', eye:'#00897b', camp:'#558b2f', building:'#607d8b', vehicle:'#455a64', radio:'#5e35b1', circle:'#ffcf5a', square:'#29b6f6', triangle:'#ff7043', diamond:'#ab47bc', plus:'#43a047', xmark:'#e53935', question:'#9e9e9e', info:'#1976d2', arrow:'#ffcf5a', home:'#3949ab' };
+const WP_COLORS = ['#ffcf5a', '#ff7043', '#e53935', '#ab47bc', '#3949ab', '#1976d2', '#29b6f6', '#00897b', '#43a047', '#8d6e63', '#9e9e9e', '#ffffff', '#212121'];
+function wpInk(c){ const n = parseInt(c.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#1b1b1b' : '#ffffff'; }
 const WP_SVG = {
-  pin:'<path d="M13 2C8.6 2 5.5 5.2 5.5 9.3c0 5.3 7.5 14.2 7.5 14.2s7.5-8.9 7.5-14.2C20.5 5.2 17.4 2 13 2z" fill="#ffcf5a" stroke="#1b1b1b" stroke-width="1.4"/><circle cx="13" cy="9.4" r="2.8" fill="#1b1b1b"/>',
-  obj:'<path d="M7 24V3" stroke="#1b1b1b" stroke-width="2.4"/><path d="M7 3h13l-3 4.5 3 4.5H7z" fill="#ffcf5a" stroke="#1b1b1b" stroke-width="1.4" stroke-linejoin="round"/>',
-  rally:'<circle cx="13" cy="13" r="10.5" fill="#2e7d32" stroke="#fff" stroke-width="1.6"/><text x="13" y="17" text-anchor="middle" font-size="10" font-weight="700" font-family="system-ui,sans-serif" fill="#fff">RP</text>',
-  cp:'<rect x="3" y="3" width="20" height="20" rx="3" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="13" y="17" text-anchor="middle" font-size="10" font-weight="700" font-family="system-ui,sans-serif" fill="#fff">CP</text>',
-  hazard:'<path d="M13 2.5L24 22.5H2z" fill="#ffb300" stroke="#1b1b1b" stroke-width="1.5" stroke-linejoin="round"/><path d="M13 9v6.5" stroke="#1b1b1b" stroke-width="2.4" stroke-linecap="round"/><circle cx="13" cy="19" r="1.4" fill="#1b1b1b"/>',
-  aid:'<circle cx="13" cy="13" r="10.5" fill="#fff" stroke="#c62828" stroke-width="2"/><path d="M10.5 6.5h5v4h4v5h-4v4h-5v-4h-4v-5h4z" fill="#c62828"/>',
-  supply:'<rect x="4" y="7" width="18" height="15" rx="1.5" fill="#8d6e63" stroke="#1b1b1b" stroke-width="1.4"/><path d="M4 12h18M13 7v15" stroke="#1b1b1b" stroke-width="1.2"/><path d="M8 7l5-4 5 4" fill="none" stroke="#1b1b1b" stroke-width="1.4"/>',
-  danger:'<circle cx="13" cy="13" r="10.5" fill="#b71c1c" fill-opacity=".85" stroke="#fff" stroke-width="1.6"/><path d="M8.5 8.5l9 9M17.5 8.5l-9 9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>',
-  star:'<path d="M13 2.5l3.1 6.6 7.2.8-5.4 4.9 1.5 7.1L13 18.3l-6.4 3.6 1.5-7.1-5.4-4.9 7.2-.8z" fill="#ffd54f" stroke="#1b1b1b" stroke-width="1.3" stroke-linejoin="round"/>'
+  pin:(c, k) => '<path d="M13 2C8.6 2 5.5 5.2 5.5 9.3c0 5.3 7.5 14.2 7.5 14.2s7.5-8.9 7.5-14.2C20.5 5.2 17.4 2 13 2z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4"/><circle cx="13" cy="9.4" r="2.8" fill="' + k + '"/>',
+  obj:c => '<path d="M7 24V3" stroke="#1b1b1b" stroke-width="2.4"/><path d="M7 3h13l-3 4.5 3 4.5H7z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4" stroke-linejoin="round"/>',
+  rally:(c, k) => '<circle cx="13" cy="13" r="10.5" fill="' + c + '" stroke="' + k + '" stroke-width="1.6"/><text x="13" y="17" text-anchor="middle" font-size="10" font-weight="700" font-family="system-ui,sans-serif" fill="' + k + '">RP</text>',
+  cp:(c, k) => '<rect x="3" y="3" width="20" height="20" rx="3" fill="' + c + '" stroke="' + k + '" stroke-width="1.6"/><text x="13" y="17" text-anchor="middle" font-size="10" font-weight="700" font-family="system-ui,sans-serif" fill="' + k + '">CP</text>',
+  lz:(c, k) => '<circle cx="13" cy="13" r="10.5" fill="' + c + '" stroke="' + k + '" stroke-width="1.6"/><text x="13" y="17.5" text-anchor="middle" font-size="13" font-weight="800" font-family="system-ui,sans-serif" fill="' + k + '">H</text>',
+  hazard:(c, k) => '<path d="M13 2.5L24 22.5H2z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.5" stroke-linejoin="round"/><path d="M13 9v6.5" stroke="' + k + '" stroke-width="2.4" stroke-linecap="round"/><circle cx="13" cy="19" r="1.4" fill="' + k + '"/>',
+  aid:c => '<circle cx="13" cy="13" r="10.5" fill="#fff" stroke="' + c + '" stroke-width="2"/><path d="M10.5 6.5h5v4h4v5h-4v4h-5v-4h-4v-5h4z" fill="' + c + '"/>',
+  supply:c => '<rect x="4" y="7" width="18" height="15" rx="1.5" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4"/><path d="M4 12h18M13 7v15" stroke="#1b1b1b" stroke-width="1.2"/><path d="M8 7l5-4 5 4" fill="none" stroke="#1b1b1b" stroke-width="1.4"/>',
+  fuel:(c, k) => '<path d="M6 6h11l4 4v12H6z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4" stroke-linejoin="round"/><path d="M9 3h5v3H9z" fill="#1b1b1b"/><path d="M9.5 11.5l7 7M16.5 11.5l-7 7" stroke="' + k + '" stroke-width="1.6"/>',
+  water:c => '<path d="M13 2.5C13 2.5 5.5 11 5.5 16a7.5 7.5 0 0015 0C20.5 11 13 2.5 13 2.5z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4"/>',
+  danger:(c, k) => '<circle cx="13" cy="13" r="10.5" fill="' + c + '" fill-opacity=".9" stroke="' + k + '" stroke-width="1.6"/><path d="M8.5 8.5l9 9M17.5 8.5l-9 9" stroke="' + k + '" stroke-width="2.6" stroke-linecap="round"/>',
+  star:c => '<path d="M13 2.5l3.1 6.6 7.2.8-5.4 4.9 1.5 7.1L13 18.3l-6.4 3.6 1.5-7.1-5.4-4.9 7.2-.8z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.3" stroke-linejoin="round"/>',
+  target:c => '<circle cx="13" cy="13" r="9.5" fill="none" stroke="' + c + '" stroke-width="2.4"/><circle cx="13" cy="13" r="4.5" fill="none" stroke="' + c + '" stroke-width="2.2"/><path d="M13 1v6M13 19v6M1 13h6M19 13h6" stroke="' + c + '" stroke-width="2"/><circle cx="13" cy="13" r="10.8" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".8"/>',
+  eye:(c, k) => '<path d="M2 13s4.5-7.5 11-7.5S24 13 24 13s-4.5 7.5-11 7.5S2 13 2 13z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4"/><circle cx="13" cy="13" r="4" fill="' + k + '"/><circle cx="13" cy="13" r="1.6" fill="' + c + '"/>',
+  camp:c => '<path d="M13 3L2.5 22h21z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4" stroke-linejoin="round"/><path d="M13 12l-4 10h8z" fill="#1b1b1b"/>',
+  building:(c, k) => '<path d="M3 12L13 3l10 9v11H3z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4" stroke-linejoin="round"/><rect x="10.5" y="15" width="5" height="8" fill="' + k + '"/>',
+  vehicle:(c, k) => '<path d="M2.5 9h13v9h-13zM15.5 12h4.5l3.5 3.5V18h-8z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.3" stroke-linejoin="round"/><circle cx="7" cy="19.5" r="2.6" fill="' + k + '" stroke="#1b1b1b"/><circle cx="19" cy="19.5" r="2.6" fill="' + k + '" stroke="#1b1b1b"/>',
+  radio:c => '<path d="M13 9v15" stroke="#1b1b1b" stroke-width="2.4"/><circle cx="13" cy="8" r="2.6" fill="' + c + '" stroke="#1b1b1b"/><path d="M7.5 3.5a7.5 7.5 0 000 9M18.5 3.5a7.5 7.5 0 010 9M4.5 1.5a11 11 0 000 13M21.5 1.5a11 11 0 010 13" fill="none" stroke="' + c + '" stroke-width="1.8"/>',
+  circle:c => '<circle cx="13" cy="13" r="9.5" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.5"/>',
+  square:c => '<rect x="4" y="4" width="18" height="18" rx="1.5" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.5"/>',
+  triangle:c => '<path d="M13 3l10.5 19h-21z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.5" stroke-linejoin="round"/>',
+  diamond:c => '<path d="M13 2l11 11-11 11L2 13z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.5" stroke-linejoin="round"/>',
+  plus:c => '<path d="M10 3h6v7h7v6h-7v7h-6v-7H3v-6h7z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.3" stroke-linejoin="round"/>',
+  xmark:c => '<path d="M5 3l8 8 8-8 2 2-8 8 8 8-2 2-8-8-8 8-2-2 8-8-8-8z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.1" stroke-linejoin="round"/>',
+  question:(c, k) => '<circle cx="13" cy="13" r="10.5" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4"/><text x="13" y="18" text-anchor="middle" font-size="15" font-weight="800" font-family="system-ui,sans-serif" fill="' + k + '">?</text>',
+  info:(c, k) => '<circle cx="13" cy="13" r="10.5" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4"/><text x="13" y="18.5" text-anchor="middle" font-size="15" font-weight="800" font-family="Georgia,serif" fill="' + k + '">i</text>',
+  arrow:c => '<path d="M13 2l9 10h-5.5v11h-7V12H4z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4" stroke-linejoin="round"/>',
+  home:(c, k) => '<path d="M2.5 13L13 3.5 23.5 13H20v10H6V13z" fill="' + c + '" stroke="#1b1b1b" stroke-width="1.4" stroke-linejoin="round"/><path d="M13 9.5l1.4 2.9 3.2.4-2.3 2.2.6 3.1-2.9-1.5-2.9 1.5.6-3.1-2.3-2.2 3.2-.4z" fill="' + k + '"/>'
 };
-function wpSvg(sym, sz){ return '<svg width="' + (sz || 26) + '" height="' + (sz || 26) + '" viewBox="0 0 26 26" style="vertical-align:middle">' + (WP_SVG[sym] || WP_SVG.pin) + '</svg>'; }
-const WP_ICON = sym => L.divIcon({ className:'wpicon', html:wpSvg(sym), iconSize:[26, 26], iconAnchor:sym === 'pin' ? [13, 24] : sym === 'obj' ? [7, 24] : [13, 13] });
+function wpSvg(sym, sz, color){ const k = WP_SVG[sym] ? sym : 'pin', c = color || WP_DEF[k] || '#ffcf5a'; return '<svg width="' + (sz || 26) + '" height="' + (sz || 26) + '" viewBox="0 0 26 26" style="vertical-align:middle">' + WP_SVG[k](c, wpInk(c)) + '</svg>'; }
+const WP_ICON = (sym, color) => L.divIcon({ className:'wpicon', html:wpSvg(sym, 26, color), iconSize:[26, 26], iconAnchor:sym === 'pin' ? [13, 24] : sym === 'obj' ? [7, 24] : [13, 13] });
 function wcSpot(S){ const M = mapCfg(S); return (S && S.wcPos) || (M && M.sites && M.sites.wc) || null; }
 const WC_ICON = () => L.divIcon({ className:'wcicon', html:'<svg width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15.5" fill="#0b1a10" fill-opacity=".85" stroke="#7cff6b" stroke-width="2"/><path d="M17 5.5c-5.7 0-9.8 4.1-9.8 9.5 0 5.8 5.2 12.2 9.8 13.3 4.6-1.1 9.8-7.5 9.8-13.3 0-5.4-4.1-9.5-9.8-9.5z" fill="#7cff6b" stroke="#1d4d16" stroke-width="1"/><path d="M10.4 15.1c2.8-.5 5.2 1 5.6 3.7-2.9.5-5.2-1-5.6-3.7z" fill="#06100a"/><path d="M23.6 15.1c-2.8-.5-5.2 1-5.6 3.7 2.9.5 5.2-1 5.6-3.7z" fill="#06100a"/><circle cx="12.6" cy="16.4" r=".7" fill="#fff" fill-opacity=".8"/><circle cx="21.4" cy="16.4" r=".7" fill="#fff" fill-opacity=".8"/><path d="M15.4 23.4q1.6.8 3.2 0" stroke="#1d4d16" stroke-width="1" fill="none" stroke-linecap="round"/></svg>', iconSize:[34, 34], iconAnchor:[17, 17] });
-function siteSquare(S, k){ const M = mapCfg(S), pt = M && M.sites && M.sites[k]; return (pt && squareOf(M, pt)) || SITES[k].grid; }
+function siteSquare(S, k){ const M = mapCfg(S), pt = (S && S.sitePts && S.sitePts[k]) || (M && M.sites && M.sites[k]); return (pt && squareOf(M, pt)) || SITES[k].grid; }
 function mapCfg(S){ return S && S.map && S.map.sw && S.map.ne ? S.map : DEFAULT_MAP; }
 function gridDims(M){ return { cols:Math.max(1, Math.min(12, +M.cols || 6)), rows:Math.max(1, Math.min(12, +M.rows || 5)) }; }
 function squareOf(M, pt){
@@ -2410,7 +2466,7 @@ function drawDyn(st, S, side, opts){
   Object.values(st.lay).forEach(g => g.clearLayers());
   applyGridPref(st);
   if (!M) return;
-  const pr = gridPref(), LS = st.lay, pts = M.sites || {};
+  const pr = gridPref(), LS = st.lay, pts = Object.assign({}, M.sites || {}, S.sitePts || {});
   const tip = (m, text, dir, off) => m.bindTooltip(esc(text), { permanent:!!pr.sitenames, direction:dir || 'top', className:'sitelbl', offset:off || [0, -10] });
   [['lzB', 'BLUFOR HQ', 'B'], ['lzR', 'REDFOR HQ', 'R']].forEach(([k, name, sd]) => { if (side && sd !== side && !S.reveal) return; if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name).addTo(LS.sites); });
   SITE_KEYS.forEach(k => {
@@ -2425,7 +2481,7 @@ function drawDyn(st, S, side, opts){
   });
   const wcp = wcSpot(S);
   if (wcp) L.marker(wcp, { icon:WC_ICON(), zIndexOffset:900 }).bindTooltip('White cell' + (S.wcPos ? ' (moved)' : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[14, 0] }).bindPopup('<b>White cell</b><br><span class="mono">' + esc(fmtPt(wcp)) + '</span>' + (squareOf(M, wcp) ? '<br>Play square ' + squareOf(M, wcp) : '')).addTo(LS.wc);
-  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side))).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym), zIndexOffset:700 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'white cell only' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + esc(WP_SYMS[w.sym]) + '<br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(LS.wp));
+  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side))).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'white cell only' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + esc(WP_SYMS[w.sym]) + '<br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(LS.wp));
   if (!side) (M.pois || []).forEach(x => { if (!x || !x.pt) return; L.marker(x.pt, { icon:L.divIcon({ className:'poi', html:'<svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 1L15 8L8 15L1 8Z" fill="#ffcf5a" fill-opacity=".85" stroke="#000" stroke-width="1.2"/></svg>', iconSize:[16, 16], iconAnchor:[8, 8] }) }).bindTooltip(esc(x.name), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[8, 0] }).bindPopup('<b>' + esc(x.name) + '</b><br><span class="mono">' + esc(fmtPt(x.pt)) + '</span>' + (squareOf(M, x.pt) ? '<br>Play square ' + squareOf(M, x.pt) : '')).addTo(LS.poi); });
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
@@ -2498,6 +2554,11 @@ function closeFullMap(){
 }
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeFullMap(); });
 function parseHHMM(t){ const m = /^(\d{1,2}):?(\d{2})$/.exec(String(t || '').trim()); if (!m || +m[1] > 23 || +m[2] > 59) return null; return (+m[1]) * 60 + (+m[2]) - 360; }
+function typingIn(el){ const a = document.activeElement; return !!(el && a && el.contains(a) && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)); }
+function refreshSiteSelects(root){
+  const key = SITE_KEYS.join();
+  $$('[data-siteopts]', root).forEach(sel => { if (sel.dataset.key === key || (!sel.dataset.key && key === BASE_SITE_KEYS.join())) return; if (document.activeElement === sel) return; sel.dataset.key = key; keepSelect(sel, (sel.dataset.blank ? '<option value="">—</option>' : '') + SITE_KEYS.map(k => '<option value="' + k + '">' + esc(SITES[k].name) + '</option>').join('') + (sel.dataset.town ? '<option value="town">' + esc(sel.dataset.town) + '</option>' : '')); });
+}
 function siteNameOf(k){ return k === 'town' ? 'Marala Town' : SITES[k] ? SITES[k].name : k; }
 
 /* ---------- liaison, teams and orders (wing) ---------- */
@@ -2562,7 +2623,7 @@ function buildOC(){
   if (app.built === 'oc') return; app.built = 'oc';
   const v = $('#vOC'), me = ocGet();
   if (!me){
-    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>POC Sign In</h2><p class="small muted" style="margin:0">The white cell sees your name and who you are with, so it knows where each call comes from.</p><form class="stack" data-ocjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><label>Attached to<select name="assign" data-ocjoinassign></select></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div><div class="panel stack"><h2>Already signed in before?</h2><p class="small muted" style="margin:0">If your phone restarted or you switched phones, tap your name to pick up where you left off.</p><div class="list" data-ocrejoin></div></div></div>';
+    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>POC Sign In</h2><p class="small muted" style="margin:0">Your name and assignment identify your calls to the white cell.</p><form class="stack" data-ocjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><label>Attached to<select name="assign" data-ocjoinassign></select></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div><div class="panel stack"><h2>Already signed in before?</h2><p class="small muted" style="margin:0">Select your name to resume an existing POC profile.</p><div class="list" data-ocrejoin></div></div></div>';
     $('[data-ocrejoin]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-ocrejoinid]'); if (!b) return; ocSet({ id:b.dataset.ocrejoinid, name:b.dataset.name }); app.built = null; buildOC(); refresh(true); toast('Welcome back, ' + b.dataset.name + '.'); });
     $('[data-ocjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const fd = new FormData(ev.target), name = String(fd.get('name') || '').trim(); if (!name) return; const id = 'o' + uid(); ocSet({ id, name }); writeEvent('oc_join', null, Object.assign({ oc:id, name }, ocParse(fd.get('assign')))); app.built = null; buildOC(); refresh(true); });
     return;
@@ -2573,18 +2634,18 @@ function buildOC(){
       <div class="row" style="align-items:end"><label>Attached to<select data-ocassign></select></label><button type="button" data-ocsignout style="flex:0 0 auto">Sign out</button></div>
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <div class="ip-status" data-ocwarn hidden style="color:var(--bad);font-weight:600"></div></div>
-    <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Listen to your team read the full 9-line. If it is right, send it up to their C2.</p><div class="list" data-ocnines></div></div>
-    <div class="panel stack"><h2>Calls for the white cell</h2><p class="small muted" style="margin:0">Pick the wing, then tap what you saw. The white cell approves or denies it.</p>
+    <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
+    <div class="panel stack"><h2>Calls for the white cell</h2><p class="small muted" style="margin:0">Calls take effect only after white cell approval.</p>
       <div class="row"><label>Wing<select data-ocside><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
       <div class="evgrid">${Object.entries(OC_CALLS).map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div></div>
     <div class="panel stack"><h2>At a site</h2>
-      <div class="row"><label>Site<select data-ocsite>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select></label></div>
+      <div class="row"><label>Site<select data-ocsite data-siteopts data-town="Marala Town">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select></label></div>
       <label>Note (optional)<input data-ocsitenote maxlength="120" placeholder="Example: Starting the cipher now"></label>
       <button type="button" class="btn-side" data-ocsitesend>Tell the white cell</button></div>
     <div class="panel stack"><h2>Message to the white cell</h2><textarea data-ocmsg rows="2" maxlength="300" placeholder="Example: Alpha 1 has a twisted ankle, walking it off"></textarea><button type="button" class="btn-side" data-ocmsgsend>Send</button></div>
     <div class="panel stack"><h2>Your requests</h2><div class="list" data-ocmine></div></div>
     <details class="panel" data-ocmapbox><summary><b>Map</b> <span class="small muted">(same view as the white cell)</span></summary>
-      <div class="stack" style="margin-top:10px"><p class="small muted" style="margin:0">Shows every fireteam, site and point of interest with no fog of war. Don't show it to cadets.</p>
+      <div class="stack" style="margin-top:10px"><p class="small muted" style="margin:0">No fog of war. Not for cadet viewing.</p>
       <div class="row" style="justify-content:flex-start"><button type="button" data-ocfull style="flex:0 0 auto">Full screen map</button></div>
       <div class="map-wrap" data-ocmap></div><div data-oclegend></div></div></details>
   </div>`;
@@ -2614,7 +2675,7 @@ function renderOC(S){
   const o = S.ocs[me.id];
   if (o && o.removed){ ocSet(null); toast('The white cell removed you. Sign in again if that was a mistake.', true); app.built = null; buildOC(); renderOC(S); return; }
   if (!$('[data-ocmine]', v)) return;
-  wakeShow();
+  wakeShow(); refreshSiteSelects(v);
   if (o) $('[data-ocname]', v).textContent = o.name;
   const as = $('[data-ocassign]', v);
   if (document.activeElement !== as){ as.innerHTML = ocOpts(S, o); as.value = ocVal(o); }
@@ -2645,7 +2706,7 @@ function renderOCWhite(S, v){
   $('[data-ocn]', v).textContent = '(' + live.length + ' signed in)';
   const key = JSON.stringify(live.map(o => [o.id, o.name, ocVal(o), !!o.detached])) + '|' + ['B', 'R'].map(sd => liveTeams(S, sd).map(t => t.id + t.name + (t.num || '')).join()).join('|');
   const box = $('[data-ocrows]', v);
-  if (key !== app.ocRosterKey && !box.contains(document.activeElement)){
+  if (key !== app.ocRosterKey && !typingIn(box)){
     app.ocRosterKey = key;
     box.innerHTML = live.length ? live.map(o => '<div class="li"><input data-ocnamein="' + o.id + '" value="' + esc(o.name) + '" maxlength="40" aria-label="Name" style="flex:1 1 120px"><select data-ocassignin="' + o.id + '" aria-label="Attached to" style="flex:1 1 160px">' + ocOpts(S, o) + '</select>' + (o.detached ? '<span class="chip no">' + esc(o.detached.name) + ' removed</span>' : '') + '<button type="button" data-ocsave="' + o.id + '" style="flex:0 0 auto">Save</button><button type="button" data-ocdel="' + o.id + '" style="flex:0 0 auto">Remove</button></div>').join('') : '<div class="empty">No POCs signed in yet. They open the board on a phone and pick POC.</div>';
     live.forEach(o => { const sel = $('[data-ocassignin="' + o.id + '"]', box); if (sel) sel.value = ocVal(o); });
@@ -2686,7 +2747,7 @@ function buildTeam(side){
   const v = $('#vTeam'); v.className = 'team-view side-' + side;
   const me = teamGet(side);
   if (!me){
-    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>Create a new fireteam</h2><p class="small muted" style="margin:0">Your C2 sees this name on the map and sends orders to it.</p><form class="stack" data-tjoin><label>Fireteam name<input name="name" maxlength="40" required placeholder="Input fireteam name"></label><div><button class="btn-side team-big" type="submit">Create ' + esc(SIDES[side].name) + ' fireteam</button></div></form></div><div class="panel stack"><h2>Or join an existing fireteam</h2><p class="small muted" style="margin:0">For a second phone on a team that already signed in.</p><div class="list" data-tjoinlist></div></div></div>';
+    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>Create a new fireteam</h2><p class="small muted" style="margin:0">This name appears on your C2’s map and order list.</p><form class="stack" data-tjoin><label>Fireteam name<input name="name" maxlength="40" required placeholder="Input fireteam name"></label><div><button class="btn-side team-big" type="submit">Create ' + esc(SIDES[side].name) + ' fireteam</button></div></form></div><div class="panel stack"><h2>Or join an existing fireteam</h2><p class="small muted" style="margin:0">For a second phone on a team that already signed in.</p><div class="list" data-tjoinlist></div></div></div>';
     $('[data-tjoinlist]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tjoinid]'); if (!b) return; teamSet(side, { id:b.dataset.tjoinid, name:b.dataset.name }); app.built = null; buildTeam(side); refresh(true); toast('Joined ' + b.dataset.name + '.'); });
     $('[data-tjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const name = new FormData(ev.target).get('name').trim(); if (!name) return; const tid = 't' + uid(); teamSet(side, { id:tid, name }); writeEvent('pos', side, { team:tid, name }); app.built = null; buildTeam(side); refresh(true); });
     return;
@@ -2697,11 +2758,11 @@ function buildTeam(side){
       <div class="row" style="align-items:baseline;justify-content:space-between"><span><span class="k small muted">Board time</span> <b class="mono" data-clock>—</b></span><span data-tlvl></span><span class="row" style="flex:0 0 auto;gap:6px"><button type="button" data-rename style="flex:0 0 auto;padding:4px 10px;font-size:13px">Rename</button><button type="button" data-leave style="flex:0 0 auto;padding:4px 10px;font-size:13px">Leave this fireteam</button></span></div></div>
     <div class="panel stack"><h2>Alerts</h2><div data-tuav></div><div class="list" data-talerts></div></div>
     <div class="panel stack"><div class="act-head"><h2>Map</h2><span class="small muted" data-tmapstate></span></div>
-      <p class="small muted" style="margin:0">Open the map for 3 minutes, once every 10 minutes. Your own position isn’t shown, so read the ground.</p>
+      <p class="small muted" style="margin:0">Available for 3 minutes, once every 10 minutes. Your own position is not shown.</p>
       <button type="button" class="btn-side team-big" data-tmapbtn>Open map for 3 minutes</button>
       <div class="lmap teammap" data-tmap hidden></div></div>
     <div class="panel stack"><h2>Report your position</h2>
-      <p class="small muted" style="margin:0">Your navigator reads your grid off the map, types it here and sends it. The phone adds its GPS fix so your C2 can see you on the map.</p>
+      <p class="small muted" style="margin:0">Enter your grid from the map. The phone's GPS fix is attached for your C2.</p>
       <label>Your grid from the map (MGRS or play square)<input data-grid autocomplete="off" placeholder="Example: 5892 2345, 18T TL 58927 23452 or D4"></label>
       <label>Status<select data-status><option>Moving</option><option>At objective</option><option>Holding</option><option>Halted: suspected IED</option><option>Treating a casualty</option><option>Need help</option></select></label>
       <button type="button" class="btn-side team-big" data-send>Send position</button>
@@ -2709,7 +2770,7 @@ function buildTeam(side){
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <div class="small muted" data-tlast></div></div>
     <div class="panel stack"><h2>Strike 9-line</h2>
-      <p class="small muted" style="margin:0">Read the full 9-line out loud to your POC. Then send the target and location here. Your POC or the white cell checks it before it goes to your C2.</p>
+      <p class="small muted" style="margin:0">Read the full 9-line to your POC first. Only the target and location are sent. Your POC or the white cell must confirm it before it reaches your C2.</p>
       <div class="row"><label>Target<select data-ntarget><option value="cache">Militia weapons cache</option><option value="other">${esc(SIDES[OTHER[side]].name)} position</option></select></label><label>Location<input data-nloc maxlength="40" autocomplete="off" placeholder="Example: 5892 2345 or D4"></label></div>
       <button type="button" class="btn-side team-big" data-nsend>Send 9-line for checking</button>
       <div class="list" data-nlist></div></div>
@@ -2827,7 +2888,7 @@ function buildWing(side){
         <h2>Your reports of ${esc(other)}</h2>
         <div class="list" data-contacts></div>
       </div>
-      <div class="panel stack ip-panel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">For the Intel cell</span></div><p class="small muted" style="margin:0">Each package gives several pieces of intel. At least one is false or misleading, and sometimes more than one. Pick the answer and check every false piece before the deadline: +2 for the right answer, +2 for catching all the false pieces and no true ones. One try per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>OSINT</dt><dd>Open-source intelligence: news, social media posts and other public information.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 050915R DEC 26 is 5 December, 0915 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from higher headquarters arrive here during the game.</div></div></div></div>
+      <div class="panel stack ip-panel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">For the Intel cell</span></div><p class="small muted" style="margin:0">Each package contains several pieces of intel; at least one is false or misleading. +2 for the correct answer. +2 for selecting every false piece and no true pieces. One submission per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>OSINT</dt><dd>Open-source intelligence: news, social media posts and other public information.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 050915R DEC 26 is 5 December, 0915 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from higher headquarters arrive here during the game.</div></div></div></div>
       <div class="panel">
         <div class="tabs" role="tablist">
           <button type="button" role="tab" aria-selected="true" data-tab="act">Commander's actions</button>
@@ -2840,7 +2901,7 @@ function buildWing(side){
           <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> · Every 20 minutes (10 with the Airstrip) · <span class="esc-up">+1 escalation</span></span></div>
             <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at B5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
           <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · Once every ${UAV_EVERY} minutes · <span class="esc-up">+10 escalation</span></span></div>
-            <p class="small muted" style="margin:0">Shows the other wing’s fireteams to you and your fireteams. Their phones send fresh GPS the moment it launches, so the picture updates live for 1 minute, then shows as last seen for 5. The other wing is told it was spotted, but not how.</p>
+            <p class="small muted" style="margin:0">Shows enemy fireteam positions to you and your fireteams: live for 1 minute, then as last seen for 5 minutes. The enemy wing is notified that it was spotted, not by what.</p>
             <form data-f="uav"><button class="btn-side" type="submit">Launch UAV</button></form></div>
           <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · True <span class="esc-down">−5</span> · False <span class="esc-up">+15</span></span></div>
             <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Incident<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">Who did it<select id="stB-${side}" name="blame"><option value="militia">The militia</option><option value="other">${esc(other)}</option></select></label></div><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
@@ -2850,8 +2911,8 @@ function buildWing(side){
             <div class="stack" style="margin-top:8px">
               <div class="act-head"><b>Show of force</b><span class="cost"><span data-left="show"></span> · <span class="esc-up">+10 escalation</span></span></div>
               <form class="stack" data-f="show"><label for="shT-${side}">Site the other wing must leave<input id="shT-${side}" name="t" maxlength="60" placeholder="Example: Radar Ridge, E1" required></label><div><button type="submit">Order show of force</button></div></form>
-              <div class="act-head"><b>Jam enemy datalink</b><span class="cost"><span data-jamstate>Ready</span> · Once every 45 minutes · <span class="esc-up">+5 escalation</span> · 5.5 minutes</span></div>
-              <p class="small muted" style="margin:0">Their live map and drone flights go down for 5.5 minutes. Their radios still work.</p>
+              <div class="act-head"><b>Jam enemy datalink</b><span class="cost"><span data-jamstate>Ready</span> · Once every 45 minutes · <span class="esc-up">+5 escalation</span> · ${JAM_MIN} minutes</span></div>
+              <p class="small muted" style="margin:0">Disables the enemy wing's live map and drone flights for ${JAM_MIN} minutes. Radio communication is not affected.</p>
               <form data-f="jam"><button type="submit">Jam datalink</button></form>
               <div class="act-head"><b>Strike</b><span class="cost"><span data-left="strike"></span> · Needs a correct 9-line</span></div>
               <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="40" placeholder="Example: C4-6" required></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="nine" required style="width:auto"> A team has sent the strike 9-line</label><div><button type="submit">Ask for strike</button></div></form>
@@ -2862,31 +2923,31 @@ function buildWing(side){
           <div class="act"><div class="act-head"><b>Report activity</b><span class="cost">+2 when the white cell confirms it</span></div>
             <form class="stack" data-f="contact">
               <div class="row"><label for="ctK-${side}">What was seen<select id="ctK-${side}" name="kind"><option value="team">${esc(other)} team</option><option value="site">${esc(other)} flag on a site</option><option value="other">Other activity</option></select></label>
-              <label for="ctS-${side}">Which site (for a flag)<select id="ctS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
-              <p class="small muted" style="margin:0" data-salnote>Enemy team: enter the full SALUTE report your fireteam radioed in.</p>
+              <label for="ctS-${side}">Which site (for a flag)<select id="ctS-${side}" name="site" data-siteopts data-blank="1"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
+              <p class="small muted" style="margin:0" data-salnote>Enemy team: full SALUTE report required.</p>
               <div class="row" data-sal><label for="ctSz-${side}">S · Size<input id="ctSz-${side}" name="sz" maxlength="60" placeholder="Example: 4 people"></label><label for="ctAc-${side}">A · Activity<input id="ctAc-${side}" name="act" maxlength="120" placeholder="Example: Moving west along the tree line"></label></div>
               <div class="row"><label for="ctG-${side}">L · Location (play square or MGRS)<input id="ctG-${side}" name="grid" maxlength="24" placeholder="Example: D4 or 5892 2345" required></label><label for="ctUn-${side}" data-sal>U · Uniform<input id="ctUn-${side}" name="uni" maxlength="80" placeholder="Example: Red armbands, dark jackets"></label></div>
               <div class="row"><label for="ctT-${side}">T · Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="Example: 0842"></label><label for="ctEq-${side}" data-sal>E · Equipment<input id="ctEq-${side}" name="eq" maxlength="80" placeholder="Example: 2 rifles, a radio"></label></div>
               <label for="ctN-${side}" data-notesal>Notes<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: Flag on the Radar Ridge mast"></label>
               <div><button class="btn-side" type="submit">Post report</button></div></form></div>
           <div class="act"><div class="act-head"><b>Start contention</b><span class="cost"><span class="esc-up">+5 escalation now and every 10 minutes</span></span></div>
-            <p class="small muted" style="margin:0">For a site the other wing holds. Your team does the site activity for a capture code word and you enter it below before the timer runs out. If they enter a defense code word first, your team pulls back and you take +5 more.</p>
-            <form class="stack" data-f="contend"><div class="row"><label for="cnS-${side}">Site<select id="cnS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div><div><button class="btn-side" type="submit">Start contention</button></div></form></div>
+            <p class="small muted" style="margin:0">Applies to a site the other wing holds. A capture code word must be entered before the timer expires. If the holder enters a defense code word first, contention ends and you take +5 escalation.</p>
+            <form class="stack" data-f="contend"><div class="row"><label for="cnS-${side}">Site<select id="cnS-${side}" name="site" data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div><div><button class="btn-side" type="submit">Start contention</button></div></form></div>
           <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">Capture or defense code word</span></div>
-            <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word (each works once)<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
+            <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site" data-siteopts data-town="Marala Town office">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word (each works once)<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
             <div class="list" data-claims></div></div>
         </div>
         <div data-pane="req" class="stack" hidden><div class="list" data-reqs></div></div>
         <div data-pane="teams" class="stack" hidden>
-          <p class="small muted" style="margin:0">Your fireteams report from their phones. Give intent and tasks here; they decide how to get it done.</p>
+          <p class="small muted" style="margin:0">Fireteam positions and statuses come from their phones.</p>
           <div class="list" data-teams></div>
           <div class="act"><div class="act-head"><b>Send an order</b><span class="cost">Shows on the fireteam's phone</span></div>
             <form class="stack" data-f="order"><label for="orT-${side}">To<select id="orT-${side}" name="team" data-teamsel><option value="all">All fireteams</option></select></label><label for="orX-${side}">Order<input id="orX-${side}" name="text" maxlength="300" required placeholder="Example: Claim Radar Ridge, then hold and report in 20 minutes"></label><div><button class="btn-side" type="submit">Send order</button></div></form></div>
         </div>
         <div data-pane="liaison" class="stack" hidden>
-          <p class="small muted" style="margin:0">A direct channel to the other Wing Commander. The white cell reads everything. Declare where your teams will be so the wings don't collide, and trade sites instead of fighting over them.</p>
+          <p class="small muted" style="margin:0">Direct channel to the other Wing Commander. The white cell sees all messages.</p>
           <div class="act"><form class="stack" data-f="liaison"><label for="lzX-${side}">Message<input id="lzX-${side}" name="text" maxlength="400" required placeholder="Example: Our team will be at Radar Ridge for the next 20 minutes. Please stay clear."></label>
-            <div class="row"><label for="lzS-${side}">Declare a site (optional)<select id="lzS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label for="lzU-${side}">Until<input id="lzU-${side}" name="until" maxlength="5" inputmode="numeric" placeholder="Example: 0900"></label></div>
+            <div class="row"><label for="lzS-${side}">Declare a site (optional)<select id="lzS-${side}" name="site" data-siteopts data-blank="1" data-town="Marala Town"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label for="lzU-${side}">Until<input id="lzU-${side}" name="until" maxlength="5" inputmode="numeric" placeholder="Example: 0900"></label></div>
             <div><button class="btn-side" type="submit">Send to the other wing</button></div></form></div>
           <div class="feed" data-liaison style="max-height:320px"></div>
           <div class="act"><div class="act-head"><b>Hand over a site</b><span class="cost">No escalation · Diplomatic points +2 for both</span></div>
@@ -2999,6 +3060,7 @@ function renderIntel(S, side, v){
   $('[data-intelcount]', v).textContent = open ? ' · ' + open : '';
 }
 function renderWing(S, side, now){
+  refreshSiteSelects($('#vWing'));
   const v = $('#vWing'), lvl = levelIndex(S.esc), sc = score(S, side);
   renderIntel(S, side, v);
   $('[data-esclvl]', v).innerHTML = '· <span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
@@ -3010,7 +3072,7 @@ function renderWing(S, side, now){
   $('[data-esccaused]', v).textContent = S.escBy[side];
   $('[data-pts]', v).textContent = sc.total;
   $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + ' · Both scores cut in half</div>' : S.reveal ? '<div class="panel"><h2>Fog of war lifted: final points</h2>' + scoreTable(S, ['B', 'R']) + '</div>' : (jammed(S, side) ? '<div class="banner">Datalink jammed until ' + hhmm(S.jam[side]) + ': your live map and drone flights are down. Radios still work.</div>' : '');
-  $('[data-radar]', v).textContent = S.reveal ? 'Fog of war lifted' : (S.sites.radar.holder === side && !S.sites.radar.contested) ? 'Radar Ridge shows every site the other wing holds' : 'The other wing shows up only where you report it';
+  $('[data-radar]', v).textContent = S.reveal ? 'Fog of war lifted' : (S.sites.radar.holder === side && !S.sites.radar.contested) ? 'Radar Ridge shows every site the other wing holds' : 'Enemy positions appear only from your reports and UAV launches';
   const jm = jammed(S, side), real = jm ? jamMapInto($('[data-map]', v), S, side) : renderMapInto($('[data-map]', v), S, S.reveal ? null : side);
   if (jm && app.fsEl) closeFullMap();
   $('[data-legend]', v).innerHTML = real ? realLegend() : legendHTML(S.reveal ? null : side);
@@ -3100,7 +3162,7 @@ function buildWhite(){
   if (app.built === 'white') return; app.built = 'white';
   const v = $('#vWhite');
   const sideCol = s => `
-    <div class="panel side-${s}">
+    <div class="panel side-${s}" data-sec="calls">
       <div class="act-head"><span class="badge side-${s}">${SIDES[s].name}</span><span class="small muted" data-wstat="${s}"></span></div>
       <div class="evgrid">
         <button type="button" data-ev="ied" data-side="${s}" data-r="real">Real IED cleared<small>+2 points · Diplomatic points +5</small></button>
@@ -3117,7 +3179,8 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <div class="strip">
+    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '">' + n + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
       <div class="panel stat wide" style="min-width:0"><h2>Clock</h2>
@@ -3131,46 +3194,59 @@ function buildWhite(){
         <form class="row" data-wf="window" style="align-items:end;margin-top:8px"><label>Clock starts at<input name="start" maxlength="5" inputmode="numeric"></label><label>Game length (minutes)<input name="len" type="number" min="30" max="300" step="5"></label><button type="submit" style="flex:0 0 auto">Save start time</button></form></div>
     </div>
     <div data-warbar></div>
-    <div class="white-grid">
-      <div class="panel">
+    <div class="white-grid" data-wgrid>
+      <div class="panel" data-sec="map">
         <div class="map-head"><h2>White cell map</h2><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
         <div class="sitectl" data-sitectl></div>
         <div class="stack wcctl" data-wcctl style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
-          <div class="small"><b>White cell location</b> <span class="muted">(everyone sees it on their map as the alien)</span>: <span class="mono" data-wcnow>—</span></div>
+          <div class="small"><b>White cell location</b> <span class="muted">(shown on all maps)</span>: <span class="mono" data-wcnow>—</span></div>
           <div class="row" style="justify-content:flex-start;align-items:end" data-wcrow><button type="button" data-wcgps style="flex:0 0 auto">Use my GPS</button><button type="button" data-wctap style="flex:0 0 auto">Move to last map tap</button><label style="flex:1 1 180px">Or type a grid<input data-wcgrid placeholder="Example: 5893 2334 or 40.82601, -77.85812"></label><button type="button" data-wcset style="flex:0 0 auto">Move</button><button type="button" data-wcback style="flex:0 0 auto">Back to planned spot</button></div>
         </div>
         <div class="stack wpctl" style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
-          <div class="small"><b>Waypoints</b> <span class="muted">Place a marker for one wing, both wings or the white cell only. Wings and their fireteams are notified when a waypoint is shared with them.</span></div>
-          <div class="row" style="align-items:end"><label>Label<input data-wplabel maxlength="60" placeholder="Example: Casualty collection point"></label><label style="flex:0 0 180px">Symbol<select data-wpsym>${Object.entries(WP_SYMS).map(([k, n]) => '<option value="' + k + '">' + n + '</option>').join('')}</select></label><span data-wpprev style="flex:0 0 auto;align-self:center"></span></div>
+          <div class="small"><b>Waypoints</b> <span class="muted">Shared waypoints notify the receiving wing's C2 and fireteams.</span></div>
+          <div class="row" style="align-items:end"><label>Label<input data-wplabel maxlength="60" placeholder="Example: Casualty collection point"></label><span data-wpprev style="flex:0 0 auto;align-self:center"></span><span class="small muted" data-wpsymname style="flex:0 0 auto;align-self:center"></span></div>
+          <input type="hidden" data-wpsym value="pin">
+          <div class="wpgrid" data-wpgrid role="group" aria-label="Symbol">${Object.keys(WP_SYMS).map(k => '<button type="button" data-wpsympick="' + k + '" title="' + WP_SYMS[k] + '" aria-label="' + WP_SYMS[k] + '">' + wpSvg(k, 22) + '</button>').join('')}</div>
+          <div class="wpsw"><span class="small">Color</span>${WP_COLORS.map(c => '<button type="button" data-wpswatch="' + c + '" title="' + c + '" style="background:' + c + '"></button>').join('')}<input type="color" data-wpcolor value="#ffcf5a" aria-label="Custom color"><button type="button" data-wpcolordef style="width:auto;height:auto;border-radius:6px;padding:3px 8px;font-size:12px">Symbol default</button></div>
           <div class="row" style="align-items:end"><label>Location<input data-wploc autocomplete="off" placeholder="Example: 5893 2345, 40.82601, -77.85812 or D4"></label><button type="button" data-wppick style="flex:0 0 auto">Pick on map</button><button type="button" data-wptap style="flex:0 0 auto">Use last map tap</button></div>
-          <div class="row" style="align-items:end"><label>Or start from a point of interest<select data-wppoi></select></label><label style="flex:0 0 170px">Visible to<select data-wpto><option value="none">White cell only</option><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select></label><button type="button" class="btn-side" data-wpadd style="flex:0 0 auto">Add waypoint</button></div>
+          <div class="row" style="align-items:end"><label>Or start from a point of interest<select data-wppoi></select></label><label style="flex:0 0 170px">Visible to<select data-wpto><option value="none">White cell only</option><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select></label><button type="button" class="btn-side" data-wpadd style="flex:0 0 auto">Add waypoint</button><button type="button" data-wpclear style="flex:0 0 auto">Clear form</button></div>
+          <div class="row" style="justify-content:space-between;align-items:center"><span class="small muted" data-wpcount></span><button type="button" data-wpclearall style="flex:0 0 auto">Delete all waypoints</button></div>
+          <div class="stack" data-sitenew hidden style="border:1.5px solid var(--line);border-radius:8px;padding:10px">
+            <div class="small"><b>New site</b> <span class="muted" data-sitenewat></span></div>
+            <div class="row" style="align-items:end"><label>Site name<input data-snname maxlength="40"></label><label style="flex:0 0 120px">Timer (min)<input data-snmin type="number" min="3" max="90" value="15"></label></div>
+            <div class="row" style="align-items:end"><label>Capture code words<input data-sncap autocomplete="off" placeholder="Example: LANTERN, MAPLE, RIDGE"></label><label>Defense code words<input data-sndef autocomplete="off" placeholder="Example: OAK, PINE"></label></div>
+            <p class="small muted" style="margin:0">Separate code words with commas. Each word is single-use. Worth 10 points to the holder at ENDEX. Both wings are notified.</p>
+            <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-sncreate style="flex:0 0 auto">Create site</button><button type="button" data-sncancel style="flex:0 0 auto">Cancel</button></div>
+          </div>
           <div class="list" data-wplist></div>
         </div>
       </div>
-      <div class="stack" style="gap:14px;min-width:0">
-        <div class="panel"><div class="act-head"><h2>POCs</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
+      <div class="stack" style="gap:14px;min-width:0" data-sec="queue msg">
+        <div class="panel" data-sec="queue"><div class="act-head"><h2>POCs</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
           <details data-ocroster style="margin-top:8px"><summary class="small"><b>Manage POCs</b> <span class="muted" data-ocn></span></summary><div class="list" data-ocrows style="margin-top:6px"></div></details></div>
-        <div class="panel"><div class="act-head"><h2>Waiting on you</h2><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-chime> Sound alert</label></div><div class="list" data-queue></div></div>
-        <div class="panel"><h2>Send a message</h2>
+        <div class="panel" data-sec="queue"><div class="act-head"><h2>Waiting on you</h2><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-chime> Sound alert</label></div><div class="list" data-queue></div></div>
+        <div class="panel" data-sec="msg"><h2>Send a message</h2>
           <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="Higher headquarters" maxlength="30"></label></div>
             <label>Message<textarea name="text" maxlength="400" required></textarea></label><div><button class="btn-side" type="submit">Send</button></div></form>
-          <h2>Inject templates</h2><p class="small muted" style="margin:0">Timed injects show their planned time. Encounter injects are for when escalation reaches the level shown; the ones you can use now are highlighted.</p><div class="evgrid" data-templates></div></div>
+          <h2>Inject templates</h2><p class="small muted" style="margin:0">Timed injects show their planned time. Encounter injects show the escalation level at which they apply; highlighted injects apply now.</p><div class="evgrid" data-templates></div></div>
       </div>
-      <div class="panel"><h2>Points</h2><div data-score></div>
-        <h2>Intel packages</h2><p class="small muted" style="margin:0">Nothing goes out until you deploy it. Each window starts when you send it.</p><div class="list" data-intelw></div>
+      <div class="stack" style="gap:14px;min-width:0" data-sec="queue intel">
+      <div class="panel" data-sec="queue"><h2>Points</h2><div data-score></div></div>
+      <div class="panel" data-sec="intel"><h2>Intel packages</h2><p class="small muted" style="margin:0">Packages are sent only when deployed. The answer window starts at deployment.</p><div class="list" data-intelw></div>
         <h2>Explosions</h2>
         <form class="stack" data-wf="detonation"><div class="row"><label>Explosion at grid<input name="grid" maxlength="8" placeholder="Example: C2" required></label><label>Really caused by<select name="truth"><option value="militia">Militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="cas" style="width:auto"> Casualties</label><div><button type="submit">Tell both wings</button></div></form>
       </div>
+      </div>
       ${sideCol('B')}
       ${sideCol('R')}
-      <div class="panel"><h2>Fireteams</h2><div class="row" style="justify-content:flex-start;align-items:center;margin:2px 0 6px"><span class="small muted" style="flex:1 1 100%">Silent GPS request. Phones with the board open answer in seconds; teams aren't told.</span><button type="button" data-ping="both" style="flex:0 0 auto">Ping every team</button><button type="button" data-ping="B" style="flex:0 0 auto">Ping BLUFOR</button><button type="button" data-ping="R" style="flex:0 0 auto">Ping REDFOR</button></div><h3 class="small muted" style="margin:4px 0">BLUFOR</h3><div class="list" data-wteamsB></div><h3 class="small muted" style="margin:10px 0 4px">REDFOR</h3><div class="list" data-wteamsR></div></div>
-      <div class="panel"><h2>C2 liaison</h2><p class="small muted" style="margin:0">Everything the Wing Commanders say to each other.</p><div class="feed" data-wliaison style="max-height:360px"></div><div class="list" data-woffers></div></div>
-      <div class="panel span2"><div class="act-head"><h2>Log</h2><span class="small muted">Void a mistake and every screen recalculates</span></div><div class="feed" data-log style="max-height:420px"></div></div>
-      <details class="panel span2 mapset" data-mapsetup><summary><b>Map setup</b> <span class="small muted">(do this once, before the game)</span></summary>
+      <div class="panel" data-sec="teams"><h2>Fireteams</h2><div class="row" style="justify-content:flex-start;align-items:center;margin:2px 0 6px"><span class="small muted" style="flex:1 1 100%">Silent GPS request. Only phones with the board open respond. Teams are not notified.</span><button type="button" data-ping="both" style="flex:0 0 auto">Ping every team</button><button type="button" data-ping="B" style="flex:0 0 auto">Ping BLUFOR</button><button type="button" data-ping="R" style="flex:0 0 auto">Ping REDFOR</button></div><h3 class="small muted" style="margin:4px 0">BLUFOR</h3><div class="list" data-wteamsB></div><h3 class="small muted" style="margin:10px 0 4px">REDFOR</h3><div class="list" data-wteamsR></div></div>
+      <div class="panel" data-sec="msg"><h2>C2 liaison</h2><p class="small muted" style="margin:0">Everything the Wing Commanders say to each other.</p><div class="feed" data-wliaison style="max-height:360px"></div><div class="list" data-woffers></div></div>
+      <div class="panel span2" data-sec="log"><div class="act-head"><h2>Log</h2><span class="small muted">Voided entries are removed from every screen</span></div><div class="feed" data-log style="max-height:420px"></div></div>
+      <details class="panel span2 mapset" data-mapsetup data-sec="setup"><summary><b>Map setup</b> <span class="small muted">(before STARTEX)</span></summary>
         <div class="stack" style="margin-top:10px">
-          <p class="small muted" style="margin:0">Type an MGRS grid (for example 18T TL 58927 23452) or latitude and longitude for each point, in any common form (for example 40.82522° N, 77.86064° W, or 40.82522, -77.86064, or 40°49'30.8"N 77°51'38.3"W), or click the map above and press “Use last click”. Last click: <b class="mono" data-lastclick>—</b></p>
+          <p class="small muted" style="margin:0">MGRS or latitude and longitude in any common format, or the last map click. Last click: <b class="mono" data-lastclick>—</b></p>
           <div class="li"><label>Find the field: center on<input data-mcenter placeholder="Example: 40.8275, -77.8570 or an MGRS grid"></label><button type="button" data-mshow>Show on the map</button></div>
           <div class="li"><label>Southwest corner of the play area<input data-mp="sw"></label><button type="button" data-muse="sw">Use last click</button></div>
           <div class="li"><label>Northeast corner of the play area<input data-mp="ne"></label><button type="button" data-muse="ne">Use last click</button></div>
@@ -3180,15 +3256,15 @@ function buildWhite(){
           <div class="row" style="justify-content:flex-start"><button type="button" data-mpoiadd style="flex:0 0 auto">Add last click as a point of interest</button></div>
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-msave style="flex:0 0 auto">Save the map for every screen</button><span class="small muted" data-mmsg></span></div>
         </div></details>
-      <details class="panel span2 mapset" data-ipbuild><summary><b>Intel package builder</b> <span class="small muted">(write your own packages, add photos)</span></summary>
+      <details class="panel span2 mapset" data-ipbuild data-sec="intel"><summary><b>Intel package builder</b> <span class="small muted">(custom packages and photos)</span></summary>
         <div class="stack" style="margin-top:10px">
-          <p class="small muted" style="margin:0">Fill in a question and four answers, then the intel. A package starts with four pieces (HUMINT, SIGINT, IMINT, GEOINT). To add more, choose the kind of intel under the last piece; extras can be removed. Mark the right answer and every piece that is false or misleading. There can be more than one. Saved packages join the list above and deploy like the others. You can also start from a built-in package to add a photo to it; your version replaces it.</p>
+          <p class="small muted" style="margin:0">A package has a question, four answers and two to eight pieces of intel. Mark the correct answer and every false or misleading piece. Saved packages appear in the Intel packages list. Saving a built-in package creates a replacement version.</p>
           <div class="row" style="align-items:end"><label>Start from<select data-ipbsrc><option value="">A blank package</option></select></label><button type="button" data-ipbload style="flex:0 0 auto">Load</button><button type="button" class="btn-side" data-ipbgen style="flex:0 0 auto">Generate a draft</button><button type="button" data-ipbclear style="flex:0 0 auto">Clear</button></div>
           <p class="small" data-ipbmode style="margin:0"></p>
           <div class="row"><label>Title<input data-ipb="title" maxlength="80" placeholder="Example: The coast road ambush"></label><label style="flex:0 0 110px">Intended time (T+ min)<input data-ipb="at" type="number" min="0" max="300" value="60"></label><label style="flex:0 0 110px">Window (min)<input data-ipb="win" type="number" min="3" max="60" value="15"></label></div>
           <label>Question<input data-ipb="q" maxlength="200" placeholder="Example: Who set the ambush on the coast road?"></label>
           <div class="row" style="align-items:end"><label>Explosion with this package (optional): grid<input data-ipb="bgrid" maxlength="24" placeholder="Example: C3"></label><label style="flex:0 0 170px">Really caused by<select data-ipb="btruth"><option value="militia">The militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-ipb="bcas"> Casualties</label></div>
-          <fieldset class="ipb-piece"><legend>Answers (pick the right one)</legend><div class="ipb-opts">
+          <fieldset class="ipb-piece"><legend>Answers (mark the correct one)</legend><div class="ipb-opts">
             ${[0, 1, 2, 3].map(k => '<div class="row"><input type="radio" name="ipbA" value="' + k + '" aria-label="Correct answer ' + (k + 1) + '"><input data-ipbopt="' + k + '" maxlength="100" placeholder="Example: ' + ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'][k] + '"></div>').join('')}
           </div></fieldset>
           <div class="stack" data-ipbpieces></div>
@@ -3196,9 +3272,9 @@ function buildWhite(){
           <label>White cell note (why the false pieces are false; only you see it)<input data-ipb="note" maxlength="300" placeholder="Example: The photo is two days older than the attack."></label>
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-ipbsave style="flex:0 0 auto">Save package</button><span class="small muted" data-ipbmsg></span></div>
           <h3 class="small muted" style="margin:6px 0 0">Packages built here</h3><div class="list" data-ipblist></div>
-          <div class="row" style="justify-content:flex-start"><button type="button" data-ipbexport style="flex:0 0 auto">Download packages</button><label for="ipbImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload packages<input id="ipbImport" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted">Saves every package built here, photos included, as one file you can upload to another game or board.</span></div>
+          <div class="row" style="justify-content:flex-start"><button type="button" data-ipbexport style="flex:0 0 auto">Download packages</button><label for="ipbImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload packages<input id="ipbImport" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted">Saves all packages built here, including photos, as one file for another game.</span></div>
         </div></details>
-      <div class="panel"><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
+      <div class="panel" data-sec="setup"><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
   </div>`;
   $$('[data-ev]', v).forEach(b => b.onclick = () => {
@@ -3229,9 +3305,23 @@ function buildWhite(){
   $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'); if (!b) return; const t = TEMPLATES[+b.dataset.tpl], f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = t.from || 'Higher headquarters'; f.text.value = fillT(t.text); f.text.focus(); });
   $('[data-fullmap]', v).onclick = () => openFullMap(null);
   ipbWire(v);
+  const setTab = (k, scroll) => {
+    $$('[data-wtab]', v).forEach(b => b.setAttribute('aria-selected', b.dataset.wtab === k ? 'true' : 'false'));
+    $$('[data-sec]', v).forEach(el => { const on = k === 'all' || el.dataset.sec.split(' ').includes(k); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
+    $('[data-wgrid]', v).classList.toggle('filtered', k !== 'all');
+    if (k === 'intel'){ const f = $('[data-ipbuild]', v); if (f) f.open = true; }
+    if (k === 'setup'){ const f = $('[data-mapsetup]', v); if (f) f.open = true; }
+    pref.set('marala-wtab', k);
+    setTimeout(() => $$('.lmap').forEach(x => { if (x._lm) x._lm.map.invalidateSize(); }), 60);
+    if (scroll) window.scrollTo({ top:0, behavior:'smooth' });
+  };
+  $('[data-wnav]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-wtab]'); if (b) setTab(b.dataset.wtab, true); });
+  setTab(pref.get('marala-wtab', 'all'), false);
   v.addEventListener('click', ev => {
+    const srm = ev.target.closest('[data-siterm]');
+    if (srm){ const k = srm.dataset.siterm, st = app.S && app.S.sites[k]; if (!st || !SITES[k]) return; if (!confirm('Remove ' + SITES[k].name + '?' + (st.holder ? ' ' + SIDES[st.holder].name + ' loses the 10 points it holds there.' : '') + ' Both wings are notified.')) return; writeEvent('site_remove', null, { k }); return; }
     const iv = ev.target.closest('[data-ipview]');
-    if (iv){ const f = $('[data-ipbuild]', v); $('[data-ipbsrc]', f).value = iv.dataset.ipview; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); return; }
+    if (iv){ const cur = $('[data-wtab][aria-selected="true"]', v); if (cur && !['all', 'intel'].includes(cur.dataset.wtab)) $('[data-wtab="intel"]', v).click(); const f = $('[data-ipbuild]', v); $('[data-ipbsrc]', f).value = iv.dataset.ipview; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); return; }
     const nr = ev.target.closest('[data-nineres]'); if (nr){ writeEvent('nine_res', null, { nine:nr.dataset.nineres, ok:nr.dataset.ok === '1', by:'White cell' }); return; }
     const orq = ev.target.closest('[data-ocres]'); if (orq){ writeEvent('oc_res', null, { req:orq.dataset.ocres, ok:orq.dataset.ok === '1' }); return; }
     const sv = ev.target.closest('[data-ocsave]');
@@ -3243,32 +3333,62 @@ function buildWhite(){
   });
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-ping]'); if (!b) return; if (!app.S || !app.S.clock.started){ toast('Start the game first.', true); return; } writeEvent('ping', null, { to:b.dataset.ping, team:b.dataset.pingteam || null }); toast('Position request sent silently.'); });
   const wpGrid = pt => { const sq = squareOf(mapCfg(app.S), pt); return (sq ? sq + ', ' : '') + fmtPt(pt); };
-  const wpPrev = () => { $('[data-wpprev]', v).innerHTML = wpSvg($('[data-wpsym]', v).value, 28); };
-  $('[data-wpsym]', v).onchange = wpPrev; wpPrev();
+  const wpForm = { color:null };
+  const wpCur = () => wpForm.color || WP_DEF[$('[data-wpsym]', v).value];
+  const wpPrev = () => { const k = $('[data-wpsym]', v).value; $('[data-wpprev]', v).innerHTML = wpSvg(k, 30, wpCur()); $('[data-wpsymname]', v).textContent = WP_SYMS[k]; $$('[data-wpsympick]', v).forEach(b => b.setAttribute('aria-pressed', b.dataset.wpsympick === k ? 'true' : 'false')); $('[data-wpcolor]', v).value = wpCur(); $('[data-wpadd]', v).textContent = app.wpEdit ? 'Save changes' : 'Add waypoint'; };
+  const wpReset = () => { app.wpEdit = null; wpForm.color = null; $('[data-wplabel]', v).value = ''; $('[data-wploc]', v).value = ''; $('[data-wpsym]', v).value = 'pin'; $('[data-wpto]', v).value = 'none'; app.wpPick = false; $('[data-wppick]', v).classList.remove('btn-side'); wpPrev(); };
+  $('[data-wpgrid]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-wpsympick]'); if (!b) return; $('[data-wpsym]', v).value = b.dataset.wpsympick; wpPrev(); });
+  $('.wpsw', v).addEventListener('click', ev => { const sw = ev.target.closest('[data-wpswatch]'); if (sw){ wpForm.color = sw.dataset.wpswatch; wpPrev(); } if (ev.target.closest('[data-wpcolordef]')){ wpForm.color = null; wpPrev(); } });
+  $('[data-wpcolor]', v).addEventListener('input', ev => { wpForm.color = ev.target.value; wpPrev(); });
+  $('[data-wpclear]', v).onclick = wpReset;
+  wpPrev();
   $('[data-wppick]', v).onclick = ev => { app.wpPick = !app.wpPick; ev.currentTarget.classList.toggle('btn-side', app.wpPick); if (app.wpPick) toast('Tap the waypoint location on the white cell map.'); };
   $('[data-wptap]', v).onclick = () => { if (!app.lastClick){ toast('Tap the map first.', true); return; } $('[data-wploc]', v).value = fmtPt(app.lastClick); };
   $('[data-wppoi]', v).onchange = ev => { const M = mapCfg(app.S), x = M && M.pois && M.pois[+ev.target.value]; if (!x) return; $('[data-wploc]', v).value = fmtPt(x.pt); if (!$('[data-wplabel]', v).value.trim()) $('[data-wplabel]', v).value = x.name; ev.target.value = ''; };
   $('[data-wpadd]', v).onclick = () => {
-    const pt = locate(mapCfg(app.S), $('[data-wploc]', v).value), label = $('[data-wplabel]', v).value.trim();
+    const pt = locate(mapCfg(app.S), $('[data-wploc]', v).value), label = $('[data-wplabel]', v).value.trim(), to = $('[data-wpto]', v).value, sym = $('[data-wpsym]', v).value, color = wpCur();
     if (!pt){ toast('Set a location: tap the map, use Pick on map, or type a grid or coordinates.', true); return; }
     if (!label){ toast('Add a label.', true); return; }
-    const to = $('[data-wpto]', v).value;
-    if (to !== 'none' && !confirm('Share "' + label + '" with ' + (to === 'both' ? 'both wings' : SIDES[to].name) + '? Their C2 and fireteams are notified.')) return;
-    writeEvent('wp_add', null, { pt, label, sym:$('[data-wpsym]', v).value, to, grid:wpGrid(pt) });
-    $('[data-wplabel]', v).value = ''; $('[data-wploc]', v).value = ''; app.wpKey = null; toast('Waypoint added.');
+    const w = app.wpEdit && app.S ? app.S.wps.find(x => x.id === app.wpEdit && !x.del) : null;
+    const newly = wpSides(to).filter(sd => !(w ? wpSides(w.to) : []).includes(sd));
+    if (newly.length && !confirm('Share "' + label + '" with ' + (to === 'both' ? 'both wings' : SIDES[to].name) + '? Their C2 and fireteams are notified.')) return;
+    if (w) writeEvent('wp_edit', null, { id:w.id, pt, label, sym, color, to, grid:wpGrid(pt) });
+    else writeEvent('wp_add', null, { pt, label, sym, color, to, grid:wpGrid(pt) });
+    toast(w ? 'Waypoint updated.' : 'Waypoint added.'); app.wpKey = null; wpReset();
   };
+  const snBox = $('[data-sitenew]', v);
+  v.addEventListener('click', ev => {
+    const ms = ev.target.closest('[data-wpsite]');
+    if (ms){ const w = app.S && app.S.wps.find(x => x.id === ms.dataset.wpsite && !x.del); if (!w) return; snBox.hidden = false; snBox.dataset.wp = w.id; $('[data-snname]', v).value = w.label; $('[data-sitenewat]', v).textContent = 'at ' + wpGrid(w.pt); $('[data-sncap]', v).value = ''; $('[data-sndef]', v).value = ''; snBox.scrollIntoView({ behavior:'smooth', block:'center' }); $('[data-sncap]', v).focus({ preventScroll:true }); }
+  });
+  $('[data-sncancel]', v).onclick = () => { snBox.hidden = true; };
+  $('[data-sncreate]', v).onclick = () => {
+    const S = app.S, w = S && S.wps.find(x => x.id === snBox.dataset.wp && !x.del), name = $('[data-snname]', v).value.trim(), min = Math.round(+$('[data-snmin]', v).value);
+    const cw = t => Array.from(new Set(String(t || '').split(/[,;\n]+/).map(x => x.trim().toUpperCase()).filter(Boolean)));
+    const cap = cw($('[data-sncap]', v).value), def = cw($('[data-sndef]', v).value);
+    if (!w){ toast('That waypoint no longer exists.', true); return; }
+    if (!name){ toast('Add a site name.', true); return; }
+    if (!cap.length){ toast('Add at least one capture code word.', true); return; }
+    if (SITE_KEYS.some(k => SITES[k].name.toLowerCase() === name.toLowerCase())){ toast('A site with that name already exists.', true); return; }
+    const M = mapCfg(S), sq = squareOf(M, w.pt), mm = sq ? /^([A-L])(\d+)/.exec(sq) : null;
+    if (!confirm('Create the site "' + name + '"? Both wings are notified and it is worth 10 points to the holder at ENDEX.')) return;
+    writeEvent('site_new', null, { k:'x' + uid(), name, pt:w.pt, grid:wpGrid(w.pt), square:sq || '?', col:mm ? COLS_L.indexOf(mm[1]) : 0, row:mm ? +mm[2] - 1 : 0, cap:cap.map(x => secret(app.cfg.salt, x)), def:def.map(x => secret(app.cfg.salt, x)), min:min >= 3 && min <= 90 ? min : 15, from:w.id });
+    snBox.hidden = true; app.wpKey = null; toast('Site created.');
+  };
+  $('[data-wpclearall]', v).onclick = () => { const n = app.S ? app.S.wps.filter(w => !w.del).length : 0; if (!n){ toast('There are no waypoints.', true); return; } if (!confirm('Delete all ' + n + ' waypoints? Wings they were shared with are told they were withdrawn.')) return; writeEvent('wp_clear', null, {}); app.wpKey = null; wpReset(); };
   v.addEventListener('change', ev => {
-    const t = ev.target.closest('[data-wpvis]'); if (!t) return;
+    const t = ev.target.closest('[data-wpvis]'), rc = ev.target.closest('[data-wprecolor]');
+    if (rc){ const w = app.S && app.S.wps.find(x => x.id === rc.dataset.wprecolor); if (w) writeEvent('wp_edit', null, { id:w.id, color:rc.value, grid:w.grid }); app.wpKey = null; return; }
+    if (!t) return;
     const w = app.S && app.S.wps.find(x => x.id === t.dataset.wpvis); if (!w) return;
     if (t.value !== 'none' && !confirm('Share "' + w.label + '" with ' + (t.value === 'both' ? 'both wings' : SIDES[t.value].name) + '?')){ t.value = w.to; return; }
     writeEvent('wp_edit', null, { id:w.id, to:t.value, grid:w.grid }); app.wpKey = null;
   });
   v.addEventListener('click', ev => {
-    const mv = ev.target.closest('[data-wpmove]'), rn = ev.target.closest('[data-wpren]'), dl = ev.target.closest('[data-wpdel]'), S = app.S;
-    const w = S && (mv || rn || dl) ? S.wps.find(x => x.id === (mv || rn || dl).dataset[mv ? 'wpmove' : rn ? 'wpren' : 'wpdel']) : null; if (!w) return;
-    if (mv){ const pt = locate(mapCfg(S), $('[data-wploc]', v).value) || app.lastClick; if (!pt){ toast('Tap the new location on the map or type it in Location first.', true); return; } if (!confirm('Move "' + w.label + '" to ' + fmtPt(pt) + '?')) return; writeEvent('wp_edit', null, { id:w.id, pt, grid:wpGrid(pt) }); $('[data-wploc]', v).value = ''; }
-    if (rn){ const n = prompt('Waypoint label', w.label); if (n && n.trim()) writeEvent('wp_edit', null, { id:w.id, label:n.trim().slice(0, 60), grid:w.grid }); }
-    if (dl && confirm('Delete "' + w.label + '"?' + (w.to !== 'none' ? ' The wings it was shared with are told it was withdrawn.' : ''))) writeEvent('wp_del', null, { id:w.id });
+    const ed = ev.target.closest('[data-wpedit]'), dl = ev.target.closest('[data-wpdel]'), S = app.S;
+    const w = S && (ed || dl) ? S.wps.find(x => x.id === (ed || dl).dataset[ed ? 'wpedit' : 'wpdel']) : null; if (!w) return;
+    if (ed){ app.wpEdit = w.id; wpForm.color = w.color || null; $('[data-wplabel]', v).value = w.label; $('[data-wploc]', v).value = fmtPt(w.pt); $('[data-wpsym]', v).value = w.sym; $('[data-wpto]', v).value = w.to; wpPrev(); $('.wpctl', v).scrollIntoView({ behavior:'smooth', block:'start' }); toast('Editing "' + w.label + '". Change anything, then press Save changes.'); }
+    if (dl && confirm('Delete "' + w.label + '"?' + (w.to !== 'none' ? ' The wings it was shared with are told it was withdrawn.' : ''))){ writeEvent('wp_del', null, { id:w.id }); if (app.wpEdit === w.id) wpReset(); }
     app.wpKey = null;
   });
   const wcMove = pt => { const M = mapCfg(app.S), sq = squareOf(M, pt); writeEvent('wc_pos', null, { pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt) }); toast('White cell moved. Every map shows it.'); };
@@ -3333,7 +3453,7 @@ function ipbPieceHTML(k){
             '<div class="row" style="align-items:end"><label>Or paste a photo link<input data-f="url" maxlength="600" placeholder="Example: https://upload.wikimedia.org/…/photo.jpg"></label><button type="button" data-f="usel" style="flex:0 0 auto">Use link</button></div>' +
             '<div class="row" style="align-items:end"><label>Or search free photos (Wikimedia Commons)<input data-f="q" maxlength="80" placeholder="Example: Abandoned truck"></label><button type="button" data-f="search" style="flex:0 0 auto">Search</button></div><div class="ipb-results" data-f="results"></div>' +
             '<div class="row" style="align-items:end"><label style="flex:0 0 150px">Or snapshot the map<select data-f="zoom"><option value="16">Wide (about 2 km)</option><option value="17" selected>Medium (about 1 km)</option><option value="18">Close (about 500 m)</option><option value="19">Very close (about 250 m)</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-f="lbl" checked> Grid label</label><button type="button" data-f="snap" style="flex:0 0 auto">Snapshot at last map tap</button></div>' +
-            '<p class="small muted" style="margin:0">For a snapshot, tap the spot on the white cell map first. Last tap: <span class="mono" data-lastclick>—</span></p></div></div>' +
+            '<p class="small muted" style="margin:0">Snapshot uses the last tap on the white cell map. Last tap: <span class="mono" data-lastclick>—</span></p></div></div>' +
     '<label class="chk"><input type="checkbox" data-f="false"> This piece is false or misleading</label></fieldset>';
 }
 function ipbRead(){
@@ -3656,16 +3776,17 @@ function renderWhite(S, now){
   if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TEMPLATES.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + ' · ' + t.phase : LEVELS[t.lvl].name + ' or higher') + ' · ' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[t.to] + '</small></button>'; }).join(''); }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
   if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); $('[data-mpois]', ms).value = (M0.pois || []).map(x => x.name + ' | ' + fmtPt(x.pt)).join('\n'); }
-  { const M = mapCfg(S), box = $('[data-wplist]', v), live = S.wps.filter(w => !w.del), key = JSON.stringify(live.map(w => [w.id, w.label, w.sym, w.to, w.pt])) + (M && M.pois ? M.pois.length : 0);
-    if (key !== app.wpKey && !box.contains(document.activeElement)){
+  { const M = mapCfg(S), box = $('[data-wplist]', v), live = S.wps.filter(w => !w.del), key = JSON.stringify(live.map(w => [w.id, w.label, w.sym, w.to, w.pt, w.color])) + (M && M.pois ? M.pois.length : 0);
+    if (key !== app.wpKey && !typingIn(box)){
       app.wpKey = key;
       $('[data-wppoi]', v).innerHTML = '<option value="">Choose a point of interest…</option>' + ((M && M.pois) || []).map((x, i) => '<option value="' + i + '">' + esc(x.name) + '</option>').join('');
-      box.innerHTML = live.length ? live.slice().reverse().map(w => '<div class="li"><span style="flex:0 0 auto">' + wpSvg(w.sym, 24) + '</span><div class="grow"><b>' + esc(w.label) + '</b> <span class="small muted">' + esc(WP_SYMS[w.sym]) + '</span><div class="small mono">' + esc(fmtPt(w.pt)) + (squareOf(M, w.pt) ? ' · Square ' + squareOf(M, w.pt) : '') + '</div></div><select data-wpvis="' + w.id + '" aria-label="Visible to" style="flex:0 0 150px"><option value="none"' + (w.to === 'none' ? ' selected' : '') + '>White cell only</option><option value="B"' + (w.to === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (w.to === 'R' ? ' selected' : '') + '>REDFOR</option><option value="both"' + (w.to === 'both' ? ' selected' : '') + '>Both wings</option></select><button type="button" data-wpren="' + w.id + '" style="flex:0 0 auto">Rename</button><button type="button" data-wpmove="' + w.id + '" style="flex:0 0 auto" title="Moves it to the Location field, or the last map tap">Move</button><button type="button" data-wpdel="' + w.id + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No waypoints yet.</div>';
+      $('[data-wpcount]', v).textContent = live.length ? live.length + ' waypoint' + (live.length === 1 ? '' : 's') : '';
+      box.innerHTML = live.length ? live.slice().reverse().map(w => '<div class="li"><span style="flex:0 0 auto">' + wpSvg(w.sym, 24, w.color) + '</span><div class="grow"><b>' + esc(w.label) + '</b> <span class="small muted">' + esc(WP_SYMS[w.sym]) + '</span><div class="small mono">' + esc(fmtPt(w.pt)) + (squareOf(M, w.pt) ? ' · Square ' + squareOf(M, w.pt) : '') + '</div></div><select data-wpvis="' + w.id + '" aria-label="Visible to" style="flex:0 0 150px"><option value="none"' + (w.to === 'none' ? ' selected' : '') + '>White cell only</option><option value="B"' + (w.to === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (w.to === 'R' ? ' selected' : '') + '>REDFOR</option><option value="both"' + (w.to === 'both' ? ' selected' : '') + '>Both wings</option></select><button type="button" data-wpsite="' + w.id + '" style="flex:0 0 auto">Make site</button><input type="color" data-wprecolor="' + w.id + '" value="' + (w.color || WP_DEF[w.sym] || '#ffcf5a') + '" aria-label="Color" style="flex:0 0 38px;width:38px;height:30px;padding:0 2px"><button type="button" data-wpedit="' + w.id + '" style="flex:0 0 auto">Edit</button><button type="button" data-wpdel="' + w.id + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No waypoints yet.</div>';
     } }
   { const wp = wcSpot(S), M = mapCfg(S); $('[data-wcnow]', v).textContent = wp ? (squareOf(M, wp) ? squareOf(M, wp) + ' · ' : '') + fmtPt(wp) + (S.wcPos ? ' (moved)' : ' (planned spot)') : 'not set'; $('[data-wcback]', v).disabled = !S.wcPos; }
-  if (!$('[data-sitectl]', v).contains(document.activeElement)) $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Both at site</span>' : '') + '</span>' +
+  if (!typingIn($('[data-sitectl]', v))) $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Both at site</span>' : '') + '</span>' +
     '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>REDFOR</option></select>' +
-    (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<label class="small" style="flex:0 0 auto;display:flex;align-items:center;gap:4px;flex-direction:row;margin:0">Timer<input type="number" data-timer="' + k + '" min="3" max="90" step="1" value="' + (S.siteTimer[k] || 15) + '" aria-label="Contention timer for ' + SITES[k].name + ' in minutes" style="width:64px">min</label><button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear') : 'Both at site') + '</button></div>'; }).join('') +
+    (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<label class="small" style="flex:0 0 auto;display:flex;align-items:center;gap:4px;flex-direction:row;margin:0">Timer<input type="number" data-timer="' + k + '" min="3" max="90" step="1" value="' + (S.siteTimer[k] || 15) + '" aria-label="Contention timer for ' + SITES[k].name + ' in minutes" style="width:64px">min</label>' + (SITES[k].dyn ? '<button type="button" data-siterm="' + k + '">Remove site</button>' : '') + '<button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear') : 'Both at site') + '</button></div>'; }).join('') +
     '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">Town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
   renderOCWhite(S, v);
   const q = [];
@@ -3679,6 +3800,7 @@ function renderWhite(S, now){
     if (r.kind === 'strike') ctl = (r.nineBy ? '<span class="chip ok">9-line checked by ' + esc(r.nineBy) + '</span>' : '') + '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="hit">9-line correct · strike</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="invalid">9-line wrong</button>';
     q.push('<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + kindName[r.kind] + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + r.text : r.text) + '</div></div><div class="row" style="flex:1 1 260px">' + ctl + '</div></div>');
   });
+  { const ne = $('[data-wnesc]', v); if (ne) ne.textContent = '· Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ')'; }
   { const pend = q.length + S.nines.filter(n => n.status === 'open').length + S.ocReqs.filter(r => r.status === 'open').length; whiteAttention(pend); const cb = $('[data-chime]', v); if (cb && !cb.dataset.wired){ cb.dataset.wired = '1'; cb.checked = pref.get('marala-chime', '1') === '1'; cb.onchange = () => { pref.set('marala-chime', cb.checked ? '1' : '0'); if (cb.checked){ chimeAt = 0; chime(); } }; } }
   $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force and strikes land here.</div>';
   $('[data-score]', v).innerHTML = scoreTable(S, ['B', 'R']);
