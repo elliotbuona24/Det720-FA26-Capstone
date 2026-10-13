@@ -2676,7 +2676,13 @@ function buildWhite(){
         <div data-legend></div>
         <div class="sitectl" data-sitectl></div>
       </div>
-      <div class="panel"><h2>Waiting on you</h2><div class="list" data-queue></div></div>
+      <div class="stack" style="gap:14px;min-width:0">
+        <div class="panel"><h2>Waiting on you</h2><div class="list" data-queue></div></div>
+        <div class="panel"><h2>Send a message</h2>
+          <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="Higher headquarters" maxlength="30"></label></div>
+            <label>Message<textarea name="text" maxlength="400" required></textarea></label><div><button class="btn-side" type="submit">Send</button></div></form>
+          <h2>Inject templates</h2><p class="small muted" style="margin:0">Timed injects show their planned time. Encounter injects are for when escalation reaches the level shown; the ones you can use now are highlighted.</p><div class="evgrid" data-templates></div></div>
+      </div>
       <div class="panel"><h2>Points</h2><div data-score></div>
         <h2>Intel packages</h2><p class="small muted" style="margin:0">Nothing goes out until you deploy it. Each window starts when you send it.</p><div class="list" data-intelw></div>
         <h2>Explosions</h2>
@@ -2684,10 +2690,6 @@ function buildWhite(){
       </div>
       ${sideCol('B')}
       ${sideCol('R')}
-      <div class="panel"><h2>Send a message</h2>
-        <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="Higher headquarters" maxlength="30"></label></div>
-          <label>Message<textarea name="text" maxlength="400" required></textarea></label><div><button class="btn-side" type="submit">Send</button></div></form>
-        <h2>Inject templates</h2><p class="small muted" style="margin:0">Timed injects show their planned time. Encounter injects are for when escalation reaches the level shown; the ones you can use now are highlighted.</p><div class="evgrid" data-templates></div></div>
       <div class="panel"><h2>Fireteams</h2><h3 class="small muted" style="margin:4px 0">BLUFOR</h3><div class="list" data-wteamsB></div><h3 class="small muted" style="margin:10px 0 4px">REDFOR</h3><div class="list" data-wteamsR></div></div>
       <div class="panel"><h2>C2 liaison</h2><p class="small muted" style="margin:0">Everything the Wing Commanders say to each other.</p><div class="feed" data-wliaison style="max-height:360px"></div><div class="list" data-woffers></div></div>
       <div class="panel span2"><div class="act-head"><h2>Log</h2><span class="small muted">Void a mistake and every screen recalculates</span></div><div class="feed" data-log style="max-height:420px"></div></div>
