@@ -140,6 +140,10 @@ svg.map{width:100%;min-width:420px;height:auto;display:block}
 .ip-items li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline;border-left:3px solid var(--line);padding:2px 0 2px 8px}
 .ip-items li b{font-family:var(--mono);font-size:13px}
 .ip-img{display:block;max-width:min(100%,420px);max-height:260px;object-fit:contain;border-radius:6px;border:1px solid var(--line);margin:4px 0 6px;cursor:zoom-in;background:#000}
+.ip-done:not(.ip-open) .ip-items,.ip-done:not(.ip-open) .ip-q,.ip-done:not(.ip-open) form{display:none}
+.ip-credit{display:block;font-size:11px;color:var(--muted);margin:-2px 0 6px}
+.ipb-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;width:100%}.ipb-results button{padding:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#000;height:84px}.ipb-results img{width:100%;height:100%;object-fit:cover;display:block}
+.ipb-src{display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:8px;width:100%}
 .ip-lightbox{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.88);display:grid;place-items:center;cursor:zoom-out;padding:16px}.ip-lightbox img{max-width:100%;max-height:100%;object-fit:contain}
 .ipb-piece{border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px}.ipb-piece legend{font-weight:600;padding:0 4px}
 .ipb-prev{max-width:240px;max-height:160px;border-radius:6px;border:1px solid var(--line);display:block}
@@ -1355,7 +1359,7 @@ function apply(S, e, cfg){
       S.intelOut[P.id] = S.intelOut[P.id] || {};
       to.forEach(sd => {
         S.intelOut[P.id][sd] = { g:S.g, due, done:false };
-        pushFeed(S, sd, 'New intel package ' + (i + 1) + ': ' + P.title + (/[?.!]$/.test(P.title) ? '' : '.') + ' Answer in the Intel packages tab by ' + hhmm(due) + '.', 'hq', { label:'Intel' });
+        pushFeed(S, sd, 'New intel package ' + (i + 1) + ': ' + P.title + (/[?.!]$/.test(P.title) ? '' : '.') + ' Answer under Intel packages, below the map, by ' + hhmm(due) + '.', 'hq', { label:'Intel' });
       });
       S.intelVer++;
       pushLog(S, 'Intel package ' + (i + 1) + ' (' + P.title + ') sent to ' + to.map(sd => SIDES[sd].name).join(' and ') + ', due ' + hhmm(due), null, e);
@@ -2370,20 +2374,20 @@ function buildWing(side){
     </div>
     <div data-warbar></div>
     <div class="wing-grid">
-      <div class="panel">
+      <div class="stack" style="gap:14px;min-width:0"><div class="panel">
         <div class="map-head"><h2>Your picture of Marala</h2><span class="small muted" data-radar></span><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
         <h2>Your reports of ${esc(other)}</h2>
         <div class="list" data-contacts></div>
       </div>
+      <div class="panel stack ip-panel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">for the Intel cell</span></div><p class="small muted" style="margin:0">Each package gives four pieces of intel, one from each discipline. Exactly one is false or misleading. Pick the answer and that piece before the deadline: +2 for each. One try per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 120615R NOV 26 is 12 November, 0615 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from higher headquarters arrive here during the game.</div></div></div></div>
       <div class="panel">
         <div class="tabs" role="tablist">
           <button type="button" role="tab" aria-selected="true" data-tab="act">Commander's actions</button>
           <button type="button" role="tab" aria-selected="false" data-tab="rep">Reports and site claims</button>
           <button type="button" role="tab" aria-selected="false" data-tab="teams">Fireteams<span data-teamcount></span></button>
           <button type="button" role="tab" aria-selected="false" data-tab="liaison">Liaison<span data-liaisoncount></span></button>
-          <button type="button" role="tab" aria-selected="false" data-tab="intel">Intel packages<span data-intelcount></span></button>
           <button type="button" role="tab" aria-selected="false" data-tab="req">Requests</button>
         </div>
         <div data-pane="act" class="actions">
@@ -2422,7 +2426,6 @@ function buildWing(side){
             <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
             <div class="list" data-claims></div></div>
         </div>
-        <div data-pane="intel" class="stack" hidden><p class="small muted" style="margin:0">Each package gives four pieces of intel, one from each discipline. Exactly one is false or misleading. Pick the answer and that piece before the deadline: +2 for each. One try per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 120615R NOV 26 is 12 November, 0615 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from higher headquarters arrive here during the game.</div></div></div>
         <div data-pane="req" class="stack" hidden><div class="list" data-reqs></div></div>
         <div data-pane="teams" class="stack" hidden>
           <p class="small muted" style="margin:0">Your fireteams report from their phones. Give intent and tasks here; they decide how to get it done.</p>
@@ -2480,6 +2483,15 @@ function intelTruth(P){
   const f = P.items.find(it => intelKey(P.id, 'f', it.k) === P.f);
   return { a, f:f ? f.k : '?' };
 }
+function ipImgSrc(S, it){
+  if (it.img && S.images[it.img]) return S.images[it.img];
+  if (it.imgUrl && /^https:\/\/[^\s"'<>]+$/.test(it.imgUrl)) return it.imgUrl;
+  return null;
+}
+function ipImgHTML(S, it){
+  const src = ipImgSrc(S, it); if (!src) return '';
+  return '<img class="ip-img" src="' + esc(src) + '" alt="' + esc(it.src || 'Image') + '" referrerpolicy="no-referrer" onerror="this.outerHTML=\'<span class=&quot;small muted&quot;>(image could not load)</span>\'">' + (it.credit ? '<span class="ip-credit">' + esc(it.credit) + '</span>' : '');
+}
 function renderIntel(S, side, v){
   const box = $('[data-intel]', v);
   const out = allProblems(S).map((P, i) => ({ P, i })).filter(x => intelOpen(S, x.P.id, side)).sort((a, b) => intelOpen(S, a.P.id, side).g - intelOpen(S, b.P.id, side).g);
@@ -2492,14 +2504,15 @@ function renderIntel(S, side, v){
     let card = document.getElementById(id);
     if (!card){
       card = document.createElement('div'); card.className = 'act'; card.id = id;
-      card.innerHTML = '<div class="act-head"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b><span class="cost" data-ipdue></span></div>' +
-        '<ul class="ip-items">' + P.items.map(it => '<li><b>' + it.k + '</b><span class="src"><span class="ip-tag">' + esc(it.disc) + '</span><span class="ip-tag" title="Source rating">' + esc(it.rating) + '</span><span class="mono">' + esc(fillT(it.dtg)) + '</span><span>' + esc(it.src) + '</span></span><span class="txt">' + (it.img && S.images[it.img] ? '<img class="ip-img" src="' + S.images[it.img] + '" alt="' + esc(it.src || 'Image') + '">' : '') + esc(fillT(it.text)) + '</span></li>').join('') + '</ul>' +
+      card.innerHTML = '<div class="act-head"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b><span class="cost" data-ipdue></span><button type="button" data-ipexp hidden style="flex:0 0 auto;padding:2px 8px;font-size:12px">Show intel</button></div>' +
+        '<ul class="ip-items">' + P.items.map(it => '<li><b>' + it.k + '</b><span class="src"><span class="ip-tag">' + esc(it.disc) + '</span><span class="ip-tag" title="Source rating">' + esc(it.rating) + '</span><span class="mono">' + esc(fillT(it.dtg)) + '</span><span>' + esc(it.src) + '</span></span><span class="txt">' + ipImgHTML(S, it) + esc(fillT(it.text)) + '</span></li>').join('') + '</ul>' +
         '<p class="ip-q">' + esc(fillT(P.q)) + '</p>' +
         '<form class="stack" data-ipf="' + P.id + '"><div class="ip-row">' +
         '<fieldset class="ip-set"><legend>Answer</legend>' + P.opts.map((o, k) => '<label><input type="radio" name="a" value="' + k + '">' + esc(fillT(o)) + '</label>').join('') + '</fieldset>' +
         '<fieldset class="ip-set"><legend>Which piece is false or misleading?</legend>' + P.items.map(it => '<label><input type="radio" name="f" value="' + it.k + '">' + it.k + ' · ' + esc(it.disc) + '</label>').join('') + '</fieldset>' +
         '</div><div><button class="btn-side" type="submit">Lock in answer</button></div></form><div class="ip-status" data-ipstatus></div>';
       box.prepend(card);
+      $('[data-ipexp]', card).onclick = () => { const o = card.classList.toggle('ip-open'); $('[data-ipexp]', card).textContent = o ? 'Hide intel' : 'Show intel'; };
       const f = $('form', card);
       f.addEventListener('submit', ev => {
         ev.preventDefault();
@@ -2511,6 +2524,7 @@ function renderIntel(S, side, v){
     }
     const o = intelOpen(S, P.id, side), mine = S.intel[side][P.id], done = !!o.done;
     $('[data-ipdue]', card).textContent = done ? 'closed ' + hhmm(o.due) : 'due ' + hhmm(o.due);
+    card.classList.toggle('ip-done', done); $('[data-ipexp]', card).hidden = !done;
     const f = $('form', card), st = $('[data-ipstatus]', card);
     $$('input, button', f).forEach(el => el.disabled = !!mine || done || S.endex);
     if (done){
@@ -2703,11 +2717,17 @@ function buildWhite(){
             '<div class="row"><label style="flex:0 0 130px">Discipline<select data-f="disc"><option>HUMINT</option><option>SIGINT</option><option>IMINT</option><option>GEOINT</option></select></label><label style="flex:0 0 110px">Rating<input data-f="rating" maxlength="4" placeholder="Example: B2"></label><label style="flex:0 0 160px">Date-time group<input data-f="dtg" maxlength="30" placeholder="Example: 111400R NOV 26"></label></div>' +
             '<label>Source<input data-f="src" maxlength="120" placeholder="Example: Village elder, reliable in the past"></label>' +
             '<label>What it says (for IMINT, describe the image)<textarea data-f="text" rows="2" maxlength="600"></textarea></label>' +
-            '<div class="row" data-imgrow style="align-items:center"><label style="flex:1 1 220px">Image (IMINT)<input type="file" accept="image/*" data-f="img"></label><img class="ipb-prev" data-f="prev" hidden alt="Image preview"><button type="button" data-f="imgdel" hidden style="flex:0 0 auto">Remove image</button></div>' +
+            '<div class="stack" data-imgrow><div class="row" style="align-items:center"><b class="small" style="flex:1 1 100%">Image (IMINT)</b><img class="ipb-prev" data-f="prev" hidden alt="Image preview"><span class="small muted" data-f="credit"></span><button type="button" data-f="imgdel" hidden style="flex:0 0 auto">Remove image</button></div>' +
+            '<div class="ipb-src"><label>From this device<input type="file" accept="image/*" data-f="img"></label>' +
+            '<div class="row" style="align-items:end"><label>Or paste a photo link<input data-f="url" maxlength="600" placeholder="Example: https://upload.wikimedia.org/…/photo.jpg"></label><button type="button" data-f="usel" style="flex:0 0 auto">Use link</button></div>' +
+            '<div class="row" style="align-items:end"><label>Or search free photos (Wikimedia Commons)<input data-f="q" maxlength="80" placeholder="Example: abandoned truck"></label><button type="button" data-f="search" style="flex:0 0 auto">Search</button></div><div class="ipb-results" data-f="results"></div>' +
+            '<div class="row" style="align-items:end"><label style="flex:0 0 150px">Or snapshot the map<select data-f="zoom"><option value="16">Wide (about 2 km)</option><option value="17" selected>Medium (about 1 km)</option><option value="18">Close (about 500 m)</option><option value="19">Very close (about 250 m)</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-f="lbl" checked> Grid label</label><button type="button" data-f="snap" style="flex:0 0 auto">Snapshot at last map tap</button></div>' +
+            '<p class="small muted" style="margin:0">For a snapshot, tap the spot on the white cell map first. Last tap: <span class="mono" data-lastclick>—</span></p></div></div>' +
             '<label class="chk"><input type="radio" name="ipbF" value="' + k + '"> This is the false or misleading piece</label></fieldset>').join('')}
           <label>White cell note (why the false piece is false; only you see it)<input data-ipb="note" maxlength="300" placeholder="Example: The photo is two days older than the attack."></label>
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-ipbsave style="flex:0 0 auto">Save package</button><span class="small muted" data-ipbmsg></span></div>
           <h3 class="small muted" style="margin:6px 0 0">Packages built here</h3><div class="list" data-ipblist></div>
+          <div class="row" style="justify-content:flex-start"><button type="button" data-ipbexport style="flex:0 0 auto">Download packages</button><label for="ipbImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload packages<input id="ipbImport" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted">Saves every package built here, photos included, as one file you can upload to another game or board.</span></div>
         </div></details>
       <div class="panel"><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
@@ -2801,14 +2821,16 @@ function ipbFill(P){
     $('[data-f="disc"]', box).value = it.disc || IPB_DISC[i];
     ['rating', 'dtg', 'src', 'text'].forEach(n => $('[data-f="' + n + '"]', box).value = it[n] ? fillT(it[n]) : '');
     $('[data-f="img"]', box).value = '';
-    ipb.imgs[k] = it.img ? { id:it.img } : null;
+    ipb.imgs[k] = it.img ? { id:it.img, credit:it.credit || '' } : it.imgUrl ? { url:it.imgUrl, credit:it.credit || '' } : null;
+    $('[data-f="url"]', box).value = ''; $('[data-f="results"]', box).innerHTML = '';
   });
   ipbSync();
 }
 function ipbSync(){
   const f = ipbForm(); if (!f) return;
   ['A', 'B', 'C', 'D'].forEach(k => {
-    const box = $('[data-ipbpiece="' + k + '"]', f), im = ipb.imgs[k], src = im ? (im.data || (app.S && app.S.images[im.id])) : null;
+    const box = $('[data-ipbpiece="' + k + '"]', f), im = ipb.imgs[k], src = im ? (im.data || im.url || (app.S && app.S.images[im.id])) : null;
+    $('[data-f="credit"]', box).textContent = im && im.credit ? im.credit : '';
     const isImint = $('[data-f="disc"]', box).value === 'IMINT';
     $('[data-imgrow]', box).hidden = !isImint && !im;
     const pv = $('[data-f="prev"]', box); pv.hidden = !src; if (src) pv.src = src; else pv.removeAttribute('src');
@@ -2832,6 +2854,91 @@ function shrinkImage(file){
     };
     fr.readAsDataURL(file);
   });
+}
+function toDataUrl(blob){ return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); }); }
+async function ipbFromUrl(k, url, credit){
+  try {
+    const r = await fetch(url, { mode:'cors', referrerPolicy:'no-referrer' });
+    if (!r.ok) throw new Error('http');
+    const b = await r.blob(); if (!/^image\//.test(b.type)) throw new Error('type');
+    const d = await shrinkImage(b);
+    ipb.imgs[k] = { data:d, credit }; ipbSync(); toast('Photo copied into the package (' + Math.round(d.length / 1024) + ' KB).');
+  } catch(e){
+    ipb.imgs[k] = { url, credit }; ipbSync();
+    toast('That site won\u2019t let the board copy the photo, so the package will link to it instead. Check it shows below before saving.', true);
+  }
+}
+async function ipbSearch(pc){
+  const q = $('[data-f="q"]', pc).value.trim(), out = $('[data-f="results"]', pc);
+  if (!q){ toast('Type what the photo should show.', true); return; }
+  out.innerHTML = '<span class="small muted">Searching…</span>';
+  try {
+    const u = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=18&gsrsearch=' + encodeURIComponent(q + ' filetype:bitmap') + '&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=900';
+    const j = await (await fetch(u)).json();
+    const pages = Object.values((j.query && j.query.pages) || {}).sort((a, b) => (a.index || 0) - (b.index || 0));
+    const strip = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').trim(); };
+    const items = pages.map(pg => { const ii = (pg.imageinfo || [])[0] || {}, md = ii.extmetadata || {}; const who = strip(md.Artist && md.Artist.value).slice(0, 60), lic = strip(md.LicenseShortName && md.LicenseShortName.value); return ii.thumburl ? { thumb:ii.thumburl, credit:'Photo: ' + (who || 'Wikimedia Commons') + (lic ? ', ' + lic : '') + ', via Wikimedia Commons' } : null; }).filter(Boolean);
+    out.innerHTML = items.length ? items.map(x => '<button type="button" data-pick="' + esc(x.thumb) + '" data-credit="' + esc(x.credit) + '" title="' + esc(x.credit) + '"><img src="' + esc(x.thumb) + '" alt="" loading="lazy" referrerpolicy="no-referrer"></button>').join('') : '<span class="small muted">No photos found. Try simpler words.</span>';
+  } catch(e){ out.innerHTML = '<span class="small muted">The photo search could not be reached. Check the internet connection.</span>'; }
+}
+async function mapSnapshot(pt, z, label){
+  const W = 800, H = 560, n = Math.pow(2, z) * 256, rad = pt[0] * Math.PI / 180;
+  const cx = (pt[1] + 180) / 360 * n, cy = (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * n;
+  const x0 = cx - W / 2, y0 = cy - H / 2, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'); g.fillStyle = '#1d2620'; g.fillRect(0, 0, W, H);
+  const jobs = [];
+  for (let tx = Math.floor(x0 / 256); tx <= Math.floor((x0 + W) / 256); tx++) for (let ty = Math.floor(y0 / 256); ty <= Math.floor((y0 + H) / 256); ty++){
+    const url = TILE_URL.replace('{z}', z).replace('{y}', ty).replace('{x}', tx);
+    jobs.push(fetch(url, { mode:'cors' }).then(r => { if (!r.ok) throw new Error('tile'); return r.blob(); }).then(b => createImageBitmap(b)).then(bm => g.drawImage(bm, tx * 256 - x0, ty * 256 - y0)));
+  }
+  await Promise.all(jobs);
+  if (label){
+    const txt = fmtPt(pt) + '   N \u2191', h = 30;
+    g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(0, H - h, W, h);
+    g.fillStyle = '#fff'; g.font = '600 16px ui-monospace, Menlo, monospace'; g.fillText(txt, 12, H - 10);
+  }
+  return c.toDataURL('image/jpeg', .75);
+}
+async function ipbSnap(pc){
+  const k = pc.dataset.ipbpiece, pt = app.lastClick;
+  if (!pt){ toast('Tap the spot on the white cell map first, then press Snapshot.', true); return; }
+  const z = +$('[data-f="zoom"]', pc).value || 17, lbl = $('[data-f="lbl"]', pc).checked;
+  toast('Taking the snapshot…');
+  try { const d = await mapSnapshot(pt, z, lbl); ipb.imgs[k] = { data:d, credit:'Satellite imagery: Esri, Maxar' }; ipbSync(); toast('Snapshot added (' + Math.round(d.length / 1024) + ' KB).'); }
+  catch(e){ toast('The map service blocked the snapshot. Take a screenshot of the map and upload it instead.', true); }
+}
+function ipbExport(){
+  const S = app.S; if (!S) return;
+  const cs = S.customOrder.map(id => S.custom[id]).filter(Boolean);
+  if (!cs.length){ toast('There are no built packages to download yet.', true); return; }
+  const images = {}; cs.forEach(c => c.items.forEach(it => { if (it.img && S.images[it.img]) images[it.img] = S.images[it.img]; }));
+  const blob = new Blob([JSON.stringify({ app:'marala-intel', version:1, saved:Date.now(), packages:cs, images })], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'marala-intel-packages-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  toast('Downloaded ' + cs.length + ' package' + (cs.length === 1 ? '' : 's') + '.');
+}
+function ipbImport(file){
+  const fr = new FileReader();
+  fr.onload = async () => {
+    let d; try { d = JSON.parse(fr.result); } catch(e){ d = null; }
+    if (!d || d.app !== 'marala-intel' || !Array.isArray(d.packages)){ toast('That file isn\u2019t a package file from this board.', true); return; }
+    const S = app.S, pk = d.packages.filter(validPkg);
+    if (!pk.length){ toast('No packages found in that file.', true); return; }
+    if (!confirm('Add ' + pk.length + ' package' + (pk.length === 1 ? '' : 's') + ' to this game? Packages with the same name that haven\u2019t been sent are updated.')) return;
+    let n = 0;
+    try {
+      const done = new Set();
+      for (const P of pk){
+        const pkg = JSON.parse(JSON.stringify(P));
+        for (const it of pkg.items){ if (it.img && d.images && d.images[it.img] && !done.has(it.img) && !(S.images[it.img])){ await writeEvent('intel_image', null, { id:it.img, data:d.images[it.img] }); done.add(it.img); } }
+        if (S.intelOut[pkg.id]){ const tr = intelTruth(P), nid = 'c' + uid(); pkg.id = nid; pkg.a = intelKey(nid, 'a', tr.a); pkg.f = intelKey(nid, 'f', tr.f); }
+        if (pkg.replaces && (S.intelOut[pkg.replaces] || !PROBLEMS.some(x => x.id === pkg.replaces))) pkg.replaces = null;
+        await writeEvent('intel_custom', null, { pkg }); n++;
+      }
+      toast('Added ' + n + ' package' + (n === 1 ? '' : 's') + '.');
+    } catch(e){ toast('Upload stopped after ' + n + ' package' + (n === 1 ? '' : 's') + '. Check the connection and try again.', true); }
+  };
+  fr.readAsText(file);
 }
 function ipbGenerate(){
   const r = a => a[Math.floor(Math.random() * a.length)];
@@ -2891,6 +2998,8 @@ async function ipbSave(){
     for (const it of items){
       const im = ipb.imgs[it.k];
       if (!im) continue;
+      if (im.credit) it.credit = im.credit;
+      if (im.url && !im.data && !im.id){ it.imgUrl = im.url; continue; }
       if (im.data && !im.id){ im.id = 'i' + uid(); await writeEvent('intel_image', null, { id:im.id, data:im.data }); }
       it.img = im.id;
     }
@@ -2916,6 +3025,9 @@ function ipbWire(v){
     ipbFill(P);
   };
   $('[data-ipbsave]', f).onclick = ipbSave;
+  $('[data-ipbexport]', f).onclick = ipbExport;
+  $('#ipbImport', f).onchange = () => { const fl = $('#ipbImport', f).files[0]; $('#ipbImport', f).value = ''; if (fl) ipbImport(fl); };
+  f.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('[data-f="q"]')){ ev.preventDefault(); ipbSearch(ev.target.closest('[data-ipbpiece]')); } });
   f.addEventListener('change', async ev => {
     const t = ev.target;
     if (t.matches('[data-f="disc"]')) ipbSync();
@@ -2928,6 +3040,16 @@ function ipbWire(v){
   f.addEventListener('click', ev => {
     const d = ev.target.closest('[data-f="imgdel"]'); if (d){ const k = d.closest('[data-ipbpiece]').dataset.ipbpiece; ipb.imgs[k] = null; $('[data-f="img"]', d.closest('[data-ipbpiece]')).value = ''; ipbSync(); }
     const e = ev.target.closest('[data-ipbedit]'); if (e){ $('[data-ipbsrc]', f).value = e.dataset.ipbedit; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    const pc = ev.target.closest('[data-ipbpiece]'), k = pc ? pc.dataset.ipbpiece : null;
+    if (ev.target.closest('[data-f="usel"]')){
+      const u = $('[data-f="url"]', pc).value.trim();
+      if (!/^https:\/\/[^\s"'<>]+$/.test(u)){ toast('Paste a full link that starts with https://', true); return; }
+      ipbFromUrl(k, u, '');
+    }
+    if (ev.target.closest('[data-f="search"]')) ipbSearch(pc);
+    const pick = ev.target.closest('[data-pick]');
+    if (pick){ ipbFromUrl(k, pick.dataset.pick, pick.dataset.credit || ''); $('[data-f="results"]', pc).innerHTML = ''; }
+    if (ev.target.closest('[data-f="snap"]')) ipbSnap(pc);
     const x = ev.target.closest('[data-ipbdel]'); if (x && confirm('Delete this package?')){ writeEvent('intel_custom_del', null, { id:x.dataset.ipbdel }); if (ipb.id === x.dataset.ipbdel){ ipb.id = null; ipbSetMode(); } }
   });
   ipbFill(null);
