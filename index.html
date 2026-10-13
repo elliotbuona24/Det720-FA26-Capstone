@@ -32,7 +32,7 @@ const RECOVERY_CODE_HASH = "3nonh9lo9n";
   --e0:#2d8a57; --e1:#c39a1d; --e2:#d5712a; --e3:#bf2f28; --e4:#5c1414;
   --good:#2d8a57; --warn:#b7791f; --bad:#bf2f28; --focus:#1d5cc0;
   --display:'Saira Condensed','Arial Narrow',Arial,sans-serif;
-  --body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Times New Roman',Times,'Liberation Serif',serif;
   --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
@@ -161,7 +161,7 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .teammap{height:62vh;min-height:300px}
 [hidden]{display:none!important}
 .jambox{height:340px;border-radius:8px;border:2px dashed var(--bad);display:grid;place-content:center;gap:6px;text-align:center;padding:16px;background:repeating-linear-gradient(45deg,transparent 0 12px,rgba(200,40,40,.06) 12px 24px)}.jambox b{color:var(--bad);letter-spacing:.08em}
-.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--sans,system-ui);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 system-ui,sans-serif;cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.poi{background:none;border:0}.wcicon{background:none;border:0;filter:drop-shadow(0 0 4px rgba(124,255,107,.9))}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
+.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--body);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 var(--body);cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.poi{background:none;border:0}.wcicon{background:none;border:0;filter:drop-shadow(0 0 4px rgba(124,255,107,.9))}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
 .gl.m{color:#8fe6ff;font-size:10px}.gl.f{color:#bdf0ff;font-size:9px;font-weight:500}.leaflet-pane.contour-pane img{filter:brightness(1.7) saturate(1.3) drop-shadow(0 0 1px rgba(0,0,0,.9))}.cursor-grid{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:3px 8px;font:600 12px/1.3 var(--mono,monospace);pointer-events:none}.gridtog select{width:100%;font-size:13px;padding:2px 4px;margin:0 0 2px;color:#111;background:#fff}
 .leaflet-tooltip.sitelbl,.leaflet-tooltip.teamlbl{background:rgba(10,14,12,.72);color:#fff;border:0;box-shadow:none;font:600 12px/1.2 var(--body);padding:2px 6px}
@@ -1127,18 +1127,18 @@ function validPkg(k){
 function intelKey(pid, kind, val){ return secret('marala-intel', pid + ':' + kind + ':' + val); }
 const IPB_KINDS = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT', 'OSINT'];
 const OC_CALLS = {
-  good:{ ev:'conduct', p:{ good:true }, name:'Good conduct', sub:'diplomatic points +5' },
-  poor:{ ev:'conduct', p:{ good:false }, name:'Poor conduct', sub:'diplomatic points −5' },
-  civaid:{ ev:'civaid', p:{}, name:'Helped a civilian', sub:'diplomatic points +5' },
-  ied_real:{ ev:'ied', p:{ result:'real' }, name:'Real IED cleared', sub:'+2 points · diplomatic points +5' },
+  good:{ ev:'conduct', p:{ good:true }, name:'Good conduct', sub:'Diplomatic points +5' },
+  poor:{ ev:'conduct', p:{ good:false }, name:'Poor conduct', sub:'Diplomatic points −5' },
+  civaid:{ ev:'civaid', p:{}, name:'Helped a civilian', sub:'Diplomatic points +5' },
+  ied_real:{ ev:'ied', p:{ result:'real' }, name:'Real IED cleared', sub:'+2 points · Diplomatic points +5' },
   ied_hoax:{ ev:'ied', p:{ result:'hoax' }, name:'Hoax called correctly', sub:'+2 points' },
-  cache:{ ev:'cache', p:{}, name:'Militia cache cleared', sub:'+5 points · diplomatic points +5' },
-  provocation:{ ev:'provocation', p:{}, name:'Aimed at or crowded the other wing', sub:'escalation +5' },
-  firstfire:{ ev:'firstfire', p:{}, name:'Fired first', sub:'escalation +30 · diplomatic points −15' },
-  returnfire:{ ev:'returnfire', p:{}, name:'Returned fire', sub:'escalation +5' }
+  cache:{ ev:'cache', p:{}, name:'Militia cache cleared', sub:'+5 points · Diplomatic points +5' },
+  provocation:{ ev:'provocation', p:{}, name:'Aimed at or crowded the other wing', sub:'Escalation +5' },
+  firstfire:{ ev:'firstfire', p:{}, name:'Fired first', sub:'Escalation +30 · Diplomatic points −15' },
+  returnfire:{ ev:'returnfire', p:{}, name:'Returned fire', sub:'Escalation +5' }
 };
-function ocWhere(S, o){ if (!o) return ''; if (o.mayor) return 'Mayor'; if (o.side && o.team){ const t = S.teams[o.side][o.team]; return SIDES[o.side].name + ' · ' + (t ? (t.num ? '#' + t.num + ' ' : '') + t.name : 'fireteam'); } return 'not attached'; }
-function nineText(n){ return (n.target === 'cache' ? 'militia cache' : SIDES[OTHER[n.side]].name + ' position') + ' at ' + (n.loc || '?'); }
+function ocWhere(S, o){ if (!o) return ''; if (o.mayor) return 'Mayor'; if (o.side && o.team){ const t = S.teams[o.side][o.team]; return SIDES[o.side].name + ' · ' + (t ? (t.num ? '#' + t.num + ' ' : '') + t.name : 'Fireteam'); } return 'Not attached'; }
+function nineText(n){ return (n.target === 'cache' ? 'Militia cache' : SIDES[OTHER[n.side]].name + ' position') + ' at ' + (n.loc || '?'); }
 function ocReqText(S, r){
   if (r.kind === 'call') return OC_CALLS[r.call].name + ' for ' + SIDES[r.side].name + (r.text ? ' (' + r.text + ')' : '');
   if (r.kind === 'site') return (r.who === 'both' ? 'Both wings' : r.side ? SIDES[r.side].name : 'A team') + ' at ' + (r.site === 'town' ? 'Marala Town' : SITES[r.site] ? SITES[r.site].name : 'a site') + (r.text ? ' (' + r.text + ')' : '');
@@ -2082,7 +2082,7 @@ function mapSVG(S, side){
   const showB = !side || S.reveal || side === 'B' ? tB : false, showR = !side || S.reveal || side === 'R' ? tR : false;
   o += '<rect x="' + (CX(2) - 36) + '" y="' + (CY(2) - 26) + '" width="' + (CX(3) - CX(2) + 72) + '" height="52" rx="8" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>';
   o += '<text class="lbl" x="' + ((CX(2) + CX(3)) / 2) + '" y="' + (CY(2) - 4) + '" text-anchor="middle">Marala Town</text>';
-  o += '<text class="sub" x="' + ((CX(2) + CX(3)) / 2) + '" y="' + (CY(2) + 12) + '" text-anchor="middle">C3–D3 · town offices</text>';
+  o += '<text class="sub" x="' + ((CX(2) + CX(3)) / 2) + '" y="' + (CY(2) + 12) + '" text-anchor="middle">C3–D3 · Town offices</text>';
   o += '<circle cx="' + (CX(2) - 20) + '" cy="' + CY(2) + '" r="7" fill="' + (showB ? 'var(--blu)' : 'none') + '" stroke="var(--blu)" stroke-width="2"/>';
   o += '<circle cx="' + (CX(3) + 20) + '" cy="' + CY(2) + '" r="7" fill="' + (showR ? 'var(--red)' : 'none') + '" stroke="var(--red)" stroke-width="2"/>';
   SITE_KEYS.forEach(k => {
@@ -2094,7 +2094,7 @@ function mapSVG(S, side){
     o += '<circle cx="' + x + '" cy="' + y + '" r="18" fill="' + ((v.reported || v.stale) ? 'var(--panel)' : f) + '" stroke="' + (v.holder ? fill(v.holder) : 'var(--muted)') + '" stroke-width="2.5"' + dash + '/>';
     o += '<text x="' + x + '" y="' + (y + 5) + '" text-anchor="middle" style="font-family:var(--display);font-weight:700;font-size:15px" fill="' + ((v.holder && !v.reported && !v.stale) ? 'var(--panel)' : 'var(--ink)') + '">' + (v.unknown ? '?' : s.letter) + '</text>';
     o += '<text class="lbl" x="' + x + '" y="' + (y + 34) + '" text-anchor="middle">' + esc(s.name) + '</text>';
-    const sub = v.unknown ? 'unknown' : v.reported ? 'reported ' + hhmm(v.at) : v.stale ? 'seen ' + hhmm(v.at) : v.contested ? 'contested' : v.holder ? SIDES[v.holder].name + (v.via ? ' (radar)' : '') : 'neutral';
+    const sub = v.unknown ? 'Unknown' : v.reported ? 'Reported ' + hhmm(v.at) : v.stale ? 'Seen ' + hhmm(v.at) : v.contested ? 'Contested' : v.holder ? SIDES[v.holder].name + (v.via ? ' (radar)' : '') : 'neutral';
     o += '<text class="sub" x="' + x + '" y="' + (y + 47) + '" text-anchor="middle">' + esc(s.grid + ' · ' + sub) + '</text></g>';
   });
   S.incidents.forEach(inc => { const pt = parseGrid(inc.grid); if (!pt) return; o += '<g><path d="M' + pt.x + ',' + (pt.y - 11) + ' l3,7 l8,-3 l-4,8 l7,4 l-8,2 l1,8 l-7,-5 l-7,5 l1,-8 l-8,-2 l7,-4 l-4,-8 l8,3 z" fill="var(--e2)" stroke="var(--panel)" stroke-width="1"/></g>'; });
@@ -2325,7 +2325,7 @@ function drawDyn(st, S, side, opts){
     if (v.contested) L.circle(pt, { radius:45, color:'#ff9b3d', weight:3, dashArray:'6 5', fill:false, interactive:false }).addTo(LS.sites);
     const dec = S.declared[k];
     if (dec && dec.until > S.g) L.circle(pt, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(LS.sites);
-    const sub = v.unknown ? 'unknown' : v.reported ? 'reported ' + hhmm(v.at) : v.stale ? 'seen ' + hhmm(v.at) : v.contested ? 'contested' + (raw.contestUntil && (!side || raw.holder === side || raw.contestBy === side) ? ' until ' + hhmm(raw.contestUntil) : '') : v.holder ? SIDES[v.holder].name : 'neutral';
+    const sub = v.unknown ? 'Unknown' : v.reported ? 'Reported ' + hhmm(v.at) : v.stale ? 'Seen ' + hhmm(v.at) : v.contested ? 'Contested' + (raw.contestUntil && (!side || raw.holder === side || raw.contestBy === side) ? ' until ' + hhmm(raw.contestUntil) : '') : v.holder ? SIDES[v.holder].name : 'Neutral';
     const hollow = v.unknown || v.reported || v.stale || !v.holder;
     tip(L.circleMarker(pt, { radius:11, color:v.holder ? SIDE_HEX[v.holder] : '#ffffff', weight:3, dashArray:(v.reported || v.stale) ? '4 3' : null, fillColor:hollow ? '#111' : SIDE_HEX[v.holder], fillOpacity:hollow ? .45 : .9 }), SITES[k].name + ' · ' + sub).addTo(LS.sites);
   });
@@ -2334,7 +2334,7 @@ function drawDyn(st, S, side, opts){
   if (!side) (M.pois || []).forEach(x => { if (!x || !x.pt) return; L.marker(x.pt, { icon:L.divIcon({ className:'poi', html:'<svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 1L15 8L8 15L1 8Z" fill="#ffcf5a" fill-opacity=".85" stroke="#000" stroke-width="1.2"/></svg>', iconSize:[16, 16], iconAnchor:[8, 8] }) }).bindTooltip(esc(x.name), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[8, 0] }).bindPopup('<b>' + esc(x.name) + '</b><br><span class="mono">' + esc(fmtPt(x.pt)) + '</span>' + (squareOf(M, x.pt) ? '<br>Play square ' + squareOf(M, x.pt) : '')).addTo(LS.poi); });
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
-    const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' · BLUFOR office' : '') + (open('R') ? ' · REDFOR office' : '') : (open(side) ? ' · your office is open' : ''));
+    const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' · BLUFOR office' : '') + (open('R') ? ' · REDFOR office' : '') : (open(side) ? ' · Your office is open' : ''));
     const dec = S.declared.town;
     if (dec && dec.until > S.g) L.circle(pts.town, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(LS.sites);
     tip(L.circleMarker(pts.town, { radius:11, color:'#ffffff', weight:2, fillColor:'#888', fillOpacity:.75 }), txt).addTo(LS.sites);
@@ -2408,7 +2408,7 @@ function siteNameOf(k){ return k === 'town' ? 'Marala Town' : SITES[k] ? SITES[k
 /* ---------- liaison, teams and orders (wing) ---------- */
 function liaisonHTML(S, viewer){
   if (!S.liaison.length) return '<div class="empty">No messages yet. Use this channel to tell the other Wing Commander where your teams will be, agree boundaries and trade sites.</div>';
-  return S.liaison.slice().reverse().map(m => '<div class="item" style="border-left-color:var(--' + (m.side === 'B' ? 'blu' : 'red') + ')"><span class="t">' + hhmm(m.g) + ' · ' + (viewer && m.side === viewer ? 'You' : SIDES[m.side].name) + (m.site ? ' · declared ' + esc(siteNameOf(m.site)) + (m.until != null ? ' until ' + hhmm(m.until) : '') : '') + '</span><span>' + esc(m.text) + '</span></div>').join('');
+  return S.liaison.slice().reverse().map(m => '<div class="item" style="border-left-color:var(--' + (m.side === 'B' ? 'blu' : 'red') + ')"><span class="t">' + hhmm(m.g) + ' · ' + (viewer && m.side === viewer ? 'You' : SIDES[m.side].name) + (m.site ? ' · Declared ' + esc(siteNameOf(m.site)) + (m.until != null ? ' until ' + hhmm(m.until) : '') : '') + '</span><span>' + esc(m.text) + '</span></div>').join('');
 }
 function offersHTML(S, viewer){
   const list = S.offers.filter(o => o.status === 'open' || S.g - o.g < 20);
@@ -2431,7 +2431,7 @@ function teamRows(S, side, forWhite){
     const sq = pt ? squareOf(M, pt) : null;
     let nav = '';
     if (forWhite && f && f.gps && f.rep){ const d = Math.round(GEO.dist(f.gps, f.rep)); nav = '<span class="chip ' + (d <= 100 ? 'ok' : d <= 250 ? 'wait' : 'no') + '">map grid off by ' + d + ' m</span>'; }
-    return '<div class="li"><div class="grow"><b>' + esc(teamLabel(t)) + '</b> <span class="small muted">' + (t.status ? esc(t.status) + ' · ' : '') + (f ? 'updated ' + hhmm(f.g) + ' (' + age + ' min ago)' : 'no position yet') + '</span>' + (pt ? '<div class="small mono">' + esc(fmtPt(pt)) + (sq ? ' · square ' + sq : '') + (f.gps ? '' : ' · from map reading') + (f.ping ? ' · from ping' : '') + '</div>' : '') + pingTxt + '</div>' + nav + (forWhite ? '<button type="button" data-ping="' + side + '" data-pingteam="' + esc(t.id) + '" style="flex:0 0 auto" title="Silently ask this phone for its GPS">Ping</button>' : '') + (age != null && age > 10 ? '<span class="chip wait">stale</span>' : '') + '<button type="button" data-tnum data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" data-cur="' + esc(t.num || '') + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">' + (t.num ? 'Number #' + esc(t.num) : 'Give number') + '</button><button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>';
+    return '<div class="li"><div class="grow"><b>' + esc(teamLabel(t)) + '</b> <span class="small muted">' + (t.status ? esc(t.status) + ' · ' : '') + (f ? 'Updated ' + hhmm(f.g) + ' (' + age + ' min ago)' : 'No position yet') + '</span>' + (pt ? '<div class="small mono">' + esc(fmtPt(pt)) + (sq ? ' · Square ' + sq : '') + (f.gps ? '' : ' · From map reading') + (f.ping ? ' · From ping' : '') + '</div>' : '') + pingTxt + '</div>' + nav + (forWhite ? '<button type="button" data-ping="' + side + '" data-pingteam="' + esc(t.id) + '" style="flex:0 0 auto" title="Silently ask this phone for its GPS">Ping</button>' : '') + (age != null && age > 10 ? '<span class="chip wait">stale</span>' : '') + '<button type="button" data-tnum data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" data-cur="' + esc(t.num || '') + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">' + (t.num ? 'Number #' + esc(t.num) : 'Give number') + '</button><button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>';
   }).join('');
 }
 
@@ -2478,11 +2478,11 @@ function buildOC(){
       <div class="row" style="align-items:end"><label>Attached to<select data-ocassign></select></label><button type="button" data-ocsignout style="flex:0 0 auto">Sign out</button></div></div>
     <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Listen to your team read the full 9-line. If it is right, send it up to their C2.</p><div class="list" data-ocnines></div></div>
     <div class="panel stack"><h2>Calls for the white cell</h2><p class="small muted" style="margin:0">Pick the wing, then tap what you saw. The white cell approves or denies it.</p>
-      <div class="row"><label>Wing<select data-ocside><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: helped a farmer at the culvert"></label></div>
+      <div class="row"><label>Wing<select data-ocside><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
       <div class="evgrid">${Object.entries(OC_CALLS).map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div></div>
     <div class="panel stack"><h2>At a site</h2>
       <div class="row"><label>Site<select data-ocsite>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select></label></div>
-      <label>Note (optional)<input data-ocsitenote maxlength="120" placeholder="Example: starting the cipher now"></label>
+      <label>Note (optional)<input data-ocsitenote maxlength="120" placeholder="Example: Starting the cipher now"></label>
       <button type="button" class="btn-side" data-ocsitesend>Tell the white cell</button></div>
     <div class="panel stack"><h2>Message to the white cell</h2><textarea data-ocmsg rows="2" maxlength="300" placeholder="Example: Alpha 1 has a twisted ankle, walking it off"></textarea><button type="button" class="btn-side" data-ocmsgsend>Send</button></div>
     <div class="panel stack"><h2>Your requests</h2><div class="list" data-ocmine></div></div>
@@ -2516,14 +2516,14 @@ function renderOC(S){
   if (document.activeElement !== as){ as.innerHTML = ocOpts(S); as.value = ocVal(o); }
   if (o && o.side && !app.ocSideSet){ app.ocSideSet = true; $('[data-ocside]', v).value = o.side; $('[data-ocwho]', v).value = o.side; }
   const mine = S.nines.filter(n => n.status === 'open' && o && n.side === o.side && n.team === o.team);
-  $('[data-ocnines]', v).innerHTML = !o || !o.team ? '<div class="empty">Attach yourself to a fireteam to check its 9-lines.</div>' : mine.length ? mine.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.g) + '</span><div>' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocnine="' + n.id + '" data-ok="1">Correct · send to C2</button><button type="button" data-ocnine="' + n.id + '" data-ok="0">Not right</button></div></div>').join('') : '<div class="empty">Nothing to check right now.</div>';
+  $('[data-ocnines]', v).innerHTML = !o || !o.team ? '<div class="empty">Attach yourself to a fireteam to check its 9-lines.</div>' : mine.length ? mine.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.g) + '</span><div>' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocnine="' + n.id + '" data-ok="1">Correct · Send to C2</button><button type="button" data-ocnine="' + n.id + '" data-ok="0">Not right</button></div></div>').join('') : '<div class="empty">Nothing to check right now.</div>';
   const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
   $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
 }
 function renderOCWhite(S, v){
   const q = [], who = id => { const o = S.ocs[id]; return o ? esc(o.name) + ' <span class="muted">(' + esc(ocWhere(S, o)) + ')</span>' : 'POC'; };
   const ocsFor = n => Object.values(S.ocs).filter(o => !o.removed && o.side === n.side && o.team === n.team).map(o => esc(o.name)).join(', ');
-  S.nines.filter(n => n.status === 'open').forEach(n => q.push('<div class="li"><div class="grow"><span class="chip ' + n.side + '">' + SIDES[n.side].name + '</span> <b>Strike 9-line</b> <span class="small muted">' + hhmm(n.g) + ' · ' + esc(n.name) + (ocsFor(n) ? ' · POC ' + ocsFor(n) : ' · no POC attached') + '</span><div class="small">' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-nineres="' + n.id + '" data-ok="1">Correct · send to C2</button><button type="button" data-nineres="' + n.id + '" data-ok="0">Deny</button></div></div>'));
+  S.nines.filter(n => n.status === 'open').forEach(n => q.push('<div class="li"><div class="grow"><span class="chip ' + n.side + '">' + SIDES[n.side].name + '</span> <b>Strike 9-line</b> <span class="small muted">' + hhmm(n.g) + ' · ' + esc(n.name) + (ocsFor(n) ? ' · POC ' + ocsFor(n) : ' · No POC attached') + '</span><div class="small">' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-nineres="' + n.id + '" data-ok="1">Correct · Send to C2</button><button type="button" data-nineres="' + n.id + '" data-ok="0">Deny</button></div></div>'));
   S.ocReqs.filter(r => r.status === 'open').forEach(r => {
     let ctl = r.kind === 'call' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button>' : '<button type="button" data-ocres="' + r.id + '" data-ok="1">Got it</button>';
     if (r.kind === 'site' && r.who === 'both' && SITES[r.site] && !S.sites[r.site].contested) ctl = '<button type="button" data-act="contest" data-id="' + r.site + '" data-on="1">Mark both at site</button>' + ctl;
@@ -2637,7 +2637,7 @@ function renderTeam(S, side){
   if (!me){
     const jl = $('[data-tjoinlist]', v); if (!jl) return;
     const ts = liveTeams(S, side).filter(t => t.status !== 'Left the game');
-    jl.innerHTML = ts.length ? ts.map(t => '<div class="li"><div class="grow"><b>' + esc(t.name) + '</b> <span class="small muted">' + (t.last ? 'last update ' + hhmm(t.last.g) : 'no position yet') + '</span></div><button type="button" class="btn-side" data-tjoinid="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto">Join</button></div>').join('') : '<div class="empty">No ' + esc(SIDES[side].name) + ' fireteams yet. Create one above.</div>';
+    jl.innerHTML = ts.length ? ts.map(t => '<div class="li"><div class="grow"><b>' + esc(t.name) + '</b> <span class="small muted">' + (t.last ? 'Last update ' + hhmm(t.last.g) : 'No position yet') + '</span></div><button type="button" class="btn-side" data-tjoinid="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto">Join</button></div>').join('') : '<div class="empty">No ' + esc(SIDES[side].name) + ' fireteams yet. Create one above.</div>';
     return;
   }
   const mine = S.teams[side][me.id];
@@ -2662,7 +2662,7 @@ function renderTeam(S, side){
   const tm = $('[data-tmap]', v);
   if (tm && !tm.hidden && tm._lm) drawDyn(tm._lm, S, side, { team:true });
   const os = S.orders.filter(o => o.side === side && (o.team === 'all' || o.team === me.id));
-  $('[data-torders]', v).innerHTML = os.length ? os.slice().reverse().map(o => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(o.g) + (o.team === 'all' ? ' · all teams' : ' · to you') + '</span><div>' + esc(o.text) + '</div></div></div>').join('') : '<div class="empty">No orders yet. Your C2 sends them from the board.</div>';
+  $('[data-torders]', v).innerHTML = os.length ? os.slice().reverse().map(o => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(o.g) + (o.team === 'all' ? ' · All teams' : ' · To you') + '</span><div>' + esc(o.text) + '</div></div></div>').join('') : '<div class="empty">No orders yet. Your C2 sends them from the board.</div>';
 }
 
 function teamTick(S, side, now){
@@ -2717,7 +2717,7 @@ function buildWing(side){
         <h2>Your reports of ${esc(other)}</h2>
         <div class="list" data-contacts></div>
       </div>
-      <div class="panel stack ip-panel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">for the Intel cell</span></div><p class="small muted" style="margin:0">Each package gives several pieces of intel. At least one is false or misleading, and sometimes more than one. Pick the answer and check every false piece before the deadline: +2 for the right answer, +2 for catching all the false pieces and no true ones. One try per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>OSINT</dt><dd>Open-source intelligence: news, social media posts and other public information.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 050915R DEC 26 is 5 December, 0915 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from higher headquarters arrive here during the game.</div></div></div></div>
+      <div class="panel stack ip-panel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">For the Intel cell</span></div><p class="small muted" style="margin:0">Each package gives several pieces of intel. At least one is false or misleading, and sometimes more than one. Pick the answer and check every false piece before the deadline: +2 for the right answer, +2 for catching all the false pieces and no true ones. One try per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>OSINT</dt><dd>Open-source intelligence: news, social media posts and other public information.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 050915R DEC 26 is 5 December, 0915 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from higher headquarters arrive here during the game.</div></div></div></div>
       <div class="panel">
         <div class="tabs" role="tablist">
           <button type="button" role="tab" aria-selected="true" data-tab="act">Commander's actions</button>
@@ -2727,23 +2727,23 @@ function buildWing(side){
           <button type="button" role="tab" aria-selected="false" data-tab="req">Requests</button>
         </div>
         <div data-pane="act" class="actions">
-          <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> · every 20 minutes (10 with the Airstrip) · <span class="esc-up">+1 escalation</span></span></div>
+          <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> · Every 20 minutes (10 with the Airstrip) · <span class="esc-up">+1 escalation</span></span></div>
             <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at B5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
-          <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · once every ${UAV_EVERY} minutes · <span class="esc-up">+10 escalation</span></span></div>
+          <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · Once every ${UAV_EVERY} minutes · <span class="esc-up">+10 escalation</span></span></div>
             <p class="small muted" style="margin:0">Shows the other wing’s fireteams to you and your fireteams. Their phones send fresh GPS the moment it launches, so the picture updates live for 1 minute, then shows as last seen for 5. The other wing is told it was spotted, but not how.</p>
             <form data-f="uav"><button class="btn-side" type="submit">Launch UAV</button></form></div>
-          <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · true <span class="esc-down">−5</span> · false <span class="esc-up">+15</span></span></div>
+          <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · True <span class="esc-down">−5</span> · False <span class="esc-up">+15</span></span></div>
             <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Incident<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">Who did it<select id="stB-${side}" name="blame"><option value="militia">The militia</option><option value="other">${esc(other)}</option></select></label></div><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
-          <div class="act"><div class="act-head"><b>Humanitarian aid</b><span class="cost">Once every 10 minutes · needs a town office · diplomatic points +5</span></div>
+          <div class="act"><div class="act-head"><b>Humanitarian aid</b><span class="cost">Once every 10 minutes · Needs a town office · Diplomatic points +5</span></div>
             <form data-f="aid"><button class="btn-side" type="submit">Deliver aid</button></form></div>
           <details class="act"><summary>Pressure options (they raise escalation)</summary>
             <div class="stack" style="margin-top:8px">
               <div class="act-head"><b>Show of force</b><span class="cost"><span data-left="show"></span> · <span class="esc-up">+10 escalation</span></span></div>
               <form class="stack" data-f="show"><label for="shT-${side}">Site the other wing must leave<input id="shT-${side}" name="t" maxlength="60" placeholder="Example: Radar Ridge, E1" required></label><div><button type="submit">Order show of force</button></div></form>
-              <div class="act-head"><b>Jam enemy datalink</b><span class="cost"><span data-jamstate>Ready</span> · once every 45 minutes · <span class="esc-up">+5 escalation</span> · 5.5 minutes</span></div>
+              <div class="act-head"><b>Jam enemy datalink</b><span class="cost"><span data-jamstate>Ready</span> · Once every 45 minutes · <span class="esc-up">+5 escalation</span> · 5.5 minutes</span></div>
               <p class="small muted" style="margin:0">Their live map and drone flights go down for 5.5 minutes. Their radios still work.</p>
               <form data-f="jam"><button type="submit">Jam datalink</button></form>
-              <div class="act-head"><b>Strike</b><span class="cost"><span data-left="strike"></span> · needs a correct 9-line</span></div>
+              <div class="act-head"><b>Strike</b><span class="cost"><span data-left="strike"></span> · Needs a correct 9-line</span></div>
               <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="40" placeholder="Example: C4-6" required></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="nine" required style="width:auto"> A team has sent the strike 9-line</label><div><button type="submit">Ask for strike</button></div></form>
               <div class="list" data-nines></div>
             </div></details>
@@ -2754,15 +2754,15 @@ function buildWing(side){
               <div class="row"><label for="ctK-${side}">What was seen<select id="ctK-${side}" name="kind"><option value="team">${esc(other)} team</option><option value="site">${esc(other)} flag on a site</option><option value="other">Other activity</option></select></label>
               <label for="ctS-${side}">Which site (for a flag)<select id="ctS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
               <p class="small muted" style="margin:0" data-salnote>Enemy team: enter the full SALUTE report your fireteam radioed in.</p>
-              <div class="row" data-sal><label for="ctSz-${side}">S · Size<input id="ctSz-${side}" name="sz" maxlength="60" placeholder="Example: 4 people"></label><label for="ctAc-${side}">A · Activity<input id="ctAc-${side}" name="act" maxlength="120" placeholder="Example: moving west along the tree line"></label></div>
-              <div class="row"><label for="ctG-${side}">L · Location (play square or MGRS)<input id="ctG-${side}" name="grid" maxlength="24" placeholder="Example: D4 or 5892 2345" required></label><label for="ctUn-${side}" data-sal>U · Uniform<input id="ctUn-${side}" name="uni" maxlength="80" placeholder="Example: red armbands, dark jackets"></label></div>
+              <div class="row" data-sal><label for="ctSz-${side}">S · Size<input id="ctSz-${side}" name="sz" maxlength="60" placeholder="Example: 4 people"></label><label for="ctAc-${side}">A · Activity<input id="ctAc-${side}" name="act" maxlength="120" placeholder="Example: Moving west along the tree line"></label></div>
+              <div class="row"><label for="ctG-${side}">L · Location (play square or MGRS)<input id="ctG-${side}" name="grid" maxlength="24" placeholder="Example: D4 or 5892 2345" required></label><label for="ctUn-${side}" data-sal>U · Uniform<input id="ctUn-${side}" name="uni" maxlength="80" placeholder="Example: Red armbands, dark jackets"></label></div>
               <div class="row"><label for="ctT-${side}">T · Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="Example: 0842"></label><label for="ctEq-${side}" data-sal>E · Equipment<input id="ctEq-${side}" name="eq" maxlength="80" placeholder="Example: 2 rifles, a radio"></label></div>
-              <label for="ctN-${side}" data-notesal>Notes<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: flag on the Radar Ridge mast"></label>
+              <label for="ctN-${side}" data-notesal>Notes<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: Flag on the Radar Ridge mast"></label>
               <div><button class="btn-side" type="submit">Post report</button></div></form></div>
           <div class="act"><div class="act-head"><b>Start contention</b><span class="cost"><span class="esc-up">+5 escalation now and every 10 minutes</span></span></div>
             <p class="small muted" style="margin:0">For a site the other wing holds. Your team does the site activity for a capture code word and you enter it below before the timer runs out. If they enter a defense code word first, your team pulls back and you take +5 more.</p>
             <form class="stack" data-f="contend"><div class="row"><label for="cnS-${side}">Site<select id="cnS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div><div><button class="btn-side" type="submit">Start contention</button></div></form></div>
-          <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">capture or defense code word</span></div>
+          <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">Capture or defense code word</span></div>
             <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word (each works once)<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
             <div class="list" data-claims></div></div>
         </div>
@@ -2770,7 +2770,7 @@ function buildWing(side){
         <div data-pane="teams" class="stack" hidden>
           <p class="small muted" style="margin:0">Your fireteams report from their phones. Give intent and tasks here; they decide how to get it done.</p>
           <div class="list" data-teams></div>
-          <div class="act"><div class="act-head"><b>Send an order</b><span class="cost">shows on the fireteam's phone</span></div>
+          <div class="act"><div class="act-head"><b>Send an order</b><span class="cost">Shows on the fireteam's phone</span></div>
             <form class="stack" data-f="order"><label for="orT-${side}">To<select id="orT-${side}" name="team" data-teamsel><option value="all">All fireteams</option></select></label><label for="orX-${side}">Order<input id="orX-${side}" name="text" maxlength="300" required placeholder="Example: Claim Radar Ridge, then hold and report in 20 minutes"></label><div><button class="btn-side" type="submit">Send order</button></div></form></div>
         </div>
         <div data-pane="liaison" class="stack" hidden>
@@ -2779,7 +2779,7 @@ function buildWing(side){
             <div class="row"><label for="lzS-${side}">Declare a site (optional)<select id="lzS-${side}" name="site"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label for="lzU-${side}">Until<input id="lzU-${side}" name="until" maxlength="5" inputmode="numeric" placeholder="Example: 0900"></label></div>
             <div><button class="btn-side" type="submit">Send to the other wing</button></div></form></div>
           <div class="feed" data-liaison style="max-height:320px"></div>
-          <div class="act"><div class="act-head"><b>Hand over a site</b><span class="cost">no escalation · diplomatic points +2 for both</span></div>
+          <div class="act"><div class="act-head"><b>Hand over a site</b><span class="cost">No escalation · Diplomatic points +2 for both</span></div>
             <form class="stack" data-f="handover"><div class="row"><label for="hoS-${side}">Site you hold<select id="hoS-${side}" name="site" data-ownsites></select></label><label for="hoN-${side}">Note<input id="hoN-${side}" name="note" maxlength="200" placeholder="Example: In exchange for the Harbor"></label></div><div><button type="submit">Offer handover</button></div></form>
             <div class="list" data-offers></div></div>
         </div>
@@ -2873,13 +2873,13 @@ function renderIntel(S, side, v){
       });
     }
     const o = intelOpen(S, P.id, side), mine = S.intel[side][P.id], done = !!o.done;
-    $('[data-ipdue]', card).textContent = done ? 'closed ' + hhmm(o.due) : 'due ' + hhmm(o.due);
+    $('[data-ipdue]', card).textContent = done ? 'Closed ' + hhmm(o.due) : 'Due ' + hhmm(o.due);
     card.classList.toggle('ip-done', done); $('[data-ipexp]', card).hidden = !done;
     const f = $('form', card), st = $('[data-ipstatus]', card);
     $$('input, button', f).forEach(el => el.disabled = !!mine || done || S.endex);
     if (done){
       const tr = intelTruth(P);
-      const res = mine ? ('Answer ' + (mine.okA ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · false intel ' + (mine.okF ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · <b>+' + (mine.pts || 0) + '</b>') : '<span class="chip no">No answer in time</span> · +0';
+      const res = mine ? ('Answer ' + (mine.okA ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · False intel ' + (mine.okF ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · <b>+' + (mine.pts || 0) + '</b>') : '<span class="chip no">No answer in time</span> · +0';
       st.innerHTML = res + '<div class="small muted">Correct: ' + esc(fillT(P.opts[tr.a] || '?')) + '. False: ' + esc(falseText(P, tr)) + '.</div>';
     } else if (mine){
       st.innerHTML = '<span class="chip wait">Locked in ' + hhmm(mine.g) + '</span> <span class="small muted">Results at ' + hhmm(o.due) + '.</span>';
@@ -2898,7 +2898,7 @@ function renderWing(S, side, now){
   $('[data-hnnote]', v).textContent = !S.access[side] ? 'Town office closed by the mayor' : S.office[side] ? 'Town office open (+3 every 10 min)' : 'No town office yet';
   $('[data-esccaused]', v).textContent = S.escBy[side];
   $('[data-pts]', v).textContent = sc.total;
-  $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + ' · both scores cut in half</div>' : S.reveal ? '<div class="panel"><h2>Fog of war lifted: final points</h2>' + scoreTable(S, ['B', 'R']) + '</div>' : (jammed(S, side) ? '<div class="banner">Datalink jammed until ' + hhmm(S.jam[side]) + ': your live map and drone flights are down. Radios still work.</div>' : '');
+  $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + ' · Both scores cut in half</div>' : S.reveal ? '<div class="panel"><h2>Fog of war lifted: final points</h2>' + scoreTable(S, ['B', 'R']) + '</div>' : (jammed(S, side) ? '<div class="banner">Datalink jammed until ' + hhmm(S.jam[side]) + ': your live map and drone flights are down. Radios still work.</div>' : '');
   $('[data-radar]', v).textContent = S.reveal ? 'Fog of war lifted' : (S.sites.radar.holder === side && !S.sites.radar.contested) ? 'Radar Ridge shows every site the other wing holds' : 'The other wing shows up only where you report it';
   const jm = jammed(S, side), real = jm ? jamMapInto($('[data-map]', v), S, side) : renderMapInto($('[data-map]', v), S, S.reveal ? null : side);
   if (jm && app.fsEl) closeFullMap();
@@ -2917,7 +2917,7 @@ function renderWing(S, side, now){
   $('[data-contacts]', v).innerHTML = mine.length ? mine.slice().reverse().map(c => {
     const age = Math.max(0, Math.floor(S.g - c.seenG));
     const st = c.verdict ? (c.verdict === 'confirm' ? '<span class="chip ok">Confirmed +2</span>' : '<span class="chip no">Not confirmed</span>') : '<span class="chip wait">Checking</span>';
-    return '<div class="li"><div class="grow"><b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid || '') + '</span> <span class="muted small">seen ' + esc(c.seen) + ' · ' + age + ' min ago' + (age > 15 ? ' · old' : '') + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' + st + '</div>';
+    return '<div class="li"><div class="grow"><b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid || '') + '</span> <span class="muted small">Seen ' + esc(c.seen) + ' · ' + age + ' min ago' + (age > 15 ? ' · Old' : '') + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' + st + '</div>';
   }).join('') : '<div class="empty">No reports yet. Intel posts them from the Reports tab; each confirmed report is worth 2 points.</div>';
   const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id]);
   keepSelect($('[name="inc"]', v), incs.length ? incs.map(i => '<option value="' + i.id + '">' + esc(i.grid) + ' explosion, ' + hhmm(i.g) + '</option>').join('') : '<option value="">No incidents yet</option>');
@@ -2934,7 +2934,7 @@ function renderWing(S, side, now){
   $('[data-jamstate]', v).textContent = jamReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(jl + JAM_EVERY));
   const uavL = S.uav[side], uavReady = !uavL || S.g - uavL.g >= UAV_EVERY - 1e-9;
   $('[data-uavstate]', v).textContent = uavReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(uavL.g + UAV_EVERY));
-  { const nb = $('[data-nines]', v); if (nb){ const ns = S.nines.filter(n => n.side === side && n.status === 'ok' && !n.used).slice(-4).reverse(); nb.innerHTML = ns.length ? '<div class="small muted">Checked 9-lines from your fireteams</div>' + ns.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.resG) + ' · checked by ' + esc(n.by) + '</span><div class="small">' + esc(nineText(n)) + '</div></div><button type="button" data-usenine="' + n.id + '" style="flex:0 0 auto">Use</button></div>').join('') : ''; } }
+  { const nb = $('[data-nines]', v); if (nb){ const ns = S.nines.filter(n => n.side === side && n.status === 'ok' && !n.used).slice(-4).reverse(); nb.innerHTML = ns.length ? '<div class="small muted">Checked 9-lines from your fireteams</div>' + ns.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.resG) + ' · Checked by ' + esc(n.by) + '</span><div class="small">' + esc(nineText(n)) + '</div></div><button type="button" data-usenine="' + n.id + '" style="flex:0 0 auto">Use</button></div>').join('') : ''; } }
   $$('form[data-f] button[type="submit"]', v).forEach(b => {
     const f = b.closest('form').dataset.f;
     let off = lock;
@@ -2992,16 +2992,16 @@ function buildWhite(){
     <div class="panel side-${s}">
       <div class="act-head"><span class="badge side-${s}">${SIDES[s].name}</span><span class="small muted" data-wstat="${s}"></span></div>
       <div class="evgrid">
-        <button type="button" data-ev="ied" data-side="${s}" data-r="real">Real IED cleared<small>+2 points · diplomatic points +5</small></button>
+        <button type="button" data-ev="ied" data-side="${s}" data-r="real">Real IED cleared<small>+2 points · Diplomatic points +5</small></button>
         <button type="button" data-ev="ied" data-side="${s}" data-r="hoax">Hoax called correctly<small>+2 points</small></button>
-        <button type="button" data-ev="cache" data-side="${s}">Militia cache cleared<small>+5 points · diplomatic points +5</small></button>
-        <button type="button" data-ev="conduct" data-side="${s}" data-good="1">Good conduct<small>diplomatic points +5</small></button>
-        <button type="button" data-ev="conduct" data-side="${s}" data-good="0">Poor conduct<small>diplomatic points −5</small></button>
-        <button type="button" data-ev="civaid" data-side="${s}">Helped a civilian<small>diplomatic points +5</small></button>
-        <button type="button" data-ev="provocation" data-side="${s}">Aimed at or crowded the other wing<small>escalation +5</small></button>
-        <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>escalation +30 · diplomatic points −15</small></button>
-        <button type="button" data-ev="returnfire" data-side="${s}">Returned fire<small>escalation +5</small></button>
-        <button type="button" data-ev="office" data-side="${s}" data-on="0">Close town office<small>override</small></button>
+        <button type="button" data-ev="cache" data-side="${s}">Militia cache cleared<small>+5 points · Diplomatic points +5</small></button>
+        <button type="button" data-ev="conduct" data-side="${s}" data-good="1">Good conduct<small>Diplomatic points +5</small></button>
+        <button type="button" data-ev="conduct" data-side="${s}" data-good="0">Poor conduct<small>Diplomatic points −5</small></button>
+        <button type="button" data-ev="civaid" data-side="${s}">Helped a civilian<small>Diplomatic points +5</small></button>
+        <button type="button" data-ev="provocation" data-side="${s}">Aimed at or crowded the other wing<small>Escalation +5</small></button>
+        <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>Escalation +30 · Diplomatic points −15</small></button>
+        <button type="button" data-ev="returnfire" data-side="${s}">Returned fire<small>Escalation +5</small></button>
+        <button type="button" data-ev="office" data-side="${s}" data-on="0">Close town office<small>Override</small></button>
       </div>
       <form class="row" data-wf="adjust" data-side="${s}"><label>Adjust<select name="field"><option value="hn">Diplomatic points</option><option value="pts">Points</option><option value="esc">Escalation (charged to them)</option></select></label><label>By<input name="delta" type="number" value="1" step="1"></label><label>Reason<input name="reason" maxlength="80"></label><button type="submit" style="flex:0 0 auto">Apply</button></form>
     </div>`;
@@ -3183,7 +3183,7 @@ function ipbPieceHTML(k){
             '<div class="stack" data-imgrow><div class="row" style="align-items:center"><b class="small" style="flex:1 1 100%">Image</b><img class="ipb-prev" data-f="prev" hidden alt="Image preview"><span class="small muted" data-f="credit"></span><button type="button" data-f="imgdel" hidden style="flex:0 0 auto">Remove image</button></div>' +
             '<div class="ipb-src"><label>From this device<input type="file" accept="image/*" data-f="img"></label>' +
             '<div class="row" style="align-items:end"><label>Or paste a photo link<input data-f="url" maxlength="600" placeholder="Example: https://upload.wikimedia.org/…/photo.jpg"></label><button type="button" data-f="usel" style="flex:0 0 auto">Use link</button></div>' +
-            '<div class="row" style="align-items:end"><label>Or search free photos (Wikimedia Commons)<input data-f="q" maxlength="80" placeholder="Example: abandoned truck"></label><button type="button" data-f="search" style="flex:0 0 auto">Search</button></div><div class="ipb-results" data-f="results"></div>' +
+            '<div class="row" style="align-items:end"><label>Or search free photos (Wikimedia Commons)<input data-f="q" maxlength="80" placeholder="Example: Abandoned truck"></label><button type="button" data-f="search" style="flex:0 0 auto">Search</button></div><div class="ipb-results" data-f="results"></div>' +
             '<div class="row" style="align-items:end"><label style="flex:0 0 150px">Or snapshot the map<select data-f="zoom"><option value="16">Wide (about 2 km)</option><option value="17" selected>Medium (about 1 km)</option><option value="18">Close (about 500 m)</option><option value="19">Very close (about 250 m)</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-f="lbl" checked> Grid label</label><button type="button" data-f="snap" style="flex:0 0 auto">Snapshot at last map tap</button></div>' +
             '<p class="small muted" style="margin:0">For a snapshot, tap the spot on the white cell map first. Last tap: <span class="mono" data-lastclick>—</span></p></div></div>' +
     '<label class="chk"><input type="checkbox" data-f="false"> This piece is false or misleading</label></fieldset>';
@@ -3470,7 +3470,7 @@ function ipbRender(S, v){
   const AP = allProblems(S);
   keepSelect($('[data-ipbsrc]', f), '<option value="">A blank package</option>' + AP.map((P, i) => '<option value="' + P.id + '">' + (i + 1) + '. ' + esc(fillT(P.title)) + (P.custom ? ' (built here)' : '') + '</option>').join(''));
   const cs = S.customOrder.map(id => S.custom[id]).filter(Boolean);
-  $('[data-ipblist]', f).innerHTML = cs.length ? cs.map(c => { const n = AP.indexOf(c) + 1, sent = !!S.intelOut[c.id]; return '<div class="li"><div class="grow"><b>' + n + '. ' + esc(c.title) + '</b> <span class="small muted">' + (c.replaces ? 'replaces built-in ' + (PROBLEMS.findIndex(P => P.id === c.replaces) + 1) + ' · ' : '') + c.items.length + ' pieces · ' + (c.items.some(it => it.img) ? 'has a photo · ' : '') + (sent ? 'sent' : 'not sent') + '</span>' + (c.note ? '<div class="small muted">Note: ' + esc(c.note) + '</div>' : '') + '</div>' + (sent ? '' : '<button type="button" data-ipbedit="' + c.id + '" style="flex:0 0 auto">Edit</button><button type="button" data-ipbdel="' + c.id + '" style="flex:0 0 auto">Delete</button>') + '</div>'; }).join('') : '<div class="empty">None yet.</div>';
+  $('[data-ipblist]', f).innerHTML = cs.length ? cs.map(c => { const n = AP.indexOf(c) + 1, sent = !!S.intelOut[c.id]; return '<div class="li"><div class="grow"><b>' + n + '. ' + esc(c.title) + '</b> <span class="small muted">' + (c.replaces ? 'Replaces built-in ' + (PROBLEMS.findIndex(P => P.id === c.replaces) + 1) + ' · ' : '') + c.items.length + ' pieces · ' + (c.items.some(it => it.img) ? 'Has a photo · ' : '') + (sent ? 'Sent' : 'Not sent') + '</span>' + (c.note ? '<div class="small muted">Note: ' + esc(c.note) + '</div>' : '') + '</div>' + (sent ? '' : '<button type="button" data-ipbedit="' + c.id + '" style="flex:0 0 auto">Edit</button><button type="button" data-ipbdel="' + c.id + '" style="flex:0 0 auto">Delete</button>') + '</div>'; }).join('') : '<div class="empty">None yet.</div>';
 }
 document.addEventListener('click', ev => {
   const im = ev.target.closest('.ip-img'); if (im){ const o = document.createElement('div'); o.className = 'ip-lightbox'; o.innerHTML = '<img alt="">'; o.firstChild.src = im.src; o.onclick = () => o.remove(); document.body.appendChild(o); }
@@ -3497,17 +3497,17 @@ function renderWhite(S, now){
   $('[data-wliaison]', v).innerHTML = liaisonHTML(S, null);
   $('[data-woffers]', v).innerHTML = offersHTML(S, null);
   const lvlNow = levelIndex(S.esc), tkey = START_G + '|' + lvlNow;
-  if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TEMPLATES.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + ' · ' + t.phase : LEVELS[t.lvl].name + ' or higher') + ' · ' + ({ both:'both', B:'BLUFOR', R:'REDFOR', public:'public' })[t.to] + '</small></button>'; }).join(''); }
+  if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TEMPLATES.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + ' · ' + t.phase : LEVELS[t.lvl].name + ' or higher') + ' · ' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[t.to] + '</small></button>'; }).join(''); }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
   if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); $('[data-mpois]', ms).value = (M0.pois || []).map(x => x.name + ' | ' + fmtPt(x.pt)).join('\n'); }
   { const wp = wcSpot(S), M = mapCfg(S); $('[data-wcnow]', v).textContent = wp ? (squareOf(M, wp) ? squareOf(M, wp) + ' · ' : '') + fmtPt(wp) + (S.wcPos ? ' (moved)' : ' (planned spot)') : 'not set'; $('[data-wcback]', v).disabled = !S.wcPos; }
   $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Both at site</span>' : '') + '</span>' +
     '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>REDFOR</option></select>' +
     (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<select data-timer="' + k + '" aria-label="Contention timer for ' + SITES[k].name + '" style="flex:0 0 auto;width:auto"><option value="15"' + ((S.siteTimer[k] || 15) === 15 ? ' selected' : '') + '>15 min</option><option value="20"' + (S.siteTimer[k] === 20 ? ' selected' : '') + '>20 min</option></select><button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear') : 'Both at site') + '</button></div>'; }).join('') +
-    '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
+    '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">Town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
   renderOCWhite(S, v);
   const q = [];
-  S.contacts.filter(c => !c.verdict).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid) + '</span> <span class="small muted">seen ' + esc(c.seen) + ' · posted ' + hhmm(c.g) + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' +
+  S.contacts.filter(c => !c.verdict).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid) + '</span> <span class="small muted">Seen ' + esc(c.seen) + ' · Posted ' + hhmm(c.g) + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' +
     '<div class="row" style="flex:0 0 auto"><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="confirm">True · +2</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="duplicate">Duplicate</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="false">False</button></div></div>'));
   const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request' };
   S.requests.filter(r => r.status === 'open').forEach(r => {
@@ -3523,17 +3523,17 @@ function renderWhite(S, now){
   ipbRender(S, v);
   $('[data-intelw]', v).innerHTML = allProblems(S).map((P, i) => {
     const tr = intelTruth(P), oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R');
-    const st = s => { const o = s === 'B' ? oB : oR, m = S.intel[s][P.id]; return '<span class="chip ' + s + '" style="flex:0 0 auto">' + SIDES[s].name + ': ' + (!o ? 'not sent' : o.done ? (m ? '+' + (m.pts || 0) : 'no answer') : m ? 'locked ' + hhmm(m.g) : 'working, due ' + hhmm(o.due)) + '</span>'; };
+    const st = s => { const o = s === 'B' ? oB : oR, m = S.intel[s][P.id]; return '<span class="chip ' + s + '" style="flex:0 0 auto">' + SIDES[s].name + ': ' + (!o ? 'Not sent' : o.done ? (m ? '+' + (m.pts || 0) : 'no answer') : m ? 'locked ' + hhmm(m.g) : 'working, due ' + hhmm(o.due)) + '</span>'; };
     let btns = '';
     if (!oB && !oR) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="B"' + (running ? '' : ' disabled') + '>BLUFOR only</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="R"' + (running ? '' : ' disabled') + '>REDFOR only</button>';
     else if (!oB || !oR) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>';
     if ((oB && !oB.done) || (oR && !oR.done)) btns += '<button type="button" data-act="ipclose" data-id="' + P.id + '">Close now</button>';
-    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · false: ' + esc(falseText(P, tr)) + (P.items.length !== 4 ? ' · ' + P.items.length + ' pieces' : '') + '</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
+    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">Intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · False: ' + esc(falseText(P, tr)) + (P.items.length !== 4 ? ' · ' + P.items.length + ' pieces' : '') + '</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
   }).join('');
-  ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Diplomatic points ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · escalation caused ' + S.escBy[s]; });
-  $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · from ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
+  ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Diplomatic points ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · Escalation caused ' + S.escBy[s]; });
+  $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · From ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
   const voids = app.events.filter(e => e.type === 'void').length;
-  $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · saved on this computer' : ' · shared');
+  $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · Saved on this computer' : ' · Shared');
 }
 
 /* ---------- refresh loop ---------- */
