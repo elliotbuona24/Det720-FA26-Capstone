@@ -1131,6 +1131,8 @@ function validPkg(k){
 function intelKey(pid, kind, val){ return secret('marala-intel', pid + ':' + kind + ':' + val); }
 const IPB_KINDS = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT', 'OSINT'];
 const IED_HIT = 5;
+const TCHAT_EVERY = 15;
+function tchatNext(S, side, tid){ const l = (S.tchats || []).filter(m => m.side === side && m.team === tid && m.from === 'team').pop(); return l ? l.g + TCHAT_EVERY : null; }
 const OC_CALLS = {
   good:{ ev:'conduct', p:{ good:true }, name:'Good conduct', sub:'Diplomatic points +5' },
   poor:{ ev:'conduct', p:{ good:false }, name:'Poor conduct', sub:'Diplomatic points −5' },
@@ -1378,6 +1380,7 @@ function apply(S, e, cfg){
       const tx = String(p.text || '').trim().slice(0, 300); if (!tx) break;
       const t = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:String(p.name || 'Team').slice(0, 40), fixes:[] });
       const from = p.from === 'c2' ? 'c2' : 'team';
+      if (from === 'team'){ const nx = tchatNext(S, side, p.team); if (nx != null && S.g < nx){ pushLog(S, nm + ' ' + t.name + ' message refused: limit of one every ' + TCHAT_EVERY + ' minutes', side, e, 'rejected'); break; } }
       S.tchats.push({ id:e.id, side, team:p.team, from, text:tx, g:S.g }); S.ver++;
       pushLog(S, from === 'c2' ? nm + ' C2 to ' + t.name + ': ' + tx : nm + ' ' + t.name + ' to C2: ' + tx, side, e);
       break; }
@@ -1433,6 +1436,13 @@ function apply(S, e, cfg){
       pushLog(S, nm + ' declined contention request from ' + r.name + ' (' + SITES[r.site].name + ')', side, e);
       break; }
     case 'site_timer': if (SITES[p.site] && Number.isInteger(p.min) && p.min >= 3 && p.min <= 90){ S.siteTimer[p.site] = p.min; S.ver++; pushLog(S, SITES[p.site].name + ' contention timer set to ' + p.min + ' minutes', null, e); } break;
+    case 'act_wpreq': {
+      const okPt = a => Array.isArray(a) && a.length === 2 && a.every(Number.isFinite) && Math.abs(a[0]) <= 90 && Math.abs(a[1]) <= 180;
+      const label = String(p.label || '').trim().slice(0, 60); if (!side || !label || !okPt(p.pt) || S.endex) break;
+      const grid = String(p.grid || '').slice(0, 60), note = String(p.note || '').trim().slice(0, 140);
+      S.requests.push({ id:e.id, side, kind:'wp', label, pt:p.pt, grid, note, text:label + (grid ? ' at ' + grid : '') + (note ? ' (' + note + ')' : ''), status:'open', g:S.g }); S.ver++;
+      pushLog(S, nm + ' requested a waypoint: ' + label + (grid ? ' at ' + grid : ''), side, e);
+      break; }
     case 'act_drone': if (jammed(S, side)){ pushLog(S, nm + ' drone flight refused: datalink jammed', side, e, 'rejected'); pushFeed(S, side, 'No drone flights while your datalink is jammed.', 'alert'); break; }
       if (!droneReady(S, side)){ pushLog(S, nm + ' drone flight refused: not ready', side, e, 'rejected'); pushFeed(S, side, 'Drone flight not ready yet.', 'alert'); break; }
       S.droneLast[side] = S.g; raise(S, side, 1);
@@ -1469,7 +1479,17 @@ function apply(S, e, cfg){
       const r = S.requests.find(x => x.id === p.req); if (!r || r.status !== 'open') break;
       r.status = 'done'; r.result = p.result; r.answer = p.text || '';
       const rn = SIDES[r.side].name;
-      if (r.kind === 'drone'){ pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.'), 'hq'); pushLog(S, rn + ' drone flight answered', r.side, e); }
+      if (r.kind === 'wp'){
+        if (p.result === 'add' || p.result === 'queue'){
+          const to = p.result === 'add' ? r.side : 'none';
+          S.wps.push({ id:'wpr-' + r.id, pt:r.pt, label:r.label, sym:'pin', color:null, to, g:S.g, grid:r.grid, req:r.side });
+          r.answer = p.result === 'add' ? 'Added to your map.' : 'Approved. Pending placement by the white cell.';
+          if (p.result === 'add') pushFeed(S, r.side, 'New waypoint from the white cell: ' + r.label + (r.grid ? ' at ' + r.grid : '') + '.', 'hq', { label:'Waypoint', team:true });
+          else pushFeed(S, r.side, 'Waypoint request approved: ' + r.label + '. Pending placement by the white cell.', 'hq', { label:'Waypoint' });
+          pushLog(S, rn + ' waypoint request ' + (p.result === 'add' ? 'added: ' : 'moved to the waypoint queue: ') + r.label, r.side, e);
+        } else { r.answer = 'Declined.' + (p.text ? ' ' + String(p.text).slice(0, 140) : ''); pushFeed(S, r.side, 'Waypoint request declined: ' + r.label + '.', 'alert', { label:'Waypoint' }); pushLog(S, rn + ' waypoint request declined: ' + r.label, r.side, e); }
+        S.ver++;
+      } else if (r.kind === 'drone'){ pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.'), 'hq'); pushLog(S, rn + ' drone flight answered', r.side, e); }
       else if (r.kind === 'show'){
         if (p.result === 'defied'){ raise(S, OTHER[r.side], ESC.defied); pushFeed(S, OTHER[r.side], 'You did not leave. Escalation +10 charged to you.', 'alert'); pushLog(S, SIDES[OTHER[r.side]].name + ' ignored the show of force (escalation +10)', OTHER[r.side], e); }
         else { pushFeed(S, r.side, 'The other wing left ' + r.text + '.', 'good'); pushLog(S, SIDES[OTHER[r.side]].name + ' left after the show of force', OTHER[r.side], e); }
@@ -1628,11 +1648,9 @@ function apply(S, e, cfg){
       const spots = liveTeams(S, o).filter(t => t.last && t.status !== 'Left the game').map(t => ({ id:t.id, name:t.name, num:t.num || null, pt:t.last.gps || t.last.rep, at:t.last.g })).filter(x => x.pt);
       raise(S, side, UAV_ESC);
       S.uav[side] = { id:e.id, g:S.g, spots };
-      S.spotted[o] = { id:e.id, g:S.g };
       S.pings.push({ id:e.id, ts:e.ts, g:S.g, to:o, team:null, uav:side });
       S.uavs.push({ side, g:S.g, n:spots.length });
       pushFeed(S, side, 'UAV overhead: we have enemy fireteam locations now. They show on the map for 1 minute, then as last seen for 5 minutes.', 'alert', { team:true });
-      pushFeed(S, o, 'Your fireteams have been spotted. The other wing has your positions.', 'alert', { team:true });
       pushLog(S, nm + ' launched a UAV: ' + spots.length + ' enemy fireteam' + (spots.length === 1 ? '' : 's') + ' located (escalation +' + UAV_ESC + ')', side, e);
       S.ver++;
       break; }
@@ -1760,7 +1778,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -2389,12 +2407,12 @@ function lmapEnsure(el, M){
     const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true, zoomSnap:0.25 });
     map.createPane('contour-pane'); map.getPane('contour-pane').style.zIndex = 250; map.getPane('contour-pane').classList.add('contour-pane');
     const contours = new ContourLayer('', { pane:'contour-pane', tileSize:512, zoomOffset:-1, maxZoom:20, maxNativeZoom:18, minZoom:12, updateWhenIdle:true, keepBuffer:3, attribution:'Contours: USGS 3DEP' });
-    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup(), wc:L.layerGroup(), wp:L.layerGroup(), wpq:L.layerGroup() }, key:null };
+    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup(), wc:L.layerGroup(), wp:L.layerGroup(), wpB:L.layerGroup(), wpR:L.layerGroup(), wpq:L.layerGroup() }, key:null };
     applyGridPref(st);
     const tog = L.control({ position:'topright' });
     tog.onAdd = () => {
       const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref();
-      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => k !== 'wpq' || app.role === 'W' || app.role === 'OC').map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
+      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => (app.role === 'W' || app.role === 'OC') ? k !== 'wp' : !['wpB', 'wpR', 'wpq'].includes(k)).map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
       L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
       d.querySelector('[data-gtbtn]').onclick = () => { const l = d.querySelector('.gt-list'); l.hidden = !l.hidden; };
       d.addEventListener('change', ev => { if (ev.target.matches('[data-gtbase]')){ const np = gridPref(); np.base = ev.target.value; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gtbase]').forEach(x => x.value = np.base); $$('.lmap').forEach(x => { if (x._lm) applyGridPref(x._lm); }); return; } const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gt="' + k + '"]').forEach(x => x.checked = ev.target.checked); $$('.lmap').forEach(x => { if (!x._lm) return; applyGridPref(x._lm); drawFine(x._lm); if (x._lm.args && app.S) drawDyn(x._lm, app.S, x._lm.args[0], x._lm.args[1]); }); });
@@ -2427,8 +2445,8 @@ function lmapEnsure(el, M){
   drawFine(st);
   return st;
 }
-const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White cell location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpq', 'Non-deployed waypoints', '#ffe9a8']];
-const LAYER_DEFAULTS = { base:'sat', play:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true, wpq:true };
+const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White cell location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'BLUFOR waypoints', '#5b8cff'], ['wpR', 'REDFOR waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8']];
+const LAYER_DEFAULTS = { base:'sat', play:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true, wpB:true, wpR:true, wpq:true };
 function gridPref(){ try { return Object.assign({}, LAYER_DEFAULTS, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return Object.assign({}, LAYER_DEFAULTS); } }
 function applyGridPref(st){
   const pr = gridPref();
@@ -2518,7 +2536,7 @@ function drawDyn(st, S, side, opts){
   });
   const wcp = wcSpot(S);
   if (wcp) L.marker(wcp, { icon:WC_ICON(), zIndexOffset:900 }).bindTooltip('White cell' + (S.wcPos ? ' (moved)' : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[14, 0] }).bindPopup('<b>White cell</b><br><span class="mono">' + esc(fmtPt(wcp)) + '</span>' + (squareOf(M, wcp) ? '<br>Play square ' + squareOf(M, wcp) : '')).addTo(LS.wc);
-  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side))).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + esc(WP_SYMS[w.sym]) + '<br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(w.to === 'none' ? LS.wpq : LS.wp));
+  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side))).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + esc(WP_SYMS[w.sym]) + '<br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(side ? LS.wp : w.to === 'none' ? LS.wpq : w.to === 'B' ? LS.wpB : w.to === 'R' ? LS.wpR : (pr.wpB ? LS.wpB : LS.wpR)));
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
     const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' · BLUFOR office' : '') + (open('R') ? ' · REDFOR office' : '') : (open(side) ? ' · Your office is open' : ''));
@@ -2797,7 +2815,8 @@ function buildTeam(side){
     <div class="panel"><div class="act-head"><h2>${esc(me.name)} <span data-tnumshow></span></h2><span class="small muted">${esc(SIDES[side].long)}</span></div>
       <div class="row" style="align-items:baseline;justify-content:space-between"><span><span class="k small muted">Board time</span> <b class="mono" data-clock>—</b></span><span data-tlvl></span><span class="row" style="flex:0 0 auto;gap:6px"><button type="button" data-rename style="flex:0 0 auto;padding:4px 10px;font-size:13px">Rename</button><button type="button" data-leave style="flex:0 0 auto;padding:4px 10px;font-size:13px">Leave this fireteam</button></span></div></div>
     <div class="panel stack"><h2>Alerts</h2><div data-tuav></div><div class="list" data-talerts></div></div>
-    <div class="panel stack"><h2>Messages with C2</h2><div class="chatlog" data-tclog></div><form class="row" data-tcf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
+    <div class="panel"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
+    <div class="panel stack"><div class="act-head"><h2>Messages with C2</h2><span class="small muted">One message every ${TCHAT_EVERY} minutes</span></div><div class="chatlog" data-tclog></div><form class="row" data-tcf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form><div class="small muted" data-tcnext></div></div>
     <div class="panel stack"><div class="act-head"><h2>Map</h2><span class="small muted" data-tmapstate></span></div>
       <p class="small muted" style="margin:0">Available for 3 minutes, once every 10 minutes. Your own position is not shown.</p>
       <button type="button" class="btn-side team-big" data-tmapbtn>Open map for 3 minutes</button>
@@ -2820,10 +2839,9 @@ function buildTeam(side){
       <div class="row"><label>Target<select data-ntarget><option value="cache">Militia weapons cache</option><option value="other">${esc(SIDES[OTHER[side]].name)} position</option></select></label><label>Location<input data-nloc maxlength="40" autocomplete="off" placeholder="Example: 5892 2345 or D4"></label></div>
       <button type="button" class="btn-side team-big" data-nsend>Send 9-line for checking</button>
       <div class="list" data-nlist></div></div>
-    <div class="panel"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
   </div>`;
   $('[data-send]', v).onclick = () => sendTeamPos(side, {});
-  $('[data-tcf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; await writeEvent('tchat', side, { team:me.id, name:me.name, from:'team', text:tx }); f.text.value = ''; });
+  $('[data-tcf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; } const nx = tchatNext(app.S, side, me.id); if (nx != null && app.S.g < nx){ toast('Next message available at ' + hhmm(nx) + '.', true); return; } if (!confirm('Send this message to your C2? The next message is available ' + TCHAT_EVERY + ' minutes after this one.')) return; await writeEvent('tchat', side, { team:me.id, name:me.name, from:'team', text:tx }); f.text.value = ''; });
   $('[data-ctsend]', v).onclick = async () => {
     const k = $('[data-ctsite]', v).value;
     if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; }
@@ -2881,7 +2899,8 @@ function renderTeam(S, side){
   const t = S.teams[side][me.id], f = t && t.last;
   $('[data-tlast]', v).textContent = f ? 'Last sent ' + hhmm(f.g) + (f.rep ? ' with your map grid' + (f.repText ? ' ' + f.repText : '') : '') + (f.gps ? ' and GPS' + (f.acc ? ' (±' + f.acc + ' m)' : '') : '') + '.' : 'Nothing sent yet.';
   const al = S.feed.filter(f => f.team && f.to === side && (!f.tid || f.tid === me.id)).slice(-5).reverse();
-  { const lg = $('[data-tclog]', v); if (lg){ const n = (S.tchats || []).filter(m => m.side === side && m.team === me.id).length; if (lg.dataset.k !== String(n)){ lg.dataset.k = String(n); lg.innerHTML = chatHTML(S, side, me.id, 'team'); lg.scrollTop = lg.scrollHeight; } } }
+  { const lg = $('[data-tclog]', v); if (lg){ const n = (S.tchats || []).filter(m => m.side === side && m.team === me.id).length; if (lg.dataset.k !== String(n)){ lg.dataset.k = String(n); lg.innerHTML = chatHTML(S, side, me.id, 'team'); lg.scrollTop = lg.scrollHeight; }
+    const nx = tchatNext(S, side, me.id), wait = nx != null && S.g < nx, btn = $('[data-tcf] button', v); btn.disabled = wait; $('[data-tcnext]', v).textContent = wait ? 'Next message available at ' + hhmm(nx) + '.' : ''; } }
   { const cl = $('[data-ctlist]', v); if (cl){ refreshSiteSelects(v); const rs = (S.ctReqs || []).filter(r => r.side === side && r.team === me.id).slice(-3).reverse(); cl.innerHTML = rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(SITES[r.site] ? SITES[r.site].name : 'Removed site') + '</div><span class="chip ' + (r.status === 'ok' ? 'ok' : r.status === 'no' ? 'no' : 'wait') + '">' + (r.status === 'ok' ? 'Started' : r.status === 'no' ? 'Declined' : 'With your C2') + '</span></div>').join(''); } }
   { const nl = $('[data-nlist]', v); if (nl){ const ns = S.nines.filter(n => n.side === side && n.team === me.id).slice(-3).reverse(); nl.innerHTML = ns.map(n => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(n.g) + '</span> ' + esc(nineText(n)) + '</div><span class="chip ' + (n.status === 'ok' ? 'ok' : n.status === 'no' ? 'no' : 'wait') + '">' + (n.status === 'ok' ? 'sent to C2' : n.status === 'no' ? 'not accepted' : 'waiting for check') + '</span></div>').join(''); } }
   $('[data-talerts]', v).innerHTML = al.length ? al.map(f => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(f.g) + '</span><div>' + esc(f.text) + '</div></div></div>').join('') : '<div class="empty">Nothing yet. UAV sightings and warnings show here.</div>';
@@ -2919,7 +2938,6 @@ function uavNotify(S){
   if (app.uavRole !== r){ app.uavRole = r; app.uavSeen = u ? u.id : null; app.spotSeen = sp ? sp.id : null; return; }
   const buzz = () => { try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} };
   if (u && u.id !== app.uavSeen){ app.uavSeen = u.id; if (uavPhase(S, sd)){ toast('UAV overhead: we have enemy fireteam locations now.'); buzz(); } }
-  if (sp && sp.id !== app.spotSeen){ app.spotSeen = sp.id; if (S.g - sp.g < 6){ toast('Your fireteams have been spotted.', true); buzz(); } }
 }
 
 /* ---------- wing view ---------- */
@@ -2959,7 +2977,7 @@ function buildWing(side){
           <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> · Every 20 minutes (10 with the Airstrip) · <span class="esc-up">+1 escalation</span></span></div>
             <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at B5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
           <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · Once every ${UAV_EVERY} minutes · <span class="esc-up">+10 escalation</span></span></div>
-            <p class="small muted" style="margin:0">Shows enemy fireteam positions to you and your fireteams: live for 1 minute, then as last seen for 5 minutes. The enemy wing is notified that it was spotted, not by what.</p>
+            <p class="small muted" style="margin:0">Shows enemy fireteam positions to you and your fireteams: live for 1 minute, then as last seen for 5 minutes. The enemy wing is not notified.</p>
             <form data-f="uav"><button class="btn-side" type="submit">Launch UAV</button></form></div>
           <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · True <span class="esc-down">−5</span> · False <span class="esc-up">+15</span></span></div>
             <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Incident<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">Who did it<select id="stB-${side}" name="blame"><option value="militia">The militia</option><option value="other">${esc(other)}</option></select></label></div><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
@@ -2996,7 +3014,13 @@ function buildWing(side){
             <form class="stack" data-f="claim"><div class="row"><label for="clS-${side}">Site<select id="clS-${side}" name="site" data-siteopts data-town="Marala Town office">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town office</option></select></label><label for="clC-${side}">Code word (each works once)<input id="clC-${side}" name="code" maxlength="24" autocomplete="off" required></label></div><div><button class="btn-side" type="submit">Claim</button></div></form>
             <div class="list" data-claims></div></div>
         </div>
-        <div data-pane="req" class="stack" hidden><div class="list" data-reqs></div></div>
+        <div data-pane="req" class="stack" hidden>
+          <div class="act"><div class="act-head"><b>Request a waypoint</b><span class="cost">Placed by the white cell</span></div>
+            <form class="stack" data-f="wpreq"><div class="row"><label for="wrL-${side}">Label<input id="wrL-${side}" name="label" maxlength="60" required placeholder="Example: Rally point north"></label></div>
+              <div class="row" style="align-items:end"><label for="wrP-${side}">Location (play square, MGRS or lat/long)<input id="wrP-${side}" name="loc" maxlength="60" required autocomplete="off" placeholder="Example: D4, 5892 2345 or 40.82601, -77.85812"></label><button type="button" data-wrtap style="flex:0 0 auto">Use last map tap</button></div>
+              <label for="wrN-${side}">Note (optional)<input id="wrN-${side}" name="note" maxlength="140"></label>
+              <div><button class="btn-side" type="submit">Send request</button></div></form></div>
+          <div class="list" data-reqs></div></div>
         <div data-pane="teams" class="stack" hidden>
           <p class="small muted" style="margin:0">Fireteam positions and statuses come from their phones.</p>
           <div class="list" data-teams></div>
@@ -3037,7 +3061,9 @@ function buildWing(side){
   on('drone', fd => writeEvent('act_drone', side, { text:fd.get('q') }));
   on('statement', fd => { if (!fd.get('inc')){ toast('There is no incident to talk about yet.', true); return false; } return writeEvent('act_statement', side, { incident:fd.get('inc'), blame:fd.get('blame') }); });
   on('aid', () => writeEvent('act_aid', side, {}));
-  on('uav', () => { if (!confirm('Launch a UAV? Escalation goes up by 10, and the other wing is told it was spotted.')) return false; return writeEvent('act_uav', side, {}); });
+  on('wpreq', fd => { const pt = locate(mapCfg(app.S), String(fd.get('loc') || '')); if (!pt){ toast('That location did not read. Use a play square, MGRS grid or lat/long.', true); return false; } const sq = squareOf(mapCfg(app.S), pt); return writeEvent('act_wpreq', side, { label:String(fd.get('label')).trim(), pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt), note:fd.get('note') }); });
+  $('[data-wrtap]', v).onclick = () => { if (!app.lastClick){ toast('No map tap recorded.', true); return; } $('[data-f="wpreq"] [name="loc"]', v).value = fmtPt(app.lastClick); };
+  on('uav', () => { if (!confirm('Launch a UAV? Escalation goes up by 10.')) return false; return writeEvent('act_uav', side, {}); });
   on('show', fd => writeEvent('act_show', side, { text:fd.get('t') }));
   on('jam', () => { if (!confirm('Jam the enemy datalink? Escalation goes up by 5.')) return false; return writeEvent('act_jam', side, {}); });
   on('strike', fd => { const sf = $('form[data-f="strike"]', v), nine = sf.dataset.nine || null; delete sf.dataset.nine; return writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase(), nine }); });
@@ -3184,8 +3210,8 @@ function renderWing(S, side, now){
   $('[data-claims]', v).innerHTML = claims.slice(-4).reverse().map(c => '<div class="li"><span class="grow">' + esc(c.site === 'town' ? 'Marala Town' : SITES[c.site].name) + ' · ' + hhmm(c.g) + ' <span class="small muted">' + esc(c.note) + '</span></span><span class="chip ' + (c.status === 'accepted' ? 'ok' : c.status === 'contest' ? 'wait' : 'no') + '">' + (c.status === 'accepted' ? 'Confirmed' : c.status === 'contest' ? 'Contesting' : 'Refused') + '</span></div>').join('');
   const reqs = S.requests.filter(r => r.side === side);
   { const n = reqs.filter(r => r.status === 'open').length, c = $('[data-cnreq]', v); if (c){ c.hidden = !n; c.textContent = n; } const ne = $('[data-cnesc]', v); if (ne) ne.textContent = '· Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ') · Diplomatic points ' + S.hn[side] + ' · Points ' + sc.total; }
-  const kindName = { drone:'Drone flight', show:'Show of force', strike:'Strike' };
-  $('[data-reqs]', v).innerHTML = reqs.length ? reqs.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + kindName[r.kind] + '</b> <span class="muted small">' + hhmm(r.g) + '</span><div class="small">' + esc(r.text) + '</div>' + (r.answer ? '<div class="small muted">Answer: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : 'ok') + '">' + (r.status === 'open' ? 'With the white cell' : 'Done') + '</span></div>').join('') : '<div class="empty">Drone flights, shows of force and strikes wait here until the white cell answers.</div>';
+  const kindName = { drone:'Drone flight', show:'Show of force', strike:'Strike', wp:'Waypoint request' };
+  $('[data-reqs]', v).innerHTML = reqs.length ? reqs.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + kindName[r.kind] + '</b> <span class="muted small">' + hhmm(r.g) + '</span><div class="small">' + esc(r.text) + '</div>' + (r.answer ? '<div class="small muted">Answer: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : 'ok') + '">' + (r.status === 'open' ? 'With the white cell' : 'Done') + '</span></div>').join('') : '<div class="empty">Drone flights, shows of force, strikes and waypoint requests wait here until the white cell answers.</div>';
   $('[data-dronecount]', v).textContent = jammed(S, side) ? 'Jammed until ' + hhmm(S.jam[side]) : droneReady(S, side) ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side)));
   { const el = $('[data-left="show"]', v); if (el) el.textContent = S.uses.show[side] ? '1 left' : 'used'; }
   { const el = $('[data-left="strike"]', v); if (el) el.textContent = S.uses.cstrike[side] + ' cache strike' + (S.uses.cstrike[side] === 1 ? '' : 's') + ' left · ' + (S.uses.strike[side] ? '1 strike on ' + SIDES[OTHER[side]].name : 'wing strike used'); }
@@ -3902,17 +3928,18 @@ function renderWhite(S, now){
   const q = [];
   S.contacts.filter(c => !c.verdict).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid) + '</span> <span class="small muted">Seen ' + esc(c.seen) + ' · Posted ' + hhmm(c.g) + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' +
     '<div class="row" style="flex:0 0 auto"><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="confirm">True · +2</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="duplicate">Duplicate</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="false">False</button></div></div>'));
-  const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request' };
+  const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request', wp:'Waypoint request' };
   S.requests.filter(r => r.status === 'open').forEach(r => {
     let ctl = '';
     if (r.kind === 'drone') ctl = '<input id="ans-' + r.id + '" placeholder="Type the true answer" maxlength="200"><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="answer">Send answer</button>';
+    if (r.kind === 'wp') ctl = '<button type="button" class="btn-side" data-act="resolve" data-id="' + r.id + '" data-r="add">Add to ' + SIDES[r.side].name + ' map</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="queue">Add to waypoint queue</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="decline">Decline</button>';
     if (r.kind === 'show') ctl = '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="complied">' + SIDES[OTHER[r.side]].name + ' left</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="defied">Stayed · +10 to them</button>';
     if (r.kind === 'strike') ctl = (r.nineBy ? '<span class="chip ok">9-line checked by ' + esc(r.nineBy) + '</span>' : '') + '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="hit">9-line correct · strike</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="invalid">9-line wrong</button>';
     q.push('<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + kindName[r.kind] + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + r.text : r.text) + '</div></div><div class="row" style="flex:1 1 260px">' + ctl + '</div></div>');
   });
   { const ne = $('[data-wnesc]', v); if (ne) ne.textContent = '· Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ')'; }
   { const pend = q.length + S.nines.filter(n => n.status === 'open').length + S.ocReqs.filter(r => r.status === 'open').length; whiteAttention(pend); const cb = $('[data-chime]', v); if (cb && !cb.dataset.wired){ cb.dataset.wired = '1'; cb.checked = pref.get('marala-chime', '1') === '1'; cb.onchange = () => { pref.set('marala-chime', cb.checked ? '1' : '0'); if (cb.checked){ chimeAt = 0; chime(); } }; } }
-  $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force and strikes land here.</div>';
+  $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force, strikes and waypoint requests land here.</div>';
   $('[data-score]', v).innerHTML = scoreTable(S, ['B', 'R']);
   const running = S.clock.started && !S.endex;
   ipbRender(S, v);
