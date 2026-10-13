@@ -26,7 +26,7 @@ const RECOVERY_CODE_HASH = "3nonh9lo9n";
 <style>
 /* Layout: an ops-floor console. Status strip on top, island chart left, controls right, feed beside. */
 :root{
-  --bg:#e9ece8; --panel:#fbfbf8; --panel-2:#f2f4f0; --ink:#17202a; --muted:#56616c; --line:#cfd6d1;
+  --bg:#e9ece8; --panel:#fbfbf8; --panel-2:#f2f4f0; --ink:#17202a; --muted:#56616c; --line:#a3ada6;
   --sea:#c9dde3; --sea-line:#b3cbd3; --land:#e6dcc0; --land-edge:#a8996d; --grid:rgba(23,32,42,.22);
   --blu:#1d5cc0; --blu-soft:#dce7fb; --red:#bf2f28; --red-soft:#f9dfdc; --wc:#3d4a3f; --wc-soft:#dfe6dd;
   --e0:#2d8a57; --e1:#c39a1d; --e2:#d5712a; --e3:#bf2f28; --e4:#5c1414;
@@ -36,14 +36,14 @@ const RECOVERY_CODE_HASH = "3nonh9lo9n";
   --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0e1316; --panel:#151c21; --panel-2:#1b242a; --ink:#e4e9ec; --muted:#97a3ad; --line:#2a353d;
+  --bg:#0e1316; --panel:#151c21; --panel-2:#1b242a; --ink:#e4e9ec; --muted:#97a3ad; --line:#46545e;
   --sea:#11232b; --sea-line:#1a333d; --land:#2a2a21; --land-edge:#6a6245; --grid:rgba(228,233,236,.16);
   --blu:#6c9ff0; --blu-soft:#172a48; --red:#ee6d62; --red-soft:#3c1c19; --wc:#b9c7b6; --wc-soft:#202a22;
   --e0:#4fb97c; --e1:#e2bd47; --e2:#f0914c; --e3:#ee6d62; --e4:#b14a4a;
   --good:#4fb97c; --warn:#e2bd47; --bad:#ee6d62; --focus:#6c9ff0; color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --bg:#0e1316; --panel:#151c21; --panel-2:#1b242a; --ink:#e4e9ec; --muted:#97a3ad; --line:#2a353d;
+  --bg:#0e1316; --panel:#151c21; --panel-2:#1b242a; --ink:#e4e9ec; --muted:#97a3ad; --line:#46545e;
   --sea:#11232b; --sea-line:#1a333d; --land:#2a2a21; --land-edge:#6a6245; --grid:rgba(228,233,236,.16);
   --blu:#6c9ff0; --blu-soft:#172a48; --red:#ee6d62; --red-soft:#3c1c19; --wc:#b9c7b6; --wc-soft:#202a22;
   --e0:#4fb97c; --e1:#e2bd47; --e2:#f0914c; --e3:#ee6d62; --e4:#b14a4a;
@@ -74,7 +74,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .brand h1{font-size:22px;text-transform:uppercase;letter-spacing:.06em}
 .brand .tag{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .banner{border:1px dashed var(--warn);color:var(--ink);background:var(--panel-2);padding:8px 12px;border-radius:8px;font-size:13px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0;align-content:start}
+.panel{background:var(--panel);border:1.5px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.02);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0;align-content:start}
 .side-B{--side:var(--blu);--side-soft:var(--blu-soft)}
 .side-R{--side:var(--red);--side-soft:var(--red-soft)}
 .side-W{--side:var(--wc);--side-soft:var(--wc-soft)}
@@ -88,7 +88,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 
 /* status strip */
 .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.stat{background:var(--panel);border:1.5px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.12);border-radius:10px;padding:10px 12px;display:grid;gap:2px;min-width:0}
 .stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
 .stat .v{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.05;font-variant-numeric:tabular-nums}
 .stat .s{font-size:12px;color:var(--muted)}
@@ -133,7 +133,7 @@ svg.map{width:100%;min-width:420px;height:auto;display:block}
 
 /* actions */
 .actions{display:grid;gap:8px}
-.act{border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px;background:var(--panel-2)}
+.act{border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.08);border-radius:8px;padding:10px;display:grid;gap:8px;background:var(--panel-2)}
 .act-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
 .act-head b{font-family:var(--display);font-size:16px;letter-spacing:.03em;font-weight:600}
 .ip-items{display:grid;gap:6px;margin:0;padding:0;list-style:none}
