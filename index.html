@@ -1140,7 +1140,7 @@ function secret(salt, text){ return hashStr(salt + '|' + String(text||'').trim()
 function newState(){
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   return {
-    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, wcPos:null,
+    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, wcPos:null, pings:[],
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
@@ -1491,6 +1491,13 @@ function apply(S, e, cfg){
       break; }
     case 'pos': {
       if (!side || !p.team) break;
+      if (p.ping){
+        const pg = S.pings.find(x => x.id === p.ping);
+        if (!pg || !Array.isArray(p.gps)) break;
+        const t0 = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:String(p.name || 'Team').slice(0, 40), fixes:[] });
+        t0.pingFix = { g:S.g, ts:e.ts, gps:p.gps, acc:p.acc || null, ping:pg.id, pingG:pg.g, late:e.ts - pg.ts > 120000 }; S.ver++;
+        break;
+      }
       const t = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:p.name || 'Team', fixes:[] });
       if (p.name) t.name = String(p.name).slice(0, 40);
       const fix = { g:S.g, ts:e.ts, gps:Array.isArray(p.gps) ? p.gps : null, acc:p.acc || null, rep:Array.isArray(p.rep) ? p.rep : null, repText:p.repText || null, status:p.status || null };
@@ -1548,6 +1555,12 @@ function apply(S, e, cfg){
       pushLog(S, nm + ' launched a UAV: ' + spots.length + ' enemy fireteam' + (spots.length === 1 ? '' : 's') + ' located (escalation +' + UAV_ESC + ')', side, e);
       S.ver++;
       break; }
+    case 'ping': {
+      const to = p.to === 'B' || p.to === 'R' ? p.to : 'both', team = to !== 'both' && p.team ? String(p.team) : null;
+      S.pings.push({ id:e.id, ts:e.ts, g:S.g, to, team }); S.ver++;
+      const tm = team && S.teams[to][team], tn = tm ? (tm.num ? '#' + tm.num + ' ' : '') + tm.name : to === 'both' ? 'every fireteam' : 'all ' + SIDES[to].name + ' fireteams';
+      pushLog(S, 'Silent position request to ' + tn, null, e);
+      break; }
     case 'wc_pos': {
       const pt = Array.isArray(p.pt) && p.pt.length === 2 && p.pt.every(Number.isFinite) ? p.pt : null;
       S.wcPos = pt; S.ver++;
@@ -1566,7 +1579,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -2169,6 +2182,8 @@ function teamIcon(sd, num, opts){
   const body = '<rect x="2" y="4" width="28" height="19" fill="' + col + '" fill-opacity="' + fo + '" stroke="' + col + '" stroke-width="2"' + dash + '/><rect x="2" y="4" width="28" height="19" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".8"/><path d="M2 4L30 23M30 4L2 23" stroke="#fff" stroke-opacity=".85" stroke-width="1.2"/>';
   return L.divIcon({ className:'nato', html:'<svg width="32" height="32" viewBox="0 0 32 32" style="opacity:' + (o.op != null ? o.op : 1) + '">' + body + txt + '</svg>', iconSize:[32, 32], iconAnchor:[16, 16] });
 }
+function lastPing(S, sd, tid){ for (let i = S.pings.length - 1; i >= 0; i--){ const x = S.pings[i]; if ((x.to === 'both' || x.to === sd) && (!x.team || x.team === tid)) return x; } return null; }
+function whiteFix(t){ return t.pingFix && (!t.last || t.pingFix.ts > t.last.ts) ? t.pingFix : t.last; }
 function teamLabel(t){ return (t.num ? '#' + t.num + ' ' : '') + t.name; }
 function drawGrid(layer, M, mlayer){
   const { cols, rows } = gridDims(M);
@@ -2263,10 +2278,10 @@ function drawDyn(st, S, side, opts){
     if (opts && opts.team) return;
     if (side && side !== sd && !S.reveal) return;
     liveTeams(S, sd).forEach(t => {
-      const f = t.last; if (!f) return; const pt = f.gps || f.rep; if (!pt) return;
+      const f = side ? t.last : whiteFix(t); if (!f) return; const pt = f.gps || f.rep; if (!pt) return;
       const age = Math.max(0, Math.floor(S.g - f.g));
       const m = L.marker(pt, { icon:teamIcon(sd, t.num, { op:age > 10 ? .5 : 1 }), zIndexOffset:500 });
-      m.bindTooltip(esc(teamLabel(t) + ' · ' + age + 'm' + (t.status ? ' · ' + t.status : '')), { permanent:!!pr.names, direction:'right', className:'teamlbl', offset:[14, 0] }).addTo(LS.teams);
+      m.bindTooltip(esc(teamLabel(t) + ' · ' + (f.ping ? 'pinged ' : '') + age + 'm' + (t.status ? ' · ' + t.status : '')), { permanent:!!pr.names, direction:'right', className:'teamlbl', offset:[14, 0] }).addTo(LS.teams);
     });
   });
   const ph = side ? uavPhase(S, side) : '';
@@ -2336,11 +2351,13 @@ function teamRows(S, side, forWhite){
   if (!ts.length) return '<div class="empty">No fireteams signed in yet. Each team opens the board on a phone and picks ' + SIDES[side].name + ' fireteam.</div>';
   const M = mapCfg(S);
   return ts.map(t => {
-    const f = t.last, pt = f ? (f.gps || f.rep) : null, age = f ? Math.max(0, Math.floor(S.g - f.g)) : null;
+    const f = forWhite ? whiteFix(t) : t.last, pt = f ? (f.gps || f.rep) : null, age = f ? Math.max(0, Math.floor(S.g - f.g)) : null;
+    let pingTxt = '';
+    if (forWhite){ const pg = lastPing(S, side, t.id); if (pg){ const ans = t.pingFix && t.pingFix.ping === pg.id; pingTxt = '<div class="small">' + (ans ? '<span class="chip ' + (t.pingFix.late ? 'wait' : 'ok') + '">ping ' + hhmm(pg.g) + ': answered ' + hhmm(t.pingFix.g) + (t.pingFix.late ? ' (late)' : '') + (t.pingFix.acc ? ' ±' + t.pingFix.acc + ' m' : '') + '</span>' : (Date.now() - pg.ts > 120000 ? '<span class="chip no">ping ' + hhmm(pg.g) + ': no response</span>' : '<span class="chip wait">ping ' + hhmm(pg.g) + ': waiting</span>')) + '</div>'; } }
     const sq = pt ? squareOf(M, pt) : null;
     let nav = '';
     if (forWhite && f && f.gps && f.rep){ const d = Math.round(GEO.dist(f.gps, f.rep)); nav = '<span class="chip ' + (d <= 100 ? 'ok' : d <= 250 ? 'wait' : 'no') + '">map grid off by ' + d + ' m</span>'; }
-    return '<div class="li"><div class="grow"><b>' + esc(teamLabel(t)) + '</b> <span class="small muted">' + (t.status ? esc(t.status) + ' · ' : '') + (f ? 'updated ' + hhmm(f.g) + ' (' + age + ' min ago)' : 'no position yet') + '</span>' + (pt ? '<div class="small mono">' + esc(fmtPt(pt)) + (sq ? ' · square ' + sq : '') + (f.gps ? '' : ' · from map reading') + '</div>' : '') + '</div>' + nav + (age != null && age > 10 ? '<span class="chip wait">stale</span>' : '') + '<button type="button" data-tnum data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" data-cur="' + esc(t.num || '') + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">' + (t.num ? 'Number #' + esc(t.num) : 'Give number') + '</button><button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>';
+    return '<div class="li"><div class="grow"><b>' + esc(teamLabel(t)) + '</b> <span class="small muted">' + (t.status ? esc(t.status) + ' · ' : '') + (f ? 'updated ' + hhmm(f.g) + ' (' + age + ' min ago)' : 'no position yet') + '</span>' + (pt ? '<div class="small mono">' + esc(fmtPt(pt)) + (sq ? ' · square ' + sq : '') + (f.gps ? '' : ' · from map reading') + (f.ping ? ' · from ping' : '') + '</div>' : '') + pingTxt + '</div>' + nav + (forWhite ? '<button type="button" data-ping="' + side + '" data-pingteam="' + esc(t.id) + '" style="flex:0 0 auto" title="Silently ask this phone for its GPS">Ping</button>' : '') + (age != null && age > 10 ? '<span class="chip wait">stale</span>' : '') + '<button type="button" data-tnum data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" data-cur="' + esc(t.num || '') + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">' + (t.num ? 'Number #' + esc(t.num) : 'Give number') + '</button><button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>';
   }).join('');
 }
 
@@ -2363,6 +2380,16 @@ function teamIdKey(side){ return 'marala-team-' + (app.gid || 'none') + '-' + si
 function teamGet(side){ try { return JSON.parse(localStorage.getItem(teamIdKey(side)) || 'null'); } catch(e){ return null; } }
 function teamSet(side, v){ try { localStorage.setItem(teamIdKey(side), JSON.stringify(v)); } catch(e){} }
 let teamAutoTimer = null;
+const pingDone = new Set();
+function answerPings(S, side){
+  const me = teamGet(side); if (!me || !S.clock.started || S.endex || document.visibilityState !== 'visible') return;
+  const pg = lastPing(S, side, me.id); if (!pg || pingDone.has(pg.id)) return;
+  const t = S.teams[side][me.id]; let k = 'marala-ping-' + app.gid + '-' + me.id;
+  if ((t && t.pingFix && t.pingFix.ping === pg.id) || Date.now() - pg.ts > 15 * 60000){ pingDone.add(pg.id); return; }
+  try { if ((localStorage.getItem(k) || '') === pg.id){ pingDone.add(pg.id); return; } } catch(e){}
+  pingDone.add(pg.id);
+  getGPS().then(g => { if (!g) return; try { localStorage.setItem(k, pg.id); } catch(e){} writeEvent('pos', side, { team:me.id, name:me.name, gps:g.pt, acc:g.acc, ping:pg.id }); });
+}
 function getGPS(){
   return new Promise(res => {
     if (!navigator.geolocation){ res(null); return; }
@@ -2446,6 +2473,7 @@ function renderTeam(S, side){
     app.built = null; buildTeam(side); renderTeam(S, side); return;
   }
   if (!$('[data-torders]', v)) return;
+  answerPings(S, side);
   $('[data-tnumshow]', v).textContent = mine && mine.num ? '· #' + mine.num : '';
   const lvl = levelIndex(S.esc);
   $('[data-tlvl]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
@@ -2525,7 +2553,7 @@ function buildWing(side){
         <div data-pane="act" class="actions">
           <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> · every 20 minutes (10 with the Airstrip) · <span class="esc-up">+1 escalation</span></span></div>
             <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at B5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
-          <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · once every 20 minutes · <span class="esc-up">+10 escalation</span></span></div>
+          <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · once every ${UAV_EVERY} minutes · <span class="esc-up">+10 escalation</span></span></div>
             <p class="small muted" style="margin:0">Shows the other wing’s fireteams at their latest known positions, to you and your fireteams: live for 1 minute, then last seen for 5. The other wing is told it was spotted, but not how.</p>
             <form data-f="uav"><button class="btn-side" type="submit">Launch UAV</button></form></div>
           <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · true <span class="esc-down">−5</span> · false <span class="esc-up">+15</span></span></div>
@@ -2834,7 +2862,7 @@ function buildWhite(){
       </div>
       ${sideCol('B')}
       ${sideCol('R')}
-      <div class="panel"><h2>Fireteams</h2><h3 class="small muted" style="margin:4px 0">BLUFOR</h3><div class="list" data-wteamsB></div><h3 class="small muted" style="margin:10px 0 4px">REDFOR</h3><div class="list" data-wteamsR></div></div>
+      <div class="panel"><h2>Fireteams</h2><div class="row" style="justify-content:flex-start;align-items:center;margin:2px 0 6px"><span class="small muted" style="flex:1 1 100%">Silent GPS request. Phones with the board open answer in seconds; teams aren't told.</span><button type="button" data-ping="both" style="flex:0 0 auto">Ping every team</button><button type="button" data-ping="B" style="flex:0 0 auto">Ping BLUFOR</button><button type="button" data-ping="R" style="flex:0 0 auto">Ping REDFOR</button></div><h3 class="small muted" style="margin:4px 0">BLUFOR</h3><div class="list" data-wteamsB></div><h3 class="small muted" style="margin:10px 0 4px">REDFOR</h3><div class="list" data-wteamsR></div></div>
       <div class="panel"><h2>C2 liaison</h2><p class="small muted" style="margin:0">Everything the Wing Commanders say to each other.</p><div class="feed" data-wliaison style="max-height:360px"></div><div class="list" data-woffers></div></div>
       <div class="panel span2"><div class="act-head"><h2>Log</h2><span class="small muted">Void a mistake and every screen recalculates</span></div><div class="feed" data-log style="max-height:420px"></div></div>
       <details class="panel span2 mapset" data-mapsetup><summary><b>Map setup</b> <span class="small muted">(do this once, before the game)</span></summary>
@@ -2898,6 +2926,7 @@ function buildWhite(){
   $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'); if (!b) return; const t = TEMPLATES[+b.dataset.tpl], f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = t.from || 'Higher headquarters'; f.text.value = fillT(t.text); f.text.focus(); });
   $('[data-fullmap]', v).onclick = () => openFullMap(null);
   ipbWire(v);
+  v.addEventListener('click', ev => { const b = ev.target.closest('[data-ping]'); if (!b) return; if (!app.S || !app.S.clock.started){ toast('Start the game first.', true); return; } writeEvent('ping', null, { to:b.dataset.ping, team:b.dataset.pingteam || null }); toast('Position request sent silently.'); });
   const wcMove = pt => { const M = mapCfg(app.S), sq = squareOf(M, pt); writeEvent('wc_pos', null, { pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt) }); toast('White cell moved. Every map shows it.'); };
   $('[data-wctap]', v).onclick = () => { if (!app.lastClick){ toast('Tap the spot on the map first.', true); return; } wcMove(app.lastClick.slice()); };
   $('[data-wcset]', v).onclick = () => { const pt = locate(mapCfg(app.S), $('[data-wcgrid]', v).value); if (!pt){ toast('That grid didn\u2019t read.', true); return; } $('[data-wcgrid]', v).value = ''; wcMove(pt); };
