@@ -53,6 +53,13 @@ plt.rcParams.update({
 })
 
 
+def fake_text(p):
+    lst = p.get("fakeList")
+    if not lst:
+        lst = [{"k": p.get("fake", "?"), "disc": p.get("fakeDisc", ""), "src": p.get("fakeSrc", "")}]
+    return "; ".join(f"{esc(x['k'])}, {esc(x['disc'])} ({esc(x['src'])})" for x in lst)
+
+
 def hhmm(g):
     m = 360 + int(g)
     return f"{m // 60:02d}{m % 60:02d}"
@@ -333,11 +340,11 @@ def build_html(data, aar, charts):
         f"No war. Escalation finished at {final['esc']} ({level_name(final['esc'])})."
     score_rows = [
         ("Sites held at the end (10 each)", "sites"), ("Town office open", "town"), ("Confirmed intel reports", "reports"), ("Intel packages (2 + 2 each)", "intel"),
-        ("IEDs handled", "ied"), ("Militia cache", "cache"), ("Host nation (1 per 10)", "hn"),
+        ("IEDs handled", "ied"), ("IED casualties (−5 each)", "iedhit"), ("Militia cache", "cache"), ("Diplomatic points (1 per 10)", "hn"),
         ("Escalation caused (−1 each)", "esc"), ("White cell adjustments", "adj"), ("War penalty", "war"),
     ]
     rows_html = "".join(
-        f"<tr><td>{esc(label)}</td><td class='num'>{b.get(k, 0):+d}</td><td class='num'>{r.get(k, 0):+d}</td></tr>" if k in ("esc", "war", "adj") else
+        f"<tr><td>{esc(label)}</td><td class='num'>{b.get(k, 0):+d}</td><td class='num'>{r.get(k, 0):+d}</td></tr>" if k in ("esc", "war", "adj", "iedhit") else
         f"<tr><td>{esc(label)}</td><td class='num'>{b.get(k, 0)}</td><td class='num'>{r.get(k, 0)}</td></tr>"
         for label, k in score_rows if b.get(k, 0) or r.get(k, 0) or k in ("sites", "esc")
     )
@@ -357,9 +364,9 @@ def build_html(data, aar, charts):
             return "<td>Not sent</td>"
         if not x.get("answered"):
             return "<td>No answer</td>"
-        return f"<td>Answer {'✓' if x['okA'] else '✗'} · False piece {'✓' if x['okF'] else '✗'} · <b>+{x['pts']}</b></td>"
+        return f"<td>Answer {'✓' if x['okA'] else '✗'} · False intel {'✓' if x['okF'] else '✗'} · <b>+{x['pts']}</b></td>"
     ip_rows = "".join(
-        f"<tr><td>{p['n']}</td><td>{esc(p['title'])}</td><td>{hhmm(p['t'])}–{hhmm(p['due'])}</td><td>{esc(p['answer'])}; false: {esc(p['fake'])}, {esc(p.get('fakeDisc', ''))} ({esc(p['fakeSrc'])})</td>{ip_cell(p['B'])}{ip_cell(p['R'])}</tr>"
+        f"<tr><td>{p['n']}</td><td>{esc(p['title'])}</td><td>{hhmm(p['t'])}–{hhmm(p['due'])}</td><td>{esc(p['answer'])}; false: {fake_text(p)}</td>{ip_cell(p['B'])}{ip_cell(p['R'])}</tr>"
         for p in aar.get("intel", []) if p.get("released")
     ) or "<tr><td colspan='6' class='muted'>No intel packages were sent.</td></tr>"
     liaison = aar.get("liaison", [])
@@ -509,20 +516,21 @@ table.log{{font-size:10pt}}
 <td class="b"><b>{b['total']}</b><span>BLUFOR points</span></td>
 <td class="r"><b>{r['total']}</b><span>REDFOR points</span></td>
 <td><b>{final['esc']}</b><span>Final escalation · {esc(outcome)}</span></td>
-<td><b>{final['hn']['B']} / {final['hn']['R']}</b><span>Host nation B / R</span></td>
+<td><b>{final['hn']['B']} / {final['hn']['R']}</b><span>Diplomatic points B / R</span></td>
 </tr></table>
 
 <h2>2. Final Score</h2>
 <table class="data"><thead><tr><th>Category</th><th class="num">BLUFOR</th><th class="num">REDFOR</th></tr></thead><tbody>{rows_html}</tbody></table>
+{('<p class="note">Escalation caused is shown after it wore off during quiet stretches: ' + str(final['decayed']['B']) + ' points for BLUFOR and ' + str(final['decayed']['R']) + ' for REDFOR.</p>') if final.get('decayed') else ''}
 
 <h2>3. Escalation</h2>
 <figure>{img(charts['escalation'], 'Escalation over the game')}<figcaption>Figure 1. Shared escalation meter over the game. Marked points are single moves worth 10 or more.</figcaption></figure>
 <table class="data"><thead><tr><th>Time</th><th>Wing</th><th class="num">Change</th><th>Event</th></tr></thead><tbody>{esc_rows}</tbody></table>
 <p class="note">With no new escalation, the meter drops 3 at each 10-minute board update; those drops are not listed.</p>
 
-<h2>4. Points and Host-Nation Support</h2>
+<h2>4. Points and Diplomatic Standing</h2>
 <figure>{img(charts['score'], 'Points over time')}<figcaption>Figure 2. Each wing's points over the game.</figcaption></figure>
-<figure>{img(charts['hn'], 'Host-nation meter over time')}<figcaption>Figure 3. The mayor's support (host-nation meter). Below 20, the mayor closes that wing's town office.</figcaption></figure>
+<figure>{img(charts['hn'], 'Diplomatic points over time')}<figcaption>Figure 3. Diplomatic points: each wing's standing with the mayor and the people of Marala. Below 20, the mayor closes that wing's town office.</figcaption></figure>
 
 <h2>5. Site Control</h2>
 <figure>{img(charts['sites'], 'Who held each site')}<figcaption>Figure 4. Control of each site over the game. Hatched bars were contested and scored nothing.</figcaption></figure>
@@ -542,7 +550,7 @@ table.log{{font-size:10pt}}
 <h2>7. Managing Intelligence</h2>
 <h3>Intel packages</h3>
 <table class="data"><thead><tr><th>#</th><th>Problem</th><th>Window</th><th>Key</th><th>BLUFOR</th><th>REDFOR</th></tr></thead><tbody>{ip_rows}</tbody></table>
-<p class="note">Each package gave four pieces of intel (HUMINT, SIGINT, IMINT and GEOINT), one of them false or misleading. +2 for the right answer, +2 for spotting the false piece. The window shows when the white cell sent it and when it closed.</p>
+<p class="note">Each package gave several pieces of intel (usually HUMINT, SIGINT, IMINT and GEOINT, sometimes more), with one or more of them false or misleading. +2 for the right answer, +2 for catching every false piece and no true ones. The window shows when the white cell sent it and when it closed.</p>
 <h3>Attribution of explosions</h3>
 <table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Where</th><th>Public statement</th><th>Actual cause</th><th>Result</th></tr></thead><tbody>{stmt_rows}</tbody></table>
 
@@ -586,7 +594,7 @@ def main():
     charts = {
         "escalation": chart_escalation(aar),
         "score": chart_lines(aar, lambda s, side: s["score"][side], "Points over time", "Points"),
-        "hn": chart_lines(aar, lambda s, side: s["hn"][side], "The mayor's support (host-nation meter)", "Support (0–100)", (0, 105)),
+        "hn": chart_lines(aar, lambda s, side: s["hn"][side], "Diplomatic points (standing with the mayor)", "Diplomatic points (0–100)", (0, 105)),
         "sites": chart_sites(aar),
         "intel": chart_intel(stats),
     }

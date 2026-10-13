@@ -68,7 +68,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
 .row>*{flex:1 1 140px}
 .stack{display:grid;gap:10px}
-.app{max-width:1500px;margin-inline:auto;display:grid;gap:14px}.wnav{position:sticky;top:0;z-index:1100;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-bottom:1.5px solid var(--line);padding:8px 2px;box-shadow:0 6px 8px -8px rgba(0,0,0,.35)}.wnav-stat{display:flex;gap:8px;align-items:baseline;font-size:14px;white-space:nowrap}.wnav-stat b{font-size:18px}.wnav-tabs{display:flex;gap:6px;flex-wrap:wrap}.wnav-tabs button{padding:5px 11px;font-size:13.5px}.wnav-tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}.wnav .cnt{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center}.wing-grid.filtered{grid-template-columns:minmax(0,1fr)}.wing-grid.filtered .feedcol{grid-column:auto}.wing-grid.filtered .feedcol .feed{max-height:none}.wnav .cnt[hidden]{display:none}.white-grid.filtered{grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr))}.white-grid.filtered .span2{grid-column:auto}[data-sec][data-off]{display:none!important}
+.app{max-width:1500px;margin-inline:auto;display:grid;gap:14px}.wnav{position:sticky;top:0;z-index:1100;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-bottom:1.5px solid var(--line);padding:8px 2px;box-shadow:0 6px 8px -8px rgba(0,0,0,.35)}.wnav-stat{display:flex;gap:8px;align-items:baseline;font-size:14px;white-space:nowrap}.wnav-stat b{font-size:18px}.wnav-tabs{display:flex;gap:6px;flex-wrap:wrap}.wnav-tabs button{padding:5px 11px;font-size:13.5px}.wnav-tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}.wnav .cnt{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center}.wing-grid.filtered{grid-template-columns:minmax(0,1fr)}.wing-grid.filtered .feedcol{grid-column:auto}.wing-grid.filtered .feedcol .feed{max-height:none}.wnav .cnt[hidden]{display:none}.chatlog{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;padding:6px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg)}.chatmsg{max-width:85%;align-self:flex-start;border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--panel)}.chatmsg.me{align-self:flex-end;border-color:var(--ink)}.white-grid.filtered{grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr))}.white-grid.filtered .span2{grid-column:auto}[data-sec][data-off]{display:none!important}
 .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
 .brand{display:flex;align-items:baseline;gap:10px}
 .brand h1{font-size:22px;text-transform:uppercase;letter-spacing:.06em}
@@ -1130,9 +1130,11 @@ function validPkg(k){
 }
 function intelKey(pid, kind, val){ return secret('marala-intel', pid + ':' + kind + ':' + val); }
 const IPB_KINDS = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT', 'OSINT'];
+const IED_HIT = 5;
 const OC_CALLS = {
   good:{ ev:'conduct', p:{ good:true }, name:'Good conduct', sub:'Diplomatic points +5' },
   poor:{ ev:'conduct', p:{ good:false }, name:'Poor conduct', sub:'Diplomatic points −5' },
+  iedhit:{ ev:'iedhit', p:{}, name:'Hit by an IED', sub:'−' + IED_HIT + ' points' },
   civaid:{ ev:'civaid', p:{}, name:'Helped a civilian', sub:'Diplomatic points +5' },
   ied_real:{ ev:'ied', p:{ result:'real' }, name:'Real IED cleared', sub:'+2 points · Diplomatic points +5' },
   cache:{ ev:'cache', p:{}, name:'Militia cache cleared', sub:'+5 points · Diplomatic points +5' },
@@ -1169,7 +1171,7 @@ function newState(){
   resetSites();
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   const S = {
-    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[], wps:[], sitePts:{}, siteCodes:{},
+    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[], ctReqs:[], tchats:[], wps:[], sitePts:{}, siteCodes:{},
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
@@ -1367,6 +1369,18 @@ function apply(S, e, cfg){
       pushFeed(S, 'both', 'Explosion reported at ' + inc.grid + '. Cause unknown.' + (p.casualties ? ' Casualties reported.' : ''), 'alert');
       pushLog(S, 'Explosion at ' + inc.grid + ' (really caused by ' + (inc.truth === 'militia' ? 'the militia' : SIDES[inc.truth].name) + ')', null, e);
       break; }
+    case 'iedhit': { const v = S.pts[side]; v.iedhit = (v.iedhit || 0) - IED_HIT; S.ver++;
+      const tx = String(p.text || '').trim().slice(0, 140);
+      pushLog(S, nm + ' fireteam hit by an IED (−' + IED_HIT + ' points)' + (p.grid ? ' at ' + p.grid : '') + (tx ? ' (' + tx + ')' : ''), side, e);
+      pushFeed(S, side, 'Fireteam casualty: IED detonation' + (p.grid ? ' at ' + p.grid : '') + '. −' + IED_HIT + ' points.', 'alert');
+      break; }
+    case 'tchat': { if (!side || !p.team) break;
+      const tx = String(p.text || '').trim().slice(0, 300); if (!tx) break;
+      const t = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:String(p.name || 'Team').slice(0, 40), fixes:[] });
+      const from = p.from === 'c2' ? 'c2' : 'team';
+      S.tchats.push({ id:e.id, side, team:p.team, from, text:tx, g:S.g }); S.ver++;
+      pushLog(S, from === 'c2' ? nm + ' C2 to ' + t.name + ': ' + tx : nm + ' ' + t.name + ' to C2: ' + tx, side, e);
+      break; }
     case 'civaid': addHN(S, side, 5); pushLog(S, nm + ' helped an injured civilian (diplomatic points +5)', side, e); pushFeed(S, side, 'Locals saw your team help an injured civilian.', 'good'); break;
     case 'provocation': raise(S, side, ESC.provocation); pushLog(S, nm + ' aimed at or crowded the other wing (escalation +5)', side, e); break;
     case 'sabotage': { const s = S.sites[p.site]; const prev = s ? s.holder : null; if (s){ s.holder = null; s.contested = false; s.contestBy = null; s.contestUntil = null; s.since = S.g; }
@@ -1400,6 +1414,23 @@ function apply(S, e, cfg){
       pushFeed(S, side, 'Contention started on ' + SITES[p.site].name + '. Your team has until ' + hhmm(st.contestUntil) + ' to finish the activity and enter a capture code word. Escalation +' + CONTEND_ESC + ' now and every 10 minutes.', 'hq');
       pushFeed(S, st.holder, SIDES[side].name + ' started contention on ' + SITES[p.site].name + '. Defense code word deadline: ' + hhmm(st.contestUntil) + '.', 'alert');
       pushLog(S, nm + ' started contention on ' + SITES[p.site].name + ' until ' + hhmm(st.contestUntil) + ' (escalation +' + CONTEND_ESC + ')', side, e);
+      (S.ctReqs || []).filter(r => r.status === 'open' && r.side === side && r.site === p.site).forEach(r => { r.status = 'ok'; r.resG = S.g; pushFeed(S, side, 'Contention on ' + SITES[p.site].name + ' started by your C2. Capture code word deadline: ' + hhmm(st.contestUntil) + '.', 'hq', { label:'Contention', team:true, tid:r.team, only:true }); });
+      break; }
+    case 'ct_req': {
+      if (!side || !p.team || !SITES[p.site] || S.endex) break;
+      const t = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:String(p.name || 'Team').slice(0, 40), fixes:[] });
+      if (S.ctReqs.some(r => r.status === 'open' && r.side === side && r.team === p.team && r.site === p.site)) break;
+      S.ctReqs.push({ id:e.id, side, team:p.team, name:t.name, site:p.site, note:String(p.note || '').trim().slice(0, 140), g:S.g, status:'open' }); S.ver++;
+      pushFeed(S, side, t.name + ' requests contention on ' + SITES[p.site].name + '.', 'alert', { label:'Contention' });
+      pushLog(S, nm + ' ' + t.name + ' requested contention on ' + SITES[p.site].name, side, e);
+      break; }
+    case 'ct_res': {
+      const r = S.ctReqs.find(x => x.id === p.req && x.side === side); if (!r || r.status !== 'open') break;
+      if (!SITES[r.site]){ r.status = 'no'; r.resG = S.g; S.ver++; break; }
+      if (p.ok){ apply(S, { id:e.id, ts:e.ts, type:'act_contend', side, p:{ site:r.site }, by:e.by }, cfg); break; }
+      r.status = 'no'; r.resG = S.g; S.ver++;
+      pushFeed(S, side, 'Contention request for ' + SITES[r.site].name + ' declined by your C2.', 'alert', { label:'Contention', team:true, tid:r.team, only:true });
+      pushLog(S, nm + ' declined contention request from ' + r.name + ' (' + SITES[r.site].name + ')', side, e);
       break; }
     case 'site_timer': if (SITES[p.site] && Number.isInteger(p.min) && p.min >= 3 && p.min <= 90){ S.siteTimer[p.site] = p.min; S.ver++; pushLog(S, SITES[p.site].name + ' contention timer set to ' + p.min + ' minutes', null, e); } break;
     case 'act_drone': if (jammed(S, side)){ pushLog(S, nm + ' drone flight refused: datalink jammed', side, e, 'rejected'); pushFeed(S, side, 'No drone flights while your datalink is jammed.', 'alert'); break; }
@@ -1729,7 +1760,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -1780,9 +1811,9 @@ function score(S, side){
   const v = S.pts[side];
   const hn = Math.min(10, Math.floor(S.hn[side] / 10));
   const esc = -S.escBy[side];
-  const sub = sites + town + v.reports + v.ied + v.cache + (v.intel || 0) + v.adj + hn + esc;
+  const sub = sites + town + v.reports + v.ied + (v.iedhit || 0) + v.cache + (v.intel || 0) + v.adj + hn + esc;
   const war = S.war ? Math.trunc(sub / 2) - sub : 0;
-  return { sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
+  return { sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, iedhit:v.iedhit || 0, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
 }
 if (typeof module !== 'undefined') module.exports = { allProblems, setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, JAM_EVERY, JAM_MIN, jammed, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
 </script>
@@ -2237,10 +2268,10 @@ function legendHTML(side){
     '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
 }
 function scoreTable(S, sides){
-  const rows = [['sites', 'Sites held'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['cache', 'Militia cache'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
+  const rows = [['sites', 'Sites held'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['iedhit', 'IED casualties'], ['cache', 'Militia cache'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
   const sc = {}; sides.forEach(s => sc[s] = score(S, s));
   let h = '<table class="score"><thead><tr><th>Points</th>' + sides.map(s => '<th><span class="chip ' + s + '">' + SIDES[s].name + '</span></th>').join('') + '</tr></thead><tbody>';
-  rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if (k === 'adj' && sides.every(s => !sc[s].adj)) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
+  rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if ((k === 'adj' || k === 'iedhit') && sides.every(s => !sc[s][k])) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
   h += '<tr class="total"><td>Total</td>' + sides.map(s => '<td>' + sc[s].total + '</td>').join('') + '</tr></tbody></table>';
   return h;
 }
@@ -2358,12 +2389,12 @@ function lmapEnsure(el, M){
     const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true, zoomSnap:0.25 });
     map.createPane('contour-pane'); map.getPane('contour-pane').style.zIndex = 250; map.getPane('contour-pane').classList.add('contour-pane');
     const contours = new ContourLayer('', { pane:'contour-pane', tileSize:512, zoomOffset:-1, maxZoom:20, maxNativeZoom:18, minZoom:12, updateWhenIdle:true, keepBuffer:3, attribution:'Contours: USGS 3DEP' });
-    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup(), wc:L.layerGroup(), wp:L.layerGroup() }, key:null };
+    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup(), wc:L.layerGroup(), wp:L.layerGroup(), wpq:L.layerGroup() }, key:null };
     applyGridPref(st);
     const tog = L.control({ position:'topright' });
     tog.onAdd = () => {
       const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref();
-      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => k !== 'poi' || app.role === 'W' || app.role === 'OC').map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
+      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => k !== 'wpq' || app.role === 'W' || app.role === 'OC').map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
       L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
       d.querySelector('[data-gtbtn]').onclick = () => { const l = d.querySelector('.gt-list'); l.hidden = !l.hidden; };
       d.addEventListener('change', ev => { if (ev.target.matches('[data-gtbase]')){ const np = gridPref(); np.base = ev.target.value; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gtbase]').forEach(x => x.value = np.base); $$('.lmap').forEach(x => { if (x._lm) applyGridPref(x._lm); }); return; } const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gt="' + k + '"]').forEach(x => x.checked = ev.target.checked); $$('.lmap').forEach(x => { if (!x._lm) return; applyGridPref(x._lm); drawFine(x._lm); if (x._lm.args && app.S) drawDyn(x._lm, app.S, x._lm.args[0], x._lm.args[1]); }); });
@@ -2396,8 +2427,8 @@ function lmapEnsure(el, M){
   drawFine(st);
   return st;
 }
-const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White cell location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a']];
-const LAYER_DEFAULTS = { base:'sat', play:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true };
+const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White cell location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpq', 'Non-deployed waypoints', '#ffe9a8']];
+const LAYER_DEFAULTS = { base:'sat', play:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true, wpq:true };
 function gridPref(){ try { return Object.assign({}, LAYER_DEFAULTS, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return Object.assign({}, LAYER_DEFAULTS); } }
 function applyGridPref(st){
   const pr = gridPref();
@@ -2487,7 +2518,7 @@ function drawDyn(st, S, side, opts){
   });
   const wcp = wcSpot(S);
   if (wcp) L.marker(wcp, { icon:WC_ICON(), zIndexOffset:900 }).bindTooltip('White cell' + (S.wcPos ? ' (moved)' : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[14, 0] }).bindPopup('<b>White cell</b><br><span class="mono">' + esc(fmtPt(wcp)) + '</span>' + (squareOf(M, wcp) ? '<br>Play square ' + squareOf(M, wcp) : '')).addTo(LS.wc);
-  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side))).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + esc(WP_SYMS[w.sym]) + '<br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(LS.wp));
+  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side))).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + esc(WP_SYMS[w.sym]) + '<br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(w.to === 'none' ? LS.wpq : LS.wp));
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
     const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' · BLUFOR office' : '') + (open('R') ? ' · REDFOR office' : '') : (open(side) ? ' · Your office is open' : ''));
@@ -2581,6 +2612,10 @@ function offersHTML(S, viewer){
     return '<div class="li"><div class="grow"><b>' + esc(SIDES[o.from].name) + ' offers ' + esc(SITES[o.site].name) + '</b> <span class="small muted">' + hhmm(o.g) + (o.note ? ' · ' + esc(o.note) : '') + '</span></div>' + (o.status === 'open' ? '<div class="row" style="flex:0 0 auto">' + ctl + '</div>' : '<span class="chip ' + (o.status === 'accepted' ? 'ok' : 'no') + '">' + esc(o.status) + '</span>') + '</div>';
   }).join('');
 }
+function chatSeenKey(side, tid){ return 'marala-tchat-' + (app.gid || 'none') + '-' + side + '-' + tid; }
+function chatUnread(S, side, tid){ const n = (S.tchats || []).filter(m => m.side === side && m.team === tid && m.from === 'team').length; let seen = 0; try { seen = +localStorage.getItem(chatSeenKey(side, tid)) || 0; } catch(e){} return Math.max(0, n - seen); }
+function chatMarkSeen(S, side, tid){ const n = (S.tchats || []).filter(m => m.side === side && m.team === tid && m.from === 'team').length; try { localStorage.setItem(chatSeenKey(side, tid), String(n)); } catch(e){} }
+function chatHTML(S, side, tid, mine){ const ms = (S.tchats || []).filter(m => m.side === side && m.team === tid).slice(-40); if (!ms.length) return '<div class="empty">No messages.</div>'; return ms.map(m => '<div class="chatmsg' + (m.from === mine ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' · ' + (m.from === 'c2' ? 'C2' : esc((S.teams[side][tid] || {}).name || 'Fireteam')) + '</span><div>' + esc(m.text) + '</div></div>').join(''); }
 function teamRows(S, side, forWhite){
   const ts = liveTeams(S, side);
   if (!ts.length) return '<div class="empty">No fireteams signed in yet. Each team opens the board on a phone and picks ' + SIDES[side].name + ' fireteam.</div>';
@@ -2592,7 +2627,7 @@ function teamRows(S, side, forWhite){
     const sq = pt ? squareOf(M, pt) : null;
     let nav = '';
     if (forWhite && f && f.gps && f.rep){ const d = Math.round(GEO.dist(f.gps, f.rep)); nav = '<span class="chip ' + (d <= 100 ? 'ok' : d <= 250 ? 'wait' : 'no') + '">map grid off by ' + d + ' m</span>'; }
-    return '<div class="li"><div class="grow"><b>' + esc(teamLabel(t)) + '</b> <span class="small muted">' + (t.status ? esc(t.status) + ' · ' : '') + (f ? 'Updated ' + hhmm(f.g) + ' (' + age + ' min ago)' : 'No position yet') + '</span>' + (pt ? '<div class="small mono">' + esc(fmtPt(pt)) + (sq ? ' · Square ' + sq : '') + (f.gps ? '' : ' · From map reading') + (f.ping ? ' · From ping' : '') + '</div>' : '') + pingTxt + '</div>' + nav + (forWhite ? '<button type="button" data-ping="' + side + '" data-pingteam="' + esc(t.id) + '" style="flex:0 0 auto" title="Silently ask this phone for its GPS">Ping</button>' : '') + (age != null && age > 10 ? '<span class="chip wait">stale</span>' : '') + '<button type="button" data-tnum data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" data-cur="' + esc(t.num || '') + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">' + (t.num ? 'Number #' + esc(t.num) : 'Give number') + '</button><button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>';
+    return '<div class="li"><div class="grow"><b>' + esc(teamLabel(t)) + '</b> <span class="small muted">' + (t.status ? esc(t.status) + ' · ' : '') + (f ? 'Updated ' + hhmm(f.g) + ' (' + age + ' min ago)' : 'No position yet') + '</span>' + (pt ? '<div class="small mono">' + esc(fmtPt(pt)) + (sq ? ' · Square ' + sq : '') + (f.gps ? '' : ' · From map reading') + (f.ping ? ' · From ping' : '') + '</div>' : '') + pingTxt + '</div>' + nav + (forWhite ? '<button type="button" data-ping="' + side + '" data-pingteam="' + esc(t.id) + '" style="flex:0 0 auto" title="Silently ask this phone for its GPS">Ping</button>' : '') + (age != null && age > 10 ? '<span class="chip wait">stale</span>' : '') + '<button type="button" data-tnum data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" data-cur="' + esc(t.num || '') + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">' + (t.num ? 'Number #' + esc(t.num) : 'Give number') + '</button>' + (forWhite ? '' : (() => { const u = chatUnread(S, side, t.id); return '<button type="button" data-tchat="' + esc(t.id) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Messages' + (u ? ' <span class="cnt" style="display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center">' + u + '</span>' : '') + '</button>'; })()) + '<button type="button" data-tremove data-side="' + side + '" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="flex:0 0 auto;padding:4px 10px;font-size:13px">Remove</button></div>';
   }).join('');
 }
 
@@ -2762,6 +2797,7 @@ function buildTeam(side){
     <div class="panel"><div class="act-head"><h2>${esc(me.name)} <span data-tnumshow></span></h2><span class="small muted">${esc(SIDES[side].long)}</span></div>
       <div class="row" style="align-items:baseline;justify-content:space-between"><span><span class="k small muted">Board time</span> <b class="mono" data-clock>—</b></span><span data-tlvl></span><span class="row" style="flex:0 0 auto;gap:6px"><button type="button" data-rename style="flex:0 0 auto;padding:4px 10px;font-size:13px">Rename</button><button type="button" data-leave style="flex:0 0 auto;padding:4px 10px;font-size:13px">Leave this fireteam</button></span></div></div>
     <div class="panel stack"><h2>Alerts</h2><div data-tuav></div><div class="list" data-talerts></div></div>
+    <div class="panel stack"><h2>Messages with C2</h2><div class="chatlog" data-tclog></div><form class="row" data-tcf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
     <div class="panel stack"><div class="act-head"><h2>Map</h2><span class="small muted" data-tmapstate></span></div>
       <p class="small muted" style="margin:0">Available for 3 minutes, once every 10 minutes. Your own position is not shown.</p>
       <button type="button" class="btn-side team-big" data-tmapbtn>Open map for 3 minutes</button>
@@ -2774,6 +2810,11 @@ function buildTeam(side){
       <label class="chk"><input type="checkbox" data-auto> Also send GPS by itself every 10 minutes</label>
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <div class="small muted" data-tlast></div></div>
+    <div class="panel stack"><h2>Contention request</h2>
+      <p class="small muted" style="margin:0">Sent to your C2. Contention starts only when your C2 approves it.</p>
+      <div class="row"><label>Site<select data-ctsite data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
+      <button type="button" class="btn-side team-big" data-ctsend>Request contention</button>
+      <div class="list" data-ctlist></div></div>
     <div class="panel stack"><h2>Strike 9-line</h2>
       <p class="small muted" style="margin:0">Read the full 9-line to your POC first. Only the target and location are sent. Your POC or the white cell must confirm it before it reaches your C2.</p>
       <div class="row"><label>Target<select data-ntarget><option value="cache">Militia weapons cache</option><option value="other">${esc(SIDES[OTHER[side]].name)} position</option></select></label><label>Location<input data-nloc maxlength="40" autocomplete="off" placeholder="Example: 5892 2345 or D4"></label></div>
@@ -2782,6 +2823,15 @@ function buildTeam(side){
     <div class="panel"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
   </div>`;
   $('[data-send]', v).onclick = () => sendTeamPos(side, {});
+  $('[data-tcf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; await writeEvent('tchat', side, { team:me.id, name:me.name, from:'team', text:tx }); f.text.value = ''; });
+  $('[data-ctsend]', v).onclick = async () => {
+    const k = $('[data-ctsite]', v).value;
+    if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; }
+    if (!SITES[k]){ toast('Select a site.', true); return; }
+    if (app.S.ctReqs.some(r => r.status === 'open' && r.side === side && r.team === me.id && r.site === k)){ toast('A request for ' + SITES[k].name + ' is already with your C2.', true); return; }
+    if (!confirm('Request contention on ' + SITES[k].name + '?')) return;
+    await writeEvent('ct_req', side, { team:me.id, name:me.name, site:k }); toast('Request sent to your C2.');
+  };
   $('[data-nsend]', v).onclick = async () => {
     const loc = $('[data-nloc]', v).value.trim();
     if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; }
@@ -2831,6 +2881,8 @@ function renderTeam(S, side){
   const t = S.teams[side][me.id], f = t && t.last;
   $('[data-tlast]', v).textContent = f ? 'Last sent ' + hhmm(f.g) + (f.rep ? ' with your map grid' + (f.repText ? ' ' + f.repText : '') : '') + (f.gps ? ' and GPS' + (f.acc ? ' (±' + f.acc + ' m)' : '') : '') + '.' : 'Nothing sent yet.';
   const al = S.feed.filter(f => f.team && f.to === side && (!f.tid || f.tid === me.id)).slice(-5).reverse();
+  { const lg = $('[data-tclog]', v); if (lg){ const n = (S.tchats || []).filter(m => m.side === side && m.team === me.id).length; if (lg.dataset.k !== String(n)){ lg.dataset.k = String(n); lg.innerHTML = chatHTML(S, side, me.id, 'team'); lg.scrollTop = lg.scrollHeight; } } }
+  { const cl = $('[data-ctlist]', v); if (cl){ refreshSiteSelects(v); const rs = (S.ctReqs || []).filter(r => r.side === side && r.team === me.id).slice(-3).reverse(); cl.innerHTML = rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(SITES[r.site] ? SITES[r.site].name : 'Removed site') + '</div><span class="chip ' + (r.status === 'ok' ? 'ok' : r.status === 'no' ? 'no' : 'wait') + '">' + (r.status === 'ok' ? 'Started' : r.status === 'no' ? 'Declined' : 'With your C2') + '</span></div>').join(''); } }
   { const nl = $('[data-nlist]', v); if (nl){ const ns = S.nines.filter(n => n.side === side && n.team === me.id).slice(-3).reverse(); nl.innerHTML = ns.map(n => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(n.g) + '</span> ' + esc(nineText(n)) + '</div><span class="chip ' + (n.status === 'ok' ? 'ok' : n.status === 'no' ? 'no' : 'wait') + '">' + (n.status === 'ok' ? 'sent to C2' : n.status === 'no' ? 'not accepted' : 'waiting for check') + '</span></div>').join(''); } }
   $('[data-talerts]', v).innerHTML = al.length ? al.map(f => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(f.g) + '</span><div>' + esc(f.text) + '</div></div></div>').join('') : '<div class="empty">Nothing yet. UAV sightings and warnings show here.</div>';
   const ph = jammed(S, side) ? '' : uavPhase(S, side), u = S.uav[side];
@@ -2884,7 +2936,7 @@ function buildWing(side){
       <div class="stat"><span class="k">Escalation you caused</span><span class="v" data-esccaused>0</span><span class="s">Each point costs 1 point at the end</span></div>
       <div class="stat"><span class="k">Points so far</span><span class="v" data-pts>0</span><span class="s">${esc(other)}'s points are hidden</span></div>
     </div>
-    <nav class="wnav" data-cnav aria-label="Wing CC sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-cnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['map', 'Map'], ['intel', 'Intel', 'data-cnint'], ['act', 'Actions'], ['rep', 'Reports and claims'], ['teams', 'Fireteams'], ['liaison', 'Liaison'], ['req', 'Requests', 'data-cnreq'], ['msg', 'Messages']].map(([k, n, c]) => '<button type="button" role="tab" data-ctab="' + k + '">' + n + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-cnav aria-label="Wing CC sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-cnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['map', 'Map'], ['intel', 'Intel', 'data-cnint'], ['act', 'Actions'], ['rep', 'Reports and claims', 'data-cnct'], ['teams', 'Fireteams', 'data-cnchat'], ['liaison', 'Liaison'], ['req', 'Requests', 'data-cnreq'], ['msg', 'Messages']].map(([k, n, c]) => '<button type="button" role="tab" data-ctab="' + k + '">' + n + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div data-warbar></div>
     <div class="wing-grid" data-cgrid>
       <div class="stack" style="gap:14px;min-width:0" data-sec="map intel"><div class="panel" data-sec="map">
@@ -2898,7 +2950,7 @@ function buildWing(side){
       <div class="panel" data-sec="act rep teams liaison req">
         <div class="tabs" role="tablist" data-ctabs>
           <button type="button" role="tab" aria-selected="true" data-tab="act">Commander's actions</button>
-          <button type="button" role="tab" aria-selected="false" data-tab="rep">Reports and site claims</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="rep">Reports and site claims<span data-ctcount></span></button>
           <button type="button" role="tab" aria-selected="false" data-tab="teams">Fireteams<span data-teamcount></span></button>
           <button type="button" role="tab" aria-selected="false" data-tab="liaison">Liaison<span data-liaisoncount></span></button>
           <button type="button" role="tab" aria-selected="false" data-tab="req">Requests</button>
@@ -2936,6 +2988,7 @@ function buildWing(side){
               <div class="row"><label for="ctT-${side}">T · Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="Example: 0842"></label><label for="ctEq-${side}" data-sal>E · Equipment<input id="ctEq-${side}" name="eq" maxlength="80" placeholder="Example: 2 rifles, a radio"></label></div>
               <label for="ctN-${side}" data-notesal>Notes<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: Flag on the Radar Ridge mast"></label>
               <div><button class="btn-side" type="submit">Post report</button></div></form></div>
+          <div class="act" data-ctbox hidden><div class="act-head"><b>Contention requests from fireteams</b><span class="cost"><span class="esc-up">+5 escalation now and every 10 minutes if started</span></span></div><div class="list" data-ctreqs></div></div>
           <div class="act"><div class="act-head"><b>Start contention</b><span class="cost"><span class="esc-up">+5 escalation now and every 10 minutes</span></span></div>
             <p class="small muted" style="margin:0">Applies to a site the other wing holds. A capture code word must be entered before the timer expires. If the holder enters a defense code word first, contention ends and you take +5 escalation.</p>
             <form class="stack" data-f="contend"><div class="row"><label for="cnS-${side}">Site<select id="cnS-${side}" name="site" data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div><div><button class="btn-side" type="submit">Start contention</button></div></form></div>
@@ -2947,6 +3000,7 @@ function buildWing(side){
         <div data-pane="teams" class="stack" hidden>
           <p class="small muted" style="margin:0">Fireteam positions and statuses come from their phones.</p>
           <div class="list" data-teams></div>
+          <div class="act stack" data-tchatbox hidden><div class="act-head"><b data-tchathead>Messages</b><button type="button" data-tchatclose style="flex:0 0 auto">Close</button></div><div class="chatlog" data-tchatlog></div><form class="row" data-tchatf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
           <div class="act"><div class="act-head"><b>Send an order</b><span class="cost">Shows on the fireteam's phone</span></div>
             <form class="stack" data-f="order"><label for="orT-${side}">To<select id="orT-${side}" name="team" data-teamsel><option value="all">All fireteams</option></select></label><label for="orX-${side}">Order<input id="orX-${side}" name="text" maxlength="300" required placeholder="Example: Claim Radar Ridge, then hold and report in 20 minutes"></label><div><button class="btn-side" type="submit">Send order</button></div></form></div>
         </div>
@@ -3007,6 +3061,17 @@ function buildWing(side){
     }
     const r = writeEvent('contact', side, { kind, site:kind === 'site' ? fd.get('site') : null, grid:String(fd.get('grid')).toUpperCase(), seen, note, salute });
     setTimeout(salSync, 0); return r;
+  });
+  const chatBox = $('[data-tchatbox]', v), chatOpen = tid => { app.chatTeam = tid; chatBox.hidden = !tid; $('[data-tchatlog]', v).dataset.k = ''; if (tid){ refresh(true); setTimeout(() => { chatBox.scrollIntoView({ behavior:'smooth', block:'nearest' }); $('[data-tchatf] input', v).focus({ preventScroll:true }); }, 80); } else refresh(true); };
+  v.addEventListener('click', ev => { const b = ev.target.closest('[data-tchat]'); if (b) chatOpen(b.dataset.tchat); });
+  $('[data-tchatclose]', v).onclick = () => chatOpen(null);
+  $('[data-tchatf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx || !app.chatTeam) return; if (!app.S || !app.S.teams[side][app.chatTeam]){ toast('That fireteam is no longer signed in.', true); return; } await writeEvent('tchat', side, { team:app.chatTeam, from:'c2', text:tx }); f.text.value = ''; });
+  v.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-ctok],[data-ctno]'); if (!b || !app.S) return;
+    const ok = !!b.dataset.ctok, r = app.S.ctReqs.find(x => x.id === (b.dataset.ctok || b.dataset.ctno)); if (!r || r.status !== 'open') return;
+    if (ok && !confirm('Start contention on ' + SITES[r.site].name + ' for ' + r.name + '? Escalation goes up by 5 now and every 10 minutes until it ends.')) return;
+    if (!ok && !confirm('Decline the contention request from ' + r.name + '?')) return;
+    writeEvent('ct_res', side, { req:r.id, ok });
   });
   on('contend', fd => { if (!confirm('Start contention on ' + SITES[fd.get('site')].name + '? Escalation goes up by 5 now and every 10 minutes until it ends.')) return false; return writeEvent('act_contend', side, { site:fd.get('site') }); });
   on('claim', fd => writeEvent('claim', side, { site:fd.get('site'), code:secret(app.cfg.salt, fd.get('code')) }));
@@ -3129,6 +3194,15 @@ function renderWing(S, side, now){
   $('[data-jamstate]', v).textContent = jamReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(jl + JAM_EVERY));
   const uavL = S.uav[side], uavReady = !uavL || S.g - uavL.g >= UAV_EVERY - 1e-9;
   $('[data-uavstate]', v).textContent = uavReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(uavL.g + UAV_EVERY));
+  { const box = $('[data-tchatbox]', v), lg = $('[data-tchatlog]', v), tid = app.chatTeam, t = tid && S.teams[side][tid];
+    if (tid && !t){ app.chatTeam = null; box.hidden = true; }
+    else if (tid){ const n = S.tchats.filter(m => m.side === side && m.team === tid).length, key = tid + '|' + n; $('[data-tchathead]', v).textContent = 'Messages with ' + teamLabel(t); if (lg.dataset.k !== key){ lg.dataset.k = key; lg.innerHTML = chatHTML(S, side, tid, 'c2'); lg.scrollTop = lg.scrollHeight; } if (!$('[data-pane="teams"]', v).hidden) chatMarkSeen(S, side, tid); }
+    const un = liveTeams(S, side).reduce((a, x) => a + chatUnread(S, side, x.id), 0), c = $('[data-cnchat]', v); if (c){ c.hidden = !un; c.textContent = un; } }
+  { const cr = (S.ctReqs || []).filter(r => r.side === side && r.status === 'open' && SITES[r.site]), box = $('[data-ctreqs]', v);
+    $('[data-ctbox]', v).hidden = !cr.length; $('[data-ctcount]', v).textContent = cr.length ? ' · ' + cr.length : '';
+    { const c = $('[data-cnct]', v); if (c){ c.hidden = !cr.length; c.textContent = cr.length; } }
+    const key = cr.map(r => r.id + (S.sites[r.site] ? S.sites[r.site].contestBy || '' : '')).join();
+    if (box.dataset.k !== key){ box.dataset.k = key; box.innerHTML = cr.map(r => { const st = S.sites[r.site]; return '<div class="li"><div class="grow"><b>' + esc(r.name) + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(SITES[r.site].name) + ' · ' + siteSquare(S, r.site) + (st && st.contestBy ? ' · already in contention' : '') + '</div></div><button type="button" class="btn-side" data-ctok="' + r.id + '" style="flex:0 0 auto">Start contention</button><button type="button" data-ctno="' + r.id + '" style="flex:0 0 auto">Decline</button></div>'; }).join(''); } }
   { const nb = $('[data-nines]', v); if (nb){ const ns = S.nines.filter(n => n.side === side && n.status === 'ok' && !n.used).slice(-4).reverse(); nb.innerHTML = ns.length ? '<div class="small muted">Checked 9-lines from your fireteams</div>' + ns.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.resG) + ' · Checked by ' + esc(n.by) + '</span><div class="small">' + esc(nineText(n)) + '</div></div><button type="button" data-usenine="' + n.id + '" style="flex:0 0 auto">Use</button></div>').join('') : ''; } }
   $$('form[data-f] button[type="submit"]', v).forEach(b => {
     const f = b.closest('form').dataset.f;
@@ -3191,6 +3265,7 @@ function buildWhite(){
         <button type="button" data-ev="cache" data-side="${s}">Militia cache cleared<small>+5 points · Diplomatic points +5</small></button>
         <button type="button" data-ev="conduct" data-side="${s}" data-good="1">Good conduct<small>Diplomatic points +5</small></button>
         <button type="button" data-ev="conduct" data-side="${s}" data-good="0">Poor conduct<small>Diplomatic points −5</small></button>
+        <button type="button" data-ev="iedhit" data-side="${s}">Hit by an IED<small>−${IED_HIT} points</small></button>
         <button type="button" data-ev="civaid" data-side="${s}">Helped a civilian<small>Diplomatic points +5</small></button>
         <button type="button" data-ev="provocation" data-side="${s}">Aimed at or crowded the other wing<small>Escalation +5</small></button>
         <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>Escalation +20 · Diplomatic points −15</small></button>
