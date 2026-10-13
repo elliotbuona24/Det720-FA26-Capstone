@@ -1122,7 +1122,7 @@ function allProblems(S){
   const cs = (S && S.customOrder ? S.customOrder : []).map(id => S.custom[id]).filter(Boolean), reps = {};
   cs.forEach(c => { if (c.replaces) reps[c.replaces] = c; });
   const ed = (S && S.edits) || {};
-  return PROBLEMS.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !PROBLEMS.some(P => P.id === c.replaces))).map(P => ed[P.id] ? Object.assign({}, P, ed[P.id], { id:P.id, custom:P.custom, replaces:P.replaces, at:P.at, win:P.win, blast:P.blast }) : P);
+  return PROBLEMS.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !PROBLEMS.some(P => P.id === c.replaces))).map(P => ed[P.id] ? Object.assign({}, P, ed[P.id], { id:P.id, custom:P.custom, replaces:P.replaces, at:P.at, win:P.win, blast:P.blast, wp:P.wp }) : P);
 }
 function validEdit(k){ return k && Array.isArray(k.opts) && k.opts.length === 4 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string' && typeof k.title === 'string' && typeof k.q === 'string'; }
 function validPkg(k){
@@ -1520,6 +1520,12 @@ function apply(S, e, cfg){
         pushFeed(S, 'both', 'Explosion reported at ' + inc.grid + '. Cause unknown.' + (P.blast.cas ? ' Casualties reported.' : ''), 'alert');
         pushLog(S, 'Explosion at ' + inc.grid + ' with intel package ' + (i + 1) + ' (really caused by ' + (inc.truth === 'militia' ? 'the militia' : SIDES[inc.truth].name) + ')', null, e);
       }
+      { const q = P.wp, okPt = a => Array.isArray(a) && a.length === 2 && a.every(Number.isFinite) && Math.abs(a[0]) <= 90 && Math.abs(a[1]) <= 180;
+        if (q && okPt(q.pt) && String(q.label || '').trim()) to.forEach(sd => { const id = 'wpi-' + P.id + '-' + sd; if (S.wps.some(w => w.id === id)) return;
+          const w = { id, pt:q.pt, label:String(q.label).trim().slice(0, 60), desc:String(q.desc || '').trim().slice(0, 200), sym:WP_SYMS[q.sym] ? q.sym : 'pin', color:/^#[0-9a-f]{6}$/i.test(q.color || '') ? q.color : null, to:sd, g:S.g, grid:String(q.grid || '').slice(0, 60), pkg:P.id };
+          S.wps.push(w); S.ver++;
+          pushFeed(S, sd, 'New waypoint with intel package ' + (i + 1) + ': ' + w.label + (w.grid ? ' at ' + w.grid : '') + '.' + (w.desc ? ' ' + w.desc : ''), 'hq', { label:'Waypoint', team:true });
+          pushLog(S, 'Waypoint deployed with intel package ' + (i + 1) + ': ' + w.label + (w.grid ? ' at ' + w.grid : '') + ' · ' + SIDES[sd].name, null, e); }); }
       pushLog(S, 'Intel package ' + (i + 1) + ' (' + P.title + ') sent to ' + to.map(sd => SIDES[sd].name).join(' and ') + ', due ' + hhmm(due), null, e);
       break; }
     case 'intel_close': {
@@ -1733,7 +1739,7 @@ function apply(S, e, cfg){
       let w, before = [], moved = false;
       if (e.type === 'wp_add'){
         if (!okPt(p.pt)) break;
-        w = { id:e.id, pt:p.pt, label:String(p.label || '').trim().slice(0, 60) || 'Waypoint', sym:WP_SYMS[p.sym] ? p.sym : 'pin', color:/^#[0-9a-f]{6}$/i.test(p.color || '') ? p.color : null, to:['B', 'R', 'both'].includes(p.to) ? p.to : 'none', g:S.g, grid };
+        w = { id:e.id, pt:p.pt, label:String(p.label || '').trim().slice(0, 60) || 'Waypoint', sym:WP_SYMS[p.sym] ? p.sym : 'pin', color:/^#[0-9a-f]{6}$/i.test(p.color || '') ? p.color : null, to:['B', 'R', 'both'].includes(p.to) ? p.to : 'none', g:S.g, grid, desc:String(p.desc || '').trim().slice(0, 200) };
         S.wps.push(w);
       } else {
         w = S.wps.find(x => x.id === p.id && !x.del); if (!w) break;
@@ -1742,6 +1748,7 @@ function apply(S, e, cfg){
         else {
           if (p.label != null && String(p.label).trim()) w.label = String(p.label).trim().slice(0, 60);
           if (p.sym && WP_SYMS[p.sym]) w.sym = p.sym;
+          if (p.desc != null) w.desc = String(p.desc).trim().slice(0, 200);
           if (/^#[0-9a-f]{6}$/i.test(p.color || '')) w.color = p.color;
           if (okPt(p.pt) && (p.pt[0] !== w.pt[0] || p.pt[1] !== w.pt[1])){ w.pt = p.pt; w.grid = grid; moved = true; }
           if (p.to != null) w.to = ['B', 'R', 'both'].includes(p.to) ? p.to : 'none';
@@ -1749,7 +1756,7 @@ function apply(S, e, cfg){
       }
       S.ver++;
       const now = w.del ? [] : wpSides(w.to), where = w.grid ? ' at ' + w.grid : '';
-      now.filter(sd => !before.includes(sd)).forEach(sd => pushFeed(S, sd, 'New waypoint from the white cell: ' + w.label + where + '.', 'hq', { label:'Waypoint', team:true }));
+      now.filter(sd => !before.includes(sd)).forEach(sd => pushFeed(S, sd, 'New waypoint from the white cell: ' + w.label + where + '.' + (w.desc ? ' ' + w.desc : ''), 'hq', { label:'Waypoint', team:true }));
       if (moved) now.filter(sd => before.includes(sd)).forEach(sd => pushFeed(S, sd, 'Waypoint moved: ' + w.label + ' is now' + where + '.', 'hq', { label:'Waypoint', team:true }));
       before.filter(sd => !now.includes(sd)).forEach(sd => pushFeed(S, sd, 'Waypoint withdrawn: ' + w.label + '.', 'hq', { label:'Waypoint', team:true }));
       pushLog(S, (e.type === 'wp_add' ? 'Waypoint added: ' : e.type === 'wp_del' ? 'Waypoint deleted: ' : !before.length && now.length ? 'Waypoint deployed: ' : before.length && !now.length ? 'Waypoint returned to queue: ' : 'Waypoint changed: ') + w.label + ' (' + WP_SYMS[w.sym] + ')' + where + ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name), null, e);
@@ -2536,7 +2543,7 @@ function drawDyn(st, S, side, opts){
   });
   const wcp = wcSpot(S);
   if (wcp) L.marker(wcp, { icon:WC_ICON(), zIndexOffset:900 }).bindTooltip('White cell' + (S.wcPos ? ' (moved)' : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[14, 0] }).bindPopup('<b>White cell</b><br><span class="mono">' + esc(fmtPt(wcp)) + '</span>' + (squareOf(M, wcp) ? '<br>Play square ' + squareOf(M, wcp) : '')).addTo(LS.wc);
-  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side))).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + esc(WP_SYMS[w.sym]) + '<br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(side ? LS.wp : w.to === 'none' ? LS.wpq : w.to === 'B' ? LS.wpB : w.to === 'R' ? LS.wpR : (pr.wpB ? LS.wpB : LS.wpR)));
+  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side))).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + (w.desc ? esc(w.desc) + '<br>' : '') + '<span class="small">' + esc(WP_SYMS[w.sym]) + '</span><br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(side ? LS.wp : w.to === 'none' ? LS.wpq : w.to === 'B' ? LS.wpB : w.to === 'R' ? LS.wpR : (pr.wpB ? LS.wpB : LS.wpR)));
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
     const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' · BLUFOR office' : '') + (open('R') ? ' · REDFOR office' : '') : (open(side) ? ' · Your office is open' : ''));
@@ -2700,7 +2707,7 @@ function buildOC(){
       <div class="row"><label>Site<select data-ocsite data-siteopts data-town="Marala Town">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select></label></div>
       <label>Note (optional)<input data-ocsitenote maxlength="120" placeholder="Example: Starting the cipher now"></label>
       <button type="button" class="btn-side" data-ocsitesend>Tell the white cell</button></div>
-    <div class="panel stack"><h2>Message to the white cell</h2><textarea data-ocmsg rows="2" maxlength="300" placeholder="Example: Alpha 1 has a twisted ankle, walking it off"></textarea><button type="button" class="btn-side" data-ocmsgsend>Send</button></div>
+    <div class="panel stack"><h2>Message to the white cell</h2><textarea data-ocmsg rows="2" maxlength="300"></textarea><button type="button" class="btn-side" data-ocmsgsend>Send</button></div>
     <div class="panel stack"><h2>Your requests</h2><div class="list" data-ocmine></div></div>
     <details class="panel" data-ocmapbox><summary><b>Map</b> <span class="small muted">(same view as the white cell)</span></summary>
       <div class="stack" style="margin-top:10px"><p class="small muted" style="margin:0">No fog of war. Not for cadet viewing.</p>
@@ -3330,6 +3337,7 @@ function buildWhite(){
         <div class="stack wpctl" style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
           <div class="small"><b>Waypoints</b> <span class="muted">New waypoints enter the queue, visible to the white cell only. Deploying one notifies the selected wing's C2 and fireteams.</span></div>
           <div class="row" style="align-items:end"><label>Label<input data-wplabel maxlength="60" placeholder="Example: Casualty collection point"></label><span data-wpprev style="flex:0 0 auto;align-self:center"></span><span class="small muted" data-wpsymname style="flex:0 0 auto;align-self:center"></span></div>
+          <label>Description (optional; shown when the waypoint is opened)<input data-wpdesc maxlength="200"></label>
           <input type="hidden" data-wpsym value="pin">
           <div class="wpgrid" data-wpgrid role="group" aria-label="Symbol">${Object.keys(WP_SYMS).map(k => '<button type="button" data-wpsympick="' + k + '" title="' + WP_SYMS[k] + '" aria-label="' + WP_SYMS[k] + '">' + wpSvg(k, 22) + '</button>').join('')}</div>
           <div class="wpsw"><span class="small">Color</span>${WP_COLORS.map(c => '<button type="button" data-wpswatch="' + c + '" title="' + c + '" style="background:' + c + '"></button>').join('')}<input type="color" data-wpcolor value="#ffcf5a" aria-label="Custom color"><button type="button" data-wpcolordef style="width:auto;height:auto;border-radius:6px;padding:3px 8px;font-size:12px">Symbol default</button></div>
@@ -3389,6 +3397,16 @@ function buildWhite(){
           <div class="row"><label>Title<input data-ipb="title" maxlength="80" placeholder="Example: The coast road ambush"></label><label style="flex:0 0 110px">Intended time (T+ min)<input data-ipb="at" type="number" min="0" max="300" value="60"></label><label style="flex:0 0 110px">Window (min)<input data-ipb="win" type="number" min="3" max="60" value="15"></label></div>
           <label>Question<input data-ipb="q" maxlength="200" placeholder="Example: Who set the ambush on the coast road?"></label>
           <div class="row" style="align-items:end"><label>Explosion with this package (optional): grid<input data-ipb="bgrid" maxlength="24" placeholder="Example: C3"></label><label style="flex:0 0 170px">Really caused by<select data-ipb="btruth"><option value="militia">The militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-ipb="bcas"> Casualties</label></div>
+          <fieldset class="ipb-piece stack" data-ipbwp><legend>Waypoint with this package (optional)</legend>
+            <p class="small muted" style="margin:0" data-ipbwpnote>Deployed to each wing that receives the package, at the moment it is deployed.</p>
+            <div class="row" style="align-items:end"><label>Start from a waypoint<select data-ipbwpfrom></select></label></div>
+            <div class="row" style="align-items:end"><label>Label<input data-ipbw="label" maxlength="60"></label><span data-ipbwprev style="flex:0 0 auto;align-self:center"></span><span class="small muted" data-ipbwsymname style="flex:0 0 auto;align-self:center"></span></div>
+            <label>Description (what is at the waypoint)<input data-ipbw="desc" maxlength="200"></label>
+            <input type="hidden" data-ipbw="sym" value="pin">
+            <div class="wpgrid" data-ipbwgrid role="group" aria-label="Symbol">${Object.keys(WP_SYMS).map(k => '<button type="button" data-ipbwsym="' + k + '" title="' + WP_SYMS[k] + '" aria-label="' + WP_SYMS[k] + '">' + wpSvg(k, 22) + '</button>').join('')}</div>
+            <div class="wpsw" data-ipbwsw><span class="small">Color</span>${WP_COLORS.map(c => '<button type="button" data-ipbwswatch="' + c + '" title="' + c + '" style="background:' + c + '"></button>').join('')}<input type="color" data-ipbwcolor value="#ffcf5a" aria-label="Custom color"><button type="button" data-ipbwcolordef style="width:auto;height:auto;border-radius:6px;padding:3px 8px;font-size:12px">Symbol default</button></div>
+            <div class="row" style="align-items:end"><label>Location<input data-ipbw="loc" autocomplete="off" placeholder="Example: 5893 2345, 40.82601, -77.85812 or D4"></label><button type="button" data-ipbwtap style="flex:0 0 auto">Use last map tap</button><button type="button" data-ipbwclear style="flex:0 0 auto">Clear waypoint</button></div>
+          </fieldset>
           <fieldset class="ipb-piece"><legend>Answers (mark the correct one)</legend><div class="ipb-opts">
             ${[0, 1, 2, 3].map(k => '<div class="row"><input type="radio" name="ipbA" value="' + k + '" aria-label="Correct answer ' + (k + 1) + '"><input data-ipbopt="' + k + '" maxlength="100" placeholder="Example: ' + ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'][k] + '"></div>').join('')}
           </div></fieldset>
@@ -3461,7 +3479,7 @@ function buildWhite(){
   const wpForm = { color:null };
   const wpCur = () => wpForm.color || WP_DEF[$('[data-wpsym]', v).value];
   const wpPrev = () => { const k = $('[data-wpsym]', v).value; $('[data-wpprev]', v).innerHTML = wpSvg(k, 30, wpCur()); $('[data-wpsymname]', v).textContent = WP_SYMS[k]; $$('[data-wpsympick]', v).forEach(b => b.setAttribute('aria-pressed', b.dataset.wpsympick === k ? 'true' : 'false')); $('[data-wpcolor]', v).value = wpCur(); $('[data-wpadd]', v).textContent = app.wpEdit ? 'Save changes' : 'Add to queue'; };
-  const wpReset = () => { app.wpEdit = null; wpForm.color = null; $('[data-wplabel]', v).value = ''; $('[data-wploc]', v).value = ''; $('[data-wpsym]', v).value = 'pin'; app.wpPick = false; $('[data-wppick]', v).classList.remove('btn-side'); wpPrev(); };
+  const wpReset = () => { app.wpEdit = null; wpForm.color = null; $('[data-wplabel]', v).value = ''; $('[data-wpdesc]', v).value = ''; $('[data-wploc]', v).value = ''; $('[data-wpsym]', v).value = 'pin'; app.wpPick = false; $('[data-wppick]', v).classList.remove('btn-side'); wpPrev(); };
   $('[data-wpgrid]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-wpsympick]'); if (!b) return; $('[data-wpsym]', v).value = b.dataset.wpsympick; wpPrev(); });
   $('.wpsw', v).addEventListener('click', ev => { const sw = ev.target.closest('[data-wpswatch]'); if (sw){ wpForm.color = sw.dataset.wpswatch; wpPrev(); } if (ev.target.closest('[data-wpcolordef]')){ wpForm.color = null; wpPrev(); } });
   $('[data-wpcolor]', v).addEventListener('input', ev => { wpForm.color = ev.target.value; wpPrev(); });
@@ -3474,8 +3492,9 @@ function buildWhite(){
     if (!pt){ toast('Set a location: tap the map, use Pick on map, or type a grid or coordinates.', true); return; }
     if (!label){ toast('Add a label.', true); return; }
     const w = app.wpEdit && app.S ? app.S.wps.find(x => x.id === app.wpEdit && !x.del) : null;
-    if (w) writeEvent('wp_edit', null, { id:w.id, pt, label, sym, color, grid:wpGrid(pt) });
-    else writeEvent('wp_add', null, { pt, label, sym, color, to:'none', grid:wpGrid(pt) });
+    const desc = $('[data-wpdesc]', v).value.trim();
+    if (w) writeEvent('wp_edit', null, { id:w.id, pt, label, sym, color, desc, grid:wpGrid(pt) });
+    else writeEvent('wp_add', null, { pt, label, sym, color, desc, to:'none', grid:wpGrid(pt) });
     toast(w ? 'Waypoint updated.' + (w.to !== 'none' ? ' Wings it is deployed to see the change.' : '') : 'Waypoint added to the queue. Not deployed.'); app.wpKey = null; wpReset();
   };
   const snBox = $('[data-sitenew]', v);
@@ -3516,7 +3535,7 @@ function buildWhite(){
   v.addEventListener('click', ev => {
     const ed = ev.target.closest('[data-wpedit]'), dl = ev.target.closest('[data-wpdel]'), S = app.S;
     const w = S && (ed || dl) ? S.wps.find(x => x.id === (ed || dl).dataset[ed ? 'wpedit' : 'wpdel']) : null; if (!w) return;
-    if (ed){ app.wpEdit = w.id; wpForm.color = w.color || null; $('[data-wplabel]', v).value = w.label; $('[data-wploc]', v).value = fmtPt(w.pt); $('[data-wpsym]', v).value = w.sym; wpPrev(); $('.wpctl', v).scrollIntoView({ behavior:'smooth', block:'start' }); toast('Editing "' + w.label + '". Change anything, then press Save changes.'); }
+    if (ed){ app.wpEdit = w.id; wpForm.color = w.color || null; $('[data-wplabel]', v).value = w.label; $('[data-wpdesc]', v).value = w.desc || ''; $('[data-wploc]', v).value = fmtPt(w.pt); $('[data-wpsym]', v).value = w.sym; wpPrev(); $('.wpctl', v).scrollIntoView({ behavior:'smooth', block:'start' }); toast('Editing "' + w.label + '". Change anything, then press Save changes.'); }
     if (dl && confirm('Delete "' + w.label + '"?' + (w.to !== 'none' ? ' The wings it was shared with are told it was withdrawn.' : ''))){ writeEvent('wp_del', null, { id:w.id }); if (app.wpEdit === w.id) wpReset(); }
     app.wpKey = null;
   });
@@ -3609,10 +3628,22 @@ function ipbSetMode(){
   const f = ipbForm(); if (!f) return;
   const P = ipb.replaces ? PROBLEMS.find(x => x.id === ipb.replaces) : null;
   const AP0 = app.S ? allProblems(app.S) : [], se = ipb.sentEdit ? AP0.findIndex(x => x.id === ipb.sentEdit) : -1;
+  { const fs = $('[data-ipbwp]', f); if (fs){ fs.disabled = !!ipb.sentEdit; $('[data-ipbwpnote]', f).textContent = ipb.sentEdit ? 'This package was already sent. Its waypoint is edited under Waypoints on the Map tab.' : 'Deployed to each wing that receives the package, at the moment it is deployed.'; } }
   $('[data-ipbmode]', f).textContent = ipb.sentEdit ? 'Editing intel package ' + (se + 1) + ', which was already sent. Saving updates it on the wings’ screens and tells them. Answers already graded keep their points; open ones are graded against your new key.' : ipb.id ? 'Editing a package you built. Saving updates it.' : P ? 'Editing built-in package ' + (PROBLEMS.indexOf(P) + 1) + '. Saving replaces it with your version.' : 'New package.';
+}
+function ipbWpSet(q){
+  const f = ipbForm(); if (!f) return;
+  $('[data-ipbw="label"]', f).value = q ? q.label || '' : ''; $('[data-ipbw="desc"]', f).value = q ? q.desc || '' : ''; $('[data-ipbw="sym"]', f).value = q && WP_SYMS[q.sym] ? q.sym : 'pin';
+  $('[data-ipbw="loc"]', f).value = q && q.pt ? fmtPt(q.pt) : ''; ipb.wpColor = q && q.color || null; ipbWpPrev();
+}
+function ipbWpPrev(){
+  const f = ipbForm(); if (!f) return; const k = $('[data-ipbw="sym"]', f).value, c = ipb.wpColor || WP_DEF[k] || '#ffcf5a';
+  $('[data-ipbwprev]', f).innerHTML = wpSvg(k, 30, c); $('[data-ipbwsymname]', f).textContent = WP_SYMS[k]; $('[data-ipbwcolor]', f).value = c;
+  $$('[data-ipbwsym]', f).forEach(b => b.setAttribute('aria-pressed', b.dataset.ipbwsym === k ? 'true' : 'false'));
 }
 function ipbFill(P){
   const f = ipbForm();
+  if (!P || !P.keepWp) ipbWpSet(P && P.wp);
   $('[data-ipb="title"]', f).value = P ? fillT(P.title) : ''; $('[data-ipb="q"]', f).value = P ? fillT(P.q) : '';
   $('[data-ipb="at"]', f).value = P && P.at != null ? P.at : 60; $('[data-ipb="win"]', f).value = P && P.win ? P.win : 15;
   $('[data-ipb="note"]', f).value = P && P.note || '';
@@ -3775,7 +3806,7 @@ function ipbGenerate(){
   const fds = fKeys.map(k => items.find(x => x.k === k).disc), imintFalse = fds.includes('IMINT');
   const place2 = place;
   ipb.id = null; ipb.replaces = null; ipb.sentEdit = null;
-  ipbFill({ title:kind.title(place2), q:kind.q(place2), at:+($('[data-ipb="at"]', ipbForm()).value || 60), win:15, opts, items, aIdx:who.indexOf(truth), fKeys, note:'False: ' + fKeys.map((k, j) => 'piece ' + k + ' (' + fds[j] + ')').join(' and ') + (fKeys.length > 1 ? ' point' : ' points') + ' at ' + opts[who.indexOf(decoy)].split(' (')[0] + ', but ' + fds.map(d => why[d]).join('; and ') + '.' + (imintFalse ? ' Add a photo that looks convincing but is the wrong place or time.' : ' Add a photo to the IMINT piece that matches its description.') });
+  ipbFill({ keepWp:true, title:kind.title(place2), q:kind.q(place2), at:+($('[data-ipb="at"]', ipbForm()).value || 60), win:15, opts, items, aIdx:who.indexOf(truth), fKeys, note:'False: ' + fKeys.map((k, j) => 'piece ' + k + ' (' + fds[j] + ')').join(' and ') + (fKeys.length > 1 ? ' point' : ' points') + ' at ' + opts[who.indexOf(decoy)].split(' (')[0] + ', but ' + fds.map(d => why[d]).join('; and ') + '.' + (imintFalse ? ' Add a photo that looks convincing but is the wrong place or time.' : ' Add a photo to the IMINT piece that matches its description.') });
   toast('Draft generated. Edit anything, add the IMINT photo, then save.');
 }
 async function ipbSave(){
@@ -3788,6 +3819,10 @@ async function ipbSave(){
   if (!title || !q) return msg('Add a title and a question.');
   if (opts.some(o => !o)) return msg('Fill in all four answers.');
   if (!aR) return msg('Pick the right answer.');
+  let wp = null;
+  if (!ipb.sentEdit){ const wl = $('[data-ipbw="label"]', f).value.trim(), wloc = $('[data-ipbw="loc"]', f).value.trim();
+    if (wl || wloc){ if (!wl) return msg('Add a label for the waypoint, or clear it.'); const pt = locate(mapCfg(app.S), wloc); if (!pt) return msg('The waypoint location did not read. Use a play square, MGRS grid or lat/long.');
+      const sym = $('[data-ipbw="sym"]', f).value, sq = squareOf(mapCfg(app.S), pt); wp = { label:wl, desc:$('[data-ipbw="desc"]', f).value.trim(), sym, color:ipb.wpColor || null, pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt) }; } }
   if (!bad.length) return msg('Mark at least one piece as false or misleading.');
   if (items.some(it => !it.src || !it.text)) return msg('Every piece needs a source and what it says.');
   const imint = items.filter(it => it.disc === 'IMINT');
@@ -3812,6 +3847,7 @@ async function ipbSave(){
       $('[data-ipbsave]', f).disabled = false; return;
     }
     const pkg = { id, custom:true, replaces:ipb.replaces || null, at:Math.max(0, Math.round(+val('[data-ipb="at"]') || 0)), win:Math.max(3, Math.round(+val('[data-ipb="win"]') || 15)), title, q, opts, items, note:val('[data-ipb="note"]'),
+      wp,
       blast:val('[data-ipb="bgrid"]') ? { grid:val('[data-ipb="bgrid"]').toUpperCase(), truth:$('[data-ipb="btruth"]', f).value, cas:$('[data-ipb="bcas"]', f).checked } : null,
       a:intelKey(id, 'a', +aR.value), f:intelKey(id, 'f', bad.join('')) };
     await writeEvent('intel_custom', null, { pkg });
@@ -3824,6 +3860,13 @@ async function ipbSave(){
 function ipbWire(v){
   const f = $('[data-ipbuild]', v); if (!f) return;
   $('[data-ipbgen]', f).onclick = ipbGenerate;
+  $('[data-ipbwgrid]', f).addEventListener('click', ev => { const b = ev.target.closest('[data-ipbwsym]'); if (!b) return; $('[data-ipbw="sym"]', f).value = b.dataset.ipbwsym; ipbWpPrev(); });
+  $('[data-ipbwsw]', f).addEventListener('click', ev => { const sw = ev.target.closest('[data-ipbwswatch]'); if (sw){ ipb.wpColor = sw.dataset.ipbwswatch; ipbWpPrev(); } if (ev.target.closest('[data-ipbwcolordef]')){ ipb.wpColor = null; ipbWpPrev(); } });
+  $('[data-ipbwcolor]', f).addEventListener('input', ev => { ipb.wpColor = ev.target.value; ipbWpPrev(); });
+  $('[data-ipbwtap]', f).onclick = () => { if (!app.lastClick){ toast('No map tap recorded.', true); return; } $('[data-ipbw="loc"]', f).value = fmtPt(app.lastClick); };
+  $('[data-ipbwclear]', f).onclick = () => ipbWpSet(null);
+  $('[data-ipbwpfrom]', f).addEventListener('change', ev => { const w = app.S && app.S.wps.find(x => x.id === ev.target.value); if (w) ipbWpSet({ label:w.label, desc:w.desc, sym:w.sym, color:w.color, pt:w.pt }); ev.target.value = ''; });
+  ipbWpSet(null);
   $('[data-ipbclear]', f).onclick = () => { ipb.id = null; ipb.replaces = null; ipb.sentEdit = null; ipbFill(null); };
   $('[data-ipbload]', f).onclick = () => {
     const pid = $('[data-ipbsrc]', f).value; ipb.sentEdit = null; if (!pid){ ipb.id = null; ipb.replaces = null; ipbFill(null); return; }
@@ -3871,6 +3914,7 @@ function ipbWire(v){
   ipbFill(null);
 }
 function ipbRender(S, v){
+  { const sel = $('[data-ipbwpfrom]', v), live = S.wps.filter(w => !w.del), key = live.map(w => w.id + w.label + w.to).join(); if (sel && sel.dataset.k !== key && document.activeElement !== sel){ sel.dataset.k = key; sel.innerHTML = '<option value="">Choose a waypoint…</option>' + live.map(w => '<option value="' + esc(w.id) + '">' + esc(w.label) + (w.to === 'none' ? ' (not deployed)' : '') + '</option>').join(''); } }
   const f = $('[data-ipbuild]', v); if (!f) return;
   const AP = allProblems(S);
   keepSelect($('[data-ipbsrc]', f), '<option value="">A blank package</option>' + AP.map((P, i) => '<option value="' + P.id + '">' + (i + 1) + '. ' + esc(fillT(P.title)) + (P.custom ? ' (built here)' : '') + '</option>').join(''));
@@ -3905,11 +3949,11 @@ function renderWhite(S, now){
   if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TEMPLATES.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + ' · ' + t.phase : LEVELS[t.lvl].name + ' or higher') + ' · ' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[t.to] + '</small></button>'; }).join(''); }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
   if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); $('[data-mpois]', ms).value = (M0.pois || []).map(x => x.name + ' | ' + fmtPt(x.pt)).join('\n'); }
-  { const M = mapCfg(S), box = $('[data-wplist]', v), qb = $('[data-wpq]', v), qq = $('[data-wpqq]', v), live = S.wps.filter(w => !w.del), key = JSON.stringify(live.map(w => [w.id, w.label, w.sym, w.to, w.pt, w.color]));
+  { const M = mapCfg(S), box = $('[data-wplist]', v), qb = $('[data-wpq]', v), qq = $('[data-wpqq]', v), live = S.wps.filter(w => !w.del), key = JSON.stringify(live.map(w => [w.id, w.label, w.sym, w.to, w.pt, w.color, w.desc]));
     if (key !== app.wpKey && !typingIn(box) && !typingIn(qb) && !typingIn(qq)){
       app.wpKey = key;
       const queued = live.filter(w => w.to === 'none'), dep = live.filter(w => w.to !== 'none');
-      const head = w => '<span style="flex:0 0 auto">' + wpSvg(w.sym, 24, w.color) + '</span><div class="grow"><b>' + esc(w.label) + '</b> <span class="small muted">' + esc(WP_SYMS[w.sym]) + '</span><div class="small mono">' + esc(fmtPt(w.pt)) + (squareOf(M, w.pt) ? ' · Square ' + squareOf(M, w.pt) : '') + '</div></div>';
+      const head = w => '<span style="flex:0 0 auto">' + wpSvg(w.sym, 24, w.color) + '</span><div class="grow"><b>' + esc(w.label) + '</b> <span class="small muted">' + esc(WP_SYMS[w.sym]) + '</span>' + (w.pkg ? ' <span class="chip">intel package</span>' : '') + (w.desc ? '<div class="small">' + esc(w.desc) + '</div>' : '') + '<div class="small mono">' + esc(fmtPt(w.pt)) + (squareOf(M, w.pt) ? ' · Square ' + squareOf(M, w.pt) : '') + '</div></div>';
       const tools = w => '<button type="button" data-wpsite="' + w.id + '" style="flex:0 0 auto">Make site</button><input type="color" data-wprecolor="' + w.id + '" value="' + (w.color || WP_DEF[w.sym] || '#ffcf5a') + '" aria-label="Color" style="flex:0 0 38px;width:38px;height:30px;padding:0 2px"><button type="button" data-wpedit="' + w.id + '" style="flex:0 0 auto">Edit</button><button type="button" data-wpdel="' + w.id + '" style="flex:0 0 auto">Delete</button>';
       const deploy = w => '<select data-wpdto aria-label="Visibility for ' + esc(w.label) + '" style="flex:0 0 150px"><option value="">Visibility…</option><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select><button type="button" class="btn-side" data-wpdeploy="' + w.id + '" style="flex:0 0 auto">Deploy</button>';
       const vis = w => '<select data-wpvis="' + w.id + '" aria-label="Visible to" style="flex:0 0 150px">' + [['B', 'BLUFOR'], ['R', 'REDFOR'], ['both', 'Both wings']].map(([k, n]) => '<option value="' + k + '"' + (w.to === k ? ' selected' : '') + '>' + n + '</option>').join('') + '</select><button type="button" data-wpundeploy="' + w.id + '" style="flex:0 0 auto">Return to queue</button>';
@@ -3951,7 +3995,7 @@ function renderWhite(S, now){
     else if (!oB || !oR) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>';
     if ((oB && !oB.done) || (oR && !oR.done)) btns += '<button type="button" data-act="ipclose" data-id="' + P.id + '">Close now</button>';
     btns += '<button type="button" data-ipview="' + P.id + '">View / edit</button>';
-    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">Intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · False: ' + esc(falseText(P, tr)) + (P.items.length !== 4 ? ' · ' + P.items.length + ' pieces' : '') + '</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
+    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.wp ? ' <span class="chip">waypoint: ' + esc(P.wp.label) + '</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">Intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · False: ' + esc(falseText(P, tr)) + (P.items.length !== 4 ? ' · ' + P.items.length + ' pieces' : '') + '</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
   }).join('');
   ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Diplomatic points ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · Escalation caused ' + S.escBy[s]; });
   $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · From ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
