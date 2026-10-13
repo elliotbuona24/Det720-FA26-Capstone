@@ -1119,8 +1119,10 @@ function fillT(str){ return String(str == null ? '' : str).replace(/\{([+-]\d+)\
 function allProblems(S){
   const cs = (S && S.customOrder ? S.customOrder : []).map(id => S.custom[id]).filter(Boolean), reps = {};
   cs.forEach(c => { if (c.replaces) reps[c.replaces] = c; });
-  return PROBLEMS.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !PROBLEMS.some(P => P.id === c.replaces)));
+  const ed = (S && S.edits) || {};
+  return PROBLEMS.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !PROBLEMS.some(P => P.id === c.replaces))).map(P => ed[P.id] ? Object.assign({}, P, ed[P.id], { id:P.id, custom:P.custom, replaces:P.replaces, at:P.at, win:P.win, blast:P.blast }) : P);
 }
+function validEdit(k){ return k && Array.isArray(k.opts) && k.opts.length === 4 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string' && typeof k.title === 'string' && typeof k.q === 'string'; }
 function validPkg(k){
   return k && typeof k.id === 'string' && /^c[\w-]{3,40}$/.test(k.id) && Array.isArray(k.opts) && k.opts.length === 4 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string';
 }
@@ -1131,10 +1133,9 @@ const OC_CALLS = {
   poor:{ ev:'conduct', p:{ good:false }, name:'Poor conduct', sub:'Diplomatic points −5' },
   civaid:{ ev:'civaid', p:{}, name:'Helped a civilian', sub:'Diplomatic points +5' },
   ied_real:{ ev:'ied', p:{ result:'real' }, name:'Real IED cleared', sub:'+2 points · Diplomatic points +5' },
-  ied_hoax:{ ev:'ied', p:{ result:'hoax' }, name:'Hoax called correctly', sub:'+2 points' },
   cache:{ ev:'cache', p:{}, name:'Militia cache cleared', sub:'+5 points · Diplomatic points +5' },
   provocation:{ ev:'provocation', p:{}, name:'Aimed at or crowded the other wing', sub:'Escalation +5' },
-  firstfire:{ ev:'firstfire', p:{}, name:'Fired first', sub:'Escalation +30 · Diplomatic points −15' },
+  firstfire:{ ev:'firstfire', p:{}, name:'Fired first', sub:'Escalation +20 · Diplomatic points −15' },
   returnfire:{ ev:'returnfire', p:{}, name:'Returned fire', sub:'Escalation +5' }
 };
 function ocWhere(S, o){ if (!o) return ''; if (o.mayor) return 'Mayor'; if (o.side && o.team){ const t = S.teams[o.side][o.team]; return SIDES[o.side].name + ' · ' + (t ? (t.num ? '#' + t.num + ' ' : '') + t.name : 'Fireteam'); } return 'Not attached'; }
@@ -1144,7 +1145,7 @@ function ocReqText(S, r){
   if (r.kind === 'site') return (r.who === 'both' ? 'Both wings' : r.side ? SIDES[r.side].name : 'A team') + ' at ' + (r.site === 'town' ? 'Marala Town' : SITES[r.site] ? SITES[r.site].name : 'a site') + (r.text ? ' (' + r.text + ')' : '');
   return 'Message: "' + r.text + '"';
 }
-const ESC = { provocation:5, sabotage:15, firstfire:30, returnfire:5, falseblame:15, show:10, defied:10, jam:5, strikewing:40, quiet:3, trueblame:5 };
+const ESC = { provocation:5, sabotage:15, firstfire:20, returnfire:5, falseblame:15, show:10, defied:10, jam:5, strikewing:40, quiet:3, trueblame:5 };
 
 function levelIndex(esc){ return esc >= 100 ? 4 : esc >= 75 ? 3 : esc >= 50 ? 2 : esc >= 25 ? 1 : 0; }
 function hhmm(g){ const m = 360 + Math.floor(g); return String(Math.floor(m/60)).padStart(2,'0') + String(m%60).padStart(2,'0'); }
@@ -1160,7 +1161,7 @@ function secret(salt, text){ return hashStr(salt + '|' + String(text||'').trim()
 function newState(){
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   return {
-    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[],
+    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[],
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
@@ -1364,7 +1365,7 @@ function apply(S, e, cfg){
       if (prev && prev !== side) pushFeed(S, prev, 'Your flag at ' + SITES[p.site].name + ' has been pulled down.', 'alert');
       break; }
     case 'firstfire': raise(S, side, ESC.firstfire); addHN(S, side, -15);
-      pushLog(S, nm + ' fired first' + (p.grid ? ' at ' + p.grid : '') + ' (escalation +30, diplomatic points −15)', side, e);
+      pushLog(S, nm + ' fired first' + (p.grid ? ' at ' + p.grid : '') + ' (escalation +20, diplomatic points −15)', side, e);
       pushFeed(S, 'both', 'Shots fired' + (p.grid ? ' near ' + p.grid : '') + '. Casualties reported.', 'alert'); break;
     case 'returnfire': raise(S, side, ESC.returnfire); pushLog(S, nm + ' returned fire (escalation +5)', side, e); break;
     case 'contact':
@@ -1390,7 +1391,7 @@ function apply(S, e, cfg){
       pushFeed(S, st.holder, SIDES[side].name + ' started contention on ' + SITES[p.site].name + '. Get a team there, solve the defense cipher and enter the defense code word before ' + hhmm(st.contestUntil) + '.', 'alert');
       pushLog(S, nm + ' started contention on ' + SITES[p.site].name + ' until ' + hhmm(st.contestUntil) + ' (escalation +' + CONTEND_ESC + ')', side, e);
       break; }
-    case 'site_timer': if (SITES[p.site] && (p.min === 15 || p.min === 20)){ S.siteTimer[p.site] = p.min; S.ver++; pushLog(S, SITES[p.site].name + ' contention timer set to ' + p.min + ' minutes', null, e); } break;
+    case 'site_timer': if (SITES[p.site] && Number.isInteger(p.min) && p.min >= 3 && p.min <= 90){ S.siteTimer[p.site] = p.min; S.ver++; pushLog(S, SITES[p.site].name + ' contention timer set to ' + p.min + ' minutes', null, e); } break;
     case 'act_drone': if (jammed(S, side)){ pushLog(S, nm + ' drone flight refused: datalink jammed', side, e, 'rejected'); pushFeed(S, side, 'No drone flights while your datalink is jammed.', 'alert'); break; }
       if (!droneReady(S, side)){ pushLog(S, nm + ' drone flight refused: not ready', side, e, 'rejected'); pushFeed(S, side, 'Drone flight not ready yet.', 'alert'); break; }
       S.droneLast[side] = S.g; raise(S, side, 1);
@@ -1542,6 +1543,16 @@ function apply(S, e, cfg){
       S.custom[k.id] = k; if (!S.customOrder.includes(k.id)) S.customOrder.push(k.id); S.intelVer++;
       pushLog(S, 'Intel package saved: ' + k.title + (k.replaces ? ' (replaces built-in package ' + (PROBLEMS.findIndex(P => P.id === k.replaces) + 1) + ')' : ''), null, e);
       break; }
+    case 'intel_edit': {
+      const AP = allProblems(S), i = AP.findIndex(x => x.id === p.pid), P = AP[i], k = p.pkg;
+      if (!P || !validEdit(k)){ pushLog(S, 'Intel package edit refused: incomplete', null, e, 'rejected'); break; }
+      const prev = S.edits[P.id];
+      S.edits[P.id] = { title:String(k.title).slice(0, 80), q:String(k.q).slice(0, 200), opts:k.opts.map(o => String(o).slice(0, 100)), items:k.items, note:String(k.note || '').slice(0, 300), a:k.a, f:k.f, v:(prev ? prev.v : 0) + 1 };
+      S.intelVer++;
+      const to = ['B', 'R'].filter(sd => intelOpen(S, P.id, sd));
+      to.forEach(sd => pushFeed(S, sd, 'Intel package ' + (i + 1) + ' was updated by higher headquarters. Read it again.', 'hq', { label:'Intel' }));
+      pushLog(S, 'Intel package ' + (i + 1) + ' (' + k.title + ') edited' + (to.length ? ' after it was sent' : ''), null, e);
+      break; }
     case 'intel_custom_del': {
       const k = S.custom[p.id];
       if (!k || S.intelOut[k.id]){ pushLog(S, 'Intel package delete refused', null, e, 'rejected'); break; }
@@ -1652,7 +1663,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'contest change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -2120,7 +2131,7 @@ function legendHTML(side){
     '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
 }
 function scoreTable(S, sides){
-  const rows = [['sites', 'Sites held'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs and hoaxes'], ['cache', 'Militia cache'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
+  const rows = [['sites', 'Sites held'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['cache', 'Militia cache'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
   const sc = {}; sides.forEach(s => sc[s] = score(S, s));
   let h = '<table class="score"><thead><tr><th>Points</th>' + sides.map(s => '<th><span class="chip ' + s + '">' + SIDES[s].name + '</span></th>').join('') + '</tr></thead><tbody>';
   rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if (k === 'adj' && sides.every(s => !sc[s].adj)) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
@@ -2862,10 +2873,11 @@ function renderIntel(S, side, v){
   if (out.length && box.querySelector('.empty')) box.innerHTML = '';
   if (!out.length && !box.children.length) box.innerHTML = '<div class="empty">Intel packages from higher headquarters arrive here during the game.</div>';
   out.forEach(({ P, i }) => {
-    const id = 'ip-' + side + '-' + P.id;
+    const id = 'ip-' + side + '-' + P.id, ver = String((S.edits[P.id] && S.edits[P.id].v) || 0);
     let card = document.getElementById(id);
+    if (card && card.dataset.ver !== ver){ card.remove(); card = null; }
     if (!card){
-      card = document.createElement('div'); card.className = 'act'; card.id = id;
+      card = document.createElement('div'); card.className = 'act'; card.id = id; card.dataset.ver = ver;
       card.innerHTML = '<div class="act-head"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b><span class="cost" data-ipdue></span><button type="button" data-ipexp hidden style="flex:0 0 auto;padding:2px 8px;font-size:12px">Show intel</button></div>' +
         '<ul class="ip-items">' + P.items.map(it => '<li><b>' + it.k + '</b><span class="src"><span class="ip-tag">' + esc(it.disc) + '</span><span class="ip-tag" title="Source rating">' + esc(it.rating) + '</span><span class="mono">' + esc(fillT(it.dtg)) + '</span><span>' + esc(it.src) + '</span></span><span class="txt">' + ipImgHTML(S, it) + esc(fillT(it.text)) + '</span></li>').join('') + '</ul>' +
         '<p class="ip-q">' + esc(fillT(P.q)) + '</p>' +
@@ -3005,13 +3017,12 @@ function buildWhite(){
       <div class="act-head"><span class="badge side-${s}">${SIDES[s].name}</span><span class="small muted" data-wstat="${s}"></span></div>
       <div class="evgrid">
         <button type="button" data-ev="ied" data-side="${s}" data-r="real">Real IED cleared<small>+2 points · Diplomatic points +5</small></button>
-        <button type="button" data-ev="ied" data-side="${s}" data-r="hoax">Hoax called correctly<small>+2 points</small></button>
         <button type="button" data-ev="cache" data-side="${s}">Militia cache cleared<small>+5 points · Diplomatic points +5</small></button>
         <button type="button" data-ev="conduct" data-side="${s}" data-good="1">Good conduct<small>Diplomatic points +5</small></button>
         <button type="button" data-ev="conduct" data-side="${s}" data-good="0">Poor conduct<small>Diplomatic points −5</small></button>
         <button type="button" data-ev="civaid" data-side="${s}">Helped a civilian<small>Diplomatic points +5</small></button>
         <button type="button" data-ev="provocation" data-side="${s}">Aimed at or crowded the other wing<small>Escalation +5</small></button>
-        <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>Escalation +30 · Diplomatic points −15</small></button>
+        <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>Escalation +20 · Diplomatic points −15</small></button>
         <button type="button" data-ev="returnfire" data-side="${s}">Returned fire<small>Escalation +5</small></button>
         <button type="button" data-ev="office" data-side="${s}" data-on="0">Close town office<small>Override</small></button>
       </div>
@@ -3125,6 +3136,8 @@ function buildWhite(){
   $('[data-fullmap]', v).onclick = () => openFullMap(null);
   ipbWire(v);
   v.addEventListener('click', ev => {
+    const iv = ev.target.closest('[data-ipview]');
+    if (iv){ const f = $('[data-ipbuild]', v); $('[data-ipbsrc]', f).value = iv.dataset.ipview; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); return; }
     const nr = ev.target.closest('[data-nineres]'); if (nr){ writeEvent('nine_res', null, { nine:nr.dataset.nineres, ok:nr.dataset.ok === '1', by:'White cell' }); return; }
     const orq = ev.target.closest('[data-ocres]'); if (orq){ writeEvent('oc_res', null, { req:orq.dataset.ocres, ok:orq.dataset.ok === '1' }); return; }
     const sv = ev.target.closest('[data-ocsave]');
@@ -3218,12 +3231,13 @@ function ipbPieces(list){
   if (app.lastClick) $$('[data-lastclick]', box).forEach(x => x.textContent = fmtPt(app.lastClick));
   ipbSync();
 }
-const ipb = { id:null, replaces:null, imgs:{} };
+const ipb = { id:null, replaces:null, sentEdit:null, imgs:{} };
 function ipbForm(){ return $('[data-ipbuild]'); }
 function ipbSetMode(){
   const f = ipbForm(); if (!f) return;
   const P = ipb.replaces ? PROBLEMS.find(x => x.id === ipb.replaces) : null;
-  $('[data-ipbmode]', f).textContent = ipb.id ? 'Editing a package you built. Saving updates it.' : P ? 'Editing built-in package ' + (PROBLEMS.indexOf(P) + 1) + '. Saving replaces it with your version.' : 'New package.';
+  const AP0 = app.S ? allProblems(app.S) : [], se = ipb.sentEdit ? AP0.findIndex(x => x.id === ipb.sentEdit) : -1;
+  $('[data-ipbmode]', f).textContent = ipb.sentEdit ? 'Editing intel package ' + (se + 1) + ', which was already sent. Saving updates it on the wings’ screens and tells them. Answers already graded keep their points; open ones are graded against your new key.' : ipb.id ? 'Editing a package you built. Saving updates it.' : P ? 'Editing built-in package ' + (PROBLEMS.indexOf(P) + 1) + '. Saving replaces it with your version.' : 'New package.';
 }
 function ipbFill(P){
   const f = ipbForm();
@@ -3388,7 +3402,7 @@ function ipbGenerate(){
   const why = { HUMINT:'the source is new, unproven and wanted money', SIGINT:'the intercept is from two days before the incident', IMINT:'the photo is time-stamped two days before the incident and came from an unverified source', GEOINT:'the route study uses an old map', OSINT:'the account was made this week and nobody else reported it' };
   const fds = fKeys.map(k => items.find(x => x.k === k).disc), imintFalse = fds.includes('IMINT');
   const place2 = place;
-  ipb.id = null; ipb.replaces = null;
+  ipb.id = null; ipb.replaces = null; ipb.sentEdit = null;
   ipbFill({ title:kind.title(place2), q:kind.q(place2), at:+($('[data-ipb="at"]', ipbForm()).value || 60), win:15, opts, items, aIdx:who.indexOf(truth), fKeys, note:'False: ' + fKeys.map((k, j) => 'piece ' + k + ' (' + fds[j] + ')').join(' and ') + (fKeys.length > 1 ? ' point' : ' points') + ' at ' + opts[who.indexOf(decoy)].split(' (')[0] + ', but ' + fds.map(d => why[d]).join('; and ') + '.' + (imintFalse ? ' Add a photo that looks convincing but is the wrong place or time.' : ' Add a photo to the IMINT piece that matches its description.') });
   toast('Draft generated. Edit anything, add the IMINT photo, then save.');
 }
@@ -3407,7 +3421,7 @@ async function ipbSave(){
   const imint = items.filter(it => it.disc === 'IMINT');
   if (imint.some(it => !ipb.imgs[it.k]) && !confirm('An IMINT piece has no image. Save anyway?')) return;
   const id = ipb.id || ('c' + uid());
-  if (S && (S.intelOut[id] || (ipb.replaces && S.intelOut[ipb.replaces]))) return msg('That package was already sent, so it can\u2019t be changed now.');
+  if (!ipb.sentEdit && S && (S.intelOut[id] || (ipb.replaces && S.intelOut[ipb.replaces]))) return msg('That package was already sent, so it can\u2019t be changed now.');
   $('[data-ipbsave]', f).disabled = true;
   try {
     for (const it of items){
@@ -3417,6 +3431,13 @@ async function ipbSave(){
       if (im.url && !im.data && !im.id){ it.imgUrl = im.url; continue; }
       if (im.data && !im.id){ im.id = 'i' + uid(); await writeEvent('intel_image', null, { id:im.id, data:im.data }); }
       it.img = im.id;
+    }
+    if (ipb.sentEdit){
+      const pid = ipb.sentEdit;
+      if (!confirm('Update this package on the wings’ screens? They will be told it changed.')) { $('[data-ipbsave]', f).disabled = false; return; }
+      await writeEvent('intel_edit', null, { pid, pkg:{ title, q, opts, items, note:val('[data-ipb="note"]'), a:intelKey(pid, 'a', +aR.value), f:intelKey(pid, 'f', bad.join('')) } });
+      $('[data-ipbmsg]', f).textContent = 'Updated.'; toast('Intel package updated on the wings’ screens.');
+      $('[data-ipbsave]', f).disabled = false; return;
     }
     const pkg = { id, custom:true, replaces:ipb.replaces || null, at:Math.max(0, Math.round(+val('[data-ipb="at"]') || 0)), win:Math.max(3, Math.round(+val('[data-ipb="win"]') || 15)), title, q, opts, items, note:val('[data-ipb="note"]'),
       blast:val('[data-ipb="bgrid"]') ? { grid:val('[data-ipb="bgrid"]').toUpperCase(), truth:$('[data-ipb="btruth"]', f).value, cas:$('[data-ipb="bcas"]', f).checked } : null,
@@ -3431,11 +3452,11 @@ async function ipbSave(){
 function ipbWire(v){
   const f = $('[data-ipbuild]', v); if (!f) return;
   $('[data-ipbgen]', f).onclick = ipbGenerate;
-  $('[data-ipbclear]', f).onclick = () => { ipb.id = null; ipb.replaces = null; ipbFill(null); };
+  $('[data-ipbclear]', f).onclick = () => { ipb.id = null; ipb.replaces = null; ipb.sentEdit = null; ipbFill(null); };
   $('[data-ipbload]', f).onclick = () => {
-    const pid = $('[data-ipbsrc]', f).value; if (!pid){ ipb.id = null; ipb.replaces = null; ipbFill(null); return; }
+    const pid = $('[data-ipbsrc]', f).value; ipb.sentEdit = null; if (!pid){ ipb.id = null; ipb.replaces = null; ipbFill(null); return; }
     const S = app.S, P = allProblems(S).find(x => x.id === pid) || PROBLEMS.find(x => x.id === pid); if (!P) return;
-    if (S.intelOut[P.id]){ toast('That package was already sent. Loading a copy as a new package instead.'); ipb.id = null; ipb.replaces = null; }
+    if (S.intelOut[P.id]){ ipb.id = null; ipb.replaces = null; ipb.sentEdit = P.id; }
     else if (P.custom){ ipb.id = P.id; ipb.replaces = P.replaces || null; }
     else { ipb.id = null; ipb.replaces = P.id; }
     ipbFill(P);
@@ -3500,7 +3521,7 @@ function renderWhite(S, now){
   const wf = $('form[data-wf="window"]', v), wk = START_G + '|' + END_G;
   if (wf && app.winKey !== wk && !wf.contains(document.activeElement)){ app.winKey = wk; wf.elements.start.value = hhmm(START_G); wf.elements.len.value = END_G - START_G; }
   if (wf) Array.from(wf.elements).forEach(x => x.disabled = S.clock.started);
-  $('[data-mapnote]', v).textContent = mapCfg(S).field ? 'Capstone field from the 13 Oct points. Change it under Map setup. No fog of war here.' : 'No fog of war: only this screen sees everything';
+  $('[data-mapnote]', v).textContent = '';
   const real = renderMapInto($('[data-map]', v), S, null);
   $('[data-legend]', v).innerHTML = real ? realLegend() : legendHTML(null);
   $('[data-clk="start"]', v).textContent = 'Start the game (' + hhmm(START_G) + ')';
@@ -3513,9 +3534,9 @@ function renderWhite(S, now){
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
   if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); $('[data-mpois]', ms).value = (M0.pois || []).map(x => x.name + ' | ' + fmtPt(x.pt)).join('\n'); }
   { const wp = wcSpot(S), M = mapCfg(S); $('[data-wcnow]', v).textContent = wp ? (squareOf(M, wp) ? squareOf(M, wp) + ' · ' : '') + fmtPt(wp) + (S.wcPos ? ' (moved)' : ' (planned spot)') : 'not set'; $('[data-wcback]', v).disabled = !S.wcPos; }
-  $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Both at site</span>' : '') + '</span>' +
+  if (!$('[data-sitectl]', v).contains(document.activeElement)) $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Both at site</span>' : '') + '</span>' +
     '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>REDFOR</option></select>' +
-    (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<select data-timer="' + k + '" aria-label="Contention timer for ' + SITES[k].name + '" style="flex:0 0 auto;width:auto"><option value="15"' + ((S.siteTimer[k] || 15) === 15 ? ' selected' : '') + '>15 min</option><option value="20"' + (S.siteTimer[k] === 20 ? ' selected' : '') + '>20 min</option></select><button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear') : 'Both at site') + '</button></div>'; }).join('') +
+    (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<label class="small" style="flex:0 0 auto;display:flex;align-items:center;gap:4px;flex-direction:row;margin:0">Timer<input type="number" data-timer="' + k + '" min="3" max="90" step="1" value="' + (S.siteTimer[k] || 15) + '" aria-label="Contention timer for ' + SITES[k].name + ' in minutes" style="width:64px">min</label><button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear') : 'Both at site') + '</button></div>'; }).join('') +
     '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">Town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
   renderOCWhite(S, v);
   const q = [];
@@ -3540,6 +3561,7 @@ function renderWhite(S, now){
     if (!oB && !oR) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="B"' + (running ? '' : ' disabled') + '>BLUFOR only</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="R"' + (running ? '' : ' disabled') + '>REDFOR only</button>';
     else if (!oB || !oR) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>';
     if ((oB && !oB.done) || (oR && !oR.done)) btns += '<button type="button" data-act="ipclose" data-id="' + P.id + '">Close now</button>';
+    btns += '<button type="button" data-ipview="' + P.id + '">View / edit</button>';
     return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">Intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · False: ' + esc(falseText(P, tr)) + (P.items.length !== 4 ? ' · ' + P.items.length + ' pieces' : '') + '</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
   }).join('');
   ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Diplomatic points ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · Escalation caused ' + S.escBy[s]; });
