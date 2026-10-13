@@ -2859,7 +2859,7 @@ function renderIntel(S, side, v){
         '<p class="ip-q">' + esc(fillT(P.q)) + '</p>' +
         '<form class="stack" data-ipf="' + P.id + '"><div class="ip-row">' +
         '<fieldset class="ip-set"><legend>Answer</legend>' + P.opts.map((o, k) => '<label><input type="radio" name="a" value="' + k + '">' + esc(fillT(o)) + '</label>').join('') + '</fieldset>' +
-        '<fieldset class="ip-set"><legend>Which pieces are false or misleading? Check every one.</legend>' + P.items.map(it => '<label><input type="checkbox" name="f" value="' + it.k + '">' + it.k + ' · ' + esc(it.disc) + '</label>').join('') + '</fieldset>' +
+        '<fieldset class="ip-set"><legend>Select the false pieces of information. There may be more than one.</legend>' + P.items.map(it => '<label><input type="checkbox" name="f" value="' + it.k + '">' + it.k + ' · ' + esc(it.disc) + '</label>').join('') + '</fieldset>' +
         '</div><div><button class="btn-side" type="submit">Lock in answer</button></div></form><div class="ip-status" data-ipstatus></div>';
       box.prepend(card);
       $('[data-ipexp]', card).onclick = () => { const o = card.classList.toggle('ip-open'); $('[data-ipexp]', card).textContent = o ? 'Hide intel' : 'Show intel'; };
