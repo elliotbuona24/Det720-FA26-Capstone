@@ -3369,9 +3369,9 @@ function renderWing(S, side, now){
   const mine = S.contacts.filter(c => c.side === side);
   $('[data-contacts]', v).innerHTML = mine.length ? mine.slice().reverse().map(c => {
     const age = Math.max(0, Math.floor(S.g - c.seenG));
-    const st = c.verdict ? (c.verdict === 'confirm' ? '<span class="chip ok">Confirmed +2</span>' : '<span class="chip no">Not confirmed</span>') : '<span class="chip wait">Checking</span>';
+    const st = c.verdict ? (c.verdict === 'confirm' ? '<span class="chip ok">Confirmed +1</span>' : '<span class="chip no">Not confirmed</span>') : '<span class="chip wait">Checking</span>';
     return '<div class="li"><div class="grow"><b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid || '') + '</span> <span class="muted small">Seen ' + esc(c.seen) + ' · ' + age + ' min ago' + (age > 15 ? ' · Old' : '') + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' + st + '</div>';
-  }).join('') : '<div class="empty">No reports yet. Intel posts them from the Reports tab; each confirmed report is worth 2 points.</div>';
+  }).join('') : '<div class="empty">No reports yet. Intel posts them from the Reports tab; each confirmed report is worth 1 point.</div>';
   const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id]);
   keepSelect($('[name="inc"]', v), incs.length ? incs.map(i => '<option value="' + i.id + '">' + esc(i.grid) + ' explosion, ' + hhmm(i.g) + '</option>').join('') : '<option value="">No incidents yet</option>');
   const claims = S.claims.filter(c => c.side === side);
