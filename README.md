@@ -4,7 +4,7 @@ Live game board for the Marala Island capstone (BLUFOR vs. REDFOR).
 
 **Board:** https://elliotbuona24.github.io/Det720-FA26-Capstone/
 
-## Files
+## Files (update!)
 
 | File | What it is |
 | --- | --- |
@@ -15,7 +15,7 @@ Live game board for the Marala Island capstone (BLUFOR vs. REDFOR).
 ## Running a game
 
 1. Open the board, choose **White cell**, enter the PIN.
-2. **Game** panel → **Set up a new game** → enter the six PINs (white cell, two wings, two fireteam, POC), site code words, start time and length → **Create game**.
+2. **Game** panel → **Set up a new game** → enter the six PINs (white cell, two wings, two fireteam, POC), site code words, start time and length → **Create game**. Alternate: Upload JSON file in load game. 
 3. **Map setup** (white cell): click or type the play area's corners and each site's grid → **Save the map for every screen**.
 4. Wings pick their view and enter their PIN. One phone per fireteam picks **BLUFOR fireteam** or **REDFOR fireteam**, enters the fireteam PIN and names the team. **Public screen** needs no PIN. Each POC opens the board on a phone, picks **POC**, enters the POC PIN, types their name and picks the fireteam they are with (or Mayor).
 5. Open the map on every device before step-off so the satellite pictures load while the wifi is quiet.
@@ -26,7 +26,7 @@ Lost the white cell PIN? Use **Start a new game** on the main menu with the reco
 
 ## After-action report
 
-One-time setup: install Python from python.org (tick **Add to PATH**), then:
+One-time setup: install something that can run Python  (tick **Add to PATH**), then:
 
 ```
 pip install matplotlib
