@@ -3281,7 +3281,7 @@ function renderIntel(S, side, v){
 function aidText(S, side, short){
   const a = aidOf(S, side);
   if (!a.on) return short ? 'Aid: no town office' : 'No aid packages: the wing has no open town office.';
-  if (a.due != null) return (short ? 'Aid package ' + a.n + ' due ' : 'Aid package ' + a.n + ' is ready. Deliver it to the Marala Town office by ') + hhmm(a.due) + (a.hold ? (short ? ' (delivery report pending)' : '. A delivery report is awaiting white cell confirmation.') : short ? '' : '.');
+  if (a.due != null) return (short ? 'Aid package ' + a.n + ' due ' : 'Aid package ' + a.n + ' is ready. Deliver it to the Marala Town office by ') + hhmm(a.due) + (a.hold || aidPending(S, side, a) ? (short ? ' (delivery report pending)' : '. A delivery report is awaiting white cell confirmation.') : short ? '' : '.');
   return (short ? 'Next aid package ' : 'Next aid package ready at ') + hhmm(a.next) + (short ? '' : '.') + (a.made || a.missed ? (short ? '' : ' Delivered ' + a.made + ', missed ' + a.missed + '.') : '');
 }
 function renderWing(S, side, now){
