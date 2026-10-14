@@ -1106,7 +1106,7 @@ function setWindow(cfg){
 setWindow(null);
 const CONTEST_MIN = 10;
 const ESC_DECAY = 0.15;
-const UAV_EVERY = 40, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 3, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5;
+const UAV_EVERY = 40, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 0.75, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5;
 function droneEvery(S, side){ const a = S.sites.airstrip; return a.holder === side && !a.contested ? DRONE_EVERY_AIR : DRONE_EVERY; }
 function droneReady(S, side){ const l = S.droneLast[side]; return l == null || S.g - l >= droneEvery(S, side) - 1e-9; }
 function codeMatch(cfg, k, h, S){ const c = (S && S.siteCodes && S.siteCodes[k]) || (cfg && cfg.codes ? cfg.codes[k] : null); if (!c) return { cap:false, def:false, reuse:true }; if (typeof c === 'string') return { cap:c === h, def:c === h, reuse:true }; if (Array.isArray(c)) return { cap:c.includes(h), def:c.includes(h), reuse:true }; const cap = (c.cap || []).includes(h), def = ((c.def && c.def.length) ? c.def : (c.cap || [])).includes(h); return { cap, def, reuse:k === 'town' }; }
@@ -2875,8 +2875,8 @@ function buildTeam(side){
     <div class="panel"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
     <div class="panel stack"><div class="act-head"><h2>Messages with C2</h2><span class="small muted">One message every ${TCHAT_EVERY} minutes</span></div><div class="chatlog" data-tclog></div><form class="row" data-tcf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form><div class="small muted" data-tcnext></div></div>
     <div class="panel stack"><div class="act-head"><h2>Map</h2><span class="small muted" data-tmapstate></span></div>
-      <p class="small muted" style="margin:0">Available for 3 minutes, once every 10 minutes. Your own position is not shown.</p>
-      <button type="button" class="btn-side team-big" data-tmapbtn>Open map for 3 minutes</button>
+      <p class="small muted" style="margin:0">Available for 45 seconds, once every 10 minutes. Your own position is not shown.</p>
+      <button type="button" class="btn-side team-big" data-tmapbtn>Open map for 45 seconds</button>
       <div class="lmap teammap" data-tmap hidden></div></div>
     <div class="panel stack"><h2>Report your position</h2>
       <p class="small muted" style="margin:0">Enter your grid from the map. The phone's GPS fix is attached for your C2.</p>
@@ -2986,7 +2986,7 @@ function teamTick(S, side, now){
     if (!el.hidden){ el.hidden = true; if (el._lm){ el._lm.map.remove(); el._lm = null; } el.innerHTML = ''; }
     btn.hidden = false; btn.disabled = nextIn > 0;
     st.textContent = nextIn > 0 ? 'Opens again in ' + mmss(nextIn) : 'Ready';
-    btn.textContent = nextIn > 0 ? 'Map opens again in ' + mmss(nextIn) : 'Open map for 3 minutes';
+    btn.textContent = nextIn > 0 ? 'Map opens again in ' + mmss(nextIn) : 'Open map for 45 seconds';
   }
 }
 function uavNotify(S){
