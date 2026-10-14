@@ -1138,6 +1138,40 @@ function aidClock(S, g){
     S.g = Math.max(keep, S.g); if (S.step) S.step(S, null);
   }
 }
+const REPORT_PTS = 1, MATCH_BASE = 30, MATCH_PER_MIN = 40, MATCH_WIN = 8, MATCH_DUP = 10, MATCH_WAIT = 3;
+function engMap(S){ const M = S && S.map && S.map.sw && S.map.ne ? S.map : (typeof globalThis !== 'undefined' && globalThis.MARALA_MAP) || null; return M && !M.preview ? M : null; }
+function sqBounds(M, label){
+  const m = /^([A-L])\s*(\d{1,2})$/i.exec(String(label || '').trim()); if (!M || !m) return null;
+  const cols = Math.max(1, Math.min(12, +M.cols || 6)), rows = Math.max(1, Math.min(12, +M.rows || 5));
+  const ci = 'ABCDEFGHIJKL'.indexOf(m[1].toUpperCase()), ri = +m[2] - 1; if (ci < 0 || ci >= cols || ri < 0 || ri >= rows) return null;
+  const dLat = (M.ne[0] - M.sw[0]) / rows, dLng = (M.ne[1] - M.sw[1]) / cols;
+  return { n:M.ne[0] - ri * dLat, s:M.ne[0] - (ri + 1) * dLat, w:M.sw[1] + ci * dLng, e:M.sw[1] + (ci + 1) * dLng };
+}
+function reportArea(S, grid){
+  const M = engMap(S), b = sqBounds(M, grid); if (b) return b;
+  const pt = M && typeof globalThis !== 'undefined' && globalThis.MARALA_LOCATE ? globalThis.MARALA_LOCATE(M, grid) : null;
+  return pt ? { n:pt[0], s:pt[0], w:pt[1], e:pt[1], pt:true } : null;
+}
+function distToSq(pt, b){
+  const dy = pt[0] < b.s ? b.s - pt[0] : pt[0] > b.n ? pt[0] - b.n : 0, dx = pt[1] < b.w ? b.w - pt[1] : pt[1] > b.e ? pt[1] - b.e : 0;
+  return Math.round(Math.hypot(dy * 111320, dx * 111320 * Math.cos(pt[0] * Math.PI / 180)));
+}
+function seenAt(c){ const m = /^(\d{2})(\d{2})$/.exec(String(c.seen || '').trim()); let g = m ? +m[1] * 60 + +m[2] - 360 : c.g; if (!(g <= c.g)) g = c.g; return Math.max(c.g - 30, g); }
+function settleReport(S, c, verdict, why){
+  c.verdict = verdict; c.auto = true; c.gain = verdict === 'confirm' ? REPORT_PTS : 0; S.pts[c.side].reports += c.gain; S.ver++;
+  pushLog(S, SIDES[c.side].name + ' report ' + (verdict === 'confirm' ? 'confirmed automatically (+' + REPORT_PTS + ' point)' : 'marked duplicate automatically') + ': ' + why, c.side);
+}
+function matchFix(S, c, tid, fix){
+  if (c.verdict || !fix || !Array.isArray(fix.gps)) return;
+  const b = reportArea(S, c.grid); if (!b) return;
+  const dt = Math.abs(fix.g - c.sg); if (dt > MATCH_WIN) return;
+  const t = S.teams[OTHER[c.side]][tid], name = t ? (t.num ? '#' + t.num + ' ' : '') + t.name : 'Fireteam', d = distToSq(fix.gps, b);
+  if (!c.near || d < c.near.d) c.near = { name, d, g:fix.g };
+  if (d > MATCH_BASE + MATCH_PER_MIN * dt) return;
+  c.match = { team:tid, name, d, g:fix.g };
+  const dup = S.contacts.some(o => o !== c && o.side === c.side && o.verdict === 'confirm' && o.match && o.match.team === tid && Math.abs(o.sg - c.sg) <= MATCH_DUP);
+  settleReport(S, c, dup ? 'duplicate' : 'confirm', name + (d || b.pt ? ' ' + d + ' m from ' : ' in ') + c.grid + ' at ' + hhmm(fix.g) + (dup ? ', already credited within ' + MATCH_DUP + ' minutes' : ''));
+}
 const SITE_CAP = 2, SITE_HOLD = 1, SITE_END = 5, DUG_IN = 60, CONTEND_DUG = 10;
 function powered(S, k, side){ const s = S.sites[k]; return !!s && s.holder === side && !s.contested; }
 function uavEvery(S, side){ return powered(S, 'fuel', side) ? UAV_EVERY_FUEL : UAV_EVERY; }
@@ -1439,15 +1473,25 @@ function apply(S, e, cfg){
       pushLog(S, nm + ' fired first' + (p.grid ? ' at ' + p.grid : '') + ' (escalation +20, diplomatic points −15)', side, e);
       pushFeed(S, 'both', 'Shots fired' + (p.grid ? ' near ' + p.grid : '') + '. Casualties reported.', 'alert'); break;
     case 'returnfire': raise(S, side, ESC.returnfire); pushLog(S, nm + ' returned fire (escalation +5)', side, e); break;
-    case 'contact':
-      S.contacts.push({ id:e.id, side, kind:p.kind, site:p.site || null, grid:(p.grid || '').toUpperCase(), seen:p.seen || hhmm(S.g), seenG:S.g, note:p.note || '', salute:p.salute || null, verdict:null, g:S.g });
+    case 'contact': {
+      const c = { id:e.id, side, kind:p.kind, site:p.site || null, grid:(p.grid || '').toUpperCase(), seen:p.seen || hhmm(S.g), seenG:S.g, note:p.note || '', salute:p.salute || null, verdict:null, g:S.g };
+      c.sg = seenAt(c); S.contacts.push(c);
       pushLog(S, nm + ' reported ' + (p.kind === 'site' ? 'an enemy flag at ' + (SITES[p.site] ? SITES[p.site].name : '?') : p.kind === 'team' ? 'an enemy team at ' + (p.grid || '?') : 'activity at ' + (p.grid || '?')), side, e);
-      break;
+      if (!side || S.endex) break;
+      if (p.kind === 'site' && S.sites[c.site] && S.sites[c.site].holder === OTHER[side]) settleReport(S, c, S.contacts.some(o => o !== c && o.side === side && o.kind === 'site' && o.site === c.site && o.verdict === 'confirm' && S.g - o.g <= MATCH_DUP) ? 'duplicate' : 'confirm', SITES[c.site].name + ' is held by ' + SIDES[OTHER[side]].name);
+      if (p.kind === 'team' && reportArea(S, c.grid)){
+        const o = OTHER[side], live = Object.values(S.teams[o]).filter(t => !t.removed);
+        c.pinged = live.length; c.ans = [];
+        live.forEach(t => (t.fixes || []).forEach(f => matchFix(S, c, t.id, f)));
+        if (!c.verdict){ c.ping = 'rp-' + e.id; S.pings.push({ id:c.ping, ts:e.ts, g:S.g, to:o, team:null, report:c.id }); }
+      }
+      break; }
     case 'verdict': {
-      const c = S.contacts.find(x => x.id === p.contact); if (!c || c.verdict) break;
-      c.verdict = p.verdict; c.gain = p.verdict === 'confirm' ? 2 : 0;
+      const c = S.contacts.find(x => x.id === p.contact); if (!c || (c.verdict && !c.auto) || c.verdict === p.verdict) break;
+      if (c.auto){ S.pts[c.side].reports -= c.gain || 0; c.auto = false; c.overrode = true; }
+      c.verdict = p.verdict; c.gain = p.verdict === 'confirm' ? REPORT_PTS : 0;
       S.pts[c.side].reports += c.gain;
-      pushLog(S, SIDES[c.side].name + ' report ' + ({ confirm:'confirmed (+2 points)', duplicate:'marked duplicate', false:'marked false' })[p.verdict], c.side, e);
+      pushLog(S, SIDES[c.side].name + ' report ' + ({ confirm:'confirmed (+' + REPORT_PTS + ' point)', duplicate:'marked duplicate', false:'marked false' })[p.verdict], c.side, e);
       break; }
     case 'act_contend': {
       const st = S.sites[p.site];
@@ -1636,6 +1680,7 @@ function apply(S, e, cfg){
         if (!pg || !Array.isArray(p.gps)) break;
         const t0 = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:String(p.name || 'Team').slice(0, 40), fixes:[] });
         t0.pingFix = { g:S.g, ts:e.ts, gps:p.gps, acc:p.acc || null, ping:pg.id, pingG:pg.g, late:e.ts - pg.ts > 120000 }; S.ver++;
+        if (pg.report){ const c = S.contacts.find(x => x.id === pg.report); if (c && c.ans){ if (!c.ans.includes(p.team)) c.ans.push(p.team); matchFix(S, c, p.team, { g:S.g, gps:p.gps }); } }
         const u = pg.uav && S.uav[pg.uav];
         if (u && u.id === pg.id && S.g - u.g < 1 && !t0.removed){
           const sp = u.spots.find(x => x.id === p.team);
@@ -2471,6 +2516,8 @@ function fmtPt(pt){ return pt ? GEO.toMGRS(pt[0], pt[1], 5) : ''; }
 const DEFAULT_MAP = { sw:[40.82478, -77.86239], ne:[40.82853, -77.85727], cols:6, rows:5, step:100, field:true,
   sites:{ harbor:[40.8256542, -77.8587108], fuel:[40.82743, -77.85964], radar:[40.8278642, -77.8582106], airstrip:[40.8251434, -77.8611404], town:[40.8266949, -77.8587905], lzB:[40.82726, -77.86027], lzR:[40.8270209, -77.8577496], wc:[40.8260081, -77.8581213] },
   pois:DEFAULT_POIS };
+globalThis.MARALA_MAP = DEFAULT_MAP;
+globalThis.MARALA_LOCATE = (M, t) => locate(M, t);
 function lmapEnsure(el, M){
   const key = JSON.stringify([M.sw, M.ne, M.cols, M.rows, M.step, !!M.preview]);
   let st = el._lm;
@@ -3277,6 +3324,13 @@ function renderIntel(S, side, v){
   });
   $('[data-intelcount]', v).textContent = open ? ' · ' + open : '';
   const ci = $('[data-cnint]', v); if (ci){ ci.hidden = !open; ci.textContent = open; }
+}
+function reportCheck(S, c){
+  if (c.kind === 'site') return '<div class="small">Board check: ' + esc(SITES[c.site] ? SITES[c.site].name : 'Site') + ' is ' + (S.sites[c.site] && S.sites[c.site].holder ? 'held by ' + SIDES[S.sites[c.site].holder].name : 'not held') + '.</div>';
+  if (c.kind !== 'team' || c.pinged == null) return '';
+  const o = SIDES[OTHER[c.side]].name, wait = S.g - c.g < MATCH_WAIT, ans = (c.ans || []).length;
+  const near = c.near ? ' Nearest: ' + esc(c.near.name) + ', ' + c.near.d + ' m from ' + esc(c.grid) + ' at ' + hhmm(c.near.g) + '.' : ' No ' + o + ' position within ' + MATCH_WIN + ' minutes of the sighting.';
+  return '<div class="small"><span class="chip ' + (wait ? 'wait' : 'no') + '">' + (wait ? 'Checking' : 'No match') + '</span> Pinged ' + c.pinged + ' ' + o + ' phone' + (c.pinged === 1 ? '' : 's') + ', ' + ans + ' answered.' + near + '</div>';
 }
 function aidText(S, side, short){
   const a = aidOf(S, side);
@@ -4091,8 +4145,10 @@ function renderWhite(S, now){
     '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">Town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
   renderOCWhite(S, v);
   const q = [];
-  S.contacts.filter(c => !c.verdict).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid) + '</span> <span class="small muted">Seen ' + esc(c.seen) + ' · Posted ' + hhmm(c.g) + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' +
-    '<div class="row" style="flex:0 0 auto"><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="confirm">True · +2</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="duplicate">Duplicate</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="false">False</button></div></div>'));
+  S.contacts.filter(c => !c.verdict).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid) + '</span> <span class="small muted">Seen ' + esc(c.seen) + ' · Posted ' + hhmm(c.g) + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + reportCheck(S, c) + '</div>' +
+    '<div class="row" style="flex:0 0 auto"><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="confirm">True · +1</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="duplicate">Duplicate</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="false">False</button></div></div>'));
+  S.contacts.filter(c => c.auto && S.g - c.g <= 10).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + (c.kind === 'site' ? 'Site flag' : 'Team') + '</b> <span class="mono">' + esc(c.grid || '') + '</span> <span class="chip ok">' + (c.verdict === 'confirm' ? 'Confirmed automatically' : 'Duplicate automatically') + '</span><div class="small muted">' + esc(c.match ? c.match.name + ', ' + c.match.d + ' m from ' + c.grid + ' at ' + hhmm(c.match.g) : c.kind === 'site' && SITES[c.site] ? SITES[c.site].name + ' held by ' + SIDES[OTHER[c.side]].name : '') + '. Change it only if the O/C reports otherwise.</div></div>' +
+    '<div class="row" style="flex:0 0 auto">' + [['confirm', 'True · +1'], ['duplicate', 'Duplicate'], ['false', 'False']].filter(([v]) => v !== c.verdict).map(([v, l]) => '<button type="button" data-act="verdict" data-id="' + c.id + '" data-v="' + v + '">' + l + '</button>').join('') + '</div></div>'));
   const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request', wp:'Waypoint request' };
   S.requests.filter(r => r.status === 'open').forEach(r => {
     let ctl = '';

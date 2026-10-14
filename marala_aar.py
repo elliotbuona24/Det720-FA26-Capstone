@@ -339,7 +339,7 @@ def build_html(data, aar, charts):
     war = "War broke out" + (f" at {hhmm(final['warAt'])}" if final.get("warAt") is not None else "") + ", so both scores were cut in half." if final["war"] else \
         f"No war. Escalation finished at {final['esc']} ({level_name(final['esc'])})."
     score_rows = [
-        ("Site captures (+2) and time held (+1 per 10 minutes)", "hold"), ("Sites held at the end (+5 each)", "sites"), ("Town office open", "town"), ("Confirmed intel reports", "reports"), ("Intel packages (2 + 2 each)", "intel"),
+        ("Site captures (+2) and time held (+1 per 10 minutes)", "hold"), ("Sites held at the end (+5 each)", "sites"), ("Town office open", "town"), ("Confirmed reports (+1 each)", "reports"), ("Intel packages (2 + 2 each)", "intel"),
         ("IEDs handled", "ied"), ("IED casualties (−5 each)", "iedhit"), ("Militia cache", "cache"), ("Diplomatic points (1 per 10)", "hn"),
         ("Escalation caused (−1 each)", "esc"), ("White cell adjustments", "adj"), ("War penalty", "war"),
     ]
@@ -407,7 +407,7 @@ def build_html(data, aar, charts):
         for e in aar["log"]
     )
     kind_names = {"team": "Enemy team", "site": "Enemy flag", "other": "Activity"}
-    verdicts = {"confirm": "Confirmed +2", "false": "False", "duplicate": "Duplicate"}
+    verdicts = {"confirm": "Confirmed +1", "false": "False", "duplicate": "Duplicate"}
     def report_detail(c):
         sal = c.get("salute")
         if sal:
@@ -421,7 +421,7 @@ def build_html(data, aar, charts):
         return esc(" · ".join(bits))
     rep_rows = "".join(
         f"<tr><td>{esc(c.get('seen') or '')}</td><td>{hhmm(c['g'])}</td>{side_cell(c['side'], NAMES[c['side']])}<td>{esc(kind_names.get(c.get('kind'), c.get('kind') or ''))}</td>"
-        f"<td>{esc(c.get('grid') or '')}</td><td>{report_detail(c)}</td><td>{esc(verdicts.get(c.get('verdict'), 'Not judged'))}</td></tr>"
+        f"<td>{esc(c.get('grid') or '')}</td><td>{report_detail(c)}</td><td>{esc(verdicts.get(c.get('verdict'), 'Not judged') + (' (board check)' if c.get('auto') else ''))}</td></tr>"
         for c in sorted(aar.get("contacts", []), key=lambda x: x["g"])
     ) or "<tr><td colspan='7' class='muted'>No reports were filed.</td></tr>"
     claim_res = {"accepted": "Accepted", "contest": "Contest started", "held": "Already under contention", "rejected": "Refused"}
