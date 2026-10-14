@@ -1123,13 +1123,20 @@ function aidMiss(S, side, a, why){
   pushFeed(S, side, 'Aid package ' + n + ' was not delivered in time. Diplomatic points −' + AID_MISS + '. Next package ready at ' + hhmm(a.next) + '.', 'alert', { label:'Aid', team:true });
   addHN(S, side, -AID_MISS);
 }
+function distM(p, q){ const d = Math.PI / 180, s = Math.sin((q[0] - p[0]) * d / 2) ** 2 + Math.cos(p[0] * d) * Math.cos(q[0] * d) * Math.sin((q[1] - p[1]) * d / 2) ** 2; return Math.round(2 * 6371000 * Math.asin(Math.sqrt(s))); }
+function showRadius(S){
+  const M = engMap(S); if (!M) return 35;
+  const cols = Math.max(1, Math.min(12, +M.cols || 6)), rows = Math.max(1, Math.min(12, +M.rows || 5));
+  const w = distM([M.sw[0], M.sw[1]], [M.sw[0], M.ne[1]]) / cols, hgt = distM([M.sw[0], M.sw[1]], [M.ne[0], M.sw[1]]) / rows;
+  return Math.max(10, Math.round(Math.sqrt(2 / 3 * w * hgt / Math.PI)));
+}
 const SHOW_LEAVE = 5, SHOW_CHECK = 5.5, SHOW_CLOSED = 10, SHOW_FRESH = 3, SHOW_SLACK = 10;
 function showSquare(S, site){ const M = engMap(S), pts = Object.assign({}, (M && M.sites) || {}, S.sitePts || {}); return engSquare(M, pts[site]) || (SITES[site] ? SITES[site].grid : null); }
 function showTeamName(S, side, tid){ const t = S.teams[side][tid]; return t ? (t.num ? '#' + t.num + ' ' : '') + t.name : 'Fireteam'; }
 function showMark(S, r, tid, fix, how){
   if (r.status !== 'open' || !fix || !Array.isArray(fix.gps)) return;
-  const o = OTHER[r.side], b = sqBounds(engMap(S), r.square); if (!b) return;
-  const inside = distToSq(fix.gps, b) <= 0, cur = r.teams[tid];
+  if (!r.center) return;
+  const o = OTHER[r.side], dm = distM(r.center, fix.gps), inside = dm <= r.radius + SHOW_SLACK, cur = r.teams[tid];
   if (!r.checked){
     if (inside && !cur){
       r.teams[tid] = { name:showTeamName(S, o, tid), st:'inside', g:fix.g }; S.ver++;
@@ -1138,7 +1145,7 @@ function showMark(S, r, tid, fix, how){
     }
     return;
   }
-  if (cur && cur.st === 'inside' && fix.g >= r.until + SHOW_CHECK - SHOW_LEAVE - 1e-9) showRule(S, r, tid, distToSq(fix.gps, b) <= SHOW_SLACK ? 'stayed' : 'left', how);
+  if (cur && cur.st === 'inside' && fix.g >= r.until + SHOW_CHECK - SHOW_LEAVE - 1e-9) showRule(S, r, tid, dm <= r.radius ? 'stayed' : 'left', how);
 }
 function showRule(S, r, tid, st, how){
   const o = OTHER[r.side], t = r.teams[tid]; if (!t || t.st !== 'inside') return;
@@ -1154,7 +1161,7 @@ function showFinish(S, r){
   else pushFeed(S, r.side, 'Show of force: the other wing did not leave ' + r.text + '. Escalation +' + ESC.defied + ' charged to them.', 'good');
 }
 function showClock(S, g){
-  S.requests.filter(r => r.kind === 'show' && r.status === 'open' && r.square && !r.checked && r.until != null && r.until + SHOW_CHECK - SHOW_LEAVE <= g + 1e-9).forEach(r => {
+  S.requests.filter(r => r.kind === 'show' && r.status === 'open' && r.center && !r.checked && r.until != null && r.until + SHOW_CHECK - SHOW_LEAVE <= g + 1e-9).forEach(r => {
     const keep = S.g; S.g = r.until + SHOW_CHECK - SHOW_LEAVE; r.checked = true; S.ver++;
     r.ping2 = 'sf2-' + r.id; S.pings.push({ id:r.ping2, ts:r.ts + SHOW_CHECK * 60000, g:S.g, to:OTHER[r.side], team:null, show:r.id });
     pushLog(S, 'Show of force check at ' + r.text + ': silent position request sent', null);
@@ -1617,23 +1624,25 @@ function apply(S, e, cfg){
       pushFeed(S, OTHER[side], 'Your datalink is jammed until ' + hhmm(until) + ': no live map and no drone flights. Radios still work.', 'alert', { team:true });
       pushLog(S, nm + ' jammed the ' + SIDES[OTHER[side]].name + ' datalink until ' + hhmm(until) + ' (escalation +' + ESC.jam + ')', side, e); break; }
     case 'act_show': {
-      const sq = p.square ? String(p.square).trim().toUpperCase().replace(/\s+/g, '') : null, blk = sq ? showBlocked(S)[sq] : null;
+      const M = engMap(S), rad = showRadius(S), pts = Object.assign({}, (M && M.sites) || {}, S.sitePts || {});
       if (p.site && !SITES[p.site]){ pushLog(S, nm + ' show of force refused: unknown site', side, e, 'rejected'); break; }
-      if (sq && !/^[A-L]\d{1,2}$/.test(sq)){ pushLog(S, nm + ' show of force refused: ' + sq + ' is not a play square', side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: enter a play square such as D3.', 'alert'); break; }
-      if (blk){ pushLog(S, nm + ' show of force refused: ' + sq + ' is ' + blk, side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: ' + sq + ' is ' + blk + '. A show of force cannot target Marala Town or either HQ. No show of force was used.', 'alert'); break; }
-      const area = sq || (p.site ? showSquare(S, p.site) : null), blk2 = area ? showBlocked(S)[area] : null;
-      if (blk2){ pushLog(S, nm + ' show of force refused: ' + SITES[p.site].name + ' is in ' + area + ', the square of ' + blk2, side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: ' + SITES[p.site].name + ' is in ' + area + ', the square of ' + blk2 + '. No show of force was used.', 'alert'); break; }
-      const shT = p.site ? SITES[p.site].name + ' (square ' + area + ')' : sq ? 'square ' + sq : p.text || '';
+      let ctr = null;
+      if (p.site) ctr = pts[p.site] || null;
+      else if (Array.isArray(p.pt) && p.pt.length === 2 && p.pt.every(Number.isFinite)) ctr = p.pt;
+      else if (p.square){ const b = sqBounds(M, String(p.square).trim().toUpperCase()); if (b) ctr = [(b.n + b.s) / 2, (b.w + b.e) / 2]; }
+      if (!ctr){ pushLog(S, nm + ' show of force refused: no valid location', side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: the location could not be read. Choose a site, tap the map, or enter MGRS or lat/long. No show of force was used.', 'alert'); break; }
+      const shT = p.site ? SITES[p.site].name : String(p.label || '').trim().slice(0, 40) || (engSquare(M, ctr) ? 'a point in ' + engSquare(M, ctr) : 'the named point');
+      const hit = [['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ']].find(([k]) => pts[k] && distM(ctr, pts[k]) <= rad);
+      if (hit){ pushLog(S, nm + ' show of force refused: the ' + rad + ' m area around ' + shT + ' includes ' + hit[1], side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: the ' + rad + ' m area around ' + shT + ' includes ' + hit[1] + ' (' + distM(ctr, pts[hit[0]]) + ' m away). A show of force cannot cover Marala Town or either HQ. No show of force was used.', 'alert'); break; }
       if (!useUp(S, side, 'show', e, 'Show of force')) break; raise(S, side, ESC.show);
-      const r = { id:e.id, ts:e.ts, side, kind:'show', text:shT, site:p.site || null, square:area, status:'open', g:S.g, until:Math.min(END_G, S.g + SHOW_LEAVE), closed:Math.min(END_G, S.g + SHOW_CLOSED), teams:{} };
+      const r = { id:e.id, ts:e.ts, side, kind:'show', text:shT, site:p.site || null, center:ctr, radius:rad, square:engSquare(M, ctr), status:'open', g:S.g, until:Math.min(END_G, S.g + SHOW_LEAVE), closed:Math.min(END_G, S.g + SHOW_CLOSED), teams:{} };
+      r.text = shT + ' (' + rad + ' m radius' + (r.square ? ', ' + r.square : '') + ')';
       S.requests.push(r);
-      pushFeed(S, side, 'Show of force approved at ' + shT + '. The other wing must leave by ' + hhmm(r.until) + ' and stay out until ' + hhmm(r.closed) + '.', 'hq');
-      pushFeed(S, OTHER[side], 'Show of force by ' + SIDES[side].name + ' at ' + shT + ': every team inside must leave by ' + hhmm(r.until) + ' and stay out until ' + hhmm(r.closed) + ', or take +' + ESC.defied + ' escalation.', 'alert');
-      pushLog(S, nm + ' show of force at ' + (shT || '?') + ' (escalation +' + ESC.show + ')', side, e);
-      if (area){
-        r.ping = 'sf-' + e.id; S.pings.push({ id:r.ping, ts:e.ts, g:S.g, to:OTHER[side], team:null, show:r.id });
-        Object.values(S.teams[OTHER[side]]).filter(t => !t.removed && t.last && S.g - t.last.g <= SHOW_FRESH).forEach(t => showMark(S, r, t.id, t.last, 'GPS'));
-      }
+      pushFeed(S, side, 'Show of force approved at ' + r.text + '. The other wing must leave by ' + hhmm(r.until) + ' and stay out until ' + hhmm(r.closed) + '.', 'hq');
+      pushFeed(S, OTHER[side], 'Show of force by ' + SIDES[side].name + ' at ' + r.text + ': every team inside must leave by ' + hhmm(r.until) + ' and stay out until ' + hhmm(r.closed) + ', or take +' + ESC.defied + ' escalation. The area is marked on your map.', 'alert');
+      pushLog(S, nm + ' show of force at ' + r.text + ' (escalation +' + ESC.show + ')', side, e);
+      r.ping = 'sf-' + e.id; S.pings.push({ id:r.ping, ts:e.ts, g:S.g, to:OTHER[side], team:null, show:r.id });
+      Object.values(S.teams[OTHER[side]]).filter(t => !t.removed && t.last && S.g - t.last.g <= SHOW_FRESH).forEach(t => showMark(S, r, t.id, t.last, 'GPS'));
       break; }
     case 'show_oc': {
       const r = S.requests.find(x => x.id === p.req && x.kind === 'show'), o = S.ocs[p.oc]; if (!r || r.status !== 'open' || !o || o.removed || !o.team || o.side !== OTHER[r.side]) break;
@@ -1772,7 +1781,7 @@ function apply(S, e, cfg){
       if (p.name) t.name = String(p.name).slice(0, 40);
       const fix = { g:S.g, ts:e.ts, gps:Array.isArray(p.gps) ? p.gps : null, acc:p.acc || null, rep:Array.isArray(p.rep) ? p.rep : null, repText:p.repText || null, status:p.status || null };
       if (fix.gps || fix.rep){ t.fixes.push(fix); if (t.fixes.length > 60) t.fixes.shift(); t.last = fix; }
-      if (fix.gps) S.requests.filter(r => r.kind === 'show' && r.status === 'open' && r.square && r.side === OTHER[side] && (!r.checked || r.teams[p.team])).forEach(r => showMark(S, r, p.team, fix, 'GPS'));
+      if (fix.gps) S.requests.filter(r => r.kind === 'show' && r.status === 'open' && r.center && r.side === OTHER[side] && (!r.checked || r.teams[p.team])).forEach(r => showMark(S, r, p.team, fix, 'GPS'));
       if (p.status) t.status = p.status;
       t.g = S.g; S.ver++;
       break; }
@@ -2744,7 +2753,7 @@ function drawDyn(st, S, side, opts){
     if (dec && dec.until > S.g) L.circle(pts.town, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(LS.sites);
     tip(L.circleMarker(pts.town, { radius:11, color:'#ffffff', weight:2, fillColor:'#888', fillOpacity:.75 }), txt).addTo(LS.sites);
   }
-  S.requests.filter(r => r.kind === 'show' && r.square && r.closed > S.g && r.g <= S.g).forEach(r => { const b = sqBounds(M, r.square); if (b) L.rectangle([[b.s, b.w], [b.n, b.e]], { color:'#ff8f00', weight:3, dashArray:'8 6', fillColor:'#ff8f00', fillOpacity:.12 }).bindTooltip('Show of force by ' + SIDES[r.side].name + ': ' + r.square + ' closed to ' + SIDES[OTHER[r.side]].name + ' until ' + hhmm(r.closed)).addTo(LS.sites); });
+  S.requests.filter(r => r.kind === 'show' && r.center && r.closed > S.g && r.g <= S.g).forEach(r => { L.circle(r.center, { radius:r.radius, color:'#ff8f00', weight:3, dashArray:'8 6', fillColor:'#ff8f00', fillOpacity:.15 }).bindTooltip('Show of force by ' + SIDES[r.side].name + ': ' + esc(r.text) + '. Closed to ' + SIDES[OTHER[r.side]].name + ' until ' + hhmm(r.closed) + (S.g < r.until ? '; leave by ' + hhmm(r.until) : '')).addTo(LS.sites); });
   S.incidents.forEach(inc => { const pt = locate(M, inc.grid); if (pt) L.marker(pt, { icon:L.divIcon({ className:'', html:'<div class="mk-x">✸</div>', iconSize:[24, 24], iconAnchor:[12, 12] }) }).bindTooltip('Explosion ' + hhmm(inc.g)).addTo(LS.blasts); });
   S.contacts.filter(c => (!side || S.reveal || c.side === side) && c.kind !== 'site').forEach(c => {
     const age = Math.max(0, Math.floor(S.g - c.seenG));
@@ -2812,7 +2821,7 @@ function parseHHMM(t){ const m = /^(\d{1,2}):?(\d{2})$/.exec(String(t || '').tri
 function typingIn(el){ const a = document.activeElement; return !!(el && a && el.contains(a) && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)); }
 function refreshSiteSelects(root){
   const key = SITE_KEYS.join();
-  $$('[data-siteopts]', root).forEach(sel => { if (sel.dataset.key === key || (!sel.dataset.key && key === BASE_SITE_KEYS.join())) return; if (document.activeElement === sel) return; sel.dataset.key = key; keepSelect(sel, (sel.dataset.blank ? '<option value="">—</option>' : '') + SITE_KEYS.map(k => '<option value="' + k + '">' + esc(SITES[k].name) + '</option>').join('') + (sel.dataset.town ? '<option value="town">' + esc(sel.dataset.town) + '</option>' : '') + (sel.dataset.sq ? '<option value="sq">Play square</option>' : '')); });
+  $$('[data-siteopts]', root).forEach(sel => { if (sel.dataset.key === key || (!sel.dataset.key && key === BASE_SITE_KEYS.join())) return; if (document.activeElement === sel) return; sel.dataset.key = key; keepSelect(sel, (sel.dataset.blank ? '<option value="">—</option>' : '') + SITE_KEYS.map(k => '<option value="' + k + '">' + esc(SITES[k].name) + '</option>').join('') + (sel.dataset.town ? '<option value="town">' + esc(sel.dataset.town) + '</option>' : '') + (sel.dataset.sq ? '<option value="sq">Point on the map</option>' : '')); });
 }
 function siteNameOf(k){ return k === 'town' ? 'Marala Town' : SITES[k] ? SITES[k].name : k; }
 
@@ -2943,7 +2952,7 @@ function renderOC(S){
   const o = S.ocs[me.id];
   if (o && o.removed){ ocSet(null); toast('The white cell removed you. Sign in again if that was a mistake.', true); app.built = null; buildOC(); renderOC(S); return; }
   if (!$('[data-ocmine]', v)) return;
-  { const box = $('[data-ocshowbox]', v), list = o && o.team ? S.requests.filter(r => r.kind === 'show' && r.side === OTHER[o.side] && r.square && (r.status === 'open' || r.closed > S.g)) : [];
+  { const box = $('[data-ocshowbox]', v), list = o && o.team ? S.requests.filter(r => r.kind === 'show' && r.side === OTHER[o.side] && r.center && (r.status === 'open' || r.closed > S.g)) : [];
     box.hidden = !list.length;
     const html = list.slice().reverse().map(r => { const t = r.teams && r.teams[o.team], st = t ? t.st : null;
       return '<div class="li"><div class="grow"><b>' + esc(r.text) + '</b> <span class="small muted">by ' + SIDES[r.side].name + ' at ' + hhmm(r.g) + '</span><div class="small">Leave by ' + hhmm(r.until) + ' · Closed until ' + hhmm(r.closed) + ' · ' + (st === 'left' ? 'Your team: left' : st === 'stayed' ? 'Your team: stayed' : st === 'inside' ? 'Your team was found inside' : 'Your team was not found inside') + '</div></div>' +
@@ -3230,8 +3239,9 @@ function buildWing(side){
           <details class="act"><summary>Pressure options (they raise escalation)</summary>
             <div class="stack" style="margin-top:8px">
               <div class="act-head"><b>Show of force</b><span class="cost"><span data-left="show"></span> · <span class="esc-up">+10 escalation</span></span></div>
-              <p class="small muted" style="margin:0">Closes one site or play square to the other wing for 10 minutes. Its teams inside are alerted on their phones and must leave within 5 minutes; the board checks their GPS at 5.5 minutes, and the wing takes +10 escalation if a team stayed. Marala Town and both HQs cannot be targeted.</p>
-              <form class="stack" data-f="show"><div class="row"><label for="shS-${side}">Target<select id="shS-${side}" name="site" data-siteopts data-sq="1">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="sq">Play square</option></select></label><label for="shQ-${side}" data-shsq hidden>Play square<input id="shQ-${side}" name="sq" maxlength="4" placeholder="Example: D3"></label></div><div><button type="submit">Order show of force</button></div></form>
+              <p class="small muted" style="margin:0">Closes a circle of <span data-shrad>about 35</span> m radius to the other wing for 10 minutes. Its teams inside are alerted on their phones and must leave within 5 minutes; the board checks their GPS 30 seconds after the deadline, and the wing takes +10 escalation if a team stayed. The circle cannot cover Marala Town or either HQ.</p>
+              <form class="stack" data-f="show"><div class="row"><label for="shS-${side}">Center of the area<select id="shS-${side}" name="site" data-siteopts data-sq="1">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="sq">Point on the map</option></select></label></div>
+              <div class="row" style="align-items:end" data-shsq hidden><label for="shQ-${side}">Point (MGRS or lat/long)<input id="shQ-${side}" name="sq" maxlength="60" autocomplete="off" placeholder="Example: 5892 2345 or 40.82601, -77.85812"></label><button type="button" data-shtap style="flex:0 0 auto">Use last map tap</button></div><div><button type="submit">Order show of force</button></div></form>
               <div class="act-head"><b>Jam enemy datalink</b><span class="cost"><span data-jamstate>Ready</span> · Once every 45 minutes · <span class="esc-up">+5 escalation</span> · ${JAM_MIN} minutes</span></div>
               <p class="small muted" style="margin:0">Disables the enemy wing's live map and drone flights for ${JAM_MIN} minutes. Radio communication is not affected.</p>
               <form data-f="jam"><button type="submit">Jam datalink</button></form>
@@ -3309,8 +3319,14 @@ function buildWing(side){
   on('wpreq', fd => { const pt = locate(mapCfg(app.S), String(fd.get('loc') || '')); if (!pt){ toast('That location did not read. Use a play square, MGRS grid or lat/long.', true); return false; } const sq = squareOf(mapCfg(app.S), pt); return writeEvent('act_wpreq', side, { label:String(fd.get('label')).trim(), pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt), note:fd.get('note') }); });
   $('[data-wrtap]', v).onclick = () => { if (!app.lastClick){ toast('No map tap recorded.', true); return; } $('[data-f="wpreq"] [name="loc"]', v).value = fmtPt(app.lastClick); };
   on('uav', () => { if (!confirm('Launch a UAV? Escalation goes up by 10.')) return false; return writeEvent('act_uav', side, {}); });
-  on('show', fd => fd.get('site') === 'sq' ? writeEvent('act_show', side, { square:String(fd.get('sq') || '').trim().toUpperCase() }) : writeEvent('act_show', side, { site:fd.get('site') }));
-  { const shF = $('[data-f="show"]', v), shSync = () => { const sq = shF.elements.site.value === 'sq'; $('[data-shsq]', shF).hidden = !sq; shF.elements.sq.required = sq; }; shF.elements.site.addEventListener('change', shSync); shSync(); }
+  on('show', fd => {
+    if (fd.get('site') !== 'sq') return writeEvent('act_show', side, { site:fd.get('site') });
+    const t = String(fd.get('sq') || '').trim(), pt = locate(mapCfg(app.S), t);
+    if (!pt){ toast('That location did not read. Tap the map and use Use last map tap, or enter MGRS or lat/long.', true); return false; }
+    return writeEvent('act_show', side, { pt, label:fmtPt(pt).slice(0, 40) });
+  });
+  $('[data-shtap]', v).onclick = () => { if (!app.lastClick){ toast('No map tap recorded. Tap the map first.', true); return; } $('[data-f="show"] [name="sq"]', v).value = fmtPt(app.lastClick); };
+  { const shF = $('[data-f="show"]', v), shSync = () => { const sq = shF.elements.site.value === 'sq'; $('[data-shsq]', shF).hidden = !sq; shF.elements.sq.required = sq; }; shF.elements.site.addEventListener('change', shSync); shF.addEventListener('reset', () => setTimeout(shSync)); shSync(); }
   on('jam', () => { if (!confirm('Jam the enemy datalink? Escalation goes up by 5.')) return false; return writeEvent('act_jam', side, {}); });
   on('strike', fd => { const sf = $('form[data-f="strike"]', v), nine = sf.dataset.nine || null; delete sf.dataset.nine; return writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase(), nine }); });
   v.addEventListener('click', ev => {
@@ -3487,6 +3503,7 @@ function renderWing(S, side, now){
   $('[data-jamstate]', v).textContent = jamReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(jl + JAM_EVERY));
   const uavN = uavEvery(S, side), uavL = S.uav[side], uavReady = !uavL || S.g - uavL.g >= uavN - 1e-9;
   $('[data-uavstate]', v).textContent = uavReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(uavL.g + uavN));
+  { const sr = $('[data-shrad]', v); if (sr) sr.textContent = showRadius(S); }
   $('[data-uavevery]', v).textContent = 'Once every ' + uavN + ' minutes' + (uavN < UAV_EVERY ? ' (Fuel Depot)' : '');
   { const box = $('[data-tchatbox]', v), lg = $('[data-tchatlog]', v), tid = app.chatTeam, t = tid && S.teams[side][tid];
     if (tid && !t){ app.chatTeam = null; box.hidden = true; }
