@@ -29,7 +29,7 @@ LEVEL_BANDS = [
     (75, 100, "Brink", "#d3d3d3"),
 ]
 KEY_TYPES = {
-    "claim", "act_drone", "act_show", "act_jam", "act_strike", "act_aid", "act_statement",
+    "claim", "act_drone", "act_show", "act_jam", "act_strike", "act_aid", "aid_del", "act_statement",
     "firstfire", "returnfire", "sabotage", "provocation", "detonation", "cache", "civaid",
     "resolve", "conduct", "ied", "site_set", "site_contested",
     "act_uav", "team_remove", "void", "handover_offer", "handover_reply", "intel_deploy", "intel_close",
@@ -339,14 +339,14 @@ def build_html(data, aar, charts):
     war = "War broke out" + (f" at {hhmm(final['warAt'])}" if final.get("warAt") is not None else "") + ", so both scores were cut in half." if final["war"] else \
         f"No war. Escalation finished at {final['esc']} ({level_name(final['esc'])})."
     score_rows = [
-        ("Sites held at the end (10 each)", "sites"), ("Town office open", "town"), ("Confirmed intel reports", "reports"), ("Intel packages (2 + 2 each)", "intel"),
+        ("Site captures (+2) and time held (+1 per 10 minutes)", "hold"), ("Sites held at the end (+5 each)", "sites"), ("Town office open", "town"), ("Confirmed intel reports", "reports"), ("Intel packages (2 + 2 each)", "intel"),
         ("IEDs handled", "ied"), ("IED casualties (−5 each)", "iedhit"), ("Militia cache", "cache"), ("Diplomatic points (1 per 10)", "hn"),
         ("Escalation caused (−1 each)", "esc"), ("White cell adjustments", "adj"), ("War penalty", "war"),
     ]
     rows_html = "".join(
         f"<tr><td>{esc(label)}</td><td class='num'>{b.get(k, 0):+d}</td><td class='num'>{r.get(k, 0):+d}</td></tr>" if k in ("esc", "war", "adj", "iedhit") else
         f"<tr><td>{esc(label)}</td><td class='num'>{b.get(k, 0)}</td><td class='num'>{r.get(k, 0)}</td></tr>"
-        for label, k in score_rows if b.get(k, 0) or r.get(k, 0) or k in ("sites", "esc")
+        for label, k in score_rows if b.get(k, 0) or r.get(k, 0) or k in ("hold", "sites", "esc")
     )
     rows_html += f"<tr class='total'><td>Total</td><td class='num'>{b['total']}</td><td class='num'>{r['total']}</td></tr>"
     intel_rows = ""
@@ -459,6 +459,8 @@ def build_html(data, aar, charts):
     built_dt = datetime.fromtimestamp(aar["built"] / 1000) if aar.get("built") else datetime.now()
     built = built_dt.strftime("%d %b %Y").upper()
     outcome = "WAR" if final["war"] else level_name(final["esc"]).upper()
+    aidf = final.get("aid")
+    aid_note = f"<p class='note'>Aid packages delivered on time: BLUFOR {aidf['B']['made']}, REDFOR {aidf['R']['made']}. Missed: BLUFOR {aidf['B']['missed']}, REDFOR {aidf['R']['missed']}.</p>" if aidf else ""
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AAR · {esc(aar['name'])}</title>
@@ -531,9 +533,10 @@ table.log{{font-size:10pt}}
 <h2>4. Points and Diplomatic Standing</h2>
 <figure>{img(charts['score'], 'Points over time')}<figcaption>Figure 2. Each wing's points over the game.</figcaption></figure>
 <figure>{img(charts['hn'], 'Diplomatic points over time')}<figcaption>Figure 3. Diplomatic points: each wing's standing with the mayor and the people of Marala. Below 20, the mayor closes that wing's town office.</figcaption></figure>
+{aid_note}
 
 <h2>5. Site Control</h2>
-<figure>{img(charts['sites'], 'Who held each site')}<figcaption>Figure 4. Control of each site over the game. Hatched bars were under contention or stalemate and scored nothing.</figcaption></figure>
+<figure>{img(charts['sites'], 'Who held each site')}<figcaption>Figure 4. Control of each site over the game. Hatched bars were under contention or stalemate and earned no time-held points.</figcaption></figure>
 <h3>Every site and town-office claim</h3>
 <table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Site</th><th>Result</th><th>Board note</th></tr></thead><tbody>{claim_rows}</tbody></table>
 <h3>Site handovers</h3>

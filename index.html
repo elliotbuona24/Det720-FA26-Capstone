@@ -1106,7 +1106,43 @@ function setWindow(cfg){
 setWindow(null);
 const CONTEST_MIN = 10;
 const ESC_DECAY = 0.15;
-const UAV_EVERY = 40, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 0.75, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5;
+const UAV_EVERY = 40, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 0.75, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5, UAV_EVERY_FUEL = 30;
+const AID_WAIT = 20, AID_WIN = 15, AID_HN = 5, AID_FIRST = 1, AID_MISS = 10, OFFICE_HN = 1;
+function aidOf(S, side){ if (!S.aid) S.aid = { B:{ on:false, next:null, open:null, due:null, n:0, hold:false, made:0, missed:0 }, R:{ on:false, next:null, open:null, due:null, n:0, hold:false, made:0, missed:0 } }; return S.aid[side]; }
+function aidPending(S, side, a){ return (S.ocReqs || []).some(r => r.kind === 'call' && r.call === 'aid' && r.side === side && r.status === 'open' && a.open != null && r.g >= a.open - 1e-9 && r.g <= a.due + 1e-9); }
+function aidSync(S){
+  ['B', 'R'].forEach(side => {
+    const a = aidOf(S, side), open = !!(S.office[side] && S.access[side]);
+    if (open && !a.on){ a.on = true; a.next = S.g + AID_WAIT; a.open = null; a.due = null; a.hold = false; pushFeed(S, side, 'Town office open. Aid package deliveries begin: the first package is ready at ' + hhmm(a.next) + '.', 'hq', { label:'Aid', team:true }); }
+    else if (!open && a.on){ a.on = false; const was = a.due != null; a.next = null; a.open = null; a.due = null; a.hold = false; pushFeed(S, side, 'Town office closed. Aid package deliveries are suspended' + (was ? '; the open package is cancelled' : '') + '.', 'alert', { label:'Aid', team:true }); }
+  });
+}
+function aidMiss(S, side, a, why){
+  a.missed++; const n = a.n; a.due = null; a.open = null; a.hold = false; a.next = S.g + AID_WAIT;
+  pushLog(S, SIDES[side].name + ' aid package ' + n + ' not delivered' + (why ? ' (' + why + ')' : '') + ' (diplomatic points −' + AID_MISS + ')', side);
+  pushFeed(S, side, 'Aid package ' + n + ' was not delivered in time. Diplomatic points −' + AID_MISS + '. Next package ready at ' + hhmm(a.next) + '.', 'alert', { label:'Aid', team:true });
+  addHN(S, side, -AID_MISS);
+}
+function aidClock(S, g){
+  for (let guard = 0; guard < 80 && !S.endex; guard++){
+    let side = null, t = Infinity;
+    ['B', 'R'].forEach(s => { const a = aidOf(S, s); if (!a.on) return; const x = a.due == null ? a.next : a.hold ? null : a.due; if (x != null && x <= g + 1e-9 && x < t){ t = x; side = s; } });
+    if (!side) break;
+    const a = aidOf(S, side), keep = S.g; S.g = t;
+    if (a.due == null){
+      a.n++; a.open = a.next; a.due = a.next + AID_WIN; a.next = null; a.hold = false; S.ver++;
+      pushFeed(S, side, 'Aid package ' + a.n + ' is ready. Deliver it to the Marala Town office by ' + hhmm(a.due) + '. On time: diplomatic points +' + AID_HN + '. Late or missed: −' + AID_MISS + '.', 'alert', { label:'Aid', team:true });
+      pushLog(S, SIDES[side].name + ' aid package ' + a.n + ' ready, due ' + hhmm(a.due), side);
+    } else if (aidPending(S, side, a)) a.hold = true;
+    else aidMiss(S, side, a, 'due ' + hhmm(a.due));
+    S.g = Math.max(keep, S.g); if (S.step) S.step(S, null);
+  }
+}
+const SITE_CAP = 2, SITE_HOLD = 1, SITE_END = 5, DUG_IN = 60, CONTEND_DUG = 10;
+function powered(S, k, side){ const s = S.sites[k]; return !!s && s.holder === side && !s.contested; }
+function uavEvery(S, side){ return powered(S, 'fuel', side) ? UAV_EVERY_FUEL : UAV_EVERY; }
+function dugIn(S, k){ const s = S.sites[k]; return !!s && !!s.holder && s.since != null && S.g - s.since >= DUG_IN - 1e-9; }
+function contendCost(S, k){ return dugIn(S, k) ? CONTEND_DUG : CONTEND_ESC; }
 function droneEvery(S, side){ const a = S.sites.airstrip; return a.holder === side && !a.contested ? DRONE_EVERY_AIR : DRONE_EVERY; }
 function droneReady(S, side){ const l = S.droneLast[side]; return l == null || S.g - l >= droneEvery(S, side) - 1e-9; }
 function codeMatch(cfg, k, h, S){ const c = (S && S.siteCodes && S.siteCodes[k]) || (cfg && cfg.codes ? cfg.codes[k] : null); if (!c) return { cap:false, def:false, reuse:true }; if (typeof c === 'string') return { cap:c === h, def:c === h, reuse:true }; if (Array.isArray(c)) return { cap:c.includes(h), def:c.includes(h), reuse:true }; const cap = (c.cap || []).includes(h), def = ((c.def && c.def.length) ? c.def : (c.cap || [])).includes(h); return { cap, def, reuse:k === 'town' }; }
@@ -1138,6 +1174,7 @@ const OC_CALLS = {
   poor:{ ev:'conduct', p:{ good:false }, name:'Poor conduct', sub:'Diplomatic points −5' },
   iedhit:{ ev:'iedhit', p:{}, name:'Hit by an IED', sub:'−' + IED_HIT + ' points' },
   civaid:{ ev:'civaid', p:{}, name:'Helped a civilian', sub:'Diplomatic points +5' },
+  aid:{ ev:'aid_del', p:{}, name:'Aid package delivered', sub:'Delivered to the Marala Town office' },
   ied_real:{ ev:'ied', p:{ result:'real' }, name:'Real IED cleared', sub:'+2 points · Diplomatic points +5' },
   cache:{ ev:'cache', p:{}, name:'Militia cache cleared', sub:'+5 points · Diplomatic points +5' },
   provocation:{ ev:'provocation', p:{}, name:'Aimed at or crowded the other wing', sub:'Escalation +5' },
@@ -1175,7 +1212,7 @@ function newState(){
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   const S = {
     esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[], ctReqs:[], tchats:[], occhats:[], ocAnns:[], wps:[], sitePts:{}, siteCodes:{},
-    pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0} },
+    pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0,hold:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0,hold:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
     sites, office:{B:false,R:false}, access:{B:true,R:true},
@@ -1207,7 +1244,7 @@ function checkAccess(S, side){
     pushFeed(S, side, 'Diplomatic points are back at 20. A visit to Marala Town can reopen your office.', 'good');
   }
 }
-function addHN(S, side, n){ if (!n) return; S.hn[side] += n; checkAccess(S, side); }
+function addHN(S, side, n){ if (!n) return; S.hn[side] += n; checkAccess(S, side); aidSync(S); }
 function raise(S, side, n){
   S.esc = Math.min(100, S.esc + n);
   if (side){ S.escBy[side] += n; S.raisedBy[side] = true; }
@@ -1226,11 +1263,14 @@ function tick(S, g){
   ['B','R'].forEach(side => {
     const air = S.sites.airstrip;
     parts[side].push(droneReady(S, side) ? 'drone flight ready' : 'next drone flight ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side))));
-    if (S.office[side] && S.access[side]){ addHN(S, side, 3); parts[side].push('diplomatic points +3 (town office)'); }
+    if (S.office[side] && S.access[side]){ addHN(S, side, OFFICE_HN); parts[side].push('diplomatic points +' + OFFICE_HN + ' (town office)'); }
+    const held = SITE_KEYS.filter(k => powered(S, k, side)).length;
+    if (held){ S.pts[side].hold = (S.pts[side].hold || 0) + held * SITE_HOLD; parts[side].push('+' + held * SITE_HOLD + ' for ' + held + (held === 1 ? ' site' : ' sites') + ' held'); }
   });
   ['B','R'].forEach(side => {
     if (!S.raisedBy[side] && S.escBy[side] > 0){ const d = Math.min(S.escBy[side], Math.max(1, Math.round(S.escBy[side] * ESC_DECAY))); S.escBy[side] -= d; S.decayed[side] += d; }
     S.raisedBy[side] = false;
+    if (powered(S, 'harbor', side) && S.escBy[side] > 0){ S.escBy[side] -= 1; S.decayed[side] += 1; parts[side].push('escalation caused −1 (Harbor)'); }
   });
   if (!S.raised){ const before = S.esc; lower(S, ESC.quiet); if (S.esc !== before){ parts.B.push('escalation −' + (before - S.esc)); parts.R.push('escalation −' + (before - S.esc)); } }
   S.raised = false;
@@ -1283,6 +1323,7 @@ function runTicks(S, g){
   while (S.tickIdx < TICKS.length && TICKS[S.tickIdx] <= g + 1e-9){
     contestClock(S, TICKS[S.tickIdx]);
     intelClock(S, TICKS[S.tickIdx]);
+    aidClock(S, TICKS[S.tickIdx]);
     tick(S, TICKS[S.tickIdx]); S.tickIdx++;
     if (S.step) S.step(S, null);
     if (S.tickIdx >= TICKS.length){
@@ -1291,7 +1332,7 @@ function runTicks(S, g){
       pushLog(S, 'ENDEX', null);
     }
   }
-  if (!S.endex){ contestClock(S, g); intelClock(S, g); }
+  if (!S.endex){ contestClock(S, g); intelClock(S, g); aidClock(S, g); }
 }
 function useUp(S, side, key, e, label){
   if (S.endex){ pushLog(S, SIDES[side].name + ' ' + label + ' refused: the game has ended', side, e, 'rejected'); return false; }
@@ -1346,14 +1387,15 @@ function apply(S, e, cfg){
           else {
             const prev = s.holder; spend();
             s.holder = side; s.contested = false; s.contestBy = null; s.contestUntil = null; s.contestNext = null; s.since = S.g;
-            c.status = 'accepted'; c.note = 'Code word unlocked in time. ' + nmS + ' is yours.';
+            S.pts[side].hold = (S.pts[side].hold || 0) + SITE_CAP;
+            c.status = 'accepted'; c.note = 'Code word unlocked in time. ' + nmS + ' is yours. +' + SITE_CAP + ' points.';
             S.lastSeen[side][p.site] = { holder:side, g:S.g };
             pushFeed(S, prev, 'You lost ' + nmS + ': ' + SIDES[side].name + ' unlocked it before you defended.', 'alert');
           }
         }
         else if (s.holder){ c.note = 'Held by the other wing. Contention required first.'; S.lastSeen[side][p.site] = { holder:s.holder, g:S.g }; }
         else if (!m.cap){ c.note = 'Defense code words cannot capture.'; }
-        else { spend(); s.holder = side; s.contested = false; s.contestBy = null; s.contestUntil = null; s.contestNext = null; s.since = S.g; c.status = 'accepted'; c.note = 'Site is yours.'; }
+        else { spend(); s.holder = side; s.contested = false; s.contestBy = null; s.contestUntil = null; s.contestNext = null; s.since = S.g; S.pts[side].hold = (S.pts[side].hold || 0) + SITE_CAP; c.status = 'accepted'; c.note = 'Site is yours. +' + SITE_CAP + ' points.'; }
       }
       S.claims.push(c);
       const where = p.site === 'town' ? 'Marala Town office' : SITES[p.site].name;
@@ -1412,13 +1454,13 @@ function apply(S, e, cfg){
       if (!st || S.endex || !S.clock.started){ pushLog(S, nm + ' contention refused', side, e, 'rejected'); break; }
       if (st.holder !== OTHER[side]){ pushLog(S, nm + ' contention on ' + SITES[p.site].name + ' refused: the other wing does not hold it', side, e, 'rejected'); pushFeed(S, side, SITES[p.site].name + (st.holder === side ? ' is already yours.' : ' is not held by the other wing. Capture it with a capture code word.'), 'alert'); if (st.holder !== side) S.lastSeen[side][p.site] = { holder:st.holder, g:S.g }; break; }
       if (st.contestBy){ pushLog(S, nm + ' contention refused: already in contention', side, e, 'rejected'); pushFeed(S, side, SITES[p.site].name + ' is already in contention.', 'alert'); break; }
-      const mins = S.siteTimer[p.site] || 15;
+      const mins = S.siteTimer[p.site] || 15, cost = contendCost(S, p.site), dug = cost > CONTEND_ESC;
       st.contested = true; st.contestBy = side; st.contestUntil = Math.min(END_G, S.g + mins); st.contestNext = S.g + 10;
       S.lastSeen[side][p.site] = { holder:st.holder, g:S.g };
-      raise(S, side, CONTEND_ESC); S.ver++;
-      pushFeed(S, side, 'Contention started on ' + SITES[p.site].name + '. Your team has until ' + hhmm(st.contestUntil) + ' to finish the activity and enter a capture code word. Escalation +' + CONTEND_ESC + ' now and every 10 minutes.', 'hq');
+      raise(S, side, cost); S.ver++;
+      pushFeed(S, side, 'Contention started on ' + SITES[p.site].name + '. Your team has until ' + hhmm(st.contestUntil) + ' to finish the activity and enter a capture code word. Escalation +' + cost + (dug ? ' now (held 60 minutes or more), then +' + CONTEND_ESC : ' now and') + ' every 10 minutes.', 'hq');
       pushFeed(S, st.holder, SIDES[side].name + ' started contention on ' + SITES[p.site].name + '. Defense code word deadline: ' + hhmm(st.contestUntil) + '.', 'alert');
-      pushLog(S, nm + ' started contention on ' + SITES[p.site].name + ' until ' + hhmm(st.contestUntil) + ' (escalation +' + CONTEND_ESC + ')', side, e);
+      pushLog(S, nm + ' started contention on ' + SITES[p.site].name + ' until ' + hhmm(st.contestUntil) + ' (escalation +' + cost + (dug ? ', site held 60 minutes or more' : '') + ')', side, e);
       (S.ctReqs || []).filter(r => r.status === 'open' && r.side === side && r.site === p.site).forEach(r => { r.status = 'ok'; r.resG = S.g; pushFeed(S, side, 'Contention on ' + SITES[p.site].name + ' started by your C2. Capture code word deadline: ' + hhmm(st.contestUntil) + '.', 'hq', { label:'Contention', team:true, tid:r.team, only:true }); });
       break; }
     case 'ct_req': {
@@ -1450,10 +1492,17 @@ function apply(S, e, cfg){
       S.droneLast[side] = S.g; raise(S, side, 1);
       S.requests.push({ id:e.id, side, kind:'drone', text:p.text || '', status:'open', g:S.g });
       pushLog(S, nm + ' drone flight: ' + (p.text || '') + ' (escalation +1)', side, e); break;
+    case 'aid_del': {
+      const a = aidOf(S, side), at = typeof p.at === 'number' ? p.at : S.g;
+      if (!side || a.due == null || a.open == null || at < a.open - 1e-9 || at > a.due + 1e-9){ pushLog(S, nm + ' aid delivery not counted: no package was due at ' + hhmm(at), side, e, 'rejected'); break; }
+      const n = a.n, first = !(S.aidFirst || (S.aidFirst = {}))[n]; if (first) S.aidFirst[n] = side;
+      a.made++; a.due = null; a.open = null; a.hold = false; a.next = at + AID_WAIT; S.ver++;
+      addHN(S, side, AID_HN + (first ? AID_FIRST : 0));
+      pushLog(S, nm + ' delivered aid package ' + n + ' at ' + hhmm(at) + ' (diplomatic points +' + AID_HN + (first ? ', +' + AID_FIRST + ' first to deliver package ' + n : '') + ')', side, e);
+      pushFeed(S, side, 'Aid package ' + n + ' delivered. Diplomatic points +' + AID_HN + (first ? ', +' + AID_FIRST + ' for delivering it before the other wing' : '') + '. Next package ready at ' + hhmm(a.next) + '.', 'good', { label:'Aid', team:true });
+      break; }
     case 'act_aid':
-      if (!S.office[side] || !S.access[side]){ pushLog(S, nm + ' aid refused: no town office', side, e, 'rejected'); pushFeed(S, side, 'Aid needs an open town office.', 'alert'); break; }
-      if (S.aidTick[side] === S.tickIdx){ pushLog(S, nm + ' aid refused: already given this 10 minutes', side, e, 'rejected'); pushFeed(S, side, 'Aid is available again at the next board update.', 'alert'); break; }
-      S.aidTick[side] = S.tickIdx; addHN(S, side, 5); pushLog(S, nm + ' delivered aid (diplomatic points +5)', side, e); pushFeed(S, side, 'Aid delivered. Diplomatic points +5.', 'good'); break;
+      pushLog(S, nm + ' aid refused: aid packages are delivered by fireteams and confirmed by POCs', side, e, 'rejected'); break;
     case 'act_statement': {
       const inc = S.incidents.find(i => i.id === p.incident); const key = side + ':' + p.incident;
       if (!inc || S.statements[key]){ pushLog(S, nm + ' statement refused', side, e, 'rejected'); break; }
@@ -1651,7 +1700,7 @@ function apply(S, e, cfg){
       break; }
     case 'act_uav': {
       const last = S.uav[side];
-      if (!S.clock.started || (last && S.g - last.g < UAV_EVERY - 1e-9)){ pushLog(S, nm + ' UAV not ready yet', side, e, 'rejected'); break; }
+      if (!S.clock.started || (last && S.g - last.g < uavEvery(S, side) - 1e-9)){ pushLog(S, nm + ' UAV not ready yet', side, e, 'rejected'); break; }
       const o = OTHER[side];
       const spots = liveTeams(S, o).filter(t => t.last && t.status !== 'Left the game').map(t => ({ id:t.id, name:t.name, num:t.num || null, pt:t.last.gps || t.last.rep, at:t.last.g })).filter(x => x.pt);
       raise(S, side, UAV_ESC);
@@ -1702,10 +1751,11 @@ function apply(S, e, cfg){
       const r = S.ocReqs.find(x => x.id === p.req); if (!r || r.status !== 'open') break;
       r.status = p.ok ? 'ok' : 'no'; r.resG = S.g; S.ver++;
       { const rp = String(p.reply || '').trim().slice(0, 300); if (rp){ r.reply = rp; pushLog(S, 'White cell reply to POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + rp, null, e); } }
-      if (r.kind === 'call' && p.ok){ const c = OC_CALLS[r.call]; apply(S, { id:e.id, ts:e.ts, type:c.ev, side:r.side, p:Object.assign({}, c.p), by:e.by }, cfg); }
+      if (r.kind === 'call' && p.ok){ const c = OC_CALLS[r.call]; apply(S, { id:e.id, ts:e.ts, type:c.ev, side:r.side, p:Object.assign({}, c.p, r.call === 'aid' ? { at:r.g } : {}), by:e.by }, cfg); }
       else if (r.kind === 'stale' && p.ok){ const st = S.sites[r.site]; if (st && !st.contestBy && !st.contested) apply(S, { id:e.id, ts:e.ts, type:'site_contested', side:null, p:{ site:r.site, on:true }, by:e.by }, cfg); else pushLog(S, 'Stalemate report from POC ' + ((S.ocs[r.oc] || {}).name || '') + ' not applied: ' + (SITES[r.site] ? SITES[r.site].name : 'site') + (st && st.contestBy ? ' is under contention' : ' is already in stalemate'), null, e, 'rejected'); }
       else if (r.kind === 'stale') pushLog(S, 'Stalemate report from POC ' + ((S.ocs[r.oc] || {}).name || '') + ' declined: ' + (SITES[r.site] ? SITES[r.site].name : 'site'), null, e);
       else pushLog(S, (r.kind === 'call' ? 'Denied' : 'Acknowledged') + ' POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + ocReqText(S, r), null, e);
+      if (r.kind === 'call' && !p.ok && r.call === 'aid'){ const a = aidOf(S, r.side); if (a.hold && !aidPending(S, r.side, a)) aidMiss(S, r.side, a, 'delivery report denied'); }
       break; }
     case 'nine': {
       if (!side || !p.team) break;
@@ -1733,7 +1783,7 @@ function apply(S, e, cfg){
       if (Number.isInteger(p.min) && p.min >= 3 && p.min <= 90) S.siteTimer[k] = p.min;
       if (p.from){ const w = S.wps.find(x => x.id === p.from && !x.del); if (w) w.del = true; }
       S.ver++;
-      pushFeed(S, 'both', 'New site: ' + name + (p.grid ? ' at ' + p.grid : '') + '. Worth 10 points to the wing holding it at ENDEX.', 'hq', { label:'White cell', team:true });
+      pushFeed(S, 'both', 'New site: ' + name + (p.grid ? ' at ' + p.grid : '') + '. Scores like every other site.', 'hq', { label:'White cell', team:true });
       pushLog(S, 'New site created: ' + name + (p.grid ? ' at ' + p.grid : '') + ' (' + cap.length + ' capture, ' + def.length + ' defense code words)', null, e);
       break; }
     case 'site_remove': {
@@ -1802,7 +1852,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'stalemate change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', aid_del:'aid package delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'stalemate change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -1839,7 +1889,7 @@ function replay(cfg, events, now, step){
     S.g = Math.max(S.g, Math.min(g, END_G));
     if (e.type === 'void'){ const t = byId.get(e.p.target); if (t.type === 'void') voidNotice(S, byId.get(t.p && t.p.target), e, true); else voidNotice(S, t, e, false); if (step) step(S, e); continue; }
     if (S.endex && e.by !== 'W' && e.by !== 'white' && /^act_|^contact|^claim/.test(e.type)){ pushLog(S, SIDES[e.side].name + ' action after ENDEX ignored', e.side, e, 'rejected'); continue; }
-    apply(S, e, cfg);
+    apply(S, e, cfg); aidSync(S);
     if (step) step(S, e);
   }
   const gNow = gameAt(S, now);
@@ -1848,16 +1898,16 @@ function replay(cfg, events, now, step){
   return S;
 }
 function score(S, side){
-  const sites = SITE_KEYS.reduce((n, k) => n + (S.sites[k].holder === side && !S.sites[k].contested ? 10 : 0), 0);
+  const sites = SITE_KEYS.reduce((n, k) => n + (powered(S, k, side) ? SITE_END : 0), 0);
   const town = S.office[side] && S.access[side] ? 10 : 0;
-  const v = S.pts[side];
+  const v = S.pts[side], hold = v.hold || 0;
   const hn = Math.min(10, Math.floor(S.hn[side] / 10));
   const esc = -S.escBy[side];
-  const sub = sites + town + v.reports + v.ied + (v.iedhit || 0) + v.cache + (v.intel || 0) + v.adj + hn + esc;
+  const sub = hold + sites + town + v.reports + v.ied + (v.iedhit || 0) + v.cache + (v.intel || 0) + v.adj + hn + esc;
   const war = S.war ? Math.trunc(sub / 2) - sub : 0;
-  return { sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, iedhit:v.iedhit || 0, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
+  return { hold, sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, iedhit:v.iedhit || 0, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
 }
-if (typeof module !== 'undefined') module.exports = { allProblems, setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, JAM_EVERY, JAM_MIN, jammed, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
+if (typeof module !== 'undefined') module.exports = { uavEvery, contendCost, dugIn, SITE_CAP, SITE_HOLD, SITE_END, allProblems, setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, JAM_EVERY, JAM_MIN, jammed, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
 </script>
 
 <script>
@@ -2154,7 +2204,6 @@ function loadSample(){
     ev(31, 'act_statement', 'R', { incident:'s008', blame:'other' }, 'R'),
     ev(33, 'provocation', 'R', {}),
     ev(35, 'claim', 'B', { site:'town', code:secret(salt, 'MAYOR') }, 'B'),
-    ev(37, 'act_aid', 'B', {}, 'B'),
     ev(40, 'claim', 'R', { site:'town', code:secret(salt, 'MAYOR') }, 'R'),
     ev(41, 'conduct', 'R', { good:true }),
     ev(42, 'contact', 'R', { kind:'site', site:'radar', grid:'E1', seen:'0700', note:'Blue flag on the ridge' }, 'R'),
@@ -2177,7 +2226,7 @@ function buildAAR(){
   const clean = o => JSON.parse(JSON.stringify(o));
   return { version:1, built:Date.now(), name:(app.cfg && app.cfg.name) || 'Game', startG:START_G, endG:END_G, levels:LEVELS, esc:ESC,
     sites:Object.fromEntries(SITE_KEYS.map(k => [k, { name:SITES[k].name, grid:siteSquare(S, k) }])),
-    final:{ B:score(S, 'B'), R:score(S, 'R'), esc:S.esc, decayed:{ B:S.decayed.B, R:S.decayed.R }, hn:{ B:S.hn.B, R:S.hn.R }, war:S.war, warAt:S.warAt, endex:S.endex, g:S.g },
+    final:{ B:score(S, 'B'), R:score(S, 'R'), aid:{ B:{ made:aidOf(S, 'B').made, missed:aidOf(S, 'B').missed }, R:{ made:aidOf(S, 'R').made, missed:aidOf(S, 'R').missed } }, esc:S.esc, decayed:{ B:S.decayed.B, R:S.decayed.R }, hn:{ B:S.hn.B, R:S.hn.R }, war:S.war, warAt:S.warAt, endex:S.endex, g:S.g },
     steps, log:clean(S.log), contacts:clean(S.contacts), claims:clean(S.claims), incidents:clean(S.incidents), statements:clean(S.statements),
     requests:clean(S.requests), cacheDone:S.cacheDone, liaison:clean(S.liaison), offers:clean(S.offers), uavs:clean(S.uavs), jams:clean(S.jams), orders:clean(S.orders),
     teams:['B','R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const errs = t.fixes.filter(f => f.gps && f.rep).map(f => Math.round(GEO.dist(f.gps, f.rep))); return { side:sd, id:t.id, name:t.name, num:t.num || null, removed:!!t.removed, status:t.status || null, maps:t.mapN || 0, fixes:t.fixes.length, checks:errs.length, median:errs.length ? errs.slice().sort((a, b) => a - b)[Math.floor(errs.length / 2)] : null, worst:errs.length ? Math.max(...errs) : null }; })),
@@ -2310,7 +2359,7 @@ function legendHTML(side){
     '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
 }
 function scoreTable(S, sides){
-  const rows = [['sites', 'Sites held'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['iedhit', 'IED casualties'], ['cache', 'Militia cache'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
+  const rows = [['hold', 'Site captures and time held'], ['sites', 'Sites held (+5 each at ENDEX)'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['iedhit', 'IED casualties'], ['cache', 'Militia cache'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
   const sc = {}; sides.forEach(s => sc[s] = score(S, s));
   let h = '<table class="score"><thead><tr><th>Points</th>' + sides.map(s => '<th><span class="chip ' + s + '">' + SIDES[s].name + '</span></th>').join('') + '</tr></thead><tbody>';
   rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if ((k === 'adj' || k === 'iedhit') && sides.every(s => !sc[s][k])) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
@@ -3033,13 +3082,14 @@ function buildWing(side){
         <div data-pane="act" class="actions">
           <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> · Every 20 minutes (10 with the Airstrip) · <span class="esc-up">+1 escalation</span></span></div>
             <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at B5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
-          <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · Once every ${UAV_EVERY} minutes · <span class="esc-up">+10 escalation</span></span></div>
+          <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · <span data-uavevery>Once every ${UAV_EVERY} minutes</span> · <span class="esc-up">+10 escalation</span></span></div>
             <p class="small muted" style="margin:0">Shows enemy fireteam positions to you and your fireteams: live for 1 minute, then as last seen for 5 minutes. The enemy wing is not notified.</p>
             <form data-f="uav"><button class="btn-side" type="submit">Launch UAV</button></form></div>
           <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · True <span class="esc-down">−5</span> · False <span class="esc-up">+15</span></span></div>
             <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Incident<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">Who did it<select id="stB-${side}" name="blame"><option value="militia">The militia</option><option value="other">${esc(other)}</option></select></label></div><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
-          <div class="act"><div class="act-head"><b>Humanitarian aid</b><span class="cost">Once every 10 minutes · Needs a town office · Diplomatic points +5</span></div>
-            <form data-f="aid"><button class="btn-side" type="submit">Deliver aid</button></form></div>
+          <div class="act"><div class="act-head"><b>Aid packages</b><span class="cost">Needs an open town office · On time <span class="esc-down">diplomatic points +5</span> · Missed <span class="esc-up">diplomatic points −10</span></span></div>
+            <p class="small muted" style="margin:0">A package is ready 20 minutes after the town office opens and 20 minutes after each delivery or missed deadline. A fireteam must deliver it to the Marala Town office within 15 minutes. Its POC reports the delivery to the white cell. The first wing to deliver each package number earns diplomatic points +1 more.</p>
+            <div data-aidstate class="small"></div></div>
           <details class="act"><summary>Pressure options (they raise escalation)</summary>
             <div class="stack" style="margin-top:8px">
               <div class="act-head"><b>Show of force</b><span class="cost"><span data-left="show"></span> · <span class="esc-up">+10 escalation</span></span></div>
@@ -3063,8 +3113,8 @@ function buildWing(side){
               <div class="row"><label for="ctT-${side}">T · Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="Example: 0842"></label><label for="ctEq-${side}" data-sal>E · Equipment<input id="ctEq-${side}" name="eq" maxlength="80" placeholder="Example: 2 rifles, a radio"></label></div>
               <label for="ctN-${side}" data-notesal>Notes<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: Flag on the Radar Ridge mast"></label>
               <div><button class="btn-side" type="submit">Post report</button></div></form></div>
-          <div class="act" data-ctbox hidden><div class="act-head"><b>Contention requests from fireteams</b><span class="cost"><span class="esc-up">+5 escalation now and every 10 minutes if started</span></span></div><div class="list" data-ctreqs></div></div>
-          <div class="act"><div class="act-head"><b>Start contention</b><span class="cost"><span class="esc-up">+5 escalation now and every 10 minutes</span></span></div>
+          <div class="act" data-ctbox hidden><div class="act-head"><b>Contention requests from fireteams</b><span class="cost"><span class="esc-up">+5 escalation now (+10 if the site has been held 60 minutes or more) and +5 every 10 minutes if started</span></span></div><div class="list" data-ctreqs></div></div>
+          <div class="act"><div class="act-head"><b>Start contention</b><span class="cost"><span class="esc-up">+5 escalation now (+10 if the site has been held 60 minutes or more) and +5 every 10 minutes</span></span></div>
             <p class="small muted" style="margin:0">Applies to a site the other wing holds. The attacking team must earn and enter a capture code word before the site's timer expires. The holder may defend: if it enters a defense code word first, it keeps the site, the attackers pull back 100 m, and the attacking wing takes +5 escalation. If the timer expires, the holder keeps the site.</p>
             <form class="stack" data-f="contend"><div class="row"><label for="cnS-${side}">Site<select id="cnS-${side}" name="site" data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div><div><button class="btn-side" type="submit">Start contention</button></div></form></div>
           <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">Capture or defense code word</span></div>
@@ -3118,7 +3168,6 @@ function buildWing(side){
   const on = (name, fn) => { const f = $('[data-f="' + name + '"]', v); f.addEventListener('submit', async ev => { ev.preventDefault(); if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; } const fd = new FormData(f); const ok = await fn(fd); if (ok !== false){ f.reset(); toast('Sent to the board.'); } }); };
   on('drone', fd => writeEvent('act_drone', side, { text:fd.get('q') }));
   on('statement', fd => { if (!fd.get('inc')){ toast('There is no incident to talk about yet.', true); return false; } return writeEvent('act_statement', side, { incident:fd.get('inc'), blame:fd.get('blame') }); });
-  on('aid', () => writeEvent('act_aid', side, {}));
   on('wpreq', fd => { const pt = locate(mapCfg(app.S), String(fd.get('loc') || '')); if (!pt){ toast('That location did not read. Use a play square, MGRS grid or lat/long.', true); return false; } const sq = squareOf(mapCfg(app.S), pt); return writeEvent('act_wpreq', side, { label:String(fd.get('label')).trim(), pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt), note:fd.get('note') }); });
   $('[data-wrtap]', v).onclick = () => { if (!app.lastClick){ toast('No map tap recorded.', true); return; } $('[data-f="wpreq"] [name="loc"]', v).value = fmtPt(app.lastClick); };
   on('uav', () => { if (!confirm('Launch a UAV? Escalation goes up by 10.')) return false; return writeEvent('act_uav', side, {}); });
@@ -3229,6 +3278,12 @@ function renderIntel(S, side, v){
   $('[data-intelcount]', v).textContent = open ? ' · ' + open : '';
   const ci = $('[data-cnint]', v); if (ci){ ci.hidden = !open; ci.textContent = open; }
 }
+function aidText(S, side, short){
+  const a = aidOf(S, side);
+  if (!a.on) return short ? 'Aid: no town office' : 'No aid packages: the wing has no open town office.';
+  if (a.due != null) return (short ? 'Aid package ' + a.n + ' due ' : 'Aid package ' + a.n + ' is ready. Deliver it to the Marala Town office by ') + hhmm(a.due) + (a.hold ? (short ? ' (delivery report pending)' : '. A delivery report is awaiting white cell confirmation.') : short ? '' : '.');
+  return (short ? 'Next aid package ' : 'Next aid package ready at ') + hhmm(a.next) + (short ? '' : '.') + (a.made || a.missed ? (short ? '' : ' Delivered ' + a.made + ', missed ' + a.missed + '.') : '');
+}
 function renderWing(S, side, now){
   refreshSiteSelects($('#vWing'));
   const v = $('#vWing'), lvl = levelIndex(S.esc), sc = score(S, side);
@@ -3238,7 +3293,8 @@ function renderWing(S, side, now){
   $('[data-escnote]', v).textContent = S.war ? 'War: both scores are cut in half.' : S.esc >= 50 ? 'Danger zone: one more serious incident could mean war.' : 'Shared by both wings. 100 means war.';
   $('[data-hn]', v).textContent = S.hn[side];
   $('[data-hnbar]', v).style.width = S.hn[side] + '%';
-  $('[data-hnnote]', v).textContent = !S.access[side] ? 'Town office closed by the mayor' : S.office[side] ? 'Town office open (+3 every 10 min)' : 'No town office yet';
+  { const ae = $('[data-aidstate]', v); if (ae){ const a = aidOf(S, side); ae.textContent = aidText(S, side); ae.className = 'small' + (a.due != null ? ' esc-up' : ''); } }
+  $('[data-hnnote]', v).textContent = !S.access[side] ? 'Town office closed by the mayor' : S.office[side] ? 'Town office open (+' + OFFICE_HN + ' every 10 min)' : 'No town office yet';
   $('[data-esccaused]', v).textContent = S.escBy[side];
   $('[data-pts]', v).textContent = sc.total;
   $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + ' · Both scores cut in half</div>' : S.reveal ? '<div class="panel"><h2>Fog of war lifted: final points</h2>' + scoreTable(S, ['B', 'R']) + '</div>' : (jammed(S, side) ? '<div class="banner">Datalink jammed until ' + hhmm(S.jam[side]) + ': your live map and drone flights are down. Radios still work.</div>' : '');
@@ -3276,8 +3332,9 @@ function renderWing(S, side, now){
   const lock = !S.clock.started || S.endex;
   const jl = S.jamLast[side], jamReady = jl == null || S.g - jl >= JAM_EVERY - 1e-9;
   $('[data-jamstate]', v).textContent = jamReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(jl + JAM_EVERY));
-  const uavL = S.uav[side], uavReady = !uavL || S.g - uavL.g >= UAV_EVERY - 1e-9;
-  $('[data-uavstate]', v).textContent = uavReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(uavL.g + UAV_EVERY));
+  const uavN = uavEvery(S, side), uavL = S.uav[side], uavReady = !uavL || S.g - uavL.g >= uavN - 1e-9;
+  $('[data-uavstate]', v).textContent = uavReady ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(uavL.g + uavN));
+  $('[data-uavevery]', v).textContent = 'Once every ' + uavN + ' minutes' + (uavN < UAV_EVERY ? ' (Fuel Depot)' : '');
   { const box = $('[data-tchatbox]', v), lg = $('[data-tchatlog]', v), tid = app.chatTeam, t = tid && S.teams[side][tid];
     if (tid && !t){ app.chatTeam = null; box.hidden = true; }
     else if (tid){ const n = S.tchats.filter(m => m.side === side && m.team === tid).length, key = tid + '|' + n; $('[data-tchathead]', v).textContent = 'Messages with ' + teamLabel(t); if (lg.dataset.k !== key){ lg.dataset.k = key; lg.innerHTML = chatHTML(S, side, tid, 'c2'); lg.scrollTop = lg.scrollHeight; } if (!$('[data-pane="teams"]', v).hidden) chatMarkSeen(S, side, tid); }
@@ -3297,7 +3354,6 @@ function renderWing(S, side, now){
     if (f === 'strike') off = off || (S.uses.cstrike[side] < 1 && S.uses.strike[side] < 1);
     if (f === 'jam') off = off || !jamReady;
     if (f === 'drone') off = off || jammed(S, side);
-    if (f === 'aid') off = off || !(S.office[side] && S.access[side]) || S.aidTick[side] === S.tickIdx;
     b.disabled = off;
   });
   $('[data-feed]', v).innerHTML = feedHTML(S.feed.filter(f => !f.only && (f.to === side || f.to === 'both' || f.to === 'public')), 'Messages from higher headquarters, board updates and public news appear here.');
@@ -3351,6 +3407,7 @@ function buildWhite(){
         <button type="button" data-ev="conduct" data-side="${s}" data-good="0">Poor conduct<small>Diplomatic points −5</small></button>
         <button type="button" data-ev="iedhit" data-side="${s}">Hit by an IED<small>−${IED_HIT} points</small></button>
         <button type="button" data-ev="civaid" data-side="${s}">Helped a civilian<small>Diplomatic points +5</small></button>
+        <button type="button" data-ev="aid_del" data-side="${s}">Aid package delivered<small>Diplomatic points +5 if on time</small></button>
         <button type="button" data-ev="provocation" data-side="${s}">Aimed at or crowded the other wing<small>Escalation +5</small></button>
         <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>Escalation +20 · Diplomatic points −15</small></button>
         <button type="button" data-ev="returnfire" data-side="${s}">Returned fire<small>Escalation +5</small></button>
@@ -3399,7 +3456,7 @@ function buildWhite(){
             <div class="small"><b>New site</b> <span class="muted" data-sitenewat></span></div>
             <div class="row" style="align-items:end"><label>Site name<input data-snname maxlength="40"></label><label style="flex:0 0 120px">Timer (min)<input data-snmin type="number" min="3" max="90" value="15"></label></div>
             <div class="row" style="align-items:end"><label>Capture code words<input data-sncap autocomplete="off" placeholder="Example: LANTERN, MAPLE, RIDGE"></label><label>Defense code words<input data-sndef autocomplete="off" placeholder="Example: OAK, PINE"></label></div>
-            <p class="small muted" style="margin:0">Separate code words with commas. Each word is single-use. Worth 10 points to the holder at ENDEX. Both wings are notified.</p>
+            <p class="small muted" style="margin:0">Separate code words with commas. Each word is single-use. Scores like every other site. Both wings are notified.</p>
             <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-sncreate style="flex:0 0 auto">Create site</button><button type="button" data-sncancel style="flex:0 0 auto">Cancel</button></div>
           </div>
           <h3 class="small muted" style="margin:6px 0 0">Queue (not deployed)</h3><div class="list" data-wpq></div>
@@ -3521,7 +3578,7 @@ function buildWhite(){
   setTab(pref.get('marala-wtab', 'all'), false);
   v.addEventListener('click', ev => {
     const srm = ev.target.closest('[data-siterm]');
-    if (srm){ const k = srm.dataset.siterm, st = app.S && app.S.sites[k]; if (!st || !SITES[k]) return; if (!confirm('Remove ' + SITES[k].name + '?' + (st.holder ? ' ' + SIDES[st.holder].name + ' loses the 10 points it holds there.' : '') + ' Both wings are notified.')) return; writeEvent('site_remove', null, { k }); return; }
+    if (srm){ const k = srm.dataset.siterm, st = app.S && app.S.sites[k]; if (!st || !SITES[k]) return; if (!confirm('Remove ' + SITES[k].name + '?' + (st.holder ? ' ' + SIDES[st.holder].name + ' loses the site; points already earned there stay.' : '') + ' Both wings are notified.')) return; writeEvent('site_remove', null, { k }); return; }
     const iv = ev.target.closest('[data-ipview]');
     if (iv){ const cur = $('[data-wtab][aria-selected="true"]', v); if (cur && !['all', 'intel'].includes(cur.dataset.wtab)) $('[data-wtab="intel"]', v).click(); const f = $('[data-ipbuild]', v); $('[data-ipbsrc]', f).value = iv.dataset.ipview; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); return; }
     const nr = ev.target.closest('[data-nineres]'); if (nr){ writeEvent('nine_res', null, { nine:nr.dataset.nineres, ok:nr.dataset.ok === '1', by:'White cell' }); return; }
@@ -3571,7 +3628,7 @@ function buildWhite(){
     if (!cap.length){ toast('Add at least one capture code word.', true); return; }
     if (SITE_KEYS.some(k => SITES[k].name.toLowerCase() === name.toLowerCase())){ toast('A site with that name already exists.', true); return; }
     const M = mapCfg(S), sq = squareOf(M, w.pt), mm = sq ? /^([A-L])(\d+)/.exec(sq) : null;
-    if (!confirm('Create the site "' + name + '"? Both wings are notified and it is worth 10 points to the holder at ENDEX.')) return;
+    if (!confirm('Create the site "' + name + '"? Both wings are notified and it scores like every other site.')) return;
     writeEvent('site_new', null, { k:'x' + uid(), name, pt:w.pt, grid:wpGrid(w.pt), square:sq || '?', col:mm ? COLS_L.indexOf(mm[1]) : 0, row:mm ? +mm[2] - 1 : 0, cap:cap.map(x => secret(app.cfg.salt, x)), def:def.map(x => secret(app.cfg.salt, x)), min:min >= 3 && min <= 90 ? min : 15, from:w.id });
     snBox.hidden = true; app.wpKey = null; toast('Site created.');
   };
@@ -4062,7 +4119,7 @@ function renderWhite(S, now){
     btns += '<button type="button" data-ipview="' + P.id + '">View / edit</button>';
     return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.wp ? ' <span class="chip">waypoint: ' + esc(P.wp.label) + '</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">Intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · False: ' + esc(falseText(P, tr)) + (P.items.length !== 4 ? ' · ' + P.items.length + ' pieces' : '') + '</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
   }).join('');
-  ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Diplomatic points ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · Escalation caused ' + S.escBy[s]; });
+  ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Diplomatic points ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · Escalation caused ' + S.escBy[s] + ' · ' + aidText(S, s, true); });
   $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · From ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
   const voids = app.events.filter(e => e.type === 'void').length;
   $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · Saved on this computer' : ' · Shared');
