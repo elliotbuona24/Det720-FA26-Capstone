@@ -1305,7 +1305,7 @@ function newState(){
   resetSites();
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   const S = {
-    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[], ctReqs:[], tchats:[], occhats:[], ocAnns:[], wps:[], sitePts:{}, siteCodes:{},
+    esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[], ctReqs:[], tchats:[], occhats:[], ocAnns:[], ocPings:[], ocPos:{}, wps:[], sitePts:{}, siteCodes:{},
     pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0,hold:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0,hold:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
@@ -1877,6 +1877,15 @@ function apply(S, e, cfg){
       S.occhats.push({ id:e.id, oc:o.id, from, text:tx, g:S.g }); S.ver++;
       pushLog(S, from === 'wc' ? 'White cell to POC ' + o.name + ': ' + tx : 'POC ' + o.name + ' to white cell: ' + tx, null, e);
       break; }
+    case 'oc_ping': {
+      const o = S.ocs[p.oc]; if (!o || o.removed) break;
+      if (!S.ocPings) S.ocPings = []; S.ocPings.push({ id:e.id, oc:o.id, ts:e.ts, g:S.g }); S.ver++;
+      pushLog(S, 'White cell requested the position of POC ' + o.name, null, e);
+      break; }
+    case 'oc_pos': {
+      const o = S.ocs[p.oc]; if (!o || o.removed || !Array.isArray(p.pt) || p.pt.length !== 2 || !p.pt.every(Number.isFinite)) break;
+      if (!S.ocPos) S.ocPos = {}; S.ocPos[o.id] = { pt:p.pt, acc:p.acc || null, ts:e.ts, g:S.g, ping:p.ping || null }; S.ver++;
+      break; }
     case 'ocann': {
       const tx = String(p.text || '').trim().slice(0, 400); if (!tx) break;
       S.ocAnns.push({ id:e.id, text:tx, g:S.g }); S.ver++;
@@ -1987,7 +1996,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', report_ack:'report acknowledgement', show_oc:'POC show of force report', aid_del:'aid package delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'stalemate change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', oc_ping:'POC position request', oc_pos:'POC position', report_ack:'report acknowledgement', show_oc:'POC show of force report', aid_del:'aid package delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'stalemate change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -2724,6 +2733,22 @@ function drawFine(st){
   }
 }
 const SIDE_HEX = { B:'#3d7dff', R:'#ff4d42' };
+const PIN_LIFE = 5 * 60000;
+function mapPins(S){
+  const now = Date.now(), out = [];
+  if (app.role === 'OC' && app.ocSelf && now - app.ocSelf.t < PIN_LIFE) out.push({ pt:app.ocSelf.pt, acc:app.ocSelf.acc, t:app.ocSelf.t, label:'You · ' + new Date(app.ocSelf.t).toTimeString().slice(0, 5) });
+  if (app.role === 'W' && S.ocPos) Object.entries(S.ocPos).forEach(([id, x]) => { const o = S.ocs[id]; if (!o || o.removed || now - x.ts >= PIN_LIFE || (app.ocPinHide && app.ocPinHide.has(id + ':' + x.ts))) return; out.push({ pt:x.pt, acc:x.acc, t:x.ts, label:'POC ' + o.name + ' · ' + ocWhere(S, o) + ' · ' + new Date(x.ts).toTimeString().slice(0, 5) }); });
+  return out;
+}
+function drawPins(st, S){
+  if (!st.pins) st.pins = L.layerGroup().addTo(st.map);
+  st.pins.clearLayers();
+  mapPins(S).forEach(pn => {
+    const op = Math.max(.15, 1 - (Date.now() - pn.t) / PIN_LIFE);
+    if (pn.acc) L.circle(pn.pt, { radius:Math.min(pn.acc, 100), color:'#e040fb', weight:1, opacity:op * .6, fillColor:'#e040fb', fillOpacity:op * .12, interactive:false }).addTo(st.pins);
+    L.circleMarker(pn.pt, { radius:9, color:'#ffffff', weight:3, opacity:op, fillColor:'#e040fb', fillOpacity:op }).bindTooltip(esc(pn.label) + (pn.acc ? ' · ±' + pn.acc + ' m' : '') + '<br>' + esc(fmtPt(pn.pt)), { permanent:true, direction:'right', className:'sitelbl', offset:[12, 0], opacity:op }).addTo(st.pins);
+  });
+}
 function drawDyn(st, S, side, opts){
   st.args = [side, opts];
   const M = mapCfg(S);
@@ -2785,7 +2810,7 @@ function renderMapInto(el, S, side, opts){
   const M = (app.role === 'W' && app.previewMap) || mapCfg(S);
   if (M && window.L){
     const st = lmapEnsure(el, M);
-    if (!M.preview) drawDyn(st, S, side, opts); else if (st.lay) Object.values(st.lay).forEach(g => g.clearLayers());
+    if (!M.preview){ drawDyn(st, S, side, opts); if (!(opts && opts.team)) drawPins(st, S); } else if (st.lay) Object.values(st.lay).forEach(g => g.clearLayers());
     return true;
   }
   if (el._lm){ el._lm.map.remove(); el._lm = null; el.classList.remove('lmap'); }
@@ -2919,6 +2944,9 @@ function buildOC(){
       <button type="button" class="btn-side" data-ocsitesend>Tell the white cell</button></div>
     <div class="panel stack"><h2>Messages with the white cell</h2><div class="chatlog" data-occlog></div><form class="row" data-occf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
     <div class="panel stack"><h2>Your requests</h2><div class="list" data-ocmine></div></div>
+    <div class="panel stack"><div class="act-head"><h2>My position</h2><span class="small muted">Shown only on this phone · fades after 5 minutes</span></div>
+      <div class="small" data-ocselftxt>Tap Find my position to place a marker on your map and read your coordinates.</div>
+      <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-ocself style="flex:0 0 auto">Find my position</button><button type="button" data-ocselfclr style="flex:0 0 auto" hidden>Remove marker</button></div></div>
     <details class="panel" data-ocmapbox><summary><b>Map</b> <span class="small muted">(same view as the white cell)</span></summary>
       <div class="stack" style="margin-top:10px"><p class="small muted" style="margin:0">No fog of war. Not for cadet viewing.</p>
       <div class="row" style="justify-content:flex-start"><button type="button" data-ocfull style="flex:0 0 auto">Full screen map</button></div>
@@ -2933,6 +2961,13 @@ function buildOC(){
   v.addEventListener('click', async ev => {
     const c = ev.target.closest('[data-occall]');
     if (c){ const k = c.dataset.occall, sd = $('[data-ocside]', v).value; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; if (await send({ kind:'call', call:k, side:sd, text:$('[data-ocnote]', v).value })) $('[data-ocnote]', v).value = ''; return; }
+    if (ev.target.closest('[data-ocself]')){
+      const b = ev.target.closest('[data-ocself]'); b.disabled = true; b.textContent = 'Finding…';
+      const g = await getGPS(); b.disabled = false; b.textContent = 'Find my position';
+      if (!g){ toast('Location unavailable. Allow location for this site and try again outdoors.', true); return; }
+      app.ocSelf = { pt:g.pt, acc:g.acc, t:Date.now() }; const mb = $('[data-ocmapbox]', v); if (mb && !mb.open) mb.open = true; refresh(true); return;
+    }
+    if (ev.target.closest('[data-ocselfclr]')){ app.ocSelf = null; refresh(true); return; }
     const sh = ev.target.closest('[data-ocshow]');
     if (sh){ const left = sh.dataset.left === '1'; if (!confirm(left ? 'Confirm your team left the area?' : 'Report that your team did not leave? The wing takes +10 escalation.')) return; writeEvent('show_oc', null, { req:sh.dataset.ocshow, oc:me.id, left }); toast('Sent to the board.'); return; }
     const n = ev.target.closest('[data-ocnine]');
@@ -2976,6 +3011,12 @@ function renderOC(S){
   if (o && o.side && !app.ocSideSet){ app.ocSideSet = true; $('[data-ocside]', v).value = o.side; $('[data-ocwho]', v).value = o.side; }
   const mine = S.nines.filter(n => n.status === 'open' && o && n.side === o.side && n.team === o.team);
   $('[data-ocnines]', v).innerHTML = !o || !o.team ? '<div class="empty">Attach yourself to a fireteam to check its 9-lines.</div>' : mine.length ? mine.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.g) + '</span><div>' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocnine="' + n.id + '" data-ok="1">Correct · Send to C2</button><button type="button" data-ocnine="' + n.id + '" data-ok="0">Not right</button></div></div>').join('') : '<div class="empty">Nothing to check right now.</div>';
+  { const tx = $('[data-ocselftxt]', v), clr = $('[data-ocselfclr]', v), s = app.ocSelf && Date.now() - app.ocSelf.t < PIN_LIFE ? app.ocSelf : null;
+    if (!s && app.ocSelf) app.ocSelf = null;
+    if (tx){ const M = mapCfg(S), sq = s && squareOf(M, s.pt);
+      const html = s ? '<b>' + (sq ? 'Play square ' + sq + ' · ' : '') + esc(fmtPt(s.pt)) + '</b><br>' + s.pt[0].toFixed(5) + ', ' + s.pt[1].toFixed(5) + ' · ±' + s.acc + ' m · found ' + new Date(s.t).toTimeString().slice(0, 5) + ' · fades at ' + new Date(s.t + PIN_LIFE).toTimeString().slice(0, 5) : 'Tap Find my position to place a marker on your map and read your coordinates.';
+      if (tx.dataset.h !== html){ tx.dataset.h = html; tx.innerHTML = html; } clr.hidden = !s; } }
+  answerOcPing(S, me);
   const mb = $('[data-ocmapbox]', v);
   if (mb && mb.open){ const real = renderMapInto($('[data-ocmap]', v), S, null); $('[data-oclegend]', v).innerHTML = real ? realLegend() : legendHTML(null); }
   const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
@@ -2984,15 +3025,20 @@ function renderOC(S){
 }
 function occSeenKey(id){ return 'marala-occhat-' + (app.gid || 'none') + '-' + id; }
 function occUnread(S, id){ const n = S.occhats.filter(m => m.oc === id && m.from === 'oc').length; let seen = 0; try { seen = +localStorage.getItem(occSeenKey(id)) || 0; } catch(e){} return Math.max(0, n - seen); }
+function ocLocBtns(S, o){
+  const x = S.ocPos && S.ocPos[o.id], pg = (S.ocPings || []).filter(p => p.oc === o.id).pop(), fresh = x && Date.now() - x.ts < PIN_LIFE && !(app.ocPinHide && app.ocPinHide.has(o.id + ':' + x.ts));
+  const waiting = pg && (!x || x.ping !== pg.id) && Date.now() - pg.ts < 120000;
+  return (fresh ? '<button type="button" data-ocpinhide="' + o.id + ':' + x.ts + '" style="flex:0 0 auto">Remove marker</button>' : '') + '<button type="button" data-oclocate="' + o.id + '" style="flex:0 0 auto"' + (waiting ? ' disabled' : '') + '>' + (waiting ? 'Locating…' : 'Locate') + '</button>';
+}
 function renderOCChatWhite(S, v){
   const live = Object.values(S.ocs).filter(o => !o.removed), id = app.occOpen;
   if (id && (!S.ocs[id] || S.ocs[id].removed)){ app.occOpen = null; $('[data-occbox]', v).hidden = true; }
   const visible = !$('[data-occbox]', v).closest('[data-off]');
   if (app.occOpen && visible){ const n = S.occhats.filter(m => m.oc === app.occOpen && m.from === 'oc').length; try { localStorage.setItem(occSeenKey(app.occOpen), String(n)); } catch(e){} }
   const un = {}; let tot = 0; live.forEach(o => { un[o.id] = occUnread(S, o.id); tot += un[o.id]; });
-  const key = JSON.stringify(live.map(o => [o.id, o.name, ocWhere(S, o), un[o.id], S.occhats.filter(m => m.oc === o.id).length])) + app.occOpen;
+  const key = JSON.stringify(live.map(o => [o.id, o.name, ocWhere(S, o), un[o.id], S.occhats.filter(m => m.oc === o.id).length, ocLocBtns(S, o)])) + app.occOpen;
   if (key !== app.occKey){ app.occKey = key;
-    $('[data-occhatlist]', v).innerHTML = live.length ? live.map(o => { const n = S.occhats.filter(m => m.oc === o.id), last = n[n.length - 1]; return '<div class="li"><div class="grow"><b>' + esc(o.name) + '</b> <span class="small muted">' + esc(ocWhere(S, o)) + '</span>' + (last ? '<div class="small muted">' + hhmm(last.g) + ' · ' + (last.from === 'wc' ? 'You: ' : '') + esc(last.text.slice(0, 80)) + '</div>' : '') + '</div><button type="button" data-occopen="' + o.id + '" style="flex:0 0 auto"' + (app.occOpen === o.id ? ' class="btn-side"' : '') + '>Messages' + (un[o.id] ? ' <span class="cnt" style="display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center">' + un[o.id] + '</span>' : '') + '</button></div>'; }).join('') : '<div class="empty">No POCs signed in.</div>';
+    $('[data-occhatlist]', v).innerHTML = live.length ? live.map(o => { const n = S.occhats.filter(m => m.oc === o.id), last = n[n.length - 1]; return '<div class="li"><div class="grow"><b>' + esc(o.name) + '</b> <span class="small muted">' + esc(ocWhere(S, o)) + '</span>' + (last ? '<div class="small muted">' + hhmm(last.g) + ' · ' + (last.from === 'wc' ? 'You: ' : '') + esc(last.text.slice(0, 80)) + '</div>' : '') + '</div>' + ocLocBtns(S, o) + '<button type="button" data-occopen="' + o.id + '" style="flex:0 0 auto"' + (app.occOpen === o.id ? ' class="btn-side"' : '') + '>Messages' + (un[o.id] ? ' <span class="cnt" style="display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center">' + un[o.id] + '</span>' : '') + '</button></div>'; }).join('') : '<div class="empty">No POCs signed in.</div>';
     $('[data-occhatn]', v).textContent = tot ? tot + ' unread' : '';
   }
   if (app.occOpen){ const o = S.ocs[app.occOpen], ms = S.occhats.filter(m => m.oc === app.occOpen), lg = $('[data-occwlog]', v), k = app.occOpen + '|' + ms.length;
@@ -3024,6 +3070,15 @@ function renderOCWhite(S, v){
   }
 }
 const pingDone = new Set();
+function answerOcPing(S, me){
+  if (!me || !S.ocPings || !S.ocPings.length || document.visibilityState !== 'visible') return;
+  const pg = S.ocPings.filter(x => x.oc === me.id).pop(); if (!pg || pingDone.has(pg.id)) return;
+  const k = 'marala-ocping-' + app.gid + '-' + me.id;
+  if ((S.ocPos && S.ocPos[me.id] && S.ocPos[me.id].ping === pg.id) || Date.now() - pg.ts > 15 * 60000){ pingDone.add(pg.id); return; }
+  try { if ((localStorage.getItem(k) || '') === pg.id){ pingDone.add(pg.id); return; } } catch(e){}
+  pingDone.add(pg.id);
+  getGPS().then(g => { if (!g) return; try { localStorage.setItem(k, pg.id); } catch(e){} writeEvent('oc_pos', null, { oc:me.id, pt:g.pt, acc:g.acc, ping:pg.id }); });
+}
 function answerPings(S, side){
   const me = teamGet(side); if (!me || !S.clock.started || S.endex || document.visibilityState !== 'visible') return;
   const pg = lastPing(S, side, me.id); if (!pg || pingDone.has(pg.id)) return;
@@ -3827,7 +3882,9 @@ function buildWhite(){
     app.wpKey = null;
   });
   const occOpen = id => { app.occOpen = id; $('[data-occbox]', v).hidden = !id; $('[data-occwlog]', v).dataset.k = ''; app.occKey = null; refresh(true); if (id) setTimeout(() => $('[data-occwf] input', v).focus({ preventScroll:true }), 60); };
-  v.addEventListener('click', ev => { const b = ev.target.closest('[data-occopen]'); if (b) occOpen(b.dataset.occopen); });
+  v.addEventListener('click', ev => { const b = ev.target.closest('[data-occopen]'); if (b) occOpen(b.dataset.occopen);
+    const lc = ev.target.closest('[data-oclocate]'); if (lc){ writeEvent('oc_ping', null, { oc:lc.dataset.oclocate }); toast('Position requested. It appears on your map when the POC phone answers.'); }
+    const hd = ev.target.closest('[data-ocpinhide]'); if (hd){ (app.ocPinHide || (app.ocPinHide = new Set())).add(hd.dataset.ocpinhide); app.occKey = null; refresh(true); } });
   $('[data-occclose]', v).onclick = () => occOpen(null);
   $('[data-occwf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx || !app.occOpen) return; await writeEvent('occhat', null, { oc:app.occOpen, from:'wc', text:tx }); f.text.value = ''; });
   $('[data-ocannf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!confirm('Send this announcement to every POC?')) return; await writeEvent('ocann', null, { text:tx }); f.text.value = ''; toast('Announcement sent to all POCs.'); });
@@ -4307,7 +4364,7 @@ function refresh(force){
   const evKey = app.events.length + '|' + (app.events.length ? app.events[app.events.length - 1].id : '');
   let S = app.S;
   if (force || !S || app.replayKey !== evKey || now - (app.replayAt || 0) >= 3000){ S = replay(app.cfg, app.events, now); app.S = S; app.replayKey = evKey; app.replayAt = now; }
-  const sig = app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer + '|' + S.ver + '|' + uavPhase(S, 'B') + uavPhase(S, 'R') + jammed(S, 'B') + jammed(S, 'R');
+  const sig = (app.ocSelf || (app.role === 'W' && S.ocPos && Object.keys(S.ocPos).length) ? Math.floor(now / 20000) + '|' : '') + app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer + '|' + S.ver + '|' + uavPhase(S, 'B') + uavPhase(S, 'R') + jammed(S, 'B') + jammed(S, 'R');
   if (force || sig !== app.sig){
     app.sig = sig;
     if (app.role === 'W') renderWhite(S, now);
