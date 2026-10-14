@@ -2094,6 +2094,43 @@ function chime(){
     o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.3);
   } catch(e){}
 }
+let msgAt = 0;
+function msgSound(){
+  if (pref.get('marala-msgsound', '1') !== '1' || Date.now() - msgAt < 3000) return;
+  msgAt = Date.now();
+  try { if (navigator.vibrate) navigator.vibrate([150, 80, 150]); } catch(e){}
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t = audioCtx.currentTime;
+    [[660, 0], [990, 0.14], [1320, 0.28]].forEach(([fq, d]) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'triangle'; o.frequency.setValueAtTime(fq, t + d);
+      g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.12, t + d + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.16);
+      o.connect(g); g.connect(audioCtx.destination); o.start(t + d); o.stop(t + d + 0.18);
+    });
+  } catch(e){}
+}
+function audioUnlock(){ try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); const b = audioCtx.createBuffer(1, 1, 22050), s = audioCtx.createBufferSource(); s.buffer = b; s.connect(audioCtx.destination); s.start(0); } catch(e){} }
+document.addEventListener('pointerdown', audioUnlock, { capture:true });
+document.addEventListener('keydown', audioUnlock, { capture:true });
+document.addEventListener('change', ev => { if (ev.target.matches && ev.target.matches('[data-msgsound]')){ pref.set('marala-msgsound', ev.target.checked ? '1' : '0'); $$('[data-msgsound]').forEach(x => x.checked = ev.target.checked); if (ev.target.checked){ msgAt = 0; msgSound(); } } });
+function msgIncoming(S){
+  const r = app.role; if (!r) return null;
+  if (r === 'W') return (S.occhats || []).filter(m => m.from === 'oc').length;
+  if (r === 'B' || r === 'R') return (S.tchats || []).filter(m => m.side === r && m.from === 'team').length + S.liaison.filter(m => m.side !== r).length;
+  if (r === 'TB' || r === 'TR'){ const me = teamGet(r[1]); return me ? (S.tchats || []).filter(m => m.side === r[1] && m.team === me.id && m.from !== 'team').length : null; }
+  if (r === 'OC'){ const me = ocGet(); return me ? (S.occhats || []).filter(m => m.oc === me.id && m.from === 'wc').length + (S.ocAnns || []).length + (S.ocReqs || []).filter(x => x.oc === me.id && x.reply).length : null; }
+  return null;
+}
+function msgWatch(S){
+  const n = msgIncoming(S), who = app.role + '|' + (app.role === 'OC' ? (ocGet() || {}).id : app.role[0] === 'T' ? (teamGet(app.role[1]) || {}).id : '');
+  $$('[data-msgsound]').forEach(x => { if (document.activeElement !== x) x.checked = pref.get('marala-msgsound', '1') === '1'; });
+  if (n == null){ app.msgWho = null; return; }
+  if (app.msgWho !== who){ app.msgWho = who; app.msgN = n; return; }
+  if (n > app.msgN) msgSound();
+  app.msgN = n;
+}
 function whiteAttention(n){
   document.title = (n ? '(' + n + ') ' : '') + BASE_TITLE;
   $$('[data-wqcnt]').forEach(el => { el.hidden = !n; el.textContent = n; });
@@ -2927,6 +2964,7 @@ function buildOC(){
     <div class="panel"><div class="act-head"><h2 data-ocname>${esc(me.name)}</h2><span class="small muted">POC · <b class="mono" data-clock>—</b></span></div>
       <div class="row" style="align-items:end"><label>Attached to<select data-ocassign></select></label><button type="button" data-ocsignout style="flex:0 0 auto">Sign out</button></div>
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
+      <label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
       <div class="ip-status" data-ocwarn hidden style="color:var(--bad);font-weight:600"></div></div>
     <div class="panel stack" data-ocshowbox hidden><h2>Show of force on your team's wing</h2><p class="small muted" style="margin:0">Report whether your team left the area. The board also checks GPS at the deadline; your report settles it if the phone does not answer.</p><div class="list" data-ocshows></div></div>
     <div class="panel stack" data-ocannbox hidden><h2>Announcements</h2><div class="list" data-ocanns></div></div>
@@ -2999,7 +3037,7 @@ function renderOC(S){
     const an = S.ocAnns, ab = $('[data-ocannbox]', v); ab.hidden = !an.length; if (ab.dataset.k !== String(an.length)){ ab.dataset.k = String(an.length); $('[data-ocanns]', v).innerHTML = an.slice().reverse().map(a => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(a.g) + '</span> ' + esc(a.text) + '</div></div>').join(''); }
     const nIn = ms.filter(m => m.from === 'wc').length + an.length;
     if (app.ocInFor !== me.id){ app.ocInFor = me.id; app.ocInN = nIn; }
-    else if (nIn > app.ocInN){ app.ocInN = nIn; const last = [...ms.filter(m => m.from === 'wc'), ...an].sort((a, b) => a.g - b.g).pop(); toast((an.includes(last) ? 'Announcement: ' : 'White cell: ') + last.text); try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} }
+    else if (nIn > app.ocInN){ app.ocInN = nIn; const last = [...ms.filter(m => m.from === 'wc'), ...an].sort((a, b) => a.g - b.g).pop(); toast((an.includes(last) ? 'Announcement: ' : 'White cell: ') + last.text); }
   }
   wakeShow(); refreshSiteSelects(v);
   if (o) $('[data-ocname]', v).textContent = o.name;
@@ -3021,7 +3059,7 @@ function renderOC(S){
   if (mb && mb.open){ const real = renderMapInto($('[data-ocmap]', v), S, null); $('[data-oclegend]', v).innerHTML = real ? realLegend() : legendHTML(null); }
   const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
   $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + (r.reply ? '<div class="small"><b>White cell ' + hhmm(r.resG) + ':</b> ' + esc(r.reply) + '</div>' : '') + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'stale' ? (r.status === 'ok' ? 'marked' : 'not marked') : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : r.reply ? 'replied' : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
-  { const reps = S.ocReqs.filter(r => r.oc === me.id && r.reply), n = reps.length; if (app.ocRepN == null || app.ocRepFor !== me.id){ app.ocRepFor = me.id; app.ocRepN = n; } else if (n > app.ocRepN){ app.ocRepN = n; toast('White cell reply: ' + reps[n - 1].reply); try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} } }
+  { const reps = S.ocReqs.filter(r => r.oc === me.id && r.reply), n = reps.length; if (app.ocRepN == null || app.ocRepFor !== me.id){ app.ocRepFor = me.id; app.ocRepN = n; } else if (n > app.ocRepN){ app.ocRepN = n; toast('White cell reply: ' + reps[n - 1].reply); } }
 }
 function occSeenKey(id){ return 'marala-occhat-' + (app.gid || 'none') + '-' + id; }
 function occUnread(S, id){ const n = S.occhats.filter(m => m.oc === id && m.from === 'oc').length; let seen = 0; try { seen = +localStorage.getItem(occSeenKey(id)) || 0; } catch(e){} return Math.max(0, n - seen); }
@@ -3136,6 +3174,7 @@ function buildTeam(side){
       <button type="button" class="btn-side team-big" data-send>Send position</button>
       <label class="chk"><input type="checkbox" data-auto> Also send GPS by itself every 10 minutes</label>
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
+      <label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
       <div class="small muted" data-tlast></div></div>
     <div class="panel stack"><h2>Contention request</h2>
       <p class="small muted" style="margin:0">Sent to your C2. Contention starts only when your C2 approves it.</p>
@@ -3351,7 +3390,7 @@ function buildWing(side){
             <div class="list" data-offers></div></div>
         </div>
       </div>
-      <div class="panel feedcol" data-sec="msg"><h2>Messages</h2><div class="feed" data-feed aria-live="polite"></div></div>
+      <div class="panel feedcol" data-sec="msg"><div class="act-head"><h2>Messages</h2><label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label></div><div class="feed" data-feed aria-live="polite"></div></div>
     </div>
   </div>`;
   const showPane = k => { $$('[data-tab]', v).forEach(x => x.setAttribute('aria-selected', x.dataset.tab === k ? 'true' : 'false')); $$('[data-pane]', v).forEach(p => p.hidden = p.dataset.pane !== k); };
@@ -3692,7 +3731,7 @@ function buildWhite(){
       <div class="stack" style="gap:14px;min-width:0" data-sec="queue msg">
         <div class="panel" data-sec="queue"><div class="act-head"><h2>POCs</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
           <details data-ocroster style="margin-top:8px"><summary class="small"><b>Manage POCs</b> <span class="muted" data-ocn></span></summary><div class="list" data-ocrows style="margin-top:6px"></div></details></div>
-        <div class="panel stack" data-sec="queue msg"><div class="act-head"><h2>POC messages</h2><span class="small muted" data-occhatn></span></div>
+        <div class="panel stack" data-sec="queue msg"><div class="act-head"><h2>POC messages</h2><span class="small muted" data-occhatn></span></div><label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
           <div class="list" data-occhatlist></div>
           <div class="act stack" data-occbox hidden><div class="act-head"><b data-occhead>Messages</b><button type="button" data-occclose style="flex:0 0 auto">Close</button></div><div class="chatlog" data-occwlog></div><form class="row" data-occwf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
           <form class="stack" data-ocannf style="border-top:1px dashed var(--line);padding-top:8px"><label>Announcement to all POCs<textarea name="text" rows="2" maxlength="400" required></textarea></label><div><button type="submit" style="flex:0 0 auto">Send announcement</button></div></form>
@@ -4376,6 +4415,7 @@ function refresh(force){
   }
   if (app.role[0] === 'T') teamTick(S, app.role[1], now);
   uavNotify(S);
+  msgWatch(S);
   $$('[data-clock]').forEach(el => el.textContent = clockText(S, now));
   $$('[data-next]').forEach(el => el.textContent = nextTickText(S, now));
 }
