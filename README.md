@@ -3,6 +3,7 @@
 Live game board for the Marala Island capstone (BLUFOR vs. REDFOR).
 
 **Board:** https://elliotbuona24.github.io/Det720-FA26-Capstone/
+Dev Board: elliotbuona24.github.io/Det720-FA26-Capstone/dev/
 
 ## Files (update!)
 
