@@ -225,6 +225,10 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 .gate{max-width:880px;margin:6vh auto 0;display:grid;gap:18px}
 .gate h1{font-size:38px;text-transform:uppercase;letter-spacing:.05em;line-height:1}
 .gate .lede{max-width:62ch;color:var(--muted)}
+#admin{max-width:980px;margin:4vh auto 0}
+.gamebtn{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:12px 14px}
+.gamebtn b{font-size:16px}
+.devflag{position:fixed;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:3000;background:#b71c1c;color:#fff;font:700 12px/1 system-ui,sans-serif;letter-spacing:.08em;padding:6px 9px;border-radius:6px;pointer-events:none}
 .roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
 .role{border:1px solid var(--line);border-top:4px solid var(--side);border-radius:10px;padding:14px;background:var(--panel);display:grid;gap:8px;text-align:left}
 .role b{font-family:var(--display);font-size:20px;letter-spacing:.04em;text-transform:uppercase;color:var(--side)}
@@ -247,6 +251,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <span id="roleBadge"></span>
       <button id="switchRole" type="button" hidden>Switch view</button>
+      <button id="switchGame" type="button" hidden>Change game</button>
     </div>
   </div>
   <div id="connBanner" class="banner" hidden></div>
@@ -260,6 +265,15 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
       <h2>No game set up yet</h2>
       <p class="muted" style="margin:0">No game is active. The white cell creates the game.</p>
       <div><button type="button" class="btn-side side-W" id="gotoSetup">Set up a new game</button></div>
+    </div>
+    <div id="gameMenu" class="stack" hidden>
+      <div class="panel stack"><h2>Choose a game</h2><p class="muted small" style="margin:0">Each game runs on its own. Pick a game and enter its game PIN; then choose your view.</p><div class="list" id="gameList"></div></div>
+      <form id="gamePinForm" class="panel" hidden>
+        <h2 id="gamePinTitle">Game PIN</h2>
+        <div class="row"><label for="gamePinInput">Game PIN<input id="gamePinInput" type="password" autocomplete="off"></label><div style="flex:0 0 auto" class="row"><button type="submit" class="btn-side side-W" id="gamePinGo">Enter game</button><button type="button" id="gamePinCancel">Back</button></div></div>
+        <p id="gamePinErr" class="small" style="color:var(--bad);margin:0" hidden>That game PIN is not right.</p>
+      </form>
+      <div class="row" style="justify-content:center"><button type="button" id="adminOpen" style="flex:0 0 auto">Admin sign in</button></div>
     </div>
     <div id="gateRoles" class="roles"></div>
     <form id="pinForm" class="panel" hidden>
@@ -281,10 +295,53 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
     </div>
   </section>
 
+  <section id="admin" class="stack" hidden>
+    <div class="panel stack"><div class="act-head"><h2>Admin</h2><button type="button" id="adBack" style="flex:0 0 auto">Back to games</button></div>
+      <form id="adLogin" class="stack"><p class="muted small" style="margin:0">For the exercises officer. Sign in with the admin account set up in Firebase.</p>
+        <div class="row"><label for="adEmail">Email<input id="adEmail" type="email" autocomplete="username" required></label><label for="adPass">Password<input id="adPass" type="password" autocomplete="current-password" required></label><div style="flex:0 0 auto" class="row"><button type="submit" class="btn-side side-W">Sign in</button></div></div>
+        <p id="adErr" class="small" style="color:var(--bad);margin:0" hidden></p></form>
+      <div id="adWho" class="row" hidden style="justify-content:flex-start;align-items:center"><span class="small" id="adWhoTxt"></span><button type="button" id="adOut" style="flex:0 0 auto">Sign out</button></div>
+    </div>
+    <div id="adBody" class="stack" hidden>
+      <div class="panel stack"><div class="act-head"><h2>Games</h2><span class="small muted" id="adCount"></span></div>
+        <div class="list" id="adGames"></div>
+        <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side side-W" id="adNew" style="flex:0 0 auto">Create a new game</button><button type="button" id="adNewFile" style="flex:0 0 auto">Create a game from a backup file</button><button type="button" id="adRefresh" style="flex:0 0 auto">Refresh</button></div>
+      </div>
+      <form id="adFile" class="panel stack" hidden><h2>Create a game from a backup file</h2>
+        <p class="small muted" style="margin:0">Uses everything in the file: events, code words and role PINs. Enter a new white cell PIN to replace the one in the file.</p>
+        <label for="adFileIn">Backup file<input id="adFileIn" type="file" accept=".json,application/json" required></label>
+        <div class="row"><label for="adFileName">Game name<input id="adFileName" maxlength="60" required></label><label for="adFilePin">Game PIN<input id="adFilePin" maxlength="12" required autocomplete="off"></label><label for="adFileW">New white cell PIN (optional)<input id="adFileW" maxlength="12" autocomplete="off"></label></div>
+        <label class="chk"><input type="checkbox" id="adFileListed" checked> Show on the game menu</label>
+        <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side side-W" style="flex:0 0 auto">Create game</button><button type="button" id="adFileCancel" style="flex:0 0 auto">Cancel</button><span class="small muted" id="adFileMsg"></span></div>
+      </form>
+      <form id="adEdit" class="panel stack" hidden><h2 id="adEditTitle">Edit game</h2>
+        <div class="row"><label for="adEName">Game name<input id="adEName" maxlength="60" required></label><label for="adEPin">Game PIN<input id="adEPin" maxlength="12" required autocomplete="off"></label></div>
+        <label class="chk"><input type="checkbox" id="adEListed"> Show on the game menu</label>
+        <label class="chk"><input type="checkbox" id="adEStarter"> Include the built-in intel packages and inject templates</label>
+        <p class="small muted" style="margin:0">New role PINs (leave blank to keep the current PIN)</p>
+        <div class="row"><label for="adPW">White cell<input id="adPW" maxlength="12" autocomplete="off"></label><label for="adPB">BLUFOR C2<input id="adPB" maxlength="12" autocomplete="off"></label><label for="adPR">REDFOR C2<input id="adPR" maxlength="12" autocomplete="off"></label></div>
+        <div class="row"><label for="adPTB">BLUFOR fireteam<input id="adPTB" maxlength="12" autocomplete="off"></label><label for="adPTR">REDFOR fireteam<input id="adPTR" maxlength="12" autocomplete="off"></label><label for="adPOC">POC<input id="adPOC" maxlength="12" autocomplete="off"></label></div>
+        <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side side-W" style="flex:0 0 auto">Save changes</button><button type="button" id="adEBackup" style="flex:0 0 auto">Download backup</button><button type="button" id="adEDelete" style="flex:0 0 auto">Delete game</button><button type="button" id="adECancel" style="flex:0 0 auto">Close</button></div>
+        <p class="small muted" id="adEMsg" style="margin:0"></p>
+      </form>
+      <div class="panel stack" id="adLegacy"><h2>Import the old live game</h2>
+        <p class="small muted" style="margin:0">Copies the game that was live before game menus existed into a new game. The original is left untouched.</p>
+        <div class="row"><label for="adLName">Game name<input id="adLName" maxlength="60" value="Capstone Initial Demonstration"></label><label for="adLPin">Game PIN<input id="adLPin" maxlength="12" autocomplete="off"></label></div>
+        <label class="chk"><input type="checkbox" id="adLListed" checked> Show on the game menu</label>
+        <div class="row" style="justify-content:flex-start"><button type="button" id="adLGo" style="flex:0 0 auto">Import</button><span class="small muted" id="adLMsg"></span></div>
+      </div>
+    </div>
+  </section>
+
   <section id="setup" class="panel side-W" hidden>
     <h2>Set up a new game</h2>
     <p class="muted small" style="margin:0">Creating a game replaces the current game on every screen. PINs and code words are stored scrambled.</p>
     <form id="setupForm" class="stack">
+      <div class="row" id="setupMulti" hidden>
+        <label for="sGamePin">Game PIN<input id="sGamePin" maxlength="12" autocomplete="off"></label>
+        <label class="chk" style="flex:0 0 auto;align-self:end"><input type="checkbox" id="sListed" checked> Show on the game menu</label>
+        <label class="chk" style="flex:0 0 auto;align-self:end"><input type="checkbox" id="sStarter"> Include the built-in intel packages and inject templates</label>
+      </div>
       <div class="row">
         <label for="sName">Game name<input id="sName" value="Capstone" required></label>
         <label for="sPinW">White cell PIN<input id="sPinW" required autocomplete="off"></label>
@@ -1252,7 +1309,8 @@ function allProblems(S){
   const cs = (S && S.customOrder ? S.customOrder : []).map(id => S.custom[id]).filter(Boolean), reps = {};
   cs.forEach(c => { if (c.replaces) reps[c.replaces] = c; });
   const ed = (S && S.edits) || {};
-  return PROBLEMS.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !PROBLEMS.some(P => P.id === c.replaces))).map(P => ed[P.id] ? Object.assign({}, P, ed[P.id], { id:P.id, custom:P.custom, replaces:P.replaces, at:P.at, win:P.win, blast:P.blast, wp:P.wp }) : P);
+  const base = S && S.blank ? [] : PROBLEMS;
+  return base.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !base.some(P => P.id === c.replaces))).map(P => ed[P.id] ? Object.assign({}, P, ed[P.id], { id:P.id, custom:P.custom, replaces:P.replaces, at:P.at, win:P.win, blast:P.blast, wp:P.wp, wps:P.wps }) : P);
 }
 function validEdit(k){ return k && Array.isArray(k.opts) && k.opts.length === 4 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string' && typeof k.title === 'string' && typeof k.q === 'string'; }
 function validPkg(k){
@@ -1703,12 +1761,13 @@ function apply(S, e, cfg){
         pushFeed(S, 'both', 'Explosion reported at ' + inc.grid + '. Cause unknown.' + (P.blast.cas ? ' Casualties reported.' : ''), 'alert');
         pushLog(S, 'Explosion at ' + inc.grid + ' with intel package ' + (i + 1) + ' (really caused by ' + (inc.truth === 'militia' ? 'the militia' : SIDES[inc.truth].name) + ')', null, e);
       }
-      { const q = P.wp, okPt = a => Array.isArray(a) && a.length === 2 && a.every(Number.isFinite) && Math.abs(a[0]) <= 90 && Math.abs(a[1]) <= 180;
-        if (q && okPt(q.pt) && String(q.label || '').trim()) to.forEach(sd => { const id = 'wpi-' + P.id + '-' + sd; if (S.wps.some(w => w.id === id)) return;
+      { const okPt = a => Array.isArray(a) && a.length === 2 && a.every(Number.isFinite) && Math.abs(a[0]) <= 90 && Math.abs(a[1]) <= 180;
+        const list = (P.wp ? [P.wp] : []).concat(Array.isArray(P.wps) ? P.wps.slice(0, 12) : []);
+        list.forEach((q, qi) => { if (q && okPt(q.pt) && String(q.label || '').trim()) to.forEach(sd => { const id = 'wpi-' + P.id + (qi ? '-' + qi : '') + '-' + sd; if (S.wps.some(w => w.id === id)) return;
           const w = { id, pt:q.pt, label:String(q.label).trim().slice(0, 60), desc:String(q.desc || '').trim().slice(0, 200), sym:WP_SYMS[q.sym] ? q.sym : 'pin', color:/^#[0-9a-f]{6}$/i.test(q.color || '') ? q.color : null, to:sd, g:S.g, grid:String(q.grid || '').slice(0, 60), pkg:P.id };
           S.wps.push(w); S.ver++;
           pushFeed(S, sd, 'New waypoint with intel package ' + (i + 1) + ': ' + w.label + (w.grid ? ' at ' + w.grid : '') + '.' + (w.desc ? ' ' + w.desc : ''), 'hq', { label:'Waypoint', team:true });
-          pushLog(S, 'Waypoint deployed with intel package ' + (i + 1) + ': ' + w.label + (w.grid ? ' at ' + w.grid : '') + ' · ' + SIDES[sd].name, null, e); }); }
+          pushLog(S, 'Waypoint deployed with intel package ' + (i + 1) + ': ' + w.label + (w.grid ? ' at ' + w.grid : '') + ' · ' + SIDES[sd].name, null, e); }); }); }
       pushLog(S, 'Intel package ' + (i + 1) + ' (' + P.title + ') sent to ' + to.map(sd => SIDES[sd].name).join(' and ') + ', due ' + hhmm(due), null, e);
       break; }
     case 'intel_close': {
@@ -1886,6 +1945,15 @@ function apply(S, e, cfg){
       const o = S.ocs[p.oc]; if (!o || o.removed || !Array.isArray(p.pt) || p.pt.length !== 2 || !p.pt.every(Number.isFinite)) break;
       if (!S.ocPos) S.ocPos = {}; S.ocPos[o.id] = { pt:p.pt, acc:p.acc || null, ts:e.ts, g:S.g, ping:p.ping || null }; S.ver++;
       break; }
+    case 'tpl_save': {
+      const t = p.tpl || {}, id = String(t.id || '').slice(0, 40), text = String(t.text || '').trim().slice(0, 400), label = String(t.label || '').trim().slice(0, 60);
+      if (!/^t[\w-]{3,40}$/.test(id) || !text || !label){ pushLog(S, 'Inject template refused: incomplete', null, e, 'rejected'); break; }
+      if (!S.tpls) S.tpls = [];
+      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:String(t.from || 'Higher headquarters').trim().slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 200) };
+      const ix = S.tpls.findIndex(x => x.id === id); if (ix >= 0) S.tpls[ix] = tp; else S.tpls.push(tp); S.ver++;
+      pushLog(S, 'Inject template ' + (ix >= 0 ? 'updated' : 'saved') + ': ' + label, null, e);
+      break; }
+    case 'tpl_del': { if (!S.tpls) break; const ix = S.tpls.findIndex(x => x.id === p.id); if (ix < 0) break; const t = S.tpls.splice(ix, 1)[0]; S.ver++; pushLog(S, 'Inject template deleted: ' + t.label, null, e); break; }
     case 'ocann': {
       const tx = String(p.text || '').trim().slice(0, 400); if (!tx) break;
       S.ocAnns.push({ id:e.id, text:tx, g:S.g }); S.ver++;
@@ -1996,7 +2064,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', oc_ping:'POC position request', oc_pos:'POC position', report_ack:'report acknowledgement', show_oc:'POC show of force report', aid_del:'aid package delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'stalemate change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', tpl_save:'inject template', tpl_del:'inject template deletion', oc_ping:'POC position request', oc_pos:'POC position', report_ack:'report acknowledgement', show_oc:'POC show of force report', aid_del:'aid package delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'stalemate change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -2026,6 +2094,7 @@ function replay(cfg, events, now, step){
   const ws = evs.filter(e => e.type === 'window_set' && e.p && (!firstStart || e.ts < firstStart.ts)).pop();
   setWindow(ws ? Object.assign({}, cfg, { startG:ws.p.startG, lengthMin:ws.p.lengthMin }) : cfg);
   const S = newState();
+  S.blank = !!(cfg && cfg.blank);
   if (step) S.step = step;
   for (const e of evs){
     const g = gameAt(S, e.ts);
@@ -2082,6 +2151,7 @@ document.addEventListener('visibilitychange', wakeSync);
 document.addEventListener('pointerdown', () => { if (wakeWanted() && !wakeLock) wakeSync(); });
 document.addEventListener('change', ev => { if (ev.target.matches && ev.target.matches('[data-wake]')){ pref.set('marala-wake', ev.target.checked ? '1' : '0'); wakeSync(); } });
 const BASE_TITLE = 'Marala Island Board';
+if (/\/dev(\/|$)/.test(location.pathname)){ const d = document.createElement('div'); d.className = 'devflag'; d.textContent = 'DEV COPY'; document.body.appendChild(d); }
 let chimeAt = 0, chimeN = null, audioCtx = null;
 function chime(){
   if (pref.get('marala-chime', '1') !== '1' || Date.now() - chimeAt < 8000) return;
@@ -2172,15 +2242,25 @@ async function firebaseDb(cfg){
   let fs;
   try { fs = F.initializeFirestore(fapp, { ignoreUndefinedProperties:true, localCache:F.persistentLocalCache({ tabManager:F.persistentMultipleTabManager() }) }); }
   catch(e){ fs = F.getFirestore(fapp); }
-  const wrap = s => ({ id:s.id, exists:s.exists(), data:() => s.data() });
+  const wrap = s => ({ id:s.id, exists:typeof s.exists === 'function' ? s.exists() : !!s.exists, data:() => s.data() });
+  let authObj = null;
   return {
     doc: p => ({
       onSnapshot: (next, err) => F.onSnapshot(F.doc(fs, p), s => next(wrap(s)), err),
-      set: d => F.setDoc(F.doc(fs, p), d)
+      set: d => F.setDoc(F.doc(fs, p), d),
+      get: async () => wrap(await F.getDoc(F.doc(fs, p))),
+      del: () => F.deleteDoc(F.doc(fs, p))
     }),
     collection: p => ({
-      onSnapshot: (next, err) => F.onSnapshot(F.collection(fs, p), { includeMetadataChanges:true }, s => next({ docs:s.docs.map(wrap), fromCache:!!(s.metadata && s.metadata.fromCache) }), err)
-    })
+      onSnapshot: (next, err) => F.onSnapshot(F.collection(fs, p), { includeMetadataChanges:true }, s => next({ docs:s.docs.map(wrap), fromCache:!!(s.metadata && s.metadata.fromCache) }), err),
+      get: async () => (await F.getDocs(F.collection(fs, p))).docs.map(wrap)
+    }),
+    auth: async () => {
+      if (authObj) return authObj;
+      const Au = await import(FB_SDK + 'firebase-auth.js'), a = Au.getAuth(fapp);
+      authObj = { signIn:(e, pw) => Au.signInWithEmailAndPassword(a, e, pw), signOut:() => Au.signOut(a), onChange:cb => Au.onAuthStateChanged(a, cb), user:() => a.currentUser };
+      return authObj;
+    }
   };
 }
 async function connect(){
@@ -2198,7 +2278,7 @@ async function connect(){
     try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch(e){ db = null; }
     if (db) app.online = 'claude';
   }
-  if (db){ app.mode = 'remote'; app.db = db; setBanner(''); subscribeMeta(); }
+  if (db){ app.mode = 'remote'; app.db = db; setBanner(''); if (app.online === 'firebase'){ app.multi = true; lobbyStart(); } else subscribeMeta(); }
   else {
     app.mode = 'local';
     setBanner('Running on this computer only. Open this page in more windows on the same computer for the other screens; they stay in sync. Use the white cell\u2019s "Download backup" to save the game.');
@@ -2224,8 +2304,8 @@ function subscribeGame(){
   gameUnsubs.forEach(f => { try { f(); } catch(e){} }); gameUnsubs = [];
   app.cfg = null; app.events = []; app.evSig = null;
   if (!app.gid){ route(); return; }
-  gameUnsubs.push(app.db.doc('games/' + app.gid).onSnapshot(s => { app.cfg = s.exists ? s.data() : null; route(); }, () => {}));
-  gameUnsubs.push(app.db.collection('games/' + app.gid + '/events').onSnapshot(s => {
+  gameUnsubs.push(app.db.doc(gpath()).onSnapshot(s => { app.cfg = s.exists ? s.data() : null; if (app.multi && !s.exists && app.gid){ toast('That game is no longer available.', true); leaveGame(); return; } route(); }, () => {}));
+  gameUnsubs.push(app.db.collection(gpath() + '/events').onSnapshot(s => {
     if (app.online === 'firebase') setOffline(s.fromCache);
     const evs = s.docs.map(d => d.data());
     const sig = evs.length + ':' + evs.reduce((a, e) => a + e.id, '');
@@ -2237,15 +2317,43 @@ async function writeEvent(type, side, p){
   if (!app.cfg) return;
   const e = { id:uid(), ts:Date.now(), type, side:side || null, p:p || {}, by:app.role };
   if (app.mode === 'remote'){
-    try { await app.db.doc('games/' + app.gid + '/events/' + e.id).set(e); }
+    try { await app.db.doc(gpath() + '/events/' + e.id).set(e); }
     catch(err){
-      if (err && err.code === 'unavailable'){ await new Promise(r => setTimeout(r, 400 + Math.random() * 600)); try { await app.db.doc('games/' + app.gid + '/events/' + e.id).set(e); return; } catch(e2){} }
+      if (err && err.code === 'unavailable'){ await new Promise(r => setTimeout(r, 400 + Math.random() * 600)); try { await app.db.doc(gpath() + '/events/' + e.id).set(e); return; } catch(e2){} }
       toast('That didn’t save (' + ((err && err.code) || 'error') + '). Check your connection and try again.', true);
     }
   } else {
     const s = localLoad(); if (s && s.gid === app.gid) app.events = s.events || [];
     app.events.push(e); localSave(); refresh(true);
   }
+}
+function gpath(){ return app.multi ? 'vault/' + app.vkey : 'games/' + app.gid; }
+async function sha256hex(s){
+  try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join(''); }
+  catch(e){ return [0, 1, 2, 3, 4].map(i => hashStr(i + '|' + s)).join(''); }
+}
+function normPin(p){ return String(p || '').trim().toUpperCase(); }
+async function gameKey(gid, pin){ return 'v' + (await sha256hex('marala-vault|' + gid + '|' + normPin(pin))).slice(0, 40); }
+function lobbyStart(){
+  try {
+    app.unsub.push(app.db.collection('lobby').onSnapshot(s => { app.lobby = s.docs.map(d => Object.assign({ gid:d.id }, d.data())); if (!app.gid) route(); }, err => setBanner('The game list could not load (' + (err && err.code) + '). Reload the page.')));
+  } catch(e){ setBanner('Could not reach the shared board. Reload the page.'); }
+  let j = null; try { j = JSON.parse(pref.get('marala-join', 'null')); } catch(e){ j = null; }
+  if (j && j.gid && j.key){ app.db.doc('vault/' + j.key).get().then(s => { if (s.exists && !app.gid) joinGame(j.gid, j.key, false); else if (!s.exists) pref.set('marala-join', 'null'); }).catch(() => {}); }
+  route();
+}
+function joinGame(gid, key, fresh){
+  app.gid = gid; app.vkey = key; app.role = null; app.built = null;
+  pref.set('marala-join', JSON.stringify({ gid, key }));
+  subscribeGame();
+  if (fresh) toast('Game opened. Choose your view.');
+}
+function leaveGame(){
+  gameUnsubs.forEach(fn => { try { fn(); } catch(e){} }); gameUnsubs = [];
+  if (app.gid) LS.del('marala-role-' + app.gid);
+  app.gid = null; app.vkey = null; app.cfg = null; app.events = []; app.evSig = null; app.role = null; app.built = null; app.S = null; app.sig = '';
+  pref.set('marala-join', 'null');
+  route();
 }
 async function createGame(cfg){
   const gid = 'g' + Date.now().toString(36);
@@ -2266,13 +2374,15 @@ function toast(msg, bad){
 }
 
 /* ---------- routing ---------- */
-function show(id){ ['#gate', '#setup', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC'].forEach(s => $(s).hidden = s !== id); if (id !== '#vWing' && id !== '#vWhite') closeFullMap(); }
+function show(id){ ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite') closeFullMap(); }
 function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'W' ? 'White cell' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
   if (!app.role && saved && app.cfg) app.role = saved;
   $('#gameTag').textContent = app.cfg ? (app.cfg.name || 'Game') + ' · Coalition vs North Korea' : 'Capstone · Coalition vs North Korea';
-  if (app.wantSetup){ show('#setup'); return; }
+  if (app.wantSetup){ show('#setup'); $('#setupMulti').hidden = !app.multi; $('#sGamePin').required = !!app.multi; return; }
+  if (app.wantAdmin){ show('#admin'); adminRender(); return; }
+  if (app.multi && !app.gid){ app.role = null; renderMenu(); return; }
   if (!app.cfg){ app.role = null; renderGate(); return; }
   if (!app.role){ renderGate(); return; }
   $('#switchRole').hidden = false;
@@ -2286,10 +2396,31 @@ function route(){
   else { show('#vWing'); buildWing(app.role); }
   refresh(true);
 }
-function renderGate(){
+function renderMenu(){
   show('#gate'); $('#switchRole').hidden = true; $('#roleBadge').innerHTML = '';
-  $('#gateNoGame').hidden = !!app.cfg;
-  $('#gateAdmin').hidden = !app.cfg; $('#adminErr').hidden = true; $('#adminInput').value = '';
+  $('#gameMenu').hidden = false; $('#gateNoGame').hidden = true; $('#gateAdmin').hidden = true; $('#gateRoles').innerHTML = ''; $('#pinForm').hidden = true;
+  const list = (app.lobby || []).filter(g => g.listed !== false).sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.name).localeCompare(String(b.name)));
+  const box = $('#gameList'), html = app.lobby == null ? '<div class="empty">Loading games\u2026</div>' : list.length ? list.map(g => '<button type="button" class="gamebtn" data-game="' + esc(g.gid) + '"><span class="grow"><b>' + esc(g.name || 'Game') + '</b>' + (g.note ? '<br><span class="small muted">' + esc(g.note) + '</span>' : '') + '</span><span class="small muted" style="flex:0 0 auto">Game PIN required</span></button>').join('') : '<div class="empty">No games are open right now. The exercises officers open games from the admin page.</div>';
+  if (box.dataset.h !== html){ box.dataset.h = html; box.innerHTML = html; }
+}
+let pendingGame = null;
+$('#gameList').addEventListener('click', ev => { const b = ev.target.closest('[data-game]'); if (!b) return; const g = (app.lobby || []).find(x => x.gid === b.dataset.game); if (!g) return; pendingGame = g; $('#gamePinForm').hidden = false; $('#gamePinTitle').textContent = 'Game PIN for ' + (g.name || 'this game'); $('#gamePinErr').hidden = true; $('#gamePinInput').value = ''; $('#gamePinInput').focus(); });
+$('#gamePinCancel').onclick = () => { $('#gamePinForm').hidden = true; pendingGame = null; };
+$('#gamePinForm').addEventListener('submit', async ev => {
+  ev.preventDefault(); const g = pendingGame, pin = $('#gamePinInput').value; if (!g || !normPin(pin)) return;
+  $('#gamePinGo').disabled = true;
+  try { const key = await gameKey(g.gid, pin), s = await app.db.doc('vault/' + key).get();
+    if (!s.exists){ $('#gamePinErr').hidden = false; $('#gamePinErr').textContent = 'That game PIN is not right.'; return; }
+    $('#gamePinForm').hidden = true; pendingGame = null; joinGame(g.gid, key, true);
+  } catch(err){ $('#gamePinErr').hidden = false; $('#gamePinErr').textContent = 'Could not check the PIN (' + ((err && err.code) || 'error') + '). Check the connection and try again.'; }
+  finally { $('#gamePinGo').disabled = false; }
+});
+$('#switchGame').onclick = () => { if (confirm('Leave this game and return to the game menu?')) leaveGame(); };
+$('#adminOpen').onclick = () => { app.wantAdmin = true; route(); };
+function renderGate(){
+  show('#gate'); $('#switchRole').hidden = true; $('#roleBadge').innerHTML = ''; $('#gameMenu').hidden = true;
+  $('#gateNoGame').hidden = !!app.cfg || !!app.multi;
+  $('#gateAdmin').hidden = !app.cfg || !!app.multi; $('#adminErr').hidden = true; $('#adminInput').value = '';
   const roles = $('#gateRoles');
   if (!app.cfg){
     roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Sample game with recorded moves. PINs: white cell 0000, BLUFOR 1111, REDFOR 2222. A new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
@@ -2326,7 +2457,7 @@ $('#pinForm').addEventListener('submit', ev => {
 $('#pinCancel').onclick = () => { $('#pinForm').hidden = true; pendingRole = null; };
 $('#switchRole').onclick = () => { LS.del('marala-role-' + (app.gid || 'none')); app.role = null; app.built = null; route(); };
 $('#gotoSetup').onclick = () => { app.wantSetup = true; route(); };
-$('#setupCancel').onclick = () => { app.wantSetup = false; route(); };
+$('#setupCancel').onclick = () => { app.wantSetup = false; if (app.multi) app.wantAdmin = true; route(); };
 function recoveryOk(v){
   const h = typeof RECOVERY_CODE_HASH !== 'undefined' ? RECOVERY_CODE_HASH : null;
   return !!(h && String(v || '').trim() && secret('marala-recovery', v) === h);
@@ -2351,6 +2482,14 @@ $('#setupForm').addEventListener('submit', async ev => {
   const cfg = { name:val('#sName') || 'Game', salt, createdAt:Date.now(), startG, lengthMin,
     pins:{ W:secret(salt, pins.W), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR), OC:secret(salt, pins.OC) },
     codes:{ harbor:codeList(salt, 'Harbor'), fuel:codeList(salt, 'Fuel'), radar:codeList(salt, 'Radar'), airstrip:codeList(salt, 'Airstrip'), town:{ cap:words(val('#cTown')).map(w => secret(salt, w)) } } };
+  if (app.multi){
+    const gpin = $('#sGamePin').value;
+    if (!normPin(gpin)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter a game PIN.'; return; }
+    cfg.blank = !$('#sStarter').checked;
+    try { await adminCreate(cfg, [], gpin, $('#sListed').checked); $('#setupForm').reset(); app.wantSetup = false; app.wantAdmin = true; toast('Game created: ' + cfg.name + '.'); route(); }
+    catch(err){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'The game was not created (' + ((err && err.code) || err.message || 'error') + '). Check that you are signed in as admin.'; }
+    return;
+  }
   try {
     const gid = await createGame(cfg);
     LS.set('marala-role-' + gid, 'W');
@@ -2360,6 +2499,138 @@ $('#setupForm').addEventListener('submit', async ev => {
     route();
   } catch(err){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'The game was not created (' + ((err && err.code) || 'error') + '). ' + (app.online === 'firebase' ? 'Check the internet connection and the database rules in Firebase.' : 'Only people who can edit this board can start a game.'); }
 });
+
+/* ---------- admin (multi-game) ---------- */
+const ad = { auth:null, user:null, games:[], editing:null, busy:false };
+async function adminAuth(){
+  if (!app.db || !app.db.auth) throw new Error('Admin needs the online board.');
+  if (!ad.auth){ ad.auth = await app.db.auth(); ad.auth.onChange(u => { ad.user = u || null; if (app.wantAdmin) adminRender(); if (u) adminLoad(); }); }
+  return ad.auth;
+}
+function adminRender(){
+  const signed = !!ad.user;
+  $('#adLogin').hidden = signed; $('#adWho').hidden = !signed; $('#adBody').hidden = !signed;
+  if (signed) $('#adWhoTxt').textContent = 'Signed in as ' + (ad.user.email || 'admin') + '.';
+  if (!app.db || !app.db.auth){ $('#adErr').hidden = false; $('#adErr').textContent = 'The admin page needs the online board.'; return; }
+  adminAuth().catch(e => { $('#adErr').hidden = false; $('#adErr').textContent = 'Sign-in could not load (' + (e.code || e.message || 'error') + '). Check the connection.'; });
+}
+$('#adBack').onclick = () => { app.wantAdmin = false; route(); };
+$('#adLogin').addEventListener('submit', async ev => {
+  ev.preventDefault(); $('#adErr').hidden = true;
+  try { const a = await adminAuth(); await a.signIn($('#adEmail').value.trim(), $('#adPass').value); $('#adPass').value = ''; }
+  catch(e){ $('#adErr').hidden = false; $('#adErr').textContent = /invalid|wrong|user-not-found|credential/i.test(e.code || '') ? 'That email and password don\u2019t match the admin account.' : 'Sign-in failed (' + (e.code || e.message || 'error') + ').'; }
+});
+$('#adOut').onclick = async () => { try { await (await adminAuth()).signOut(); } catch(e){} ad.games = []; adminRender(); };
+async function adminLoad(){
+  try {
+    const [lob, keys] = await Promise.all([app.db.collection('lobby').get(), app.db.collection('keys').get()]);
+    const km = {}; keys.forEach(k => km[k.id] = k.data());
+    const gs = [];
+    for (const l of lob){ const k = km[l.id] || {}; let cfg = null; if (k.key){ try { const s = await app.db.doc('vault/' + k.key).get(); cfg = s.exists ? s.data() : null; } catch(e){} } gs.push(Object.assign({ gid:l.id, key:k.key || null, pin:k.pin || '', cfg }, l.data())); }
+    ad.games = gs.sort((a, b) => (a.order || 0) - (b.order || 0));
+    adminList();
+  } catch(e){ $('#adGames').innerHTML = '<div class="empty">The games could not load (' + esc(e.code || e.message || 'error') + '). If this says permission-denied, finish the Firebase rules setup.</div>'; }
+}
+function adminList(){
+  $('#adCount').textContent = ad.games.length + (ad.games.length === 1 ? ' game' : ' games');
+  $('#adGames').innerHTML = ad.games.length ? ad.games.map(g => '<div class="li"><div class="grow"><b>' + esc(g.name || 'Game') + '</b> <span class="chip ' + (g.listed === false ? 'wait' : 'ok') + '">' + (g.listed === false ? 'Hidden' : 'On menu') + '</span> ' + (g.cfg && g.cfg.blank ? '<span class="chip">Starts empty</span>' : '<span class="chip">Built-in intel and injects</span>') + '<div class="small muted">Game PIN <span class="mono">' + esc(g.pin || '?') + '</span>' + (g.createdAt ? ' · created ' + new Date(g.createdAt).toLocaleDateString() : '') + (g.cfg ? '' : ' · <b>game data missing</b>') + '</div></div><button type="button" data-adopen="' + esc(g.gid) + '" style="flex:0 0 auto"' + (g.key && g.cfg ? '' : ' disabled') + '>Open</button><button type="button" data-adedit="' + esc(g.gid) + '" style="flex:0 0 auto">Edit</button></div>').join('') : '<div class="empty">No games yet. Create one below.</div>';
+}
+$('#adGames').addEventListener('click', ev => {
+  const o = ev.target.closest('[data-adopen]'), e = ev.target.closest('[data-adedit]');
+  if (o){ const g = ad.games.find(x => x.gid === o.dataset.adopen); if (!g || !g.key) return; app.wantAdmin = false; joinGame(g.gid, g.key, true); route(); }
+  if (e){ const g = ad.games.find(x => x.gid === e.dataset.adedit); if (g) adminEdit(g); }
+});
+$('#adRefresh').onclick = adminLoad;
+$('#adNew').onclick = () => { app.wantAdmin = false; app.wantSetup = true; route(); };
+$('#adNewFile').onclick = () => { $('#adFile').hidden = false; $('#adFile').scrollIntoView({ behavior:'smooth', block:'start' }); };
+$('#adFileCancel').onclick = () => { $('#adFile').reset(); $('#adFile').hidden = true; };
+async function writeAll(paths){ for (let i = 0; i < paths.length; i += 25) await Promise.all(paths.slice(i, i + 25).map(([p, d]) => app.db.doc(p).set(d))); }
+async function delAll(paths){ for (let i = 0; i < paths.length; i += 25) await Promise.all(paths.slice(i, i + 25).map(p => app.db.doc(p).del())); }
+async function adminCreate(cfg, events, pin, listed){
+  if (!ad.user) throw new Error('not signed in');
+  const gid = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), key = await gameKey(gid, pin), now = Date.now();
+  const c = Object.assign({}, cfg, { gid, createdAt:now });
+  await app.db.doc('keys/' + gid).set({ key, pin:normPin(pin), at:now });
+  await app.db.doc('vault/' + key).set(c);
+  await writeAll((events || []).filter(e => e && e.id).map(e => ['vault/' + key + '/events/' + e.id, e]));
+  await app.db.doc('lobby/' + gid).set({ name:c.name || 'Game', listed:!!listed, order:now, createdAt:now });
+  await adminLoad();
+  return gid;
+}
+$('#adFile').addEventListener('submit', ev => {
+  ev.preventDefault(); const fl = $('#adFileIn').files[0], msg = t => $('#adFileMsg').textContent = t; if (!fl) return;
+  const fr = new FileReader();
+  fr.onload = async () => {
+    let d; try { d = JSON.parse(fr.result); } catch(e){ d = null; }
+    if (!d || !d.cfg || !Array.isArray(d.events)){ msg('That file is not a board backup.'); return; }
+    const cfg = JSON.parse(JSON.stringify(d.cfg)); cfg.name = $('#adFileName').value.trim() || cfg.name || 'Game';
+    const w = $('#adFileW').value.trim(); if (w) cfg.pins = Object.assign({}, cfg.pins, { W:secret(cfg.salt, w) });
+    msg('Uploading ' + d.events.length + ' events\u2026');
+    try { await adminCreate(cfg, d.events, $('#adFilePin').value, $('#adFileListed').checked); msg(''); $('#adFile').reset(); $('#adFile').hidden = true; toast('Game created: ' + cfg.name + '.'); }
+    catch(e){ msg('Failed (' + (e.code || e.message || 'error') + ').'); }
+  };
+  fr.readAsText(fl);
+});
+function adminEdit(g){
+  ad.editing = g; const f = $('#adEdit'); f.hidden = false; $('#adEMsg').textContent = '';
+  $('#adEditTitle').textContent = 'Edit ' + (g.name || 'game'); $('#adEName').value = g.name || ''; $('#adEPin').value = g.pin || ''; $('#adEListed').checked = g.listed !== false; $('#adEStarter').checked = !(g.cfg && g.cfg.blank);
+  ['#adPW', '#adPB', '#adPR', '#adPTB', '#adPTR', '#adPOC'].forEach(s => $(s).value = '');
+  f.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+$('#adECancel').onclick = () => { $('#adEdit').hidden = true; ad.editing = null; };
+async function adminEvents(key){ return (await app.db.collection('vault/' + key + '/events').get()).map(d => d.data()); }
+$('#adEdit').addEventListener('submit', async ev => {
+  ev.preventDefault(); const g = ad.editing; if (!g || !g.key || !g.cfg) return; const msg = t => $('#adEMsg').textContent = t;
+  const name = $('#adEName').value.trim() || 'Game', pin = normPin($('#adEPin').value), listed = $('#adEListed').checked, blank = !$('#adEStarter').checked;
+  if (!pin){ msg('Enter a game PIN.'); return; }
+  const cfg = JSON.parse(JSON.stringify(g.cfg)); cfg.name = name; cfg.blank = blank;
+  const np = { W:'#adPW', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC' };
+  const given = Object.entries(np).map(([k, s]) => [k, $(s).value.trim()]).filter(([, v]) => v);
+  if (new Set(given.map(([, v]) => v)).size < given.length){ msg('Each new role PIN must be different.'); return; }
+  given.forEach(([k, v]) => cfg.pins[k] = secret(cfg.salt, v));
+  if (blank !== !!g.cfg.blank && !confirm(blank ? 'Remove the built-in intel packages and inject templates from this game? Packages already sent stay in the record.' : 'Add the built-in intel packages and inject templates to this game?')) return;
+  try {
+    msg('Saving\u2026');
+    let key = g.key;
+    if (pin !== normPin(g.pin)){
+      if (!confirm('Change the game PIN? Everyone in this game has to enter the new game PIN to get back in.')) { msg(''); return; }
+      const nk = await gameKey(g.gid, pin), evs = await adminEvents(g.key);
+      await app.db.doc('vault/' + nk).set(cfg);
+      await writeAll(evs.filter(e => e && e.id).map(e => ['vault/' + nk + '/events/' + e.id, e]));
+      await app.db.doc('keys/' + g.gid).set({ key:nk, pin, at:Date.now() });
+      await delAll(evs.filter(e => e && e.id).map(e => 'vault/' + g.key + '/events/' + e.id)); await app.db.doc('vault/' + g.key).del();
+      key = nk;
+    } else await app.db.doc('vault/' + key).set(cfg);
+    await app.db.doc('lobby/' + g.gid).set({ name, listed, order:g.order || Date.now(), createdAt:g.createdAt || Date.now(), note:g.note || '' });
+    msg('Saved.'); toast('Saved: ' + name + '.'); await adminLoad(); const ng = ad.games.find(x => x.gid === g.gid); if (ng) ad.editing = ng;
+  } catch(e){ msg('Save failed (' + (e.code || e.message || 'error') + ').'); }
+});
+$('#adEBackup').onclick = async () => {
+  const g = ad.editing; if (!g || !g.key || !g.cfg) return;
+  try { const evs = await adminEvents(g.key), blob = new Blob([JSON.stringify({ app:'marala-board', gid:g.gid, cfg:g.cfg, events:evs }, null, 1)], { type:'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'marala-' + String(g.name || 'game').replace(/[^\w-]+/g, '-') + '-' + new Date().toISOString().slice(0, 10) + '.json'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    toast('Backup downloaded (' + evs.length + ' events). For an after-action report, download the backup from the game\u2019s white cell instead.'); }
+  catch(e){ toast('Backup failed (' + (e.code || e.message || 'error') + ').', true); }
+};
+$('#adEDelete').onclick = async () => {
+  const g = ad.editing; if (!g) return;
+  if (!confirm('Delete "' + (g.name || 'game') + '"? Every event in it is erased and it disappears from every screen. Download a backup first if you may need it.')) return;
+  if (!confirm('Are you sure? This cannot be undone.')) return;
+  try { if (g.key){ const evs = await adminEvents(g.key); await delAll(evs.filter(e => e && e.id).map(e => 'vault/' + g.key + '/events/' + e.id)); await app.db.doc('vault/' + g.key).del(); }
+    await app.db.doc('keys/' + g.gid).del(); await app.db.doc('lobby/' + g.gid).del();
+    $('#adEdit').hidden = true; ad.editing = null; toast('Deleted.'); await adminLoad(); }
+  catch(e){ toast('Delete failed (' + (e.code || e.message || 'error') + ').', true); }
+};
+$('#adLGo').onclick = async () => {
+  const msg = t => $('#adLMsg').textContent = t, pin = $('#adLPin').value;
+  if (!normPin(pin)){ msg('Enter a game PIN for the copy.'); return; }
+  try { msg('Looking for the old game\u2026');
+    const m = await app.db.doc('meta/current').get(), gid = m.exists ? (m.data() || {}).gameId : null; if (!gid){ msg('No old live game was found.'); return; }
+    const c = await app.db.doc('games/' + gid).get(); if (!c.exists){ msg('The old game\u2019s settings were not found.'); return; }
+    const evs = (await app.db.collection('games/' + gid + '/events').get()).map(d => d.data()), cfg = Object.assign({}, c.data(), { name:$('#adLName').value.trim() || c.data().name || 'Game' });
+    msg('Copying ' + evs.length + ' events\u2026'); await adminCreate(cfg, evs, pin, $('#adLListed').checked); msg('Imported as "' + cfg.name + '".');
+  } catch(e){ msg('Import failed (' + (e.code || e.message || 'error') + ').'); }
+};
 
 /* ---------- sample (local only) ---------- */
 function loadSample(){
@@ -3640,6 +3911,7 @@ function renderPublic(S){
 }
 
 /* ---------- white cell ---------- */
+function allTemplates(S){ return (S && S.blank ? [] : TEMPLATES.map((t, i) => Object.assign({ id:'b' + i, builtin:true }, t))).concat(S && S.tpls ? S.tpls : []); }
 const TEMPLATES = [
   { at:0, phase:'Phase 1', label:'STARTEX orders', to:'both', text:'Higher headquarters: secure the sites on your side of the island first and stay clear of the other force. The mayor will meet each force separately later this morning. The militia is active on island roads: report every suspected device with a 9-line.' },
   { at:10, phase:'Phase 1', label:'IED tip (BLUFOR)', to:'B', text:'Locals saw men burying something on your supply road. Check it before your next move.' },
@@ -3682,7 +3954,7 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '">' + n + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '">' + n + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
@@ -3698,7 +3970,7 @@ function buildWhite(){
     </div>
     <div data-warbar></div>
     <div class="white-grid" data-wgrid>
-      <div class="panel" data-sec="map">
+      <div class="panel" data-sec="map create">
         <div class="map-head"><h2>White cell map</h2><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
@@ -3767,7 +4039,7 @@ function buildWhite(){
           <div class="row" style="justify-content:flex-start"><button type="button" data-mpoiadd style="flex:0 0 auto">Add last click as an interest point</button></div>
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-msave style="flex:0 0 auto">Save the map for every screen</button><span class="small muted" data-mmsg></span></div>
         </div></details>
-      <details class="panel span2 mapset" data-ipbuild data-sec="intel"><summary><b>Intel package builder</b> <span class="small muted">(custom packages and photos)</span></summary>
+      <details class="panel span2 mapset" data-ipbuild data-sec="intel create"><summary><b>Intel package builder</b> <span class="small muted">(custom packages and photos)</span></summary>
         <div class="stack" style="margin-top:10px">
           <p class="small muted" style="margin:0">A package has a question, four answers and two to eight pieces of intel. Mark the correct answer and every false or misleading piece. Saved packages appear in the Intel packages list. Saving a built-in package creates a replacement version.</p>
           <div class="row" style="align-items:end"><label>Start from<select data-ipbsrc><option value="">A blank package</option></select></label><button type="button" data-ipbload style="flex:0 0 auto">Load</button><button type="button" class="btn-side" data-ipbgen style="flex:0 0 auto">Generate a draft</button><button type="button" data-ipbclear style="flex:0 0 auto">Clear</button></div>
@@ -3775,7 +4047,7 @@ function buildWhite(){
           <div class="row"><label>Title<input data-ipb="title" maxlength="80" placeholder="Example: The coast road ambush"></label><label style="flex:0 0 110px">Intended time (T+ min)<input data-ipb="at" type="number" min="0" max="300" value="60"></label><label style="flex:0 0 110px">Window (min)<input data-ipb="win" type="number" min="3" max="60" value="15"></label></div>
           <label>Question<input data-ipb="q" maxlength="200" placeholder="Example: Who set the ambush on the coast road?"></label>
           <div class="row" style="align-items:end"><label>Explosion with this package (optional): grid<input data-ipb="bgrid" maxlength="24" placeholder="Example: C3"></label><label style="flex:0 0 170px">Really caused by<select data-ipb="btruth"><option value="militia">The militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-ipb="bcas"> Casualties</label></div>
-          <fieldset class="ipb-piece stack" data-ipbwp><legend>Waypoint with this package (optional)</legend>
+          <fieldset class="ipb-piece stack" data-ipbwp><legend>Map points with this package (optional)</legend>
             <p class="small muted" style="margin:0" data-ipbwpnote>Deployed to each wing that receives the package, at the moment it is deployed.</p>
             <div class="row" style="align-items:end"><label>Start from a waypoint<select data-ipbwpfrom></select></label></div>
             <div class="row" style="align-items:end"><label>Label<input data-ipbw="label" maxlength="60"></label><span data-ipbwprev style="flex:0 0 auto;align-self:center"></span><span class="small muted" data-ipbwsymname style="flex:0 0 auto;align-self:center"></span></div>
@@ -3783,7 +4055,9 @@ function buildWhite(){
             <input type="hidden" data-ipbw="sym" value="pin">
             <div class="wpgrid" data-ipbwgrid role="group" aria-label="Symbol">${Object.keys(WP_SYMS).map(k => '<button type="button" data-ipbwsym="' + k + '" title="' + WP_SYMS[k] + '" aria-label="' + WP_SYMS[k] + '">' + wpSvg(k, 22) + '</button>').join('')}</div>
             <div class="wpsw" data-ipbwsw><span class="small">Color</span>${WP_COLORS.map(c => '<button type="button" data-ipbwswatch="' + c + '" title="' + c + '" style="background:' + c + '"></button>').join('')}<input type="color" data-ipbwcolor value="#ffcf5a" aria-label="Custom color"><button type="button" data-ipbwcolordef style="width:auto;height:auto;border-radius:6px;padding:3px 8px;font-size:12px">Symbol default</button></div>
-            <div class="row" style="align-items:end"><label>Location<input data-ipbw="loc" autocomplete="off" placeholder="Example: 5893 2345, 40.82601, -77.85812 or D4"></label><button type="button" data-ipbwtap style="flex:0 0 auto">Use last map tap</button><button type="button" data-ipbwclear style="flex:0 0 auto">Clear waypoint</button></div>
+            <div class="row" style="align-items:end"><label>Location<input data-ipbw="loc" autocomplete="off" placeholder="Example: 5893 2345, 40.82601, -77.85812 or D4"></label><button type="button" data-ipbwtap style="flex:0 0 auto">Use last map tap</button><button type="button" data-ipbwclear style="flex:0 0 auto">Clear</button></div>
+            <div class="row" style="justify-content:flex-start"><button type="button" data-ipbwadd style="flex:0 0 auto">Add this point and start another</button></div>
+            <div class="list" data-ipbwlist></div>
           </fieldset>
           <fieldset class="ipb-piece"><legend>Answers (mark the correct one)</legend><div class="ipb-opts">
             ${[0, 1, 2, 3].map(k => '<div class="row"><input type="radio" name="ipbA" value="' + k + '" aria-label="Correct answer ' + (k + 1) + '"><input data-ipbopt="' + k + '" maxlength="100" placeholder="Example: ' + ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'][k] + '"></div>').join('')}
@@ -3795,6 +4069,20 @@ function buildWhite(){
           <h3 class="small muted" style="margin:6px 0 0">Packages built here</h3><div class="list" data-ipblist></div>
           <div class="row" style="justify-content:flex-start"><button type="button" data-ipbexport style="flex:0 0 auto">Download packages</button><label for="ipbImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload packages<input id="ipbImport" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted">Saves all packages built here, including photos, as one file for another game.</span></div>
         </div></details>
+      <div class="panel span2 stack" data-sec="create"><h2>Inject templates</h2>
+        <p class="small muted" style="margin:0">Write the injects the white cell will send during the game. Each template appears under Send a message, where one tap fills in the message. A planned time or an escalation level is optional and only helps the white cell decide when to send it.</p>
+        <form class="stack" data-tplf>
+          <div class="row"><label for="tplLabel">Name<input id="tplLabel" name="label" maxlength="60" required placeholder="Example: IED tip (BLUFOR)"></label><label for="tplTo" style="flex:0 0 160px">To<select id="tplTo" name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label for="tplFrom" style="flex:0 0 200px">From<input id="tplFrom" name="from" maxlength="30" value="Higher headquarters"></label></div>
+          <label for="tplText">Message<textarea id="tplText" name="text" maxlength="400" required placeholder="Example: Locals saw men burying something on your supply road. Check it before your next move."></textarea></label>
+          <div class="row"><label for="tplAt" style="flex:0 0 200px">Planned time (minutes after STARTEX)<input id="tplAt" name="at" type="number" min="0" max="300" placeholder="Optional"></label><label for="tplLvl" style="flex:0 0 220px">Or send at escalation level<select id="tplLvl" name="lvl"><option value="">No level</option><option value="1">Tension or higher</option><option value="2">Crisis or higher</option><option value="3">Brink or higher</option></select></label><label for="tplNote">White cell note (only the white cell sees it)<input id="tplNote" name="note" maxlength="200" placeholder="Optional: what the POCs need to set up"></label></div>
+          <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto" data-tplsave>Save template</button><button type="button" data-tplclear style="flex:0 0 auto">Clear</button><span class="small muted" data-tplmode></span></div>
+        </form>
+        <h3 class="small muted" style="margin:6px 0 0">Templates in this game</h3><div class="list" data-tpllist></div>
+      </div>
+      <div class="panel span2 stack" data-sec="create"><h2>Creation files</h2>
+        <p class="small muted" style="margin:0">Download every intel package and inject template built in this game as one file, including photos and map points. Send the file to the exercises officers, who upload it into the game where it will be used. Uploading adds to a game; it never deletes anything.</p>
+        <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-crexport style="flex:0 0 auto">Download packages and injects</button><label for="crImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload a creation file<input id="crImport" type="file" accept=".json,application/json" style="display:none"></label></div>
+      </div>
       <div class="panel" data-sec="setup"><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
   </div>`;
@@ -3823,7 +4111,18 @@ function buildWhite(){
     if (k === 'resume') writeEvent('clock_resume', null, {});
     if (k === 'reveal') writeEvent('reveal', null, { on:!(app.S && app.S.reveal) });
   });
-  $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'); if (!b) return; const t = TEMPLATES[+b.dataset.tpl], f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = t.from || 'Higher headquarters'; f.text.value = fillT(t.text); f.text.focus(); });
+  { const tf = $('[data-tplf]', v), tplClear = () => { tf.reset(); tf.dataset.id = ''; $('[data-tplmode]', v).textContent = ''; };
+    tf.addEventListener('submit', async ev => { ev.preventDefault(); const fd = new FormData(tf), at = String(fd.get('at') || '').trim(), lvl = String(fd.get('lvl') || '');
+      const tpl = { id:tf.dataset.id || ('t' + uid()), label:String(fd.get('label') || '').trim(), to:fd.get('to'), from:String(fd.get('from') || '').trim() || 'Higher headquarters', text:String(fd.get('text') || '').trim(), at:at === '' ? null : +at, lvl:lvl === '' ? null : +lvl, note:String(fd.get('note') || '').trim() };
+      if (!tpl.label || !tpl.text){ toast('Add a name and a message.', true); return; }
+      await writeEvent('tpl_save', null, { tpl }); toast(tf.dataset.id ? 'Template updated.' : 'Template saved. It is under Send a message.'); tplClear(); });
+    $('[data-tplclear]', v).onclick = tplClear;
+    $('[data-tpllist]', v).addEventListener('click', ev => { const e = ev.target.closest('[data-tpledit]'), d = ev.target.closest('[data-tpldel]'), S = app.S;
+      if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = t.from || 'Higher headquarters'; tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
+      if (d){ const t = (S.tpls || []).find(x => x.id === d.dataset.tpldel); if (t && confirm('Delete the template "' + t.label + '"?')) writeEvent('tpl_del', null, { id:t.id }); } });
+    $('[data-crexport]', v).onclick = crExport;
+    $('#crImport', v).onchange = () => { const fl = $('#crImport', v).files[0]; $('#crImport', v).value = ''; if (fl) crImport(fl); }; }
+  $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'); if (!b) return; const t = allTemplates(app.S)[+b.dataset.tpl]; if (!t) return; const f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = t.from || 'Higher headquarters'; f.text.value = fillT(t.text); f.text.focus(); });
   $('[data-fullmap]', v).onclick = () => openFullMap(null);
   ipbWire(v);
   { const g = $('[data-wgrid]', v), kids = [...g.children], pick = sel => kids.find(c => c.matches(sel) || c.querySelector(sel));
@@ -4011,7 +4310,19 @@ function ipbPieces(list){
   if (app.lastClick) $$('[data-lastclick]', box).forEach(x => x.textContent = fmtPt(app.lastClick));
   ipbSync();
 }
-const ipb = { id:null, replaces:null, sentEdit:null, imgs:{} };
+const ipb = { id:null, replaces:null, sentEdit:null, imgs:{}, wps:[] };
+function ipbWpList(){
+  const f = ipbForm(); if (!f) return; const box = $('[data-ipbwlist]', f); if (!box) return;
+  box.innerHTML = ipb.wps.length ? ipb.wps.map((w, i) => '<div class="li"><span style="flex:0 0 auto">' + wpSvg(w.sym, 22, w.color || WP_DEF[w.sym]) + '</span><div class="grow"><b>' + esc(w.label) + '</b> <span class="small muted">' + esc(w.grid || fmtPt(w.pt)) + '</span>' + (w.desc ? '<div class="small muted">' + esc(w.desc) + '</div>' : '') + '</div><button type="button" data-ipbwedit="' + i + '" style="flex:0 0 auto">Edit</button><button type="button" data-ipbwrm="' + i + '" style="flex:0 0 auto">Remove</button></div>').join('') : '';
+}
+function ipbWpRead(){
+  const f = ipbForm(), wl = $('[data-ipbw="label"]', f).value.trim(), wloc = $('[data-ipbw="loc"]', f).value.trim();
+  if (!wl && !wloc) return { none:true };
+  if (!wl) return { err:'Add a label for the map point, or clear it.' };
+  const pt = locate(mapCfg(app.S), wloc); if (!pt) return { err:'The map point location did not read. Use a play square, MGRS grid or lat/long, or tap the map and use Use last map tap.' };
+  const sym = $('[data-ipbw="sym"]', f).value, sq = squareOf(mapCfg(app.S), pt);
+  return { wp:{ label:wl, desc:$('[data-ipbw="desc"]', f).value.trim(), sym, color:ipb.wpColor || null, pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt) } };
+}
 function ipbForm(){ return $('[data-ipbuild]'); }
 function ipbSetMode(){
   const f = ipbForm(); if (!f) return;
@@ -4032,7 +4343,7 @@ function ipbWpPrev(){
 }
 function ipbFill(P){
   const f = ipbForm();
-  if (!P || !P.keepWp) ipbWpSet(P && P.wp);
+  if (!P || !P.keepWp){ ipbWpSet(P && P.wp); ipb.wps = P && Array.isArray(P.wps) ? JSON.parse(JSON.stringify(P.wps)) : []; ipbWpList(); }
   $('[data-ipb="title"]', f).value = P ? fillT(P.title) : ''; $('[data-ipb="q"]', f).value = P ? fillT(P.q) : '';
   $('[data-ipb="at"]', f).value = P && P.at != null ? P.at : 60; $('[data-ipb="win"]', f).value = P && P.win ? P.win : 15;
   $('[data-ipb="note"]', f).value = P && P.note || '';
@@ -4126,36 +4437,39 @@ async function ipbSnap(pc){
   try { const d = await mapSnapshot(pt, z, lbl); ipb.imgs[k] = { data:d, credit:'Satellite imagery: Esri, Maxar' }; ipbSync(); toast('Snapshot added (' + Math.round(d.length / 1024) + ' KB).'); }
   catch(e){ toast('The map service blocked the snapshot. Take a screenshot of the map and upload it instead.', true); }
 }
-function ipbExport(){
+function ipbExport(){ crExport(); }
+function crExport(){
   const S = app.S; if (!S) return;
-  const cs = S.customOrder.map(id => S.custom[id]).filter(Boolean);
-  if (!cs.length){ toast('There are no built packages to download yet.', true); return; }
+  const cs = S.customOrder.map(id => S.custom[id]).filter(Boolean), tp = S.tpls || [];
+  if (!cs.length && !tp.length){ toast('Nothing to download yet. Build an intel package or an inject template first.', true); return; }
   const images = {}; cs.forEach(c => c.items.forEach(it => { if (it.img && S.images[it.img]) images[it.img] = S.images[it.img]; }));
-  const blob = new Blob([JSON.stringify({ app:'marala-intel', version:1, saved:Date.now(), packages:cs, images })], { type:'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'marala-intel-packages-' + new Date().toISOString().slice(0, 10) + '.json';
+  const blob = new Blob([JSON.stringify({ app:'marala-intel', version:2, saved:Date.now(), from:app.cfg && app.cfg.name || '', packages:cs, images, injects:tp })], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'marala-creations-' + new Date().toISOString().slice(0, 10) + '.json';
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
-  toast('Downloaded ' + cs.length + ' package' + (cs.length === 1 ? '' : 's') + '.');
+  toast('Downloaded ' + cs.length + ' package' + (cs.length === 1 ? '' : 's') + ' and ' + tp.length + ' inject template' + (tp.length === 1 ? '' : 's') + '.');
 }
-function ipbImport(file){
+function ipbImport(file){ crImport(file); }
+function crImport(file){
   const fr = new FileReader();
   fr.onload = async () => {
     let d; try { d = JSON.parse(fr.result); } catch(e){ d = null; }
-    if (!d || d.app !== 'marala-intel' || !Array.isArray(d.packages)){ toast('That file isn\u2019t a package file from this board.', true); return; }
-    const S = app.S, pk = d.packages.filter(validPkg);
-    if (!pk.length){ toast('No packages found in that file.', true); return; }
-    if (!confirm('Add ' + pk.length + ' package' + (pk.length === 1 ? '' : 's') + ' to this game? Packages with the same name that haven\u2019t been sent are updated.')) return;
-    let n = 0;
+    if (!d || d.app !== 'marala-intel' || (!Array.isArray(d.packages) && !Array.isArray(d.injects))){ toast('That file isn\u2019t a creation file from this board.', true); return; }
+    const S = app.S, pk = (d.packages || []).filter(validPkg), tp = (d.injects || []).filter(t => t && t.label && t.text);
+    if (!pk.length && !tp.length){ toast('No packages or inject templates found in that file.', true); return; }
+    if (!confirm('Add ' + pk.length + ' package' + (pk.length === 1 ? '' : 's') + ' and ' + tp.length + ' inject template' + (tp.length === 1 ? '' : 's') + ' to this game? Items already in the game that haven\u2019t been sent are updated.')) return;
+    let n = 0, m = 0;
     try {
       const done = new Set();
       for (const P of pk){
         const pkg = JSON.parse(JSON.stringify(P));
         for (const it of pkg.items){ if (it.img && d.images && d.images[it.img] && !done.has(it.img) && !(S.images[it.img])){ await writeEvent('intel_image', null, { id:it.img, data:d.images[it.img] }); done.add(it.img); } }
         if (S.intelOut[pkg.id]){ const tr = intelTruth(P), nid = 'c' + uid(); pkg.id = nid; pkg.a = intelKey(nid, 'a', tr.a); pkg.f = intelKey(nid, 'f', tr.f); }
-        if (pkg.replaces && (S.intelOut[pkg.replaces] || !PROBLEMS.some(x => x.id === pkg.replaces))) pkg.replaces = null;
+        if (pkg.replaces && (S.intelOut[pkg.replaces] || S.blank || !PROBLEMS.some(x => x.id === pkg.replaces))) pkg.replaces = null;
         await writeEvent('intel_custom', null, { pkg }); n++;
       }
-      toast('Added ' + n + ' package' + (n === 1 ? '' : 's') + '.');
-    } catch(e){ toast('Upload stopped after ' + n + ' package' + (n === 1 ? '' : 's') + '. Check the connection and try again.', true); }
+      for (const t of tp){ const tpl = Object.assign({}, t); if (!/^t[\w-]{3,40}$/.test(tpl.id || '')) tpl.id = 't' + uid(); await writeEvent('tpl_save', null, { tpl }); m++; }
+      toast('Added ' + n + ' package' + (n === 1 ? '' : 's') + ' and ' + m + ' inject template' + (m === 1 ? '' : 's') + '.');
+    } catch(e){ toast('Upload stopped after ' + n + ' package' + (n === 1 ? '' : 's') + ' and ' + m + ' template' + (m === 1 ? '' : 's') + '. Check the connection and try again.', true); }
   };
   fr.readAsText(file);
 }
@@ -4209,9 +4523,7 @@ async function ipbSave(){
   if (opts.some(o => !o)) return msg('Fill in all four answers.');
   if (!aR) return msg('Pick the right answer.');
   let wp = null;
-  if (!ipb.sentEdit){ const wl = $('[data-ipbw="label"]', f).value.trim(), wloc = $('[data-ipbw="loc"]', f).value.trim();
-    if (wl || wloc){ if (!wl) return msg('Add a label for the waypoint, or clear it.'); const pt = locate(mapCfg(app.S), wloc); if (!pt) return msg('The waypoint location did not read. Use a play square, MGRS grid or lat/long.');
-      const sym = $('[data-ipbw="sym"]', f).value, sq = squareOf(mapCfg(app.S), pt); wp = { label:wl, desc:$('[data-ipbw="desc"]', f).value.trim(), sym, color:ipb.wpColor || null, pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt) }; } }
+  if (!ipb.sentEdit){ const r = ipbWpRead(); if (r.err) return msg(r.err); wp = r.wp || null; }
   if (!bad.length) return msg('Mark at least one piece as false or misleading.');
   if (items.some(it => !it.src || !it.text)) return msg('Every piece needs a source and what it says.');
   const imint = items.filter(it => it.disc === 'IMINT');
@@ -4236,7 +4548,7 @@ async function ipbSave(){
       $('[data-ipbsave]', f).disabled = false; return;
     }
     const pkg = { id, custom:true, replaces:ipb.replaces || null, at:Math.max(0, Math.round(+val('[data-ipb="at"]') || 0)), win:Math.max(3, Math.round(+val('[data-ipb="win"]') || 15)), title, q, opts, items, note:val('[data-ipb="note"]'),
-      wp,
+      wp, wps:ipb.wps.slice(0, 11),
       blast:val('[data-ipb="bgrid"]') ? { grid:val('[data-ipb="bgrid"]').toUpperCase(), truth:$('[data-ipb="btruth"]', f).value, cas:$('[data-ipb="bcas"]', f).checked } : null,
       a:intelKey(id, 'a', +aR.value), f:intelKey(id, 'f', bad.join('')) };
     await writeEvent('intel_custom', null, { pkg });
@@ -4254,6 +4566,10 @@ function ipbWire(v){
   $('[data-ipbwcolor]', f).addEventListener('input', ev => { ipb.wpColor = ev.target.value; ipbWpPrev(); });
   $('[data-ipbwtap]', f).onclick = () => { if (!app.lastClick){ toast('No map tap recorded.', true); return; } $('[data-ipbw="loc"]', f).value = fmtPt(app.lastClick); };
   $('[data-ipbwclear]', f).onclick = () => ipbWpSet(null);
+  $('[data-ipbwadd]', f).onclick = () => { const r = ipbWpRead(); if (r.err){ toast(r.err, true); return; } if (r.none){ toast('Fill in the point first: a label and a location.', true); return; } if (ipb.wps.length >= 11){ toast('A package can carry up to 12 map points.', true); return; } ipb.wps.push(r.wp); ipbWpSet(null); ipbWpList(); toast('Point added. Fill in the next one, or save the package.'); };
+  $('[data-ipbwlist]', f).addEventListener('click', ev => { const rm = ev.target.closest('[data-ipbwrm]'), ed = ev.target.closest('[data-ipbwedit]');
+    if (rm){ ipb.wps.splice(+rm.dataset.ipbwrm, 1); ipbWpList(); }
+    if (ed){ const w = ipb.wps.splice(+ed.dataset.ipbwedit, 1)[0]; const cur = ipbWpRead(); if (cur.wp) ipb.wps.push(cur.wp); ipbWpSet(w); ipbWpList(); } });
   $('[data-ipbwpfrom]', f).addEventListener('change', ev => { const w = app.S && app.S.wps.find(x => x.id === ev.target.value); if (w) ipbWpSet({ label:w.label, desc:w.desc, sym:w.sym, color:w.color, pt:w.pt }); ev.target.value = ''; });
   ipbWpSet(null);
   $('[data-ipbclear]', f).onclick = () => { ipb.id = null; ipb.replaces = null; ipb.sentEdit = null; ipbFill(null); };
@@ -4334,8 +4650,9 @@ function renderWhite(S, now){
   $('[data-wteamsR]', v).innerHTML = teamRows(S, 'R', true);
   $('[data-wliaison]', v).innerHTML = liaisonHTML(S, null);
   $('[data-woffers]', v).innerHTML = offersHTML(S, null);
-  const lvlNow = levelIndex(S.esc), tkey = START_G + '|' + lvlNow;
-  if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TEMPLATES.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + ' · ' + t.phase : LEVELS[t.lvl].name + ' or higher') + ' · ' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[t.to] + '</small></button>'; }).join(''); }
+  const lvlNow = levelIndex(S.esc), TP = allTemplates(S), tkey = START_G + '|' + lvlNow + '|' + JSON.stringify(TP.map(t => [t.id, t.label, t.at, t.lvl, t.to]));
+  if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TP.length ? TP.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + (t.phase ? ' · ' + t.phase : '') : t.lvl != null ? LEVELS[t.lvl].name + ' or higher' : 'Any time') + ' · ' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[t.to] + '</small></button>'; }).join('') : '<div class="empty">No inject templates in this game. Build them in Intel and inject creation.</div>';
+    const tl = $('[data-tpllist]', v); if (tl){ const own = S.tpls || []; tl.innerHTML = own.length ? own.map(t => '<div class="li"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">' + ({ both:'Both wings', B:'BLUFOR', R:'REDFOR', public:'Public screen' })[t.to] + (t.at != null ? ' · ' + hhmm(START_G + t.at) : t.lvl != null ? ' · ' + LEVELS[t.lvl].name + ' or higher' : '') + '</span><div class="small">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">Note: ' + esc(t.note) + '</div>' : '') + '</div><button type="button" data-tpledit="' + esc(t.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-tpldel="' + esc(t.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No templates built in this game yet.</div>'; } }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
   if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); $('[data-mpois]', ms).value = (M0.pois || []).map(x => x.name + ' | ' + fmtPt(x.pt)).join('\n'); }
   { const M = mapCfg(S), box = $('[data-wplist]', v), qb = $('[data-wpq]', v), qq = $('[data-wpqq]', v), live = S.wps.filter(w => !w.del), key = JSON.stringify(live.map(w => [w.id, w.label, w.sym, w.to, w.pt, w.color, w.desc]));
@@ -4392,6 +4709,7 @@ function renderWhite(S, now){
   ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Diplomatic points ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · Escalation caused ' + S.escBy[s] + ' · ' + aidText(S, s, true); });
   $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · From ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
   const voids = app.events.filter(e => e.type === 'void').length;
+  if (app.multi){ const ng = $('[data-newgame]', v), rs = $('[data-restore]', v); if (ng) ng.hidden = true; if (rs) rs.hidden = true; }
   $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · Saved on this computer' : ' · Shared');
 }
 
