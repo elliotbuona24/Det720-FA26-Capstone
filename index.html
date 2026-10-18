@@ -317,7 +317,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
       <form id="adEdit" class="panel stack" hidden><h2 id="adEditTitle">Edit game</h2>
         <div class="row"><label for="adEName">Game name<input id="adEName" maxlength="60" required></label><label for="adEPin">Game PIN<input id="adEPin" maxlength="12" required autocomplete="off"></label></div>
         <label class="chk"><input type="checkbox" id="adEListed"> Show on the game menu</label>
-        <label class="chk"><input type="checkbox" id="adEStarter"> Include the built-in intel packages and inject templates</label>
+        <label class="chk"><input type="checkbox" id="adEStarter"> Keep the sample intel packages as fixed packages (older games only)</label>
         <p class="small muted" style="margin:0">New role PINs (leave blank to keep the current PIN)</p>
         <div class="row"><label for="adPW">White cell<input id="adPW" maxlength="12" autocomplete="off"></label><label for="adPB">BLUFOR C2<input id="adPB" maxlength="12" autocomplete="off"></label><label for="adPR">REDFOR C2<input id="adPR" maxlength="12" autocomplete="off"></label></div>
         <div class="row"><label for="adPTB">BLUFOR fireteam<input id="adPTB" maxlength="12" autocomplete="off"></label><label for="adPTR">REDFOR fireteam<input id="adPTR" maxlength="12" autocomplete="off"></label><label for="adPOC">POC<input id="adPOC" maxlength="12" autocomplete="off"></label></div>
@@ -340,7 +340,6 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
       <div class="row" id="setupMulti" hidden>
         <label for="sGamePin">Game PIN<input id="sGamePin" maxlength="12" autocomplete="off"></label>
         <label class="chk" style="flex:0 0 auto;align-self:end"><input type="checkbox" id="sListed" checked> Show on the game menu</label>
-        <label class="chk" style="flex:0 0 auto;align-self:end"><input type="checkbox" id="sStarter"> Include the built-in intel packages and inject templates</label>
       </div>
       <div class="row">
         <label for="sName">Game name<input id="sName" value="Capstone" required></label>
@@ -1950,7 +1949,7 @@ function apply(S, e, cfg){
       if (!/^t[\w-]{3,40}$/.test(id) || !text || !label){ pushLog(S, 'Inject template refused: incomplete', null, e, 'rejected'); break; }
       if (!S.tpls) S.tpls = [];
       const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:String(t.from || 'Higher headquarters').trim().slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 200) };
-      const ix = S.tpls.findIndex(x => x.id === id); if (ix >= 0) S.tpls[ix] = tp; else S.tpls.push(tp); S.ver++;
+      const ix = S.tpls.findIndex(x => x.id === id), ph = String(t.phase || (ix >= 0 && S.tpls[ix].phase) || '').trim().slice(0, 20); if (ph) tp.phase = ph; if (ix >= 0) S.tpls[ix] = tp; else S.tpls.push(tp); S.ver++;
       pushLog(S, 'Inject template ' + (ix >= 0 ? 'updated' : 'saved') + ': ' + label, null, e);
       break; }
     case 'tpl_del': { if (!S.tpls) break; const ix = S.tpls.findIndex(x => x.id === p.id); if (ix < 0) break; const t = S.tpls.splice(ix, 1)[0]; S.ver++; pushLog(S, 'Inject template deleted: ' + t.label, null, e); break; }
@@ -2485,7 +2484,7 @@ $('#setupForm').addEventListener('submit', async ev => {
   if (app.multi){
     const gpin = $('#sGamePin').value;
     if (!normPin(gpin)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter a game PIN.'; return; }
-    cfg.blank = !$('#sStarter').checked;
+    cfg.blank = true;
     try { await adminCreate(cfg, [], gpin, $('#sListed').checked); $('#setupForm').reset(); app.wantSetup = false; app.wantAdmin = true; toast('Game created: ' + cfg.name + '.'); route(); }
     catch(err){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'The game was not created (' + ((err && err.code) || err.message || 'error') + '). Check that you are signed in as admin.'; }
     return;
@@ -2533,7 +2532,7 @@ async function adminLoad(){
 }
 function adminList(){
   $('#adCount').textContent = ad.games.length + (ad.games.length === 1 ? ' game' : ' games');
-  $('#adGames').innerHTML = ad.games.length ? ad.games.map(g => '<div class="li"><div class="grow"><b>' + esc(g.name || 'Game') + '</b> <span class="chip ' + (g.listed === false ? 'wait' : 'ok') + '">' + (g.listed === false ? 'Hidden' : 'On menu') + '</span> ' + (g.cfg && g.cfg.blank ? '<span class="chip">Starts empty</span>' : '<span class="chip">Built-in intel and injects</span>') + '<div class="small muted">Game PIN <span class="mono">' + esc(g.pin || '?') + '</span>' + (g.createdAt ? ' · created ' + new Date(g.createdAt).toLocaleDateString() : '') + (g.cfg ? '' : ' · <b>game data missing</b>') + '</div></div><button type="button" data-adopen="' + esc(g.gid) + '" style="flex:0 0 auto"' + (g.key && g.cfg ? '' : ' disabled') + '>Open</button><button type="button" data-adedit="' + esc(g.gid) + '" style="flex:0 0 auto">Edit</button></div>').join('') : '<div class="empty">No games yet. Create one below.</div>';
+  $('#adGames').innerHTML = ad.games.length ? ad.games.map(g => '<div class="li"><div class="grow"><b>' + esc(g.name || 'Game') + '</b> <span class="chip ' + (g.listed === false ? 'wait' : 'ok') + '">' + (g.listed === false ? 'Hidden' : 'On menu') + '</span> ' + (g.cfg && g.cfg.blank ? '<span class="chip">Starts empty</span>' : '<span class="chip">Fixed sample packages</span>') + '<div class="small muted">Game PIN <span class="mono">' + esc(g.pin || '?') + '</span>' + (g.createdAt ? ' · created ' + new Date(g.createdAt).toLocaleDateString() : '') + (g.cfg ? '' : ' · <b>game data missing</b>') + '</div></div><button type="button" data-adopen="' + esc(g.gid) + '" style="flex:0 0 auto"' + (g.key && g.cfg ? '' : ' disabled') + '>Open</button><button type="button" data-adedit="' + esc(g.gid) + '" style="flex:0 0 auto">Edit</button></div>').join('') : '<div class="empty">No games yet. Create one below.</div>';
 }
 $('#adGames').addEventListener('click', ev => {
   const o = ev.target.closest('[data-adopen]'), e = ev.target.closest('[data-adedit]');
@@ -2573,7 +2572,7 @@ $('#adFile').addEventListener('submit', ev => {
 });
 function adminEdit(g){
   ad.editing = g; const f = $('#adEdit'); f.hidden = false; $('#adEMsg').textContent = '';
-  $('#adEditTitle').textContent = 'Edit ' + (g.name || 'game'); $('#adEName').value = g.name || ''; $('#adEPin').value = g.pin || ''; $('#adEListed').checked = g.listed !== false; $('#adEStarter').checked = !(g.cfg && g.cfg.blank);
+  $('#adEditTitle').textContent = 'Edit ' + (g.name || 'game'); $('#adEName').value = g.name || ''; $('#adEPin').value = g.pin || ''; $('#adEListed').checked = g.listed !== false; $('#adEStarter').checked = !(g.cfg && g.cfg.blank); $('#adEStarter').closest('label').hidden = !!(g.cfg && g.cfg.blank);
   ['#adPW', '#adPB', '#adPR', '#adPTB', '#adPTR', '#adPOC'].forEach(s => $(s).value = '');
   f.scrollIntoView({ behavior:'smooth', block:'start' });
 }
@@ -2588,7 +2587,7 @@ $('#adEdit').addEventListener('submit', async ev => {
   const given = Object.entries(np).map(([k, s]) => [k, $(s).value.trim()]).filter(([, v]) => v);
   if (new Set(given.map(([, v]) => v)).size < given.length){ msg('Each new role PIN must be different.'); return; }
   given.forEach(([k, v]) => cfg.pins[k] = secret(cfg.salt, v));
-  if (blank !== !!g.cfg.blank && !confirm(blank ? 'Remove the built-in intel packages and inject templates from this game? Packages already sent stay in the record.' : 'Add the built-in intel packages and inject templates to this game?')) return;
+  if (blank !== !!g.cfg.blank && !confirm(blank ? 'Remove the fixed sample intel packages from this game? Packages already sent stay in the record.' : 'Add the sample intel packages to this game as fixed packages?')) return;
   try {
     msg('Saving\u2026');
     let key = g.key;
@@ -3911,7 +3910,7 @@ function renderPublic(S){
 }
 
 /* ---------- white cell ---------- */
-function allTemplates(S){ return (S && S.blank ? [] : TEMPLATES.map((t, i) => Object.assign({ id:'b' + i, builtin:true }, t))).concat(S && S.tpls ? S.tpls : []); }
+function allTemplates(S){ return S && S.tpls ? S.tpls : []; }
 const TEMPLATES = [
   { at:0, phase:'Phase 1', label:'STARTEX orders', to:'both', text:'Higher headquarters: secure the sites on your side of the island first and stay clear of the other force. The mayor will meet each force separately later this morning. The militia is active on island roads: report every suspected device with a 9-line.' },
   { at:10, phase:'Phase 1', label:'IED tip (BLUFOR)', to:'B', text:'Locals saw men burying something on your supply road. Check it before your next move.' },
@@ -4071,6 +4070,8 @@ function buildWhite(){
         </div></details>
       <div class="panel span2 stack" data-sec="create"><h2>Inject templates</h2>
         <p class="small muted" style="margin:0">Write the injects the white cell will send during the game. Each template appears under Send a message, where one tap fills in the message. A planned time or an escalation level is optional and only helps the white cell decide when to send it.</p>
+        <div class="row" style="align-items:end"><label>Start from<select data-tplsrc><option value="">A blank template</option>${TEMPLATES.map((t, i) => '<option value="' + i + '">Sample: ' + esc(t.label) + '</option>').join('')}</select></label><button type="button" data-tplload style="flex:0 0 auto">Load</button><button type="button" data-tplall style="flex:0 0 auto">Add all sample templates</button></div>
+        <p class="small muted" style="margin:0">Samples are starting points only. Nothing appears under Send a message until it is saved here, and every saved template can be edited or deleted.</p>
         <form class="stack" data-tplf>
           <div class="row"><label for="tplLabel">Name<input id="tplLabel" name="label" maxlength="60" required placeholder="Example: IED tip (BLUFOR)"></label><label for="tplTo" style="flex:0 0 160px">To<select id="tplTo" name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label for="tplFrom" style="flex:0 0 200px">From<input id="tplFrom" name="from" maxlength="30" value="Higher headquarters"></label></div>
           <label for="tplText">Message<textarea id="tplText" name="text" maxlength="400" required placeholder="Example: Locals saw men burying something on your supply road. Check it before your next move."></textarea></label>
@@ -4111,12 +4112,17 @@ function buildWhite(){
     if (k === 'resume') writeEvent('clock_resume', null, {});
     if (k === 'reveal') writeEvent('reveal', null, { on:!(app.S && app.S.reveal) });
   });
-  { const tf = $('[data-tplf]', v), tplClear = () => { tf.reset(); tf.dataset.id = ''; $('[data-tplmode]', v).textContent = ''; };
+  { const tf = $('[data-tplf]', v), tplClear = () => { tf.reset(); tf.dataset.id = ''; tf.dataset.phase = ''; $('[data-tplmode]', v).textContent = ''; };
     tf.addEventListener('submit', async ev => { ev.preventDefault(); const fd = new FormData(tf), at = String(fd.get('at') || '').trim(), lvl = String(fd.get('lvl') || '');
-      const tpl = { id:tf.dataset.id || ('t' + uid()), label:String(fd.get('label') || '').trim(), to:fd.get('to'), from:String(fd.get('from') || '').trim() || 'Higher headquarters', text:String(fd.get('text') || '').trim(), at:at === '' ? null : +at, lvl:lvl === '' ? null : +lvl, note:String(fd.get('note') || '').trim() };
+      const tpl = { id:tf.dataset.id || ('t' + uid()), label:String(fd.get('label') || '').trim(), to:fd.get('to'), from:String(fd.get('from') || '').trim() || 'Higher headquarters', text:String(fd.get('text') || '').trim(), at:at === '' ? null : +at, lvl:lvl === '' ? null : +lvl, note:String(fd.get('note') || '').trim(), phase:tf.dataset.phase || '' };
       if (!tpl.label || !tpl.text){ toast('Add a name and a message.', true); return; }
       await writeEvent('tpl_save', null, { tpl }); toast(tf.dataset.id ? 'Template updated.' : 'Template saved. It is under Send a message.'); tplClear(); });
     $('[data-tplclear]', v).onclick = tplClear;
+    $('[data-tplload]', v).onclick = () => { const i = $('[data-tplsrc]', v).value, t = TEMPLATES[+i]; if (i === '' || !t) { tplClear(); return; } tplClear(); tf.dataset.phase = t.phase || ''; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = t.from || 'Higher headquarters'; tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; $('[data-tplmode]', v).textContent = 'New template from the sample. Edit it, then save.'; };
+    $('[data-tplall]', v).onclick = async () => { const have = new Set((app.S.tpls || []).map(t => t.id)), todo = TEMPLATES.map((t, i) => Object.assign({ id:'tsample-' + i }, t)).filter(t => !have.has(t.id));
+      if (!todo.length){ toast('All sample templates are already in this game.'); return; }
+      if (!confirm('Add ' + todo.length + ' sample template' + (todo.length === 1 ? '' : 's') + ' to this game? Each can be edited or deleted afterward.')) return;
+      for (const tpl of todo) await writeEvent('tpl_save', null, { tpl }); toast('Added ' + todo.length + ' template' + (todo.length === 1 ? '' : 's') + '.'); };
     $('[data-tpllist]', v).addEventListener('click', ev => { const e = ev.target.closest('[data-tpledit]'), d = ev.target.closest('[data-tpldel]'), S = app.S;
       if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = t.from || 'Higher headquarters'; tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
       if (d){ const t = (S.tpls || []).find(x => x.id === d.dataset.tpldel); if (t && confirm('Delete the template "' + t.label + '"?')) writeEvent('tpl_del', null, { id:t.id }); } });
@@ -4578,7 +4584,7 @@ function ipbWire(v){
     const S = app.S, P = allProblems(S).find(x => x.id === pid) || PROBLEMS.find(x => x.id === pid); if (!P) return;
     if (S.intelOut[P.id]){ ipb.id = null; ipb.replaces = null; ipb.sentEdit = P.id; }
     else if (P.custom){ ipb.id = P.id; ipb.replaces = P.replaces || null; }
-    else { ipb.id = null; ipb.replaces = P.id; }
+    else { ipb.id = null; ipb.replaces = allProblems(S).some(x => x.id === P.id) ? P.id : null; }
     ipbFill(P);
   };
   $('[data-ipbsave]', f).onclick = ipbSave;
@@ -4622,7 +4628,7 @@ function ipbRender(S, v){
   { const sel = $('[data-ipbwpfrom]', v), live = S.wps.filter(w => !w.del), key = live.map(w => w.id + w.label + w.to).join(); if (sel && sel.dataset.k !== key && document.activeElement !== sel){ sel.dataset.k = key; sel.innerHTML = '<option value="">Choose a waypoint…</option>' + live.map(w => '<option value="' + esc(w.id) + '">' + esc(w.label) + (w.to === 'none' ? ' (not deployed)' : '') + '</option>').join(''); } }
   const f = $('[data-ipbuild]', v); if (!f) return;
   const AP = allProblems(S);
-  keepSelect($('[data-ipbsrc]', f), '<option value="">A blank package</option>' + AP.map((P, i) => '<option value="' + P.id + '">' + (i + 1) + '. ' + esc(fillT(P.title)) + (P.custom ? ' (built here)' : '') + '</option>').join(''));
+  keepSelect($('[data-ipbsrc]', f), '<option value="">A blank package</option>' + AP.map((P, i) => '<option value="' + P.id + '">' + (i + 1) + '. ' + esc(fillT(P.title)) + (P.custom ? ' (built here)' : '') + '</option>').join('') + PROBLEMS.filter(P => !AP.some(x => x.id === P.id)).map(P => '<option value="' + P.id + '">Sample: ' + esc(fillT(P.title)) + '</option>').join(''));
   const cs = S.customOrder.map(id => S.custom[id]).filter(Boolean);
   $('[data-ipblist]', f).innerHTML = cs.length ? cs.map(c => { const n = AP.indexOf(c) + 1, sent = !!S.intelOut[c.id]; return '<div class="li"><div class="grow"><b>' + n + '. ' + esc(c.title) + '</b> <span class="small muted">' + (c.replaces ? 'Replaces built-in ' + (PROBLEMS.findIndex(P => P.id === c.replaces) + 1) + ' · ' : '') + c.items.length + ' pieces · ' + (c.items.some(it => it.img) ? 'Has a photo · ' : '') + (sent ? 'Sent' : 'Not sent') + '</span>' + (c.note ? '<div class="small muted">Note: ' + esc(c.note) + '</div>' : '') + '</div>' + (sent ? '' : '<button type="button" data-ipbedit="' + c.id + '" style="flex:0 0 auto">Edit</button><button type="button" data-ipbdel="' + c.id + '" style="flex:0 0 auto">Delete</button>') + '</div>'; }).join('') : '<div class="empty">None yet.</div>';
 }
@@ -4650,7 +4656,7 @@ function renderWhite(S, now){
   $('[data-wteamsR]', v).innerHTML = teamRows(S, 'R', true);
   $('[data-wliaison]', v).innerHTML = liaisonHTML(S, null);
   $('[data-woffers]', v).innerHTML = offersHTML(S, null);
-  const lvlNow = levelIndex(S.esc), TP = allTemplates(S), tkey = START_G + '|' + lvlNow + '|' + JSON.stringify(TP.map(t => [t.id, t.label, t.at, t.lvl, t.to]));
+  const lvlNow = levelIndex(S.esc), TP = allTemplates(S), tkey = START_G + '|' + lvlNow + '|' + JSON.stringify(TP.map(t => [t.id, t.label, t.at, t.lvl, t.to, t.text, t.from, t.note, t.phase]));
   if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TP.length ? TP.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + (t.phase ? ' · ' + t.phase : '') : t.lvl != null ? LEVELS[t.lvl].name + ' or higher' : 'Any time') + ' · ' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[t.to] + '</small></button>'; }).join('') : '<div class="empty">No inject templates in this game. Build them in Intel and inject creation.</div>';
     const tl = $('[data-tpllist]', v); if (tl){ const own = S.tpls || []; tl.innerHTML = own.length ? own.map(t => '<div class="li"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">' + ({ both:'Both wings', B:'BLUFOR', R:'REDFOR', public:'Public screen' })[t.to] + (t.at != null ? ' · ' + hhmm(START_G + t.at) : t.lvl != null ? ' · ' + LEVELS[t.lvl].name + ' or higher' : '') + '</span><div class="small">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">Note: ' + esc(t.note) + '</div>' : '') + '</div><button type="button" data-tpledit="' + esc(t.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-tpldel="' + esc(t.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No templates built in this game yet.</div>'; } }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
