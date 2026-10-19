@@ -147,7 +147,7 @@ svg.map{width:100%;min-width:420px;height:auto;display:block}
 .ip-lightbox{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.88);display:grid;place-items:center;cursor:zoom-out;padding:16px}.ip-lightbox img{max-width:100%;max-height:100%;object-fit:contain}
 .ipb-piece{border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px}.ipb-piece legend{font-weight:600;padding:0 4px}
 .ipb-prev{max-width:240px;max-height:160px;border-radius:6px;border:1px solid var(--line);display:block}
-.ipb-opts{display:grid;gap:6px}.ipb-opts .row{align-items:center}.ipb-opts input[type=radio]{width:auto;flex:0 0 auto}
+.ipb-opts{display:grid;gap:6px}.ipb-opts .row{align-items:center}.ipb-opts input[type=radio],.ipb-opts input[type=checkbox]{width:auto;flex:0 0 auto}
 .ip-items li .src{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.02em;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
 .ip-tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink);background:var(--panel)}
 .ipw button{flex:0 0 auto;padding:5px 9px;font-size:13px}
@@ -1311,9 +1311,9 @@ function allProblems(S){
   const base = S && S.blank ? [] : PROBLEMS;
   return base.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !base.some(P => P.id === c.replaces))).map(P => ed[P.id] ? Object.assign({}, P, ed[P.id], { id:P.id, custom:P.custom, replaces:P.replaces, at:P.at, win:P.win, blast:P.blast, wp:P.wp, wps:P.wps }) : P);
 }
-function validEdit(k){ return k && Array.isArray(k.opts) && k.opts.length === 4 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string' && typeof k.title === 'string' && typeof k.q === 'string'; }
+function validEdit(k){ return k && Array.isArray(k.opts) && k.opts.length >= 2 && k.opts.length <= 8 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string' && typeof k.title === 'string' && typeof k.q === 'string'; }
 function validPkg(k){
-  return k && typeof k.id === 'string' && /^c[\w-]{3,40}$/.test(k.id) && Array.isArray(k.opts) && k.opts.length === 4 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string';
+  return k && typeof k.id === 'string' && /^c[\w-]{3,40}$/.test(k.id) && Array.isArray(k.opts) && k.opts.length >= 2 && k.opts.length <= 8 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string';
 }
 function intelKey(pid, kind, val){ return secret('marala-intel', pid + ':' + kind + ':' + val); }
 const IPB_KINDS = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT', 'OSINT'];
@@ -2683,7 +2683,7 @@ function buildAAR(){
     teams:['B','R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const errs = t.fixes.filter(f => f.gps && f.rep).map(f => Math.round(GEO.dist(f.gps, f.rep))); return { side:sd, id:t.id, name:t.name, num:t.num || null, removed:!!t.removed, status:t.status || null, maps:t.mapN || 0, fixes:t.fixes.length, checks:errs.length, median:errs.length ? errs.slice().sort((a, b) => a - b)[Math.floor(errs.length / 2)] : null, worst:errs.length ? Math.max(...errs) : null }; })),
     intel:allProblems(S).map((P, i) => { const tr = intelTruth(P); const r = s => { const o = intelOpen(S, P.id, s), m = S.intel[s][P.id]; const base = o ? { sent:true, sentAt:o.g, due:o.due, closed:!!o.done } : { sent:false }; return Object.assign(base, m ? { answered:true, g:m.g, okA:!!m.okA, okF:!!m.okF, pts:m.pts || 0 } : { answered:false, pts:0 }); };
       const os = ['B','R'].map(s => intelOpen(S, P.id, s)).filter(Boolean);
-      return { n:i + 1, id:P.id, title:fillT(P.title), intended:START_G + P.at, t:os.length ? Math.min(...os.map(o => o.g)) : START_G + P.at, due:os.length ? Math.max(...os.map(o => o.due)) : START_G + P.at + P.win, released:os.length > 0, closed:os.length > 0 && os.every(o => o.done), answer:fillT(P.opts[tr.a] || ''), fake:tr.fs.join(', ') || '?', fakeDisc:tr.fs.map(k => (P.items.find(x => x.k === k) || {}).disc || '').join(', '), fakeSrc:tr.fs.map(k => (P.items.find(x => x.k === k) || {}).src || '').join('; '), fakeList:tr.fs.map(k => { const it = P.items.find(x => x.k === k) || {}; return { k, disc:it.disc || '', src:it.src || '' }; }), pieces:P.items.length, B:r('B'), R:r('R') }; }) };
+      return { n:i + 1, id:P.id, title:fillT(P.title), intended:START_G + P.at, t:os.length ? Math.min(...os.map(o => o.g)) : START_G + P.at, due:os.length ? Math.max(...os.map(o => o.due)) : START_G + P.at + P.win, released:os.length > 0, closed:os.length > 0 && os.every(o => o.done), answer:tr.as.length ? ansText(P, tr) : '', fake:tr.fs.join(', ') || '?', fakeDisc:tr.fs.map(k => (P.items.find(x => x.k === k) || {}).disc || '').join(', '), fakeSrc:tr.fs.map(k => (P.items.find(x => x.k === k) || {}).src || '').join('; '), fakeList:tr.fs.map(k => { const it = P.items.find(x => x.k === k) || {}; return { k, disc:it.disc || '', src:it.src || '' }; }), pieces:P.items.length, B:r('B'), R:r('R') }; }) };
 }
 function downloadBackup(){
   try {
@@ -3734,12 +3734,21 @@ function buildWing(side){
   $('[data-fullmap]', v).onclick = () => openFullMap(side);
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-act="hreply"]'); if (!b) return; writeEvent('handover_reply', side, { offer:b.dataset.id, accept:b.dataset.acc === '1' }); toast(b.dataset.acc === '1' ? 'Handover accepted.' : 'Sent.'); });
 }
+const TRUTH_CACHE = new Map();
+function intelAnswers(P){
+  const ck = P.id + '|' + P.a + '|' + P.opts.length; if (TRUTH_CACHE.has(ck)) return TRUTH_CACHE.get(ck);
+  const n = Math.min(P.opts.length, 8); let as = [];
+  for (let i = 0; i < n && !as.length; i++) if (intelKey(P.id, 'a', i) === P.a) as = [i];
+  for (let m = 1; m < (1 << n) && !as.length; m++){ const set = []; for (let i = 0; i < n; i++) if (m & (1 << i)) set.push(i); if (set.length > 1 && intelKey(P.id, 'a', set.join('')) === P.a) as = set; }
+  TRUTH_CACHE.set(ck, as); return as;
+}
+function ansText(P, tr){ return tr.as.length ? tr.as.map(k => fillT(P.opts[k] || '')).join(' and ') : '?'; }
 function intelTruth(P){
-  const a = P.opts.findIndex((_, i) => intelKey(P.id, 'a', i) === P.a);
+  const as = intelAnswers(P), a = as.length ? as[0] : -1;
   const ks = P.items.map(it => it.k), n = Math.min(ks.length, 10);
   let fs = null;
   for (let m = 1; m < (1 << n) && !fs; m++){ const set = ks.filter((_, i) => m & (1 << i)); if (intelKey(P.id, 'f', set.join('')) === P.f) fs = set; }
-  return { a, fs:fs || [], f:fs ? fs.join('') : '?' };
+  return { a, as, ak:as.join(''), fs:fs || [], f:fs ? fs.join('') : '?' };
 }
 function falseText(P, tr){ return tr.fs.length ? tr.fs.map(k => k + ' (' + ((P.items.find(x => x.k === k) || {}).disc || '') + ')').join(' and ') : '?'; }
 function ipImgSrc(S, it){
@@ -3768,7 +3777,7 @@ function renderIntel(S, side, v){
         '<ul class="ip-items">' + P.items.map(it => '<li><b>' + it.k + '</b><span class="src"><span class="ip-tag">' + esc(it.disc) + '</span><span class="ip-tag" title="Source rating">' + esc(it.rating) + '</span><span class="mono">' + esc(fillT(it.dtg)) + '</span><span>' + esc(it.src) + '</span></span><span class="txt">' + ipImgHTML(S, it) + esc(fillT(it.text)) + '</span></li>').join('') + '</ul>' +
         '<p class="ip-q">' + esc(fillT(P.q)) + '</p>' +
         '<form class="stack" data-ipf="' + P.id + '"><div class="ip-row">' +
-        '<fieldset class="ip-set"><legend>Answer</legend>' + P.opts.map((o, k) => '<label><input type="radio" name="a" value="' + k + '">' + esc(fillT(o)) + '</label>').join('') + '</fieldset>' +
+        '<fieldset class="ip-set"><legend>Select every correct answer. There may be more than one.</legend>' + P.opts.map((o, k) => '<label><input type="checkbox" name="a" value="' + k + '">' + esc(fillT(o)) + '</label>').join('') + '</fieldset>' +
         '<fieldset class="ip-set"><legend>Select the false pieces of information. There may be more than one.</legend>' + P.items.map(it => '<label><input type="checkbox" name="f" value="' + it.k + '">' + it.k + ' · ' + esc(it.disc) + '</label>').join('') + '</fieldset>' +
         '</div><div><button class="btn-side" type="submit">Lock in answer</button></div></form><div class="ip-status" data-ipstatus></div>';
       box.prepend(card);
@@ -3776,9 +3785,9 @@ function renderIntel(S, side, v){
       const f = $('form', card);
       f.addEventListener('submit', ev => {
         ev.preventDefault();
-        const fd = new FormData(f), a = fd.get('a'), fk = fd.getAll('f').sort().join('');
-        if (a === null || !fk){ toast('Pick an answer and check at least one false piece first.', true); return; }
-        writeEvent('intel_answer', side, { pid:P.id, a:intelKey(P.id, 'a', +a), f:intelKey(P.id, 'f', fk) });
+        const fd = new FormData(f), a = fd.getAll('a').map(Number).sort((x, y) => x - y).join(''), fk = fd.getAll('f').sort().join('');
+        if (!a || !fk){ toast('Pick an answer and check at least one false piece first.', true); return; }
+        writeEvent('intel_answer', side, { pid:P.id, a:intelKey(P.id, 'a', a), f:intelKey(P.id, 'f', fk) });
         toast('Answer locked in.');
       });
     }
@@ -3790,7 +3799,7 @@ function renderIntel(S, side, v){
     if (done){
       const tr = intelTruth(P);
       const res = mine ? ('Answer ' + (mine.okA ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · False intel ' + (mine.okF ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · <b>+' + (mine.pts || 0) + '</b>') : '<span class="chip no">No answer in time</span> · +0';
-      st.innerHTML = res + '<div class="small muted">Correct: ' + esc(fillT(P.opts[tr.a] || '?')) + '. False: ' + esc(falseText(P, tr)) + '.</div>';
+      st.innerHTML = res + '<div class="small muted">Correct: ' + esc(ansText(P, tr)) + '. False: ' + esc(falseText(P, tr)) + '.</div>';
     } else if (mine){
       st.innerHTML = '<span class="chip wait">Locked in ' + hhmm(mine.g) + '</span> <span class="small muted">Results at ' + hhmm(o.due) + '.</span>';
     } else { open++; st.innerHTML = ''; }
@@ -4058,9 +4067,9 @@ function buildWhite(){
             <div class="row" style="justify-content:flex-start"><button type="button" data-ipbwadd style="flex:0 0 auto">Add this point and start another</button></div>
             <div class="list" data-ipbwlist></div>
           </fieldset>
-          <fieldset class="ipb-piece"><legend>Answers (mark the correct one)</legend><div class="ipb-opts">
-            ${[0, 1, 2, 3].map(k => '<div class="row"><input type="radio" name="ipbA" value="' + k + '" aria-label="Correct answer ' + (k + 1) + '"><input data-ipbopt="' + k + '" maxlength="100" placeholder="Example: ' + ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'][k] + '"></div>').join('')}
-          </div></fieldset>
+          <fieldset class="ipb-piece"><legend>Answers (check every correct answer)</legend><div class="ipb-opts" data-ipbopts></div>
+            <div class="row" style="justify-content:flex-start"><button type="button" data-ipboptadd style="flex:0 0 auto">Add an answer</button><span class="small muted">2 to 8 answers. Wings must check exactly the correct ones to score.</span></div>
+          </fieldset>
           <div class="stack" data-ipbpieces></div>
           <div class="row" style="align-items:end" data-ipbaddrow><label>Add another piece of intel<select data-ipbadd><option value="">Choose the kind of intel…</option>${IPB_KINDS.map(d => '<option>' + d + '</option>').join('')}</select></label></div>
           <label>White cell note (why the false pieces are false; only you see it)<input data-ipb="note" maxlength="300" placeholder="Example: The photo is two days older than the attack."></label>
@@ -4355,8 +4364,7 @@ function ipbFill(P){
   $('[data-ipb="note"]', f).value = P && P.note || '';
   $('[data-ipb="bgrid"]', f).value = P && P.blast ? P.blast.grid : ''; $('[data-ipb="btruth"]', f).value = P && P.blast ? P.blast.truth : 'militia'; $('[data-ipb="bcas"]', f).checked = !!(P && P.blast && P.blast.cas);
   const tr = P && P.a ? intelTruth(P) : { a:-1, f:'', fs:[] };
-  [0, 1, 2, 3].forEach(k => { $('[data-ipbopt="' + k + '"]', f).value = P ? fillT(P.opts[k] || '') : ''; });
-  $$('input[name="ipbA"]', f).forEach(r => r.checked = P ? +r.value === (P.aIdx != null ? P.aIdx : tr.a) : false);
+  ipbOpts(P ? P.opts.map(o => fillT(o || '')) : ['', '', '', ''], P ? (P.aIdx != null ? [P.aIdx] : tr.as || []) : []);
   const bad = P ? (P.fKeys || tr.fs || []) : [];
   ipbPieces(P ? P.items.map(it => ({ disc:it.disc, rating:fillT(it.rating || ''), dtg:fillT(it.dtg || ''), src:fillT(it.src || ''), text:fillT(it.text || ''), bad:bad.includes(it.k), im:it.img ? { id:it.img, credit:it.credit || '' } : it.imgUrl ? { url:it.imgUrl, credit:it.credit || '' } : null })) : IPB_DISC.map(d => ({ disc:d })));
 }
@@ -4469,7 +4477,7 @@ function crImport(file){
       for (const P of pk){
         const pkg = JSON.parse(JSON.stringify(P));
         for (const it of pkg.items){ if (it.img && d.images && d.images[it.img] && !done.has(it.img) && !(S.images[it.img])){ await writeEvent('intel_image', null, { id:it.img, data:d.images[it.img] }); done.add(it.img); } }
-        if (S.intelOut[pkg.id]){ const tr = intelTruth(P), nid = 'c' + uid(); pkg.id = nid; pkg.a = intelKey(nid, 'a', tr.a); pkg.f = intelKey(nid, 'f', tr.f); }
+        if (S.intelOut[pkg.id]){ const tr = intelTruth(P), nid = 'c' + uid(); pkg.id = nid; pkg.a = intelKey(nid, 'a', tr.ak); pkg.f = intelKey(nid, 'f', tr.f); }
         if (pkg.replaces && (S.intelOut[pkg.replaces] || S.blank || !PROBLEMS.some(x => x.id === pkg.replaces))) pkg.replaces = null;
         await writeEvent('intel_custom', null, { pkg }); n++;
       }
@@ -4518,16 +4526,24 @@ function ipbGenerate(){
   ipbFill({ keepWp:true, title:kind.title(place2), q:kind.q(place2), at:+($('[data-ipb="at"]', ipbForm()).value || 60), win:15, opts, items, aIdx:who.indexOf(truth), fKeys, note:'False: ' + fKeys.map((k, j) => 'piece ' + k + ' (' + fds[j] + ')').join(' and ') + (fKeys.length > 1 ? ' point' : ' points') + ' at ' + opts[who.indexOf(decoy)].split(' (')[0] + ', but ' + fds.map(d => why[d]).join('; and ') + '.' + (imintFalse ? ' Add a photo that looks convincing but is the wrong place or time.' : ' Add a photo to the IMINT piece that matches its description.') });
   toast('Draft generated. Edit anything, add the IMINT photo, then save.');
 }
+const IPB_OPT_EX = ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'];
+function ipbOpts(vals, right){
+  const box = $('[data-ipbopts]', ipbForm()); if (!box) return;
+  box.innerHTML = vals.map((v, k) => '<div class="row"><input type="checkbox" name="ipbA" value="' + k + '"' + (right.includes(k) ? ' checked' : '') + ' aria-label="Answer ' + (k + 1) + ' is correct"><input data-ipbopt="' + k + '" maxlength="100" value="' + esc(v) + '" placeholder="' + (IPB_OPT_EX[k] ? 'Example: ' + IPB_OPT_EX[k] : 'Answer ' + (k + 1)) + '"><button type="button" data-ipboptdel="' + k + '" style="flex:0 0 auto"' + (vals.length <= 2 ? ' disabled' : '') + '>Remove</button></div>').join('');
+  $('[data-ipboptadd]', ipbForm()).disabled = vals.length >= 8;
+}
+function ipbOptsRead(){ const f = ipbForm(); return { vals:$$('[data-ipbopt]', f).map(i => i.value), right:$$('input[name="ipbA"]', f).filter(c => c.checked).map(c => +c.value) }; }
 async function ipbSave(){
   const f = ipbForm(), S = app.S, val = sel => ($(sel, f).value || '').trim();
   const title = val('[data-ipb="title"]'), q = val('[data-ipb="q"]');
-  const opts = [0, 1, 2, 3].map(k => val('[data-ipbopt="' + k + '"]'));
-  const aR = $('input[name="ipbA"]:checked', f), read = ipbRead(), bad = read.filter(it => it.bad).map(it => it.k);
+  const or = ipbOptsRead(), opts = or.vals.map(o => o.trim()), ak = or.right.sort((x, y) => x - y).join('');
+  const read = ipbRead(), bad = read.filter(it => it.bad).map(it => it.k);
   const items = read.map(it => ({ k:it.k, disc:it.disc, rating:it.rating || '?', dtg:it.dtg, src:it.src, text:it.text }));
   const msg = t => { $('[data-ipbmsg]', f).textContent = t; toast(t, true); };
   if (!title || !q) return msg('Add a title and a question.');
-  if (opts.some(o => !o)) return msg('Fill in all four answers.');
-  if (!aR) return msg('Pick the right answer.');
+  if (opts.length < 2 || opts.some(o => !o)) return msg('Fill in every answer or remove the empty ones.');
+  if (!ak) return msg('Check at least one correct answer.');
+  if (or.right.length === opts.length) return msg('At least one answer must be wrong.');
   let wp = null;
   if (!ipb.sentEdit){ const r = ipbWpRead(); if (r.err) return msg(r.err); wp = r.wp || null; }
   if (!bad.length) return msg('Mark at least one piece as false or misleading.');
@@ -4549,14 +4565,14 @@ async function ipbSave(){
     if (ipb.sentEdit){
       const pid = ipb.sentEdit;
       if (!confirm('Update this package on the wings’ screens? They will be told it changed.')) { $('[data-ipbsave]', f).disabled = false; return; }
-      await writeEvent('intel_edit', null, { pid, pkg:{ title, q, opts, items, note:val('[data-ipb="note"]'), a:intelKey(pid, 'a', +aR.value), f:intelKey(pid, 'f', bad.join('')) } });
+      await writeEvent('intel_edit', null, { pid, pkg:{ title, q, opts, items, note:val('[data-ipb="note"]'), a:intelKey(pid, 'a', ak), f:intelKey(pid, 'f', bad.join('')) } });
       $('[data-ipbmsg]', f).textContent = 'Updated.'; toast('Intel package updated on the wings’ screens.');
       $('[data-ipbsave]', f).disabled = false; return;
     }
     const pkg = { id, custom:true, replaces:ipb.replaces || null, at:Math.max(0, Math.round(+val('[data-ipb="at"]') || 0)), win:Math.max(3, Math.round(+val('[data-ipb="win"]') || 15)), title, q, opts, items, note:val('[data-ipb="note"]'),
       wp, wps:ipb.wps.slice(0, 11),
       blast:val('[data-ipb="bgrid"]') ? { grid:val('[data-ipb="bgrid"]').toUpperCase(), truth:$('[data-ipb="btruth"]', f).value, cas:$('[data-ipb="bcas"]', f).checked } : null,
-      a:intelKey(id, 'a', +aR.value), f:intelKey(id, 'f', bad.join('')) };
+      a:intelKey(id, 'a', ak), f:intelKey(id, 'f', bad.join('')) };
     await writeEvent('intel_custom', null, { pkg });
     ipb.id = id; ipbSetMode();
     $('[data-ipbmsg]', f).textContent = 'Saved.';
@@ -4578,6 +4594,8 @@ function ipbWire(v){
     if (ed){ const w = ipb.wps.splice(+ed.dataset.ipbwedit, 1)[0]; const cur = ipbWpRead(); if (cur.wp) ipb.wps.push(cur.wp); ipbWpSet(w); ipbWpList(); } });
   $('[data-ipbwpfrom]', f).addEventListener('change', ev => { const w = app.S && app.S.wps.find(x => x.id === ev.target.value); if (w) ipbWpSet({ label:w.label, desc:w.desc, sym:w.sym, color:w.color, pt:w.pt }); ev.target.value = ''; });
   ipbWpSet(null);
+  $('[data-ipboptadd]', f).onclick = () => { const o = ipbOptsRead(); if (o.vals.length >= 8) return; ipbOpts(o.vals.concat(''), o.right); $$('[data-ipbopt]', f).pop().focus(); };
+  $('[data-ipbopts]', f).addEventListener('click', ev => { const b = ev.target.closest('[data-ipboptdel]'); if (!b) return; const o = ipbOptsRead(), k = +b.dataset.ipboptdel; if (o.vals.length <= 2) return; o.vals.splice(k, 1); ipbOpts(o.vals, o.right.filter(x => x !== k).map(x => x > k ? x - 1 : x)); });
   $('[data-ipbclear]', f).onclick = () => { ipb.id = null; ipb.replaces = null; ipb.sentEdit = null; ipbFill(null); };
   $('[data-ipbload]', f).onclick = () => {
     const pid = $('[data-ipbsrc]', f).value; ipb.sentEdit = null; if (!pid){ ipb.id = null; ipb.replaces = null; ipbFill(null); return; }
@@ -4710,7 +4728,7 @@ function renderWhite(S, now){
     else if (!oB || !oR) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>';
     if ((oB && !oB.done) || (oR && !oR.done)) btns += '<button type="button" data-act="ipclose" data-id="' + P.id + '">Close now</button>';
     btns += '<button type="button" data-ipview="' + P.id + '">View / edit</button>';
-    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.wp ? ' <span class="chip">waypoint: ' + esc(P.wp.label) + '</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">Intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(fillT(P.opts[tr.a] || '?')) + ' · False: ' + esc(falseText(P, tr)) + (P.items.length !== 4 ? ' · ' + P.items.length + ' pieces' : '') + '</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
+    return '<div class="li"><div class="grow"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b>' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.wp ? ' <span class="chip">waypoint: ' + esc(P.wp.label) + '</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">Intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(ansText(P, tr)) + ' · False: ' + esc(falseText(P, tr)) + (P.items.length !== 4 ? ' · ' + P.items.length + ' pieces' : '') + '</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="flex:1 1 100%;justify-content:flex-start">' + btns + '</div>' : '') + '</div>';
   }).join('');
   ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Diplomatic points ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · Escalation caused ' + S.escBy[s] + ' · ' + aidText(S, s, true); });
   $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · From ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
