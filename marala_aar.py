@@ -364,7 +364,7 @@ def build_html(data, aar, charts):
             return "<td>Not sent</td>"
         if not x.get("answered"):
             return "<td>No answer</td>"
-        return f"<td>Answer {'✓' if x['okA'] else '✗'} · False intel {'✓' if x['okF'] else '✗'} · <b>+{x['pts']}</b></td>"
+        return f"<td>Answer {'✓' if x['okA'] else 'partly right' if x.get('partA') else '✗'} · False intel {'✓' if x['okF'] else '✗'} · <b>+{x['pts']}</b></td>"
     ip_rows = "".join(
         f"<tr><td>{p['n']}</td><td>{esc(p['title'])}</td><td>{hhmm(p['t'])}–{hhmm(p['due'])}</td><td>{esc(p['answer'])}; false: {fake_text(p)}</td>{ip_cell(p['B'])}{ip_cell(p['R'])}</tr>"
         for p in aar.get("intel", []) if p.get("released")
@@ -553,7 +553,7 @@ table.log{{font-size:10pt}}
 <h2>7. Managing Intelligence</h2>
 <h3>Intel packages</h3>
 <table class="data"><thead><tr><th>#</th><th>Problem</th><th>Window</th><th>Key</th><th>BLUFOR</th><th>REDFOR</th></tr></thead><tbody>{ip_rows}</tbody></table>
-<p class="note">Each package gave several pieces of intel (usually HUMINT, SIGINT, IMINT and GEOINT, sometimes more), with one or more of them false or misleading. +2 for the right answer, +2 for catching every false piece and no true ones. The window shows when the white cell sent it and when it closed.</p>
+<p class="note">Each package gave several pieces of intel (usually HUMINT, SIGINT, IMINT and GEOINT, sometimes more), with one or more of them false or misleading. +2 for the right answer (all correct answers when a package had more than one; +1 for partly right), +2 for catching every false piece and no true ones. The window shows when the white cell sent it and when it closed.</p>
 <h3>Attribution of explosions</h3>
 <table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Where</th><th>Public statement</th><th>Actual cause</th><th>Result</th></tr></thead><tbody>{stmt_rows}</tbody></table>
 
