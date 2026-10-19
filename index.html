@@ -4085,7 +4085,7 @@ function buildWhite(){
           ${MAP_POINTS.map(([k, n]) => '<div class="li"><label>' + esc(n) + '<input data-mp="' + k + '"></label><button type="button" data-muse="' + k + '">Use last click</button></div>').join('')}
           <label>Interest points. Saved to the waypoint queue, not deployed. One per line: name | point<textarea data-mpois rows="5" placeholder="Example: Interest point 6 | 40.82665, -77.85797"></textarea></label>
           <div class="row" style="justify-content:flex-start"><button type="button" data-mpoiadd style="flex:0 0 auto">Add last click as an interest point</button></div>
-          <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-msave style="flex:0 0 auto">Save the map for every screen</button><span class="small muted" data-mmsg></span></div>
+          <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-msave style="flex:0 0 auto">Save the map for every screen</button><label for="mFile" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load a map file<input id="mFile" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted" data-mmsg></span></div>
         </div></details>
       <details class="panel span2 mapset" data-ipbuild data-sec="intel create"><summary><b>Intel package builder</b> <span class="small muted">(custom packages and photos)</span></summary>
         <div class="stack" style="margin-top:10px">
@@ -4294,6 +4294,15 @@ function buildWhite(){
   $('[data-mshow]', ms).onclick = () => { const pt = GEO.parsePoint($('[data-mcenter]', ms).value); if (!pt){ toast('That point didn’t read.', true); return; } const d = 0.006; app.previewMap = { sw:[pt[0] - d, pt[1] - d * 1.3], ne:[pt[0] + d, pt[1] + d * 1.3], preview:true }; refresh(true); toast('Showing the area. Click the map to read grids.'); };
   $('[data-mpoiadd]', ms).onclick = () => { if (!app.lastClick){ toast('Click a point on the map first.', true); return; } const ta = $('[data-mpois]', ms); ta.value = (ta.value.trim() ? ta.value.trim() + '\n' : '') + 'Interest point ' + (ta.value.trim() ? ta.value.trim().split('\n').length + 1 : 1) + ' | ' + fmtPt(app.lastClick); ta.focus(); };
   $$('[data-muse]', ms).forEach(b => b.onclick = () => { if (!app.lastClick){ toast('Click a point on the map first.', true); return; } $('[data-mp="' + b.dataset.muse + '"]', ms).value = fmtPt(app.lastClick); });
+  $('#mFile', ms).onchange = async () => {
+    const fl = $('#mFile', ms).files[0]; $('#mFile', ms).value = ''; if (!fl) return;
+    let d = null; try { d = JSON.parse(await fl.text()); } catch(e){}
+    const m = d && d.app === 'marala-map' ? d.map : null, okPt = q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite);
+    if (!m || !okPt(m.sw) || !okPt(m.ne) || !m.sites || !Object.values(m.sites).every(okPt)){ toast('That is not a Marala map file.', true); return; }
+    if (!confirm('Replace this game\u2019s map with "' + (d.name || fl.name) + '"? Every screen will show it.')) return;
+    await writeEvent('map_config', null, { sw:m.sw, ne:m.ne, cols:+m.cols || 7, rows:+m.rows || 8, step:+m.step || 100, sites:m.sites, pois:(Array.isArray(m.pois) ? m.pois : []).filter(x => x && okPt(x.pt)).slice(0, 30), outline:Array.isArray(m.outline) && m.outline.every(okPt) ? m.outline : null });
+    app.previewMap = null; app.mapFilled = false; refresh(true); toast('Map loaded. Every screen now shows it.');
+  };
   $('[data-msave]', ms).onclick = () => {
     const get = k => { const t = $('[data-mp="' + k + '"]', ms).value.trim(); return t ? GEO.parsePoint(t) : null; };
     let sw = get('sw'), ne = get('ne');
