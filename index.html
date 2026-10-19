@@ -2099,7 +2099,7 @@ function apply(S, e, cfg){
       if (pt){ pushFeed(S, 'both', 'The white cell has moved' + (where ? ' to ' + where : '') + '. It shows on your map as the alien.', 'hq', { label:'White cell' }); pushLog(S, 'White cell moved' + (where ? ' to ' + where : ''), null, e); }
       else { pushFeed(S, 'both', 'The white cell is back at its planned spot' + (where ? ', ' + where : '') + '.', 'hq', { label:'White cell' }); pushLog(S, 'White cell back at its planned spot', null, e); }
       break; }
-    case 'map_config': S.map = p && p.sw && p.ne ? p : null; S.wps = S.wps.filter(w => !(w.poi && !w.touched && w.to === 'none' && !w.del)); seedPois(S, S.map ? S.map.pois : DEFAULT_POIS, e.id); S.ver++; pushLog(S, 'Map updated', null, e); break;
+    case 'map_config': S.map = p && p.sw && p.ne ? Object.assign({}, p, { outline:Array.isArray(p.outline) ? p.outline.map(q => Array.isArray(q) ? q : q && Number.isFinite(q.lat) && Number.isFinite(q.lng) ? [q.lat, q.lng] : null).filter(Boolean) : null }) : null; S.wps = S.wps.filter(w => !(w.poi && !w.touched && w.to === 'none' && !w.del)); seedPois(S, S.map ? S.map.pois : DEFAULT_POIS, e.id); S.ver++; pushLog(S, 'Map updated', null, e); break;
     case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:p.label || 'Higher headquarters' }); pushLog(S, 'Message to ' + ({ B:'BLUFOR', R:'REDFOR', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
     case 'adjust': {
       const d = Number(p.delta) || 0;
@@ -2517,11 +2517,12 @@ $('#adminForm').addEventListener('submit', ev => {
 });
 function words(t){ return Array.from(new Set(String(t || '').split(/[,;\n]+/).map(w => w.trim().toUpperCase()).filter(Boolean))); }
 function codeList(salt, id){ return { cap:words($('#c' + id).value).map(w => secret(salt, w)), def:words($('#d' + id).value).map(w => secret(salt, w)) }; }
+function packOutline(o){ return Array.isArray(o) && o.length > 2 ? o.map(q => ({ lat:q[0], lng:q[1] })) : null; }
 async function readMapFile(fl){
   let d = null; try { d = JSON.parse(await fl.text()); } catch(e){}
   const m = d && d.app === 'marala-map' ? d.map : null, okPt = q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite);
   if (!m || !okPt(m.sw) || !okPt(m.ne) || !m.sites || !Object.values(m.sites).every(okPt)) throw new Error('That is not a Marala map file.');
-  return { name:d.name || fl.name, p:{ sw:m.sw, ne:m.ne, cols:+m.cols || 7, rows:+m.rows || 8, step:+m.step || 100, sites:m.sites, pois:(Array.isArray(m.pois) ? m.pois : []).filter(x => x && okPt(x.pt)).slice(0, 30), outline:Array.isArray(m.outline) && m.outline.every(okPt) ? m.outline : null } };
+  return { name:d.name || fl.name, p:{ sw:m.sw, ne:m.ne, cols:+m.cols || 7, rows:+m.rows || 8, step:+m.step || 100, sites:m.sites, pois:(Array.isArray(m.pois) ? m.pois : []).filter(x => x && okPt(x.pt)).slice(0, 30), outline:Array.isArray(m.outline) && m.outline.every(okPt) ? packOutline(m.outline) : null } };
 }
 $('#setupForm').addEventListener('submit', async ev => {
   ev.preventDefault();
@@ -4321,7 +4322,7 @@ function buildWhite(){
     const pois = [];
     $('[data-mpois]', ms).value.split('\n').map(l => l.trim()).filter(Boolean).forEach((l, i) => { const j = l.lastIndexOf('|'), name = (j >= 0 ? l.slice(0, j).trim() : '') || 'Interest point ' + (i + 1), pt = GEO.parsePoint(j >= 0 ? l.slice(j + 1) : l); if (pt) pois.push({ name:name.slice(0, 60), pt }); else bad.push('point of interest "' + l.slice(0, 30) + '"'); });
     if (bad.length){ toast('These didn’t read: ' + bad.join(', ') + '.', true); return; }
-    writeEvent('map_config', null, { sw:box.sw, ne:box.ne, cols:+$('[data-mcols]', ms).value || 6, rows:+$('[data-mrows]', ms).value || 5, step:+$('[data-mstep]', ms).value || 100, sites, pois:pois.slice(0, 30), outline:mapCfg(app.S).outline || null });
+    writeEvent('map_config', null, { sw:box.sw, ne:box.ne, cols:+$('[data-mcols]', ms).value || 6, rows:+$('[data-mrows]', ms).value || 5, step:+$('[data-mstep]', ms).value || 100, sites, pois:pois.slice(0, 30), outline:packOutline(mapCfg(app.S).outline) });
     app.previewMap = null; app.mapFilled = false; toast('Map saved. Every screen now shows it.');
   };
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-act="hreply"]'); if (b) toast('Only the Wing Commanders can answer offers.', true); });
@@ -4736,6 +4737,7 @@ function renderWhite(S, now){
   if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TP.length ? TP.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + (t.phase ? ' · ' + t.phase : '') : t.lvl != null ? LEVELS[t.lvl].name + ' or higher' : 'Any time') + ' · ' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[t.to] + '</small></button>'; }).join('') : '<div class="empty">No inject templates in this game. Build them in Intel and inject creation.</div>';
     const tl = $('[data-tpllist]', v); if (tl){ const own = S.tpls || []; tl.innerHTML = own.length ? own.map(t => '<div class="li"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">' + ({ both:'Both wings', B:'BLUFOR', R:'REDFOR', public:'Public screen' })[t.to] + (t.at != null ? ' · ' + hhmm(START_G + t.at) : t.lvl != null ? ' · ' + LEVELS[t.lvl].name + ' or higher' : '') + '</span><div class="small">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">Note: ' + esc(t.note) + '</div>' : '') + '</div><button type="button" data-tpledit="' + esc(t.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-tpldel="' + esc(t.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No templates built in this game yet.</div>'; } }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
+  { const mk = JSON.stringify([M0 && M0.sw, M0 && M0.ne, M0 && M0.sites, M0 && M0.pois]); if (app.mapKey !== mk && !(ms && ms.contains(document.activeElement))){ app.mapKey = mk; app.mapFilled = false; } }
   if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); $('[data-mpois]', ms).value = (M0.pois || []).map(x => x.name + ' | ' + fmtPt(x.pt)).join('\n'); }
   { const M = mapCfg(S), box = $('[data-wplist]', v), qb = $('[data-wpq]', v), qq = $('[data-wpqq]', v), live = S.wps.filter(w => !w.del), key = JSON.stringify(live.map(w => [w.id, w.label, w.sym, w.to, w.pt, w.color, w.desc]));
     if (key !== app.wpKey && !typingIn(box) && !typingIn(qb) && !typingIn(qq)){
