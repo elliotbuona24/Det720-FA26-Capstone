@@ -1242,6 +1242,36 @@ function aidClock(S, g){
   }
 }
 const REPORT_PTS = 1, MATCH_BASE = 30, MATCH_PER_MIN = 40, MATCH_WIN = 8, MATCH_DUP = 10, MATCH_WAIT = 3;
+const OOB_TOL = 15;
+function boundOut(S, pt){
+  const M = engMap(S), P = M && Array.isArray(M.outline) && M.outline.length > 2 ? M.outline : null;
+  if (!P || !Array.isArray(pt)) return 0;
+  const c = Math.cos(pt[0] * Math.PI / 180), xy = q => [(q[1] - pt[1]) * 111320 * c, (q[0] - pt[0]) * 110950];
+  let inside = false, best = Infinity;
+  for (let i = 0, j = P.length - 1; i < P.length; j = i++){
+    const [x1, y1] = xy(P[i]), [x2, y2] = xy(P[j]);
+    if ((y1 > 0) !== (y2 > 0) && 0 < (x2 - x1) * (0 - y1) / (y2 - y1) + x1) inside = !inside;
+    const dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy, t = L2 ? Math.max(0, Math.min(1, -(x1 * dx + y1 * dy) / L2)) : 0;
+    best = Math.min(best, Math.hypot(x1 + t * dx, y1 + t * dy));
+  }
+  return inside ? 0 : Math.round(best);
+}
+function oobCheck(S, side, t, gps){
+  if (!t || t.removed || !Array.isArray(gps)) return;
+  const out = boundOut(S, gps), nm = (t.num ? '#' + t.num + ' ' : '') + t.name;
+  if (!S.oobs) S.oobs = [];
+  if (out > OOB_TOL && !t.oob){
+    const o = { id:'oob' + S.oobs.length, side, team:t.id, name:nm, g:S.g, m:out, back:null, ack:false };
+    S.oobs.push(o); t.oob = o.id; S.ver++;
+    pushFeed(S, side, 'Your team is about ' + out + ' m outside the play area. Move back inside the boundary now.', 'alert', { label:'Boundary', team:true, tid:t.id, only:true });
+    pushFeed(S, side, nm + ' is about ' + out + ' m outside the play area.', 'alert', { label:'Boundary' });
+    pushLog(S, SIDES[side].name + ' ' + nm + ' left the play area (about ' + out + ' m outside)', side);
+  } else if (t.oob && out === 0){
+    const o = S.oobs.find(x => x.id === t.oob); if (o) o.back = S.g; t.oob = null; S.ver++;
+    pushFeed(S, side, 'Your team is back inside the play area.', 'good', { label:'Boundary', team:true, tid:t.id, only:true });
+    pushLog(S, SIDES[side].name + ' ' + nm + ' back inside the play area', side);
+  } else if (t.oob){ const o = S.oobs.find(x => x.id === t.oob); if (o && out > o.m) o.m = out; }
+}
 function engMap(S){ const M = S && S.map && S.map.sw && S.map.ne ? S.map : (typeof globalThis !== 'undefined' && globalThis.MARALA_MAP) || null; return M && !M.preview ? M : null; }
 function sqBounds(M, label){
   const m = /^([A-L])\s*(\d{1,2})$/i.exec(String(label || '').trim()); if (!M || !m) return null;
@@ -1349,7 +1379,7 @@ function ocReqText(S, r){
   if (r.kind === 'site') return (r.who === 'both' ? 'Both wings' : r.side ? SIDES[r.side].name : 'A team') + ' at ' + (r.site === 'town' ? 'Marala Town' : SITES[r.site] ? SITES[r.site].name : 'a site') + (r.text ? ' (' + r.text + ')' : '');
   return 'Message: "' + r.text + '"';
 }
-const DEFAULT_POIS = [{ name:'Interest point 1', pt:[40.8266521, -77.8579746] }, { name:'Interest point 2', pt:[40.82522, -77.86064] }, { name:'Interest point 3', pt:[40.8281669, -77.8600516] }, { name:'Interest point 4', pt:[40.8257776, -77.8619106] }, { name:'Interest point 5', pt:[40.8267134, -77.8611174] }];
+const DEFAULT_POIS = [{ name:'Interest Point #1', pt:[40.8120257, -77.8497737] }, { name:'Interest Point #2', pt:[40.8119932, -77.8487706] }, { name:'Interest Point #3', pt:[40.8138447, -77.84931] }, { name:'Interest Point / Potential Mid Game New Site #4', pt:[40.8142967, -77.8496099] }, { name:'Interest Point #5', pt:[40.813461, -77.8484354] }, { name:'Interest Point #6', pt:[40.813361, -77.847228] }, { name:'Interest Point #7', pt:[40.814048, -77.8474303] }, { name:'Interest Point #8', pt:[40.8147961, -77.8484056] }, { name:'Interest Point #9', pt:[40.8144889, -77.8471931] }];
 function seedPois(S, pois, tag){ (pois || []).forEach((x, i) => { if (x && Array.isArray(x.pt) && x.pt.length === 2 && !S.wps.some(w => !w.del && w.pt[0] === x.pt[0] && w.pt[1] === x.pt[1])) S.wps.push({ id:'poi-' + tag + '-' + i, pt:x.pt, label:String(x.name || '').trim().slice(0, 60) || 'Interest point ' + (i + 1), sym:'star', color:null, to:'none', g:S.g || 0, grid:'', poi:true }); }); }
 const WP_SYMS = { pin:'Marker', obj:'Objective', rally:'Rally point', cp:'Checkpoint', lz:'Landing zone', hazard:'Hazard or IED', aid:'Aid or casualty', supply:'Supply point', fuel:'Fuel', water:'Water', danger:'Danger area', star:'Point of interest', target:'Target', eye:'Observation post', camp:'Camp', building:'Building', vehicle:'Vehicle', radio:'Radio or comms', circle:'Circle', square:'Square', triangle:'Triangle', diamond:'Diamond', plus:'Plus', xmark:'X mark', question:'Unknown', info:'Information', arrow:'Arrow', home:'Home base' };
 function wpSides(to){ return to === 'both' ? ['B', 'R'] : to === 'B' || to === 'R' ? [to] : []; }
@@ -1616,6 +1646,7 @@ function apply(S, e, cfg){
         if (!c.verdict){ c.ping = 'rp-' + e.id; S.pings.push({ id:c.ping, ts:e.ts, g:S.g, to:o, team:null, report:c.id }); }
       }
       break; }
+    case 'oob_ack': { const o = (S.oobs || []).find(x => x.id === p.id); if (o){ o.ack = true; S.ver++; } break; }
     case 'report_ack': { const c = S.contacts.find(x => x.id === p.contact); if (c && c.auto){ c.ack = true; S.ver++; } break; }
     case 'verdict': {
       const c = S.contacts.find(x => x.id === p.contact); if (!c || (c.verdict && !c.auto) || c.verdict === p.verdict) break;
@@ -1702,6 +1733,7 @@ function apply(S, e, cfg){
       else if (p.square){ const b = sqBounds(M, String(p.square).trim().toUpperCase()); if (b) ctr = [(b.n + b.s) / 2, (b.w + b.e) / 2]; }
       if (!ctr){ pushLog(S, nm + ' show of force refused: no valid location', side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: the location could not be read. Choose a site, tap the map, or enter MGRS or lat/long. No show of force was used.', 'alert'); break; }
       const shT = p.site ? SITES[p.site].name : String(p.label || '').trim().slice(0, 40) || (engSquare(M, ctr) ? 'a point in ' + engSquare(M, ctr) : 'the named point');
+      if (boundOut(S, ctr) > 0){ pushLog(S, nm + ' show of force refused: outside the play area', side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: that location is outside the play area. No show of force was used.', 'alert'); break; }
       const hit = [['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ']].find(([k]) => pts[k] && distM(ctr, pts[k]) <= rad);
       if (hit){ pushLog(S, nm + ' show of force refused: the ' + rad + ' m area around ' + shT + ' includes ' + hit[1], side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: the ' + rad + ' m area around ' + shT + ' includes ' + hit[1] + ' (' + distM(ctr, pts[hit[0]]) + ' m away). A show of force cannot cover Marala Town or either HQ. No show of force was used.', 'alert'); break; }
       if (!useUp(S, side, 'show', e, 'Show of force')) break; raise(S, side, ESC.show);
@@ -1837,6 +1869,7 @@ function apply(S, e, cfg){
         const pg = S.pings.find(x => x.id === p.ping);
         if (!pg || !Array.isArray(p.gps)) break;
         const t0 = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:String(p.name || 'Team').slice(0, 40), fixes:[] });
+        oobCheck(S, side, t0, p.gps);
         t0.pingFix = { g:S.g, ts:e.ts, gps:p.gps, acc:p.acc || null, ping:pg.id, pingG:pg.g, late:e.ts - pg.ts > 120000 }; S.ver++;
         if (pg.show){ const r = S.requests.find(x => x.id === pg.show); if (r) showMark(S, r, p.team, { g:S.g, gps:p.gps }, 'GPS'); }
         if (pg.report){ const c = S.contacts.find(x => x.id === pg.report); if (c && c.ans){ if (!c.ans.includes(p.team)) c.ans.push(p.team); matchFix(S, c, p.team, { g:S.g, gps:p.gps }); } }
@@ -1852,6 +1885,7 @@ function apply(S, e, cfg){
       if (p.name) t.name = String(p.name).slice(0, 40);
       const fix = { g:S.g, ts:e.ts, gps:Array.isArray(p.gps) ? p.gps : null, acc:p.acc || null, rep:Array.isArray(p.rep) ? p.rep : null, repText:p.repText || null, status:p.status || null };
       if (fix.gps || fix.rep){ t.fixes.push(fix); if (t.fixes.length > 60) t.fixes.shift(); t.last = fix; }
+      if (fix.gps) oobCheck(S, side, t, fix.gps);
       if (fix.gps) S.requests.filter(r => r.kind === 'show' && r.status === 'open' && r.center && r.side === OTHER[side] && (!r.checked || r.teams[p.team])).forEach(r => showMark(S, r, p.team, fix, 'GPS'));
       if (p.status) t.status = p.status;
       t.g = S.g; S.ver++;
@@ -2931,13 +2965,14 @@ function shortMGRS(M, t){
   return best;
 }
 function fmtPt(pt){ return pt ? GEO.toMGRS(pt[0], pt[1], 5) : ''; }
-const DEFAULT_MAP = { sw:[40.82478, -77.86239], ne:[40.82853, -77.85727], cols:6, rows:5, step:100, field:true,
-  sites:{ harbor:[40.8256542, -77.8587108], fuel:[40.82743, -77.85964], radar:[40.8278642, -77.8582106], airstrip:[40.8251434, -77.8611404], town:[40.8266949, -77.8587905], lzB:[40.82726, -77.86027], lzR:[40.8270209, -77.8577496], wc:[40.8260081, -77.8581213] },
+const DEFAULT_MAP = { sw:[40.81003, -77.85158], ne:[40.81528, -77.84539], cols:7, rows:8, step:100, field:true,
+  sites:{ harbor:[40.8123913, -77.8478867], fuel:[40.8133521, -77.8478894], radar:[40.8130284, -77.8501651], airstrip:[40.8140566, -77.8488071], town:[40.8125352, -77.8487438], lzB:[40.8109796, -77.8502907], lzR:[40.8147392, -77.8461304], wc:[40.8130409, -77.8492211] },
+  outline:[[40.8105392, -77.8515281], [40.8100844, -77.8508844], [40.8114893, -77.8497471], [40.8115786, -77.8485911], [40.8129834, -77.8466801], [40.8140025, -77.8454402], [40.8151758, -77.8454771], [40.8152326, -77.8503372], [40.8131905, -77.8503721], [40.8126911, -77.8504553]],
   pois:DEFAULT_POIS };
 globalThis.MARALA_MAP = DEFAULT_MAP;
 globalThis.MARALA_LOCATE = (M, t) => locate(M, t);
 function lmapEnsure(el, M){
-  const key = JSON.stringify([M.sw, M.ne, M.cols, M.rows, M.step, !!M.preview]);
+  const key = JSON.stringify([M.sw, M.ne, M.cols, M.rows, M.step, !!M.preview, M.outline ? M.outline.length : 0]);
   let st = el._lm;
   if (st && st.key === key) return st;
   if (!st){
@@ -3006,6 +3041,7 @@ function drawGrid(layer, M, mlayer){
   const { cols, rows } = gridDims(M);
   const s = M.sw[0], w = M.sw[1], n = M.ne[0], e = M.ne[1];
   const yl = { color:'#ffd400', weight:2, opacity:.95, interactive:false };
+  if (Array.isArray(M.outline) && M.outline.length > 2) L.polygon(M.outline, { color:'#ffffff', weight:3, opacity:.95, dashArray:'8 6', fill:false, interactive:false }).addTo(layer);
   for (let c = 0; c <= cols; c++){ const x = w + (e - w) * c / cols; L.polyline([[s, x], [n, x]], yl).addTo(layer); }
   for (let r = 0; r <= rows; r++){ const y = n - (n - s) * r / rows; L.polyline([[y, w], [y, e]], yl).addTo(layer); }
   for (let c = 0; c < cols; c++) L.marker([n, w + (e - w) * (c + .5) / cols], { icon:L.divIcon({ className:'gl', html:COLS_L[c], iconSize:[20, 14], iconAnchor:[10, 18] }), interactive:false }).addTo(layer);
@@ -4268,7 +4304,7 @@ function buildWhite(){
     const pois = [];
     $('[data-mpois]', ms).value.split('\n').map(l => l.trim()).filter(Boolean).forEach((l, i) => { const j = l.lastIndexOf('|'), name = (j >= 0 ? l.slice(0, j).trim() : '') || 'Interest point ' + (i + 1), pt = GEO.parsePoint(j >= 0 ? l.slice(j + 1) : l); if (pt) pois.push({ name:name.slice(0, 60), pt }); else bad.push('point of interest "' + l.slice(0, 30) + '"'); });
     if (bad.length){ toast('These didn’t read: ' + bad.join(', ') + '.', true); return; }
-    writeEvent('map_config', null, { sw:box.sw, ne:box.ne, cols:+$('[data-mcols]', ms).value || 6, rows:+$('[data-mrows]', ms).value || 5, step:+$('[data-mstep]', ms).value || 100, sites, pois:pois.slice(0, 30) });
+    writeEvent('map_config', null, { sw:box.sw, ne:box.ne, cols:+$('[data-mcols]', ms).value || 6, rows:+$('[data-mrows]', ms).value || 5, step:+$('[data-mstep]', ms).value || 100, sites, pois:pois.slice(0, 30), outline:mapCfg(app.S).outline || null });
     app.previewMap = null; app.mapFilled = false; toast('Map saved. Every screen now shows it.');
   };
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-act="hreply"]'); if (b) toast('Only the Wing Commanders can answer offers.', true); });
@@ -4287,6 +4323,7 @@ function buildWhite(){
     const a = b.dataset.act, id = b.dataset.id;
     if (a === 'verdict') writeEvent('verdict', null, { contact:id, verdict:b.dataset.v });
     if (a === 'ack') writeEvent('report_ack', null, { contact:id });
+    if (a === 'oobok') writeEvent('oob_ack', null, { id });
     if (a === 'resolve'){ const box = $('#ans-' + id); writeEvent('resolve', null, { req:id, result:b.dataset.r, text:box ? box.value : '' }); }
     if (a === 'void') writeEvent('void', null, { target:id });
     if (a === 'ipdeploy'){ writeEvent('intel_deploy', null, { pid:id, to:b.dataset.to }); toast('Intel package sent.'); }
@@ -4708,6 +4745,7 @@ function renderWhite(S, now){
     '<div class="row" style="flex:0 0 auto"><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="confirm">True · +1</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="duplicate">Duplicate</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="false">False</button></div></div>'));
   S.contacts.filter(c => c.auto && !c.ack && S.g - c.g <= 10).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + (c.kind === 'site' ? 'Site flag' : 'Team') + '</b> <span class="mono">' + esc(c.grid || '') + '</span> <span class="chip ok">' + (c.verdict === 'confirm' ? 'Confirmed automatically' : 'Duplicate automatically') + '</span><div class="small muted">' + esc(c.match ? c.match.name + ', ' + c.match.d + ' m from ' + c.grid + ' at ' + hhmm(c.match.g) : c.kind === 'site' && SITES[c.site] ? SITES[c.site].name + ' held by ' + SIDES[OTHER[c.side]].name : '') + '. Change it only if the O/C reports otherwise.</div></div>' +
     '<div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-act="ack" data-id="' + c.id + '">' + (c.verdict === 'confirm' ? 'Confirm' : 'Agree') + '</button>' + [['confirm', 'True · +1'], ['duplicate', 'Duplicate'], ['false', 'False']].filter(([v]) => v !== c.verdict).map(([v, l]) => '<button type="button" data-act="verdict" data-id="' + c.id + '" data-v="' + v + '">' + l + '</button>').join('') + '</div></div>'));
+  (S.oobs || []).filter(o => !o.back && !o.ack).forEach(o => q.push('<div class="li"><div class="grow"><span class="chip ' + o.side + '">' + SIDES[o.side].name + '</span> <b>Outside the play area</b> <span class="small muted">since ' + hhmm(o.g) + '</span><div class="small">' + esc(o.name) + ', about ' + o.m + ' m beyond the boundary. Clears on its own when the team is back inside.</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-act="oobok" data-id="' + o.id + '">Seen</button></div></div>'));
   const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request', wp:'Waypoint request' };
   S.requests.filter(r => r.status === 'open').forEach(r => {
     let ctl = '';
