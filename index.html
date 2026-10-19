@@ -161,7 +161,7 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .teammap{height:62vh;min-height:300px}
 [hidden]{display:none!important}
 .jambox{height:340px;border-radius:8px;border:2px dashed var(--bad);display:grid;place-content:center;gap:6px;text-align:center;padding:16px;background:repeating-linear-gradient(45deg,transparent 0 12px,rgba(200,40,40,.06) 12px 24px)}.jambox b{color:var(--bad);letter-spacing:.08em}
-.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--body);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 var(--body);cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 2px 2px}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.poi{background:none;border:0}.wpicon{background:none;border:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}.wpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:4px;padding:2px}.wpgrid button{padding:5px 0;display:flex;justify-content:center;align-items:center}.wpgrid button[aria-pressed="true"]{outline:2.5px solid var(--ink);outline-offset:-1px;background:var(--panel-2)}.wpsw{display:flex;gap:4px;flex-wrap:wrap;align-items:center}.wpsw button{width:24px;height:24px;padding:0;border-radius:50%;border:1.5px solid var(--line)}.wpsw input[type=color]{width:34px;height:28px;padding:0 2px}.wcicon{background:none;border:0;filter:drop-shadow(0 0 4px rgba(124,255,107,.9))}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
+.gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--body);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 var(--body);cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 6px 2px 2px;max-height:60vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.poi{background:none;border:0}.wpicon{background:none;border:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}.wpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:4px;padding:2px}.wpgrid button{padding:5px 0;display:flex;justify-content:center;align-items:center}.wpgrid button[aria-pressed="true"]{outline:2.5px solid var(--ink);outline-offset:-1px;background:var(--panel-2)}.wpsw{display:flex;gap:4px;flex-wrap:wrap;align-items:center}.wpsw button{width:24px;height:24px;padding:0;border-radius:50%;border:1.5px solid var(--line)}.wpsw input[type=color]{width:34px;height:28px;padding:0 2px}.wcicon{background:none;border:0;filter:drop-shadow(0 0 4px rgba(124,255,107,.9))}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
 .gl.m{color:#8fe6ff;font-size:10px}.gl.f{color:#bdf0ff;font-size:9px;font-weight:500}.leaflet-pane.contour-pane{filter:brightness(1.7) saturate(1.3)}.cursor-grid{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:3px 8px;font:600 12px/1.3 var(--mono,monospace);pointer-events:none}.gridtog select{width:100%;font-size:13px;padding:2px 4px;margin:0 0 2px;color:#111;background:#fff}
 .leaflet-tooltip.sitelbl,.leaflet-tooltip.teamlbl{background:rgba(10,14,12,.72);color:#fff;border:0;box-shadow:none;font:600 12px/1.2 var(--body);padding:2px 6px}
@@ -341,6 +341,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label for="sGamePin">Game PIN<input id="sGamePin" maxlength="12" autocomplete="off"></label>
         <label class="chk" style="flex:0 0 auto;align-self:end"><input type="checkbox" id="sListed" checked> Show on the game menu</label>
       </div>
+      <div class="row" style="align-items:end"><label for="sMapFile">Map file (optional)<input id="sMapFile" type="file" accept=".json,application/json"></label><p class="small muted" style="margin:0;flex:2 1 260px">Leave empty to use the standard Area 5 map. Choose a map file, such as the training layout, to start this game on that map instead.</p></div>
       <div class="row">
         <label for="sName">Game name<input id="sName" value="Capstone" required></label>
         <label for="sPinW">White cell PIN<input id="sPinW" required autocomplete="off"></label>
@@ -2516,8 +2517,16 @@ $('#adminForm').addEventListener('submit', ev => {
 });
 function words(t){ return Array.from(new Set(String(t || '').split(/[,;\n]+/).map(w => w.trim().toUpperCase()).filter(Boolean))); }
 function codeList(salt, id){ return { cap:words($('#c' + id).value).map(w => secret(salt, w)), def:words($('#d' + id).value).map(w => secret(salt, w)) }; }
+async function readMapFile(fl){
+  let d = null; try { d = JSON.parse(await fl.text()); } catch(e){}
+  const m = d && d.app === 'marala-map' ? d.map : null, okPt = q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite);
+  if (!m || !okPt(m.sw) || !okPt(m.ne) || !m.sites || !Object.values(m.sites).every(okPt)) throw new Error('That is not a Marala map file.');
+  return { name:d.name || fl.name, p:{ sw:m.sw, ne:m.ne, cols:+m.cols || 7, rows:+m.rows || 8, step:+m.step || 100, sites:m.sites, pois:(Array.isArray(m.pois) ? m.pois : []).filter(x => x && okPt(x.pt)).slice(0, 30), outline:Array.isArray(m.outline) && m.outline.every(okPt) ? m.outline : null } };
+}
 $('#setupForm').addEventListener('submit', async ev => {
   ev.preventDefault();
+  let mapEv = null;
+  { const fl = $('#sMapFile').files[0]; if (fl){ try { const mf = await readMapFile(fl); mapEv = { id:'map' + uid(), ts:Date.now(), type:'map_config', side:null, by:'W', p:mf.p }; } catch(e){ $('#setupErr').hidden = false; $('#setupErr').textContent = e.message; return; } } }
   const salt = Math.random().toString(36).slice(2, 10);
   const val = id => $(id).value.trim();
   const pins = { W:val('#sPinW'), B:val('#sPinB'), R:val('#sPinR'), TB:val('#sPinTB'), TR:val('#sPinTR'), OC:val('#sPinOC') };
@@ -2531,13 +2540,14 @@ $('#setupForm').addEventListener('submit', async ev => {
     const gpin = $('#sGamePin').value;
     if (!normPin(gpin)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter a game PIN.'; return; }
     cfg.blank = true;
-    try { await adminCreate(cfg, [], gpin, $('#sListed').checked); $('#setupForm').reset(); app.wantSetup = false; app.wantAdmin = true; toast('Game created: ' + cfg.name + '.'); route(); }
+    try { await adminCreate(cfg, mapEv ? [mapEv] : [], gpin, $('#sListed').checked); $('#setupForm').reset(); app.wantSetup = false; app.wantAdmin = true; toast('Game created: ' + cfg.name + '.'); route(); }
     catch(err){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'The game was not created (' + ((err && err.code) || err.message || 'error') + '). Check that you are signed in as admin.'; }
     return;
   }
   try {
     const gid = await createGame(cfg);
     LS.set('marala-role-' + gid, 'W');
+    if (mapEv) await writeEvent('map_config', null, mapEv.p);
     app.wantSetup = false; app.role = app.mode === 'local' ? 'W' : null;
     $('#setupForm').reset();
     toast('Game created. You are on the white cell view.');
@@ -2980,14 +2990,14 @@ function lmapEnsure(el, M){
     const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true, zoomSnap:0.25 });
     map.createPane('contour-pane'); map.getPane('contour-pane').style.zIndex = 250; map.getPane('contour-pane').classList.add('contour-pane');
     const contours = new ContourLayer('', { pane:'contour-pane', tileSize:512, zoomOffset:-1, maxZoom:20, maxNativeZoom:18, minZoom:12, updateWhenIdle:true, keepBuffer:3, attribution:'Contours: USGS 3DEP' });
-    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup(), wc:L.layerGroup(), wp:L.layerGroup(), wpB:L.layerGroup(), wpR:L.layerGroup(), wpq:L.layerGroup() }, key:null };
+    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gBound:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup(), wc:L.layerGroup(), wp:L.layerGroup(), wpB:L.layerGroup(), wpR:L.layerGroup(), wpq:L.layerGroup() }, key:null };
     applyGridPref(st);
     const tog = L.control({ position:'topright' });
     tog.onAdd = () => {
       const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref();
       d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => (app.role === 'W' || app.role === 'OC') ? k !== 'wp' : !['wpB', 'wpR', 'wpq'].includes(k)).map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
       L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
-      d.querySelector('[data-gtbtn]').onclick = () => { const l = d.querySelector('.gt-list'); l.hidden = !l.hidden; };
+      d.querySelector('[data-gtbtn]').onclick = () => { const l = d.querySelector('.gt-list'); l.hidden = !l.hidden; if (!l.hidden) l.style.maxHeight = Math.max(120, map.getSize().y - 70) + 'px'; };
       d.addEventListener('change', ev => { if (ev.target.matches('[data-gtbase]')){ const np = gridPref(); np.base = ev.target.value; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gtbase]').forEach(x => x.value = np.base); $$('.lmap').forEach(x => { if (x._lm) applyGridPref(x._lm); }); return; } const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gt="' + k + '"]').forEach(x => x.checked = ev.target.checked); $$('.lmap').forEach(x => { if (!x._lm) return; applyGridPref(x._lm); drawFine(x._lm); if (x._lm.args && app.S) drawDyn(x._lm, app.S, x._lm.args[0], x._lm.args[1]); }); });
       return d;
     };
@@ -3010,22 +3020,23 @@ function lmapEnsure(el, M){
     });
     setTimeout(() => map.invalidateSize(), 60);
   }
-  st.key = key; st.M = M; st.gPlay.clearLayers(); st.gMgrs.clearLayers();
+  st.key = key; st.M = M; st.gPlay.clearLayers(); st.gMgrs.clearLayers(); st.gBound.clearLayers();
   if (!M.preview) drawGrid(st.gPlay, M, st.gMgrs);
+  if (!M.preview && Array.isArray(M.outline) && M.outline.length > 2) L.polygon(M.outline, { color:'#ffffff', weight:3, opacity:.95, dashArray:'8 6', fill:false, interactive:false }).addTo(st.gBound);
   const b = L.latLngBounds([M.sw, M.ne]);
   st.map.fitBounds(b, { padding:[12, 12] });
   if (!M.preview) st.map.setMaxBounds(b.pad(1.5)); else st.map.setMaxBounds(null);
   drawFine(st);
   return st;
 }
-const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White cell location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'BLUFOR waypoints', '#5b8cff'], ['wpR', 'REDFOR waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8']];
-const LAYER_DEFAULTS = { base:'sat', play:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true, wpB:true, wpR:true, wpq:true };
+const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['bounds', 'Play area boundary', '#ffffff'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White cell location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'BLUFOR waypoints', '#5b8cff'], ['wpR', 'REDFOR waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8']];
+const LAYER_DEFAULTS = { base:'sat', play:true, bounds:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true, wpB:true, wpR:true, wpq:true };
 function gridPref(){ try { return Object.assign({}, LAYER_DEFAULTS, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return Object.assign({}, LAYER_DEFAULTS); } }
 function applyGridPref(st){
   const pr = gridPref();
   const bk = BASEMAPS[pr.base] ? pr.base : 'sat';
   if (st.baseKey !== bk){ if (st.base) st.map.removeLayer(st.base); const B = BASEMAPS[bk]; st.base = L.tileLayer(B.url, { maxZoom:20, maxNativeZoom:B.nz, attribution:B.attr }).addTo(st.map); st.base.bringToBack(); st.baseKey = bk; }
-  [['play', st.gPlay], ['mgrs', st.gMgrs], ['fine', st.gFine], ['contours', st.contours]].forEach(([k, g]) => { if (pr[k] && !st.map.hasLayer(g)) g.addTo(st.map); if (!pr[k] && st.map.hasLayer(g)) st.map.removeLayer(g); });
+  [['play', st.gPlay], ['bounds', st.gBound], ['mgrs', st.gMgrs], ['fine', st.gFine], ['contours', st.contours]].forEach(([k, g]) => { if (pr[k] && !st.map.hasLayer(g)) g.addTo(st.map); if (!pr[k] && st.map.hasLayer(g)) st.map.removeLayer(g); });
   if (st.lay) Object.entries(st.lay).forEach(([k, g]) => { if (pr[k] && !st.dyn.hasLayer(g)) st.dyn.addLayer(g); if (!pr[k] && st.dyn.hasLayer(g)) st.dyn.removeLayer(g); });
 }
 function teamIcon(sd, num, opts){
@@ -3041,7 +3052,6 @@ function drawGrid(layer, M, mlayer){
   const { cols, rows } = gridDims(M);
   const s = M.sw[0], w = M.sw[1], n = M.ne[0], e = M.ne[1];
   const yl = { color:'#ffd400', weight:2, opacity:.95, interactive:false };
-  if (Array.isArray(M.outline) && M.outline.length > 2) L.polygon(M.outline, { color:'#ffffff', weight:3, opacity:.95, dashArray:'8 6', fill:false, interactive:false }).addTo(layer);
   for (let c = 0; c <= cols; c++){ const x = w + (e - w) * c / cols; L.polyline([[s, x], [n, x]], yl).addTo(layer); }
   for (let r = 0; r <= rows; r++){ const y = n - (n - s) * r / rows; L.polyline([[y, w], [y, e]], yl).addTo(layer); }
   for (let c = 0; c < cols; c++) L.marker([n, w + (e - w) * (c + .5) / cols], { icon:L.divIcon({ className:'gl', html:COLS_L[c], iconSize:[20, 14], iconAnchor:[10, 18] }), interactive:false }).addTo(layer);
@@ -4296,11 +4306,9 @@ function buildWhite(){
   $$('[data-muse]', ms).forEach(b => b.onclick = () => { if (!app.lastClick){ toast('Click a point on the map first.', true); return; } $('[data-mp="' + b.dataset.muse + '"]', ms).value = fmtPt(app.lastClick); });
   $('#mFile', ms).onchange = async () => {
     const fl = $('#mFile', ms).files[0]; $('#mFile', ms).value = ''; if (!fl) return;
-    let d = null; try { d = JSON.parse(await fl.text()); } catch(e){}
-    const m = d && d.app === 'marala-map' ? d.map : null, okPt = q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite);
-    if (!m || !okPt(m.sw) || !okPt(m.ne) || !m.sites || !Object.values(m.sites).every(okPt)){ toast('That is not a Marala map file.', true); return; }
-    if (!confirm('Replace this game\u2019s map with "' + (d.name || fl.name) + '"? Every screen will show it.')) return;
-    await writeEvent('map_config', null, { sw:m.sw, ne:m.ne, cols:+m.cols || 7, rows:+m.rows || 8, step:+m.step || 100, sites:m.sites, pois:(Array.isArray(m.pois) ? m.pois : []).filter(x => x && okPt(x.pt)).slice(0, 30), outline:Array.isArray(m.outline) && m.outline.every(okPt) ? m.outline : null });
+    let mf; try { mf = await readMapFile(fl); } catch(e){ toast(e.message, true); return; }
+    if (!confirm('Replace this game\u2019s map with "' + mf.name + '"? Every screen will show it.')) return;
+    await writeEvent('map_config', null, mf.p);
     app.previewMap = null; app.mapFilled = false; refresh(true); toast('Map loaded. Every screen now shows it.');
   };
   $('[data-msave]', ms).onclick = () => {
