@@ -1316,6 +1316,15 @@ function validPkg(k){
   return k && typeof k.id === 'string' && /^c[\w-]{3,40}$/.test(k.id) && Array.isArray(k.opts) && k.opts.length >= 2 && k.opts.length <= 8 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string';
 }
 function intelKey(pid, kind, val){ return secret('marala-intel', pid + ':' + kind + ':' + val); }
+const PICK_CACHE = new Map();
+function intelPicks(P, h){
+  const ck = P.id + '|' + h + '|' + P.opts.length; if (PICK_CACHE.has(ck)) return PICK_CACHE.get(ck);
+  const n = Math.min(P.opts.length, 8); let as = [];
+  for (let i = 0; i < n && !as.length; i++) if (intelKey(P.id, 'a', i) === h) as = [i];
+  for (let m = 1; m < (1 << n) && !as.length; m++){ const set = []; for (let i = 0; i < n; i++) if (m & (1 << i)) set.push(i); if (set.length > 1 && intelKey(P.id, 'a', set.join('')) === h) as = set; }
+  PICK_CACHE.set(ck, as); return as;
+}
+function intelAnswers(P){ return intelPicks(P, P.a); }
 const IPB_KINDS = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT', 'OSINT'];
 const IED_HIT = 5;
 const TCHAT_EVERY = 15;
@@ -1436,11 +1445,14 @@ function intelOpen(S, pid, side){ const o = S.intelOut[pid]; return o ? o[side] 
 function gradeIntel(S, P, i, side, o){
   const keep = S.g; S.g = o.due; o.done = true; S.intelVer++;
   const ans = S.intel[side][P.id];
-  const okA = !!(ans && ans.a === P.a), okF = !!(ans && ans.f === P.f), pts = (okA ? 2 : 0) + (okF ? 2 : 0);
-  if (ans){ ans.okA = okA; ans.okF = okF; ans.pts = pts; }
+  const okA = !!(ans && ans.a === P.a), okF = !!(ans && ans.f === P.f);
+  let partA = false;
+  if (ans && !okA){ const right = intelAnswers(P), mine = intelPicks(P, ans.a), hits = mine.filter(k => right.includes(k)).length; partA = right.length > 1 && hits >= 1 && hits > mine.length - hits; }
+  const pts = (okA ? 2 : partA ? 1 : 0) + (okF ? 2 : 0);
+  if (ans){ ans.okA = okA; ans.partA = partA; ans.okF = okF; ans.pts = pts; }
   S.pts[side].intel += pts;
-  pushFeed(S, side, 'Intel package ' + (i + 1) + ' results: ' + (ans ? 'answer ' + (okA ? 'right' : 'wrong') + ', false intel ' + (okF ? 'right' : 'wrong') + '. +' + pts + ' points.' : 'no answer in time. +0.'), pts ? 'good' : 'alert', { label:'Intel' });
-  pushLog(S, SIDES[side].name + ' intel package ' + (i + 1) + ': ' + (ans ? (okA ? 'answer right' : 'answer wrong') + ', ' + (okF ? 'false intel right' : 'false intel wrong') : 'no answer') + ' (+' + pts + ')', side);
+  pushFeed(S, side, 'Intel package ' + (i + 1) + ' results: ' + (ans ? 'answer ' + (okA ? 'right' : partA ? 'partly right' : 'wrong') + ', false intel ' + (okF ? 'right' : 'wrong') + '. +' + pts + ' points.' : 'no answer in time. +0.'), pts ? 'good' : 'alert', { label:'Intel' });
+  pushLog(S, SIDES[side].name + ' intel package ' + (i + 1) + ': ' + (ans ? (okA ? 'answer right' : partA ? 'answer partly right' : 'answer wrong') + ', ' + (okF ? 'false intel right' : 'false intel wrong') : 'no answer') + ' (+' + pts + ')', side);
   S.g = Math.max(keep, o.due);
   if (S.step) S.step(S, null);
 }
@@ -3734,14 +3746,6 @@ function buildWing(side){
   $('[data-fullmap]', v).onclick = () => openFullMap(side);
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-act="hreply"]'); if (!b) return; writeEvent('handover_reply', side, { offer:b.dataset.id, accept:b.dataset.acc === '1' }); toast(b.dataset.acc === '1' ? 'Handover accepted.' : 'Sent.'); });
 }
-const TRUTH_CACHE = new Map();
-function intelAnswers(P){
-  const ck = P.id + '|' + P.a + '|' + P.opts.length; if (TRUTH_CACHE.has(ck)) return TRUTH_CACHE.get(ck);
-  const n = Math.min(P.opts.length, 8); let as = [];
-  for (let i = 0; i < n && !as.length; i++) if (intelKey(P.id, 'a', i) === P.a) as = [i];
-  for (let m = 1; m < (1 << n) && !as.length; m++){ const set = []; for (let i = 0; i < n; i++) if (m & (1 << i)) set.push(i); if (set.length > 1 && intelKey(P.id, 'a', set.join('')) === P.a) as = set; }
-  TRUTH_CACHE.set(ck, as); return as;
-}
 function ansText(P, tr){ return tr.as.length ? tr.as.map(k => fillT(P.opts[k] || '')).join(' and ') : '?'; }
 function intelTruth(P){
   const as = intelAnswers(P), a = as.length ? as[0] : -1;
@@ -3798,7 +3802,7 @@ function renderIntel(S, side, v){
     $$('input, button', f).forEach(el => el.disabled = !!mine || done || S.endex);
     if (done){
       const tr = intelTruth(P);
-      const res = mine ? ('Answer ' + (mine.okA ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · False intel ' + (mine.okF ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · <b>+' + (mine.pts || 0) + '</b>') : '<span class="chip no">No answer in time</span> · +0';
+      const res = mine ? ('Answer ' + (mine.okA ? '<span class="chip ok">right</span>' : mine.partA ? '<span class="chip wait">partly right</span>' : '<span class="chip no">wrong</span>') + ' · False intel ' + (mine.okF ? '<span class="chip ok">right</span>' : '<span class="chip no">wrong</span>') + ' · <b>+' + (mine.pts || 0) + '</b>') : '<span class="chip no">No answer in time</span> · +0';
       st.innerHTML = res + '<div class="small muted">Correct: ' + esc(ansText(P, tr)) + '. False: ' + esc(falseText(P, tr)) + '.</div>';
     } else if (mine){
       st.innerHTML = '<span class="chip wait">Locked in ' + hhmm(mine.g) + '</span> <span class="small muted">Results at ' + hhmm(o.due) + '.</span>';
