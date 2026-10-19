@@ -341,7 +341,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label for="sGamePin">Game PIN<input id="sGamePin" maxlength="12" autocomplete="off"></label>
         <label class="chk" style="flex:0 0 auto;align-self:end"><input type="checkbox" id="sListed" checked> Show on the game menu</label>
       </div>
-      <div class="row" style="align-items:end"><label for="sMapFile">Map file (optional)<input id="sMapFile" type="file" accept=".json,application/json"></label><p class="small muted" style="margin:0;flex:2 1 260px">Leave empty to use the standard Area 5 map. Choose a map file, such as the training layout, to start this game on that map instead.</p></div>
+      <div class="row" style="align-items:end"><label for="sMapFile">Map file (optional)<input id="sMapFile" type="file" accept=".json,application/json"></label><button type="button" id="sMapClear" style="flex:0 0 auto">Clear</button><p class="small muted" style="margin:0;flex:2 1 260px">Leave empty to use the standard Area 5 map. Choose a map file, such as the training layout, to start this game on that map instead.</p></div>
       <div class="row">
         <label for="sName">Game name<input id="sName" value="Capstone" required></label>
         <label for="sPinW">White cell PIN<input id="sPinW" required autocomplete="off"></label>
@@ -352,8 +352,8 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label for="sPinTB">BLUFOR fireteam PIN<input id="sPinTB" required autocomplete="off"></label>
         <label for="sPinTR">REDFOR fireteam PIN<input id="sPinTR" required autocomplete="off"></label>
         <label for="sPinOC">POC PIN<input id="sPinOC" required autocomplete="off"></label>
-        <label for="sStart">Board clock starts at<input id="sStart" value="0830" maxlength="5" inputmode="numeric" required></label>
-        <label for="sLen">Game length (minutes)<input id="sLen" type="number" min="30" max="300" step="5" value="165" required></label>
+        <label for="sStart">Board clock starts at<input id="sStart" value="0600" maxlength="5" inputmode="numeric" required></label>
+        <label for="sLen">Game length (minutes)<input id="sLen" type="number" min="30" max="300" step="5" value="120" required></label>
       </div>
       <p class="small muted" style="margin:0">Separate code words with commas. Capture and defense words are single-use. If a site has no defense words, its capture words also defend.</p>
       <div class="row">
@@ -1243,7 +1243,7 @@ function aidClock(S, g){
   }
 }
 const REPORT_PTS = 1, MATCH_BASE = 30, MATCH_PER_MIN = 40, MATCH_WIN = 8, MATCH_DUP = 10, MATCH_WAIT = 3;
-const OOB_TOL = 15;
+const OOB_TOL = 15, GUESS_MAX = 3, GUESS_WIN = 10, GUESS_LOCK = 5;
 function boundOut(S, pt){
   const M = engMap(S), P = M && Array.isArray(M.outline) && M.outline.length > 2 ? M.outline : null;
   if (!P || !Array.isArray(pt)) return 0;
@@ -1555,8 +1555,19 @@ function apply(S, e, cfg){
     case 'office': S.office[side] = !!p.on && S.access[side]; pushLog(S, nm + ' town office ' + (S.office[side] ? 'opened' : 'closed'), side, e); break;
     case 'claim': {
       const c = { id:e.id, side, site:p.site, g:S.g, status:'rejected', note:'' };
-      const okm = codeMatch(cfg, p.site, p.code, S), ok = okm.cap || okm.def;
-      if (!ok){ c.note = 'Code word did not match.'; }
+      if (!S.codeLock) S.codeLock = {}; if (!S.badCodes) S.badCodes = {}; if (!S.guessAlerts) S.guessAlerts = [];
+      const lk = side + ':' + p.site, okm = codeMatch(cfg, p.site, p.code, S), ok = okm.cap || okm.def;
+      if (S.codeLock[lk] != null && S.g < S.codeLock[lk]){ c.note = 'Locked until ' + hhmm(S.codeLock[lk]) + ' after ' + GUESS_MAX + ' wrong code words. Earn the code word at the site.'; }
+      else if (!ok){
+        c.note = 'Code word did not match.';
+        const recent = (S.badCodes[lk] || []).filter(g => S.g - g < GUESS_WIN); recent.push(S.g); S.badCodes[lk] = recent;
+        if (recent.length >= GUESS_MAX){
+          S.codeLock[lk] = S.g + GUESS_LOCK; S.badCodes[lk] = [];
+          const where = p.site === 'town' ? 'Marala Town office' : SITES[p.site] ? SITES[p.site].name : p.site;
+          c.note = 'Code word did not match. ' + GUESS_MAX + ' wrong code words in ' + GUESS_WIN + ' minutes: ' + where + ' claims are locked for your wing until ' + hhmm(S.codeLock[lk]) + '.';
+          S.guessAlerts.push({ id:'ga' + S.guessAlerts.length, side, site:p.site, where, g:S.g, until:S.codeLock[lk], ack:false });
+        }
+      }
       else if (p.site === 'town'){
         if (!S.access[side]) c.note = 'Town office closed by the mayor.';
         else { c.status = 'accepted'; c.note = S.office[side] ? 'Office already open.' : 'Town office open.'; S.office[side] = true; }
@@ -1647,6 +1658,7 @@ function apply(S, e, cfg){
         if (!c.verdict){ c.ping = 'rp-' + e.id; S.pings.push({ id:c.ping, ts:e.ts, g:S.g, to:o, team:null, report:c.id }); }
       }
       break; }
+    case 'guess_ack': { const a = (S.guessAlerts || []).find(x => x.id === p.id); if (a){ a.ack = true; S.ver++; } break; }
     case 'oob_ack': { const o = (S.oobs || []).find(x => x.id === p.id); if (o){ o.ack = true; S.ver++; } break; }
     case 'report_ack': { const c = S.contacts.find(x => x.id === p.contact); if (c && c.auto){ c.ack = true; S.ver++; } break; }
     case 'verdict': {
@@ -1992,10 +2004,10 @@ function apply(S, e, cfg){
       if (!S.ocPos) S.ocPos = {}; S.ocPos[o.id] = { pt:p.pt, acc:p.acc || null, ts:e.ts, g:S.g, ping:p.ping || null }; S.ver++;
       break; }
     case 'tpl_save': {
-      const t = p.tpl || {}, id = String(t.id || '').slice(0, 40), text = String(t.text || '').trim().slice(0, 400), label = String(t.label || '').trim().slice(0, 60);
+      const t = p.tpl || {}, id = String(t.id || '').slice(0, 40), text = String(t.text || '').trim().slice(0, 700), label = String(t.label || '').trim().slice(0, 60);
       if (!/^t[\w-]{3,40}$/.test(id) || !text || !label){ pushLog(S, 'Inject template refused: incomplete', null, e, 'rejected'); break; }
       if (!S.tpls) S.tpls = [];
-      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:String(t.from || 'Higher headquarters').trim().slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 200) };
+      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:String(t.from || 'Higher headquarters').trim().slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 500) };
       const ix = S.tpls.findIndex(x => x.id === id), ph = String(t.phase || (ix >= 0 && S.tpls[ix].phase) || '').trim().slice(0, 20); if (ph) tp.phase = ph; if (ix >= 0) S.tpls[ix] = tp; else S.tpls.push(tp); S.ver++;
       pushLog(S, 'Inject template ' + (ix >= 0 ? 'updated' : 'saved') + ': ' + label, null, e);
       break; }
@@ -2129,7 +2141,7 @@ function voidNotice(S, t, e, restore){
   pushFeed(S, dest || 'both', text, restore ? 'hq' : 'alert', { label:'White cell', team:false });
   pushLog(S, (restore ? 'Restored: ' : 'Voided: ') + what + (at ? ' from ' + at : '') + (sd ? ' (' + SIDES[sd].name + ')' : ''), sd, e);
 }
-function replay(cfg, events, now, step){
+function replay(cfg, events, now, step, cache){
   const byId = new Map(events.map(e => [e.id, e]));
   const allVoids = events.filter(e => e.type === 'void' && e.p && byId.has(e.p.target));
   const undone = new Set(allVoids.map(v => v.p.target));
@@ -2142,15 +2154,40 @@ function replay(cfg, events, now, step){
   const S = newState();
   S.blank = !!(cfg && cfg.blank);
   if (step) S.step = step;
-  for (const e of evs){
-    const g = gameAt(S, e.ts);
-    runTicks(S, g);
-    S.g = Math.max(S.g, Math.min(g, END_G));
-    if (e.type === 'void'){ const t = byId.get(e.p.target); if (t.type === 'void') voidNotice(S, byId.get(t.p && t.p.target), e, true); else voidNotice(S, t, e, false); if (step) step(S, e); continue; }
-    if (S.endex && e.by !== 'W' && e.by !== 'white' && /^act_|^contact|^claim/.test(e.type)){ pushLog(S, SIDES[e.side].name + ' action after ENDEX ignored', e.side, e, 'rejected'); continue; }
-    apply(S, e, cfg); aidSync(S);
-    if (step) step(S, e);
+  for (const e of evs) stepEvent(S, e, cfg, byId, step);
+  if (cache){ cache.cfg = cfg; cache.n = events.length; cache.ids = new Set(events.map(e => e.id)); const L = evs[evs.length - 1]; cache.last = L ? [L.ts, L.id] : [-Infinity, '']; cache.win = ws ? Object.assign({}, cfg, { startG:ws.p.startG, lengthMin:ws.p.lengthMin }) : cfg; cache.sites = JSON.stringify([SITE_KEYS, SITES]); cache.S = structuredClone(S); }
+  return finishAt(S, now);
+}
+const REPLAY_FULL = new Set(['void', 'window_set', 'clock_start', 'site_new', 'site_remove']);
+function stepEvent(S, e, cfg, byId, step){
+  const g = gameAt(S, e.ts);
+  runTicks(S, g);
+  S.g = Math.max(S.g, Math.min(g, END_G));
+  if (e.type === 'void'){ const t = byId.get(e.p.target); if (t.type === 'void') voidNotice(S, byId.get(t.p && t.p.target), e, true); else voidNotice(S, t, e, false); if (step) step(S, e); return; }
+  if (S.endex && e.by !== 'W' && e.by !== 'white' && /^act_|^contact|^claim/.test(e.type)){ pushLog(S, SIDES[e.side].name + ' action after ENDEX ignored', e.side, e, 'rejected'); return; }
+  apply(S, e, cfg); aidSync(S);
+  if (step) step(S, e);
+}
+function replayCached(cache, cfg, events, now){
+  if (cache.S && cache.cfg === cfg && events.length >= cache.n){
+    const fresh = events.length === cache.n ? [] : events.filter(e => !cache.ids.has(e.id));
+    const after = e => e.ts > cache.last[0] || (e.ts === cache.last[0] && e.id > cache.last[1]);
+    if (fresh.length === events.length - cache.n && fresh.every(e => !REPLAY_FULL.has(e.type) && after(e))){
+      setWindow(cache.win);
+      const [keys, sites] = JSON.parse(cache.sites); SITE_KEYS.length = 0; keys.forEach(k => SITE_KEYS.push(k)); Object.keys(SITES).forEach(k => { if (!sites[k]) delete SITES[k]; }); Object.assign(SITES, sites);
+      const S = structuredClone(cache.S);
+      if (fresh.length){
+        fresh.sort((a, b) => (a.ts - b.ts) || (a.id < b.id ? -1 : 1));
+        const byId = new Map(events.map(e => [e.id, e]));
+        fresh.forEach(e => { stepEvent(S, e, cfg, byId); cache.ids.add(e.id); });
+        cache.n = events.length; const L = fresh[fresh.length - 1]; cache.last = [L.ts, L.id]; cache.sites = JSON.stringify([SITE_KEYS, SITES]); cache.S = structuredClone(S);
+      }
+      return finishAt(S, now);
+    }
   }
+  return replay(cfg, events, now, null, cache);
+}
+function finishAt(S, now){
   const gNow = gameAt(S, now);
   runTicks(S, gNow);
   S.g = S.endex ? END_G : (S.clock.started ? gNow : START_G);
@@ -2166,7 +2203,7 @@ function score(S, side){
   const war = S.war ? Math.trunc(sub / 2) - sub : 0;
   return { hold, sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, iedhit:v.iedhit || 0, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
 }
-if (typeof module !== 'undefined') module.exports = { uavEvery, contendCost, dugIn, SITE_CAP, SITE_HOLD, SITE_END, allProblems, setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, JAM_EVERY, JAM_MIN, jammed, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
+if (typeof module !== 'undefined') module.exports = { replayCached, uavEvery, contendCost, dugIn, SITE_CAP, SITE_HOLD, SITE_END, allProblems, setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, JAM_EVERY, JAM_MIN, jammed, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
 </script>
 
 <script>
@@ -2524,6 +2561,7 @@ async function readMapFile(fl){
   if (!m || !okPt(m.sw) || !okPt(m.ne) || !m.sites || !Object.values(m.sites).every(okPt)) throw new Error('That is not a Marala map file.');
   return { name:d.name || fl.name, p:{ sw:m.sw, ne:m.ne, cols:+m.cols || 7, rows:+m.rows || 8, step:+m.step || 100, sites:m.sites, pois:(Array.isArray(m.pois) ? m.pois : []).filter(x => x && okPt(x.pt)).slice(0, 30), outline:Array.isArray(m.outline) && m.outline.every(okPt) ? packOutline(m.outline) : null } };
 }
+$('#sMapClear').onclick = () => { $('#sMapFile').value = ''; };
 $('#setupForm').addEventListener('submit', async ev => {
   ev.preventDefault();
   let mapEv = null;
@@ -4134,15 +4172,16 @@ function buildWhite(){
         <p class="small muted" style="margin:0">Samples are starting points only. Nothing appears under Send a message until it is saved here, and every saved template can be edited or deleted.</p>
         <form class="stack" data-tplf>
           <div class="row"><label for="tplLabel">Name<input id="tplLabel" name="label" maxlength="60" required placeholder="Example: IED tip (BLUFOR)"></label><label for="tplTo" style="flex:0 0 160px">To<select id="tplTo" name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label for="tplFrom" style="flex:0 0 200px">From<input id="tplFrom" name="from" maxlength="30" value="Higher headquarters"></label></div>
-          <label for="tplText">Message<textarea id="tplText" name="text" maxlength="400" required placeholder="Example: Locals saw men burying something on your supply road. Check it before your next move."></textarea></label>
-          <div class="row"><label for="tplAt" style="flex:0 0 200px">Planned time (minutes after STARTEX)<input id="tplAt" name="at" type="number" min="0" max="300" placeholder="Optional"></label><label for="tplLvl" style="flex:0 0 220px">Or send at escalation level<select id="tplLvl" name="lvl"><option value="">No level</option><option value="1">Tension or higher</option><option value="2">Crisis or higher</option><option value="3">Brink or higher</option></select></label><label for="tplNote">White cell note (only the white cell sees it)<input id="tplNote" name="note" maxlength="200" placeholder="Optional: what the POCs need to set up"></label></div>
+          <label for="tplText">Message<textarea id="tplText" name="text" maxlength="700" required placeholder="Example: Locals saw men burying something on your supply road. Check it before your next move."></textarea></label>
+          <div class="row"><label for="tplAt" style="flex:0 0 200px">Planned time (minutes after STARTEX)<input id="tplAt" name="at" type="number" min="0" max="300" placeholder="Optional"></label><label for="tplLvl" style="flex:0 0 220px">Or send at escalation level<select id="tplLvl" name="lvl"><option value="">No level</option><option value="1">Tension or higher</option><option value="2">Crisis or higher</option><option value="3">Brink or higher</option></select></label><label for="tplNote">White cell note (only the white cell sees it)<input id="tplNote" name="note" maxlength="500" placeholder="Optional: what the POCs need to set up"></label></div>
           <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto" data-tplsave>Save template</button><button type="button" data-tplclear style="flex:0 0 auto">Clear</button><span class="small muted" data-tplmode></span></div>
         </form>
         <h3 class="small muted" style="margin:6px 0 0">Templates in this game</h3><div class="list" data-tpllist></div>
       </div>
       <div class="panel span2 stack" data-sec="create"><h2>Creation files</h2>
         <p class="small muted" style="margin:0">Download every intel package and inject template built in this game as one file, including photos and map points. Send the file to the exercises officers, who upload it into the game where it will be used. Uploading adds to a game; it never deletes anything.</p>
-        <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-crexport style="flex:0 0 auto">Download packages and injects</button><label for="crImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload a creation file<input id="crImport" type="file" accept=".json,application/json" style="display:none"></label></div>
+        <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-crexport style="flex:0 0 auto">Download packages and injects</button><label for="crImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload creation files<input id="crImport" type="file" accept=".json,application/json" multiple style="display:none"></label><label for="crCombine" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Combine files into one<input id="crCombine" type="file" accept=".json,application/json" multiple style="display:none"></label></div>
+        <p class="small muted" style="margin:0">Upload creation files adds every package and template from the files you choose to this game. Combine files into one merges several teams’ files into a single download without changing this game; use it to review everything before execution day.</p>
       </div>
       <div class="panel" data-sec="setup"><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
@@ -4187,7 +4226,8 @@ function buildWhite(){
       if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = t.from || 'Higher headquarters'; tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
       if (d){ const t = (S.tpls || []).find(x => x.id === d.dataset.tpldel); if (t && confirm('Delete the template "' + t.label + '"?')) writeEvent('tpl_del', null, { id:t.id }); } });
     $('[data-crexport]', v).onclick = crExport;
-    $('#crImport', v).onchange = () => { const fl = $('#crImport', v).files[0]; $('#crImport', v).value = ''; if (fl) crImport(fl); }; }
+    $('#crImport', v).onchange = () => { const fl = Array.from($('#crImport', v).files); $('#crImport', v).value = ''; if (fl.length) crImport(fl); };
+    $('#crCombine', v).onchange = () => { const fl = Array.from($('#crCombine', v).files); $('#crCombine', v).value = ''; if (fl.length) crCombine(fl); }; }
   $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'); if (!b) return; const t = allTemplates(app.S)[+b.dataset.tpl]; if (!t) return; const f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = t.from || 'Higher headquarters'; f.text.value = fillT(t.text); f.text.focus(); });
   $('[data-fullmap]', v).onclick = () => openFullMap(null);
   ipbWire(v);
@@ -4342,6 +4382,7 @@ function buildWhite(){
     if (a === 'verdict') writeEvent('verdict', null, { contact:id, verdict:b.dataset.v });
     if (a === 'ack') writeEvent('report_ack', null, { contact:id });
     if (a === 'oobok') writeEvent('oob_ack', null, { id });
+    if (a === 'guessok') writeEvent('guess_ack', null, { id });
     if (a === 'resolve'){ const box = $('#ans-' + id); writeEvent('resolve', null, { req:id, result:b.dataset.r, text:box ? box.value : '' }); }
     if (a === 'void') writeEvent('void', null, { target:id });
     if (a === 'ipdeploy'){ writeEvent('intel_deploy', null, { pid:id, to:b.dataset.to }); toast('Intel package sent.'); }
@@ -4522,29 +4563,49 @@ function crExport(){
   toast('Downloaded ' + cs.length + ' package' + (cs.length === 1 ? '' : 's') + ' and ' + tp.length + ' inject template' + (tp.length === 1 ? '' : 's') + '.');
 }
 function ipbImport(file){ crImport(file); }
-function crImport(file){
-  const fr = new FileReader();
-  fr.onload = async () => {
-    let d; try { d = JSON.parse(fr.result); } catch(e){ d = null; }
-    if (!d || d.app !== 'marala-intel' || (!Array.isArray(d.packages) && !Array.isArray(d.injects))){ toast('That file isn\u2019t a creation file from this board.', true); return; }
-    const S = app.S, pk = (d.packages || []).filter(validPkg), tp = (d.injects || []).filter(t => t && t.label && t.text);
-    if (!pk.length && !tp.length){ toast('No packages or inject templates found in that file.', true); return; }
-    if (!confirm('Add ' + pk.length + ' package' + (pk.length === 1 ? '' : 's') + ' and ' + tp.length + ' inject template' + (tp.length === 1 ? '' : 's') + ' to this game? Items already in the game that haven\u2019t been sent are updated.')) return;
-    let n = 0, m = 0;
-    try {
-      const done = new Set();
-      for (const P of pk){
-        const pkg = JSON.parse(JSON.stringify(P));
-        for (const it of pkg.items){ if (it.img && d.images && d.images[it.img] && !done.has(it.img) && !(S.images[it.img])){ await writeEvent('intel_image', null, { id:it.img, data:d.images[it.img] }); done.add(it.img); } }
-        if (S.intelOut[pkg.id]){ const tr = intelTruth(P), nid = 'c' + uid(); pkg.id = nid; pkg.a = intelKey(nid, 'a', tr.ak); pkg.f = intelKey(nid, 'f', tr.f); }
-        if (pkg.replaces && (S.intelOut[pkg.replaces] || S.blank || !PROBLEMS.some(x => x.id === pkg.replaces))) pkg.replaces = null;
-        await writeEvent('intel_custom', null, { pkg }); n++;
-      }
-      for (const t of tp){ const tpl = Object.assign({}, t); if (!/^t[\w-]{3,40}$/.test(tpl.id || '')) tpl.id = 't' + uid(); await writeEvent('tpl_save', null, { tpl }); m++; }
-      toast('Added ' + n + ' package' + (n === 1 ? '' : 's') + ' and ' + m + ' inject template' + (m === 1 ? '' : 's') + '.');
-    } catch(e){ toast('Upload stopped after ' + n + ' package' + (n === 1 ? '' : 's') + ' and ' + m + ' template' + (m === 1 ? '' : 's') + '. Check the connection and try again.', true); }
-  };
-  fr.readAsText(file);
+async function crRead(files){
+  const out = { packages:[], images:{}, injects:[], sources:[], bad:[], dupes:0 }, pIx = new Map(), tIx = new Map();
+  for (const f of files){
+    let d = null; try { d = JSON.parse(await f.text()); } catch(e){}
+    if (!d || d.app !== 'marala-intel' || (!Array.isArray(d.packages) && !Array.isArray(d.injects))){ out.bad.push(f.name); continue; }
+    const pk = (d.packages || []).filter(validPkg), tp = (d.injects || []).filter(t => t && t.label && t.text);
+    pk.forEach(P => { if (pIx.has(P.id)){ out.packages[pIx.get(P.id)] = P; out.dupes++; } else { pIx.set(P.id, out.packages.length); out.packages.push(P); } });
+    tp.forEach(t => { const k = t.id || t.label + '|' + t.text; if (tIx.has(k)){ out.injects[tIx.get(k)] = t; out.dupes++; } else { tIx.set(k, out.injects.length); out.injects.push(t); } });
+    Object.assign(out.images, d.images || {});
+    out.sources.push({ name:f.name, from:d.from || '', p:pk.length, t:tp.length });
+  }
+  return out;
+}
+function crSummary(d){ return d.sources.map(x => '\u2022 ' + x.name + (x.from ? ' (' + x.from + ')' : '') + ': ' + x.p + ' package' + (x.p === 1 ? '' : 's') + ', ' + x.t + ' template' + (x.t === 1 ? '' : 's')).join('\n') + (d.dupes ? '\n' + d.dupes + ' item' + (d.dupes === 1 ? ' appears' : 's appear') + ' in more than one file; the last file\u2019s version is kept.' : '') + (d.bad.length ? '\nSkipped (not a creation file): ' + d.bad.join(', ') : ''); }
+async function crCombine(files){
+  const d = await crRead(files);
+  if (!d.packages.length && !d.injects.length){ toast('No packages or inject templates found in those files.', true); return; }
+  if (!confirm('Combine these files into one?\n\n' + crSummary(d) + '\n\nResult: ' + d.packages.length + ' packages and ' + d.injects.length + ' inject templates. This game is not changed.')) return;
+  const imgs = {}; d.packages.forEach(P => P.items.forEach(it => { if (it.img && d.images[it.img]) imgs[it.img] = d.images[it.img]; }));
+  const blob = new Blob([JSON.stringify({ app:'marala-intel', version:2, saved:Date.now(), from:'Combined: ' + d.sources.map(x => x.name).join(', '), packages:d.packages, images:imgs, injects:d.injects })], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'marala-creations-combined-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  toast('Combined file downloaded: ' + d.packages.length + ' packages, ' + d.injects.length + ' templates.');
+}
+async function crImport(files){
+  files = Array.isArray(files) ? files : [files];
+  const d = await crRead(files);
+  const S = app.S, pk = d.packages, tp = d.injects;
+  if (!pk.length && !tp.length){ toast(d.bad.length ? 'That file isn\u2019t a creation file from this board.' : 'No packages or inject templates found in that file.', true); return; }
+  if (!confirm('Add to this game?\n\n' + crSummary(d) + '\n\nTotal: ' + pk.length + ' package' + (pk.length === 1 ? '' : 's') + ' and ' + tp.length + ' inject template' + (tp.length === 1 ? '' : 's') + '. Items already in the game that haven\u2019t been sent are updated.')) return;
+  let n = 0, m = 0;
+  try {
+    const done = new Set();
+    for (const P of pk){
+      const pkg = JSON.parse(JSON.stringify(P));
+      for (const it of pkg.items){ if (it.img && d.images[it.img] && !done.has(it.img) && !(S.images[it.img])){ await writeEvent('intel_image', null, { id:it.img, data:d.images[it.img] }); done.add(it.img); } }
+      if (S.intelOut[pkg.id]){ const tr = intelTruth(P), nid = 'c' + uid(); pkg.id = nid; pkg.a = intelKey(nid, 'a', tr.ak); pkg.f = intelKey(nid, 'f', tr.f); }
+      if (pkg.replaces && (S.intelOut[pkg.replaces] || S.blank || !PROBLEMS.some(x => x.id === pkg.replaces))) pkg.replaces = null;
+      await writeEvent('intel_custom', null, { pkg }); n++;
+    }
+    for (const t of tp){ const tpl = Object.assign({}, t); if (!/^t[\w-]{3,40}$/.test(tpl.id || '')) tpl.id = 't' + uid(); await writeEvent('tpl_save', null, { tpl }); m++; }
+    toast('Added ' + n + ' package' + (n === 1 ? '' : 's') + ' and ' + m + ' inject template' + (m === 1 ? '' : 's') + '.');
+  } catch(e){ toast('Upload stopped after ' + n + ' package' + (n === 1 ? '' : 's') + ' and ' + m + ' template' + (m === 1 ? '' : 's') + '. Check the connection and try again.', true); }
 }
 function ipbGenerate(){
   const r = a => a[Math.floor(Math.random() * a.length)];
@@ -4734,7 +4795,7 @@ function renderWhite(S, now){
   $('[data-wliaison]', v).innerHTML = liaisonHTML(S, null);
   $('[data-woffers]', v).innerHTML = offersHTML(S, null);
   const lvlNow = levelIndex(S.esc), TP = allTemplates(S), tkey = START_G + '|' + lvlNow + '|' + JSON.stringify(TP.map(t => [t.id, t.label, t.at, t.lvl, t.to, t.text, t.from, t.note, t.phase]));
-  if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TP.length ? TP.map((t, i) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + (t.phase ? ' · ' + t.phase : '') : t.lvl != null ? LEVELS[t.lvl].name + ' or higher' : 'Any time') + ' · ' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[t.to] + '</small></button>'; }).join('') : '<div class="empty">No inject templates in this game. Build them in Intel and inject creation.</div>';
+  if (app.tplKey !== tkey){ app.tplKey = tkey; $('[data-templates]', v).innerHTML = TP.length ? TP.map((t, i) => [t, i]).sort((x, y) => ((x[0].at != null ? x[0].at : x[0].lvl != null ? 1000 + x[0].lvl : 2000) - (y[0].at != null ? y[0].at : y[0].lvl != null ? 1000 + y[0].lvl : 2000)) || x[1] - y[1]).map(([t, i]) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<button type="button" data-tpl="' + i + '"' + (ok ? ' class="btn-side"' : '') + '>' + esc(t.label) + '<small>' + (t.at != null ? hhmm(START_G + t.at) + (t.phase ? ' · ' + t.phase : '') : t.lvl != null ? LEVELS[t.lvl].name + ' or higher' : 'Any time') + ' · ' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[t.to] + '</small></button>'; }).join('') : '<div class="empty">No inject templates in this game. Build them in Intel and inject creation.</div>';
     const tl = $('[data-tpllist]', v); if (tl){ const own = S.tpls || []; tl.innerHTML = own.length ? own.map(t => '<div class="li"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">' + ({ both:'Both wings', B:'BLUFOR', R:'REDFOR', public:'Public screen' })[t.to] + (t.at != null ? ' · ' + hhmm(START_G + t.at) : t.lvl != null ? ' · ' + LEVELS[t.lvl].name + ' or higher' : '') + '</span><div class="small">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">Note: ' + esc(t.note) + '</div>' : '') + '</div><button type="button" data-tpledit="' + esc(t.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-tpldel="' + esc(t.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No templates built in this game yet.</div>'; } }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
   { const mk = JSON.stringify([M0 && M0.sw, M0 && M0.ne, M0 && M0.sites, M0 && M0.pois]); if (app.mapKey !== mk && !(ms && ms.contains(document.activeElement))){ app.mapKey = mk; app.mapFilled = false; } }
@@ -4764,6 +4825,7 @@ function renderWhite(S, now){
     '<div class="row" style="flex:0 0 auto"><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="confirm">True · +1</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="duplicate">Duplicate</button><button type="button" data-act="verdict" data-id="' + c.id + '" data-v="false">False</button></div></div>'));
   S.contacts.filter(c => c.auto && !c.ack && S.g - c.g <= 10).forEach(c => q.push('<div class="li"><div class="grow"><span class="chip ' + c.side + '">' + SIDES[c.side].name + '</span> <b>' + (c.kind === 'site' ? 'Site flag' : 'Team') + '</b> <span class="mono">' + esc(c.grid || '') + '</span> <span class="chip ok">' + (c.verdict === 'confirm' ? 'Confirmed automatically' : 'Duplicate automatically') + '</span><div class="small muted">' + esc(c.match ? c.match.name + ', ' + c.match.d + ' m from ' + c.grid + ' at ' + hhmm(c.match.g) : c.kind === 'site' && SITES[c.site] ? SITES[c.site].name + ' held by ' + SIDES[OTHER[c.side]].name : '') + '. Change it only if the O/C reports otherwise.</div></div>' +
     '<div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-act="ack" data-id="' + c.id + '">' + (c.verdict === 'confirm' ? 'Confirm' : 'Agree') + '</button>' + [['confirm', 'True · +1'], ['duplicate', 'Duplicate'], ['false', 'False']].filter(([v]) => v !== c.verdict).map(([v, l]) => '<button type="button" data-act="verdict" data-id="' + c.id + '" data-v="' + v + '">' + l + '</button>').join('') + '</div></div>'));
+  (S.guessAlerts || []).filter(a => !a.ack).forEach(a => q.push('<div class="li"><div class="grow"><span class="chip ' + a.side + '">' + SIDES[a.side].name + '</span> <b>Repeated wrong code words</b> <span class="small muted">' + hhmm(a.g) + '</span><div class="small">' + GUESS_MAX + ' wrong code words for ' + esc(a.where) + ' within ' + GUESS_WIN + ' minutes. Claims there are locked for this wing until ' + hhmm(a.until) + '. Check with the POC whether the team is guessing.</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-act="guessok" data-id="' + a.id + '">Seen</button></div></div>'));
   (S.oobs || []).filter(o => !o.back && !o.ack).forEach(o => q.push('<div class="li"><div class="grow"><span class="chip ' + o.side + '">' + SIDES[o.side].name + '</span> <b>Outside the play area</b> <span class="small muted">since ' + hhmm(o.g) + '</span><div class="small">' + esc(o.name) + ', about ' + o.m + ' m beyond the boundary. Clears on its own when the team is back inside.</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-act="oobok" data-id="' + o.id + '">Seen</button></div></div>'));
   const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request', wp:'Waypoint request' };
   S.requests.filter(r => r.status === 'open').forEach(r => {
@@ -4805,7 +4867,7 @@ function refresh(force){
   if (!force && app.mapBusy && now - app.mapBusy < 4000){ app.mapDeferred = true; $$('[data-clock]').forEach(el => el.textContent = app.S ? clockText(app.S, now) : el.textContent); return; }
   const evKey = app.events.length + '|' + (app.events.length ? app.events[app.events.length - 1].id : '');
   let S = app.S;
-  if (force || !S || app.replayKey !== evKey || now - (app.replayAt || 0) >= 3000){ S = replay(app.cfg, app.events, now); app.S = S; app.replayKey = evKey; app.replayAt = now; }
+  if (force || !S || app.replayKey !== evKey || now - (app.replayAt || 0) >= 3000){ if (!app.rcache || app.rcache.gid !== app.gid) app.rcache = { gid:app.gid }; S = replayCached(app.rcache, app.cfg, app.events, now); app.S = S; app.replayKey = evKey; app.replayAt = now; }
   const sig = (app.ocSelf || (app.role === 'W' && S.ocPos && Object.keys(S.ocPos).length) ? Math.floor(now / 20000) + '|' : '') + app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer + '|' + S.ver + '|' + uavPhase(S, 'B') + uavPhase(S, 'R') + jammed(S, 'B') + jammed(S, 'R');
   if (force || sig !== app.sig){
     app.sig = sig;
