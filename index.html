@@ -138,6 +138,9 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 @media (max-width:560px){.pic-big{font-size:32px}.pic-tl{grid-template-columns:90px minmax(0,1fr)}}
 #vWhite:not(.aocv) [data-aoc-only]{display:none!important}
 .white-grid>.wfsec{grid-column:1/-1!important}
+.plan-it summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;list-style:none}.plan-it summary::-webkit-details-marker{display:none}.plan-it summary .tm{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;min-width:64px}.plan-it summary .ttl{flex:1 1 180px;min-width:0}
+.plan-body{display:grid;gap:6px;margin-top:8px;font-size:13px}.plan-body .ip-it{border-left:3px solid var(--line);padding:2px 0 2px 8px}.plan-body .ip-it.f{border-left-color:var(--bad)}.plan-body .opt.ok{color:var(--good);font-weight:700}
+.plan-it.done{opacity:.6}
 .wfsec{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
 .wfcol{display:flex;flex-direction:column;gap:14px;min-width:0}
 .wf-chat{border-color:var(--aoc)}.wf-chat .chatlog{max-height:340px;min-height:120px}
@@ -243,6 +246,20 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .mk-x{font-size:22px;line-height:24px;color:#ff9b3d;text-shadow:0 0 3px #000;text-align:center}
 .mk-tri{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:14px solid #fff;filter:drop-shadow(0 0 2px #000)}
 .team-view{max-width:560px;margin:0 auto}
+.pri{border:2px solid var(--side,var(--line));border-left-width:6px;border-radius:10px;background:var(--panel);padding:10px 14px;display:grid;gap:8px}
+.pri.new{border-color:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn) 25%,transparent)}
+.pri-h{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}.pri-h h2{margin:0;font-size:15px;letter-spacing:.06em;text-transform:uppercase}.pri-h .pri-push{margin-left:auto}
+.pri-li{display:grid;grid-template-columns:82px 1fr;gap:8px;align-items:baseline}.pri-li b{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}.pri-li span{font-weight:600}
+.pri-def{font-weight:600}.pri-g{font-size:13px}.chip.new{color:var(--warn);border-color:var(--warn)}
+.pri-cur{display:grid;gap:8px}.pri-cur .pri{padding:8px 10px;border-width:1px;border-left-width:5px}
+.fogseg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden}.fogseg button{margin:0;border:0;border-right:1px solid var(--line);border-radius:0;padding:5px 10px;font-size:13px;background:var(--panel);color:var(--ink);flex:0 0 auto;width:auto}.fogseg button:last-child{border-right:0}.fogseg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.pic-row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:14px}@media (max-width:980px){.pic-row2{grid-template-columns:minmax(0,1fr)}}
+.asb-wrap{overflow-x:auto}.asb{width:100%;border-collapse:collapse;font-size:13px}.asb th,.asb td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}.asb th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600}.asb td:first-child{color:var(--muted);white-space:nowrap}
+.asb-st{display:inline-flex;align-items:center;gap:6px;font-weight:600}.asb-st::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--muted);flex:0 0 auto}.asb-st.ok::before{background:var(--good)}.asb-st.wait::before{background:var(--warn)}.asb-st.no::before{background:var(--bad)}
+.drone-st{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}.drone-st.ok{border-color:var(--good)}.drone-st.no{border-color:var(--warn)}.drone-st b{font-size:15px;letter-spacing:.04em}.drone-st .pri-push{margin-left:auto}
+.dr-big{display:grid;gap:10px}.dr-state{font-size:22px;font-weight:800;letter-spacing:.04em;text-align:center;padding:16px 10px;border-radius:10px;border:2px solid var(--line)}.dr-state.ok{color:var(--good);border-color:var(--good)}.dr-state.no{color:var(--warn);border-color:var(--warn)}
+.dr-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dr-btns button{font-size:16px;padding:16px 10px;min-height:58px}.dr-btns button[aria-pressed="true"]{outline:3px solid var(--focus);outline-offset:1px}
+.dr-req{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px}.dr-req textarea{width:100%;min-height:64px;font-size:16px;box-sizing:border-box}.dr-req .q{font-size:16px;font-weight:600}
 .team-big{font-size:18px;padding:14px;width:100%}
 label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
 label.chk input{width:auto;margin:0}
@@ -394,7 +411,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label class="chk"><input type="checkbox" id="adEStarter"> Keep the sample intel packages as fixed packages (older games only)</label>
         <p class="small muted" style="margin:0">New role PINs (leave blank to keep the current PIN)</p>
         <div class="row"><label for="adPW">White Force<input id="adPW" maxlength="12" autocomplete="off"></label><label for="adPA">AOC<input id="adPA" maxlength="12" autocomplete="off"></label><label for="adPB">Blue Force C2<input id="adPB" maxlength="12" autocomplete="off"></label><label for="adPR">Red Force C2<input id="adPR" maxlength="12" autocomplete="off"></label></div>
-        <div class="row"><label for="adPTB">Blue Force fireteam<input id="adPTB" maxlength="12" autocomplete="off"></label><label for="adPTR">Red Force fireteam<input id="adPTR" maxlength="12" autocomplete="off"></label><label for="adPOC">POC<input id="adPOC" maxlength="12" autocomplete="off"></label></div>
+        <div class="row"><label for="adPTB">Blue Force fireteam<input id="adPTB" maxlength="12" autocomplete="off"></label><label for="adPTR">Red Force fireteam<input id="adPTR" maxlength="12" autocomplete="off"></label><label for="adPOC">POC<input id="adPOC" maxlength="12" autocomplete="off"></label><label for="adPD">Drone operator<input id="adPD" maxlength="12" autocomplete="off"></label></div>
         <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side side-W" style="flex:0 0 auto">Save changes</button><button type="button" id="adEBackup" style="flex:0 0 auto">Download backup</button><button type="button" id="adEDelete" style="flex:0 0 auto">Delete game</button><button type="button" id="adECancel" style="flex:0 0 auto">Close</button></div>
         <p class="small muted" id="adEMsg" style="margin:0"></p>
       </form>
@@ -427,6 +444,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label for="sPinTB">Blue Force fireteam PIN<input id="sPinTB" required autocomplete="off"></label>
         <label for="sPinTR">Red Force fireteam PIN<input id="sPinTR" required autocomplete="off"></label>
         <label for="sPinOC">POC PIN<input id="sPinOC" required autocomplete="off"></label>
+        <label for="sPinD">Drone operator PIN<input id="sPinD" required autocomplete="off"></label>
         <label for="sStart">Board clock starts at<input id="sStart" value="0600" maxlength="5" inputmode="numeric" required></label>
         <label for="sLen">Game length (minutes)<input id="sLen" type="number" min="30" max="300" step="5" value="120" required></label>
       </div>
@@ -452,6 +470,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
   <section id="vPublic" class="public-view" hidden></section>
   <section id="vTeam" hidden></section>
   <section id="vOC" class="team-view side-W" hidden></section>
+  <section id="vDrone" class="team-view side-W" hidden></section>
 </div>
 
 <style id="leaflet-css">
@@ -1400,6 +1419,8 @@ function uavEvery(S, side){ return powered(S, 'fuel', side) ? UAV_EVERY_FUEL : U
 function dugIn(S, k){ const s = S.sites[k]; return !!s && !!s.holder && s.since != null && S.g - s.since >= DUG_IN - 1e-9; }
 function contendCost(S, k){ return dugIn(S, k) ? CONTEND_DUG : CONTEND_ESC; }
 function droneEvery(S, side){ const a = S.sites.airstrip; return a.holder === side && !a.contested ? DRONE_EVERY_AIR : DRONE_EVERY; }
+const PRI_DEFAULT = 'Continue to execute planned mission objectives in accordance with commander’s intent.';
+const DRONE_DOWN_TXT = 'Drone in routine maintenance. Not ready for tasking.';
 function droneReady(S, side){ const l = S.droneLast[side]; return l == null || S.g - l >= droneEvery(S, side) - 1e-9; }
 function codeMatch(cfg, k, h, S){ const c = (S && S.siteCodes && S.siteCodes[k]) || (cfg && cfg.codes ? cfg.codes[k] : null); if (!c) return { cap:false, def:false, reuse:true }; if (typeof c === 'string') return { cap:c === h, def:c === h, reuse:true }; if (Array.isArray(c)) return { cap:c.includes(h), def:c.includes(h), reuse:true }; const cap = (c.cap || []).includes(h), def = ((c.def && c.def.length) ? c.def : (c.cap || [])).includes(h); return { cap, def, reuse:k === 'town' }; }
 function liveTeams(S, side){ return Object.values(S.teams[side]).filter(t => !t.removed); }
@@ -1482,7 +1503,7 @@ function newState(){
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
     sites, office:{B:false,R:false}, access:{B:true,R:true},
-    uses:{ show:{B:1,R:1}, strike:{B:1,R:1}, cstrike:{B:CACHE_STRIKES,R:CACHE_STRIKES} }, jamLast:{B:null,R:null}, droneLast:{B:null,R:null}, usedCodes:{}, siteTimer:{}, blasts:{}, aidTick:{B:-1,R:-1},
+    uses:{ show:{B:1,R:1}, strike:{B:1,R:1}, cstrike:{B:CACHE_STRIKES,R:CACHE_STRIKES} }, jamLast:{B:null,R:null}, droneLast:{B:null,R:null}, aocPri:{B:null,R:null}, droneDown:false, droneAt:null, usedCodes:{}, siteTimer:{}, blasts:{}, aidTick:{B:-1,R:-1},
     cacheDone:null, crisisCallAt:-999, war:false, warAt:null, raised:false, tickIdx:0,
     clock:{ started:false, running:false, anchorReal:0, anchorG:START_G },
     endex:false, reveal:false, jam:{B:null,R:null},
@@ -1795,6 +1816,7 @@ function apply(S, e, cfg){
       pushLog(S, nm + ' requested a waypoint: ' + label + (grid ? ' at ' + grid : ''), side, e);
       break; }
     case 'act_drone': if (jammed(S, side)){ pushLog(S, nm + ' drone flight refused: datalink jammed', side, e, 'rejected'); pushFeed(S, side, 'No drone flights while your datalink is jammed.', 'alert'); break; }
+      if (S.droneDown){ pushLog(S, nm + ' drone flight refused: drone not ready for tasking', side, e, 'rejected'); pushFeed(S, side, DRONE_DOWN_TXT, 'alert'); break; }
       if (!droneReady(S, side)){ pushLog(S, nm + ' drone flight refused: not ready', side, e, 'rejected'); pushFeed(S, side, 'Drone flight not ready yet.', 'alert'); break; }
       S.droneLast[side] = S.g; raise(S, side, 1);
       S.requests.push({ id:e.id, side, kind:'drone', text:p.text || '', status:'open', g:S.g });
@@ -1872,7 +1894,7 @@ function apply(S, e, cfg){
           pushLog(S, rn + ' waypoint request ' + (p.result === 'add' ? 'added: ' : 'moved to the waypoint queue: ') + r.label, r.side, e);
         } else { r.answer = 'Declined.' + (p.text ? ' ' + String(p.text).slice(0, 140) : ''); pushFeed(S, r.side, 'Waypoint request declined: ' + r.label + '.', 'alert', { label:'Waypoint' }); pushLog(S, rn + ' waypoint request declined: ' + r.label, r.side, e); }
         S.ver++;
-      } else if (r.kind === 'drone'){ pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.'), 'hq'); pushLog(S, rn + ' drone flight answered', r.side, e); }
+      } else if (r.kind === 'drone'){ pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.'), 'hq'); r.by = e.by; pushLog(S, rn + ' drone flight answered' + (e.by === 'D' ? ' by the drone operator' : ''), r.side, e); }
       else if (r.kind === 'show'){
         if (r.teams) Object.values(r.teams).forEach(t => { if (t.st === 'inside') t.st = p.result === 'defied' ? 'stayed' : 'left'; });
         if (p.result === 'defied' && r.charged){ pushLog(S, 'Show of force at ' + r.text + ' closed by the White Force', null, e); }
@@ -2101,6 +2123,22 @@ function apply(S, e, cfg){
       pushLog(S, 'Inject template ' + (ix >= 0 ? 'updated' : 'saved') + ': ' + label, null, e);
       break; }
     case 'tpl_del': { if (!S.tpls) break; const ix = S.tpls.findIndex(x => x.id === p.id); if (ix < 0) break; const t = S.tpls.splice(ix, 1)[0]; S.ver++; pushLog(S, 'Inject template deleted: ' + t.label, null, e); break; }
+    case 'aoc_pri': {
+      const to = p.to === 'B' || p.to === 'R' ? [p.to] : p.to === 'both' ? ['B', 'R'] : null; if (!to) break;
+      const items = p.reset ? [] : (Array.isArray(p.items) ? p.items : []).map(x => String(x || '').trim().slice(0, 200)).filter(Boolean).slice(0, 3);
+      if (!p.reset && !items.length) break;
+      const intent = p.reset ? '' : String(p.intent || '').trim().slice(0, 300), dest = to.length === 2 ? 'both' : to[0];
+      if (!S.aocPri) S.aocPri = { B:null, R:null };
+      to.forEach(sd => S.aocPri[sd] = { id:e.id, items, intent, g:S.g, ack:null });
+      pushFeed(S, dest, items.length ? 'AOC priorities effective ' + hhmm(S.g) + ': ' + items.map((x, i) => 'Priority ' + (i + 1) + ': ' + x + '.').join(' ').replace(/\.\./g, '.') + (intent ? ' Commander’s guidance: ' + intent : '') : 'AOC priorities effective ' + hhmm(S.g) + ': no new priorities. ' + PRI_DEFAULT, 'hq', { label:'AOC', comm:'msg' });
+      pushLog(S, 'AOC priorities to ' + ({ B:'Blue Force', R:'Red Force', both:'both forces' })[dest] + ': ' + (items.length ? items.join(' / ') : 'returned to the standing priority'), to.length === 1 ? to[0] : null, e);
+      S.ver++; break; }
+    case 'aoc_pri_ack': { const r = S.aocPri && S.aocPri[side]; if (!r || r.id !== p.id || r.ack != null) break; r.ack = S.g; S.ver++; pushLog(S, nm + ' acknowledged the AOC priorities', side, e); break; }
+    case 'drone_status': {
+      const down = !!p.down; if (!!S.droneDown === down) break;
+      S.droneDown = down; S.droneAt = S.g; S.ver++;
+      pushLog(S, 'Drone ' + (down ? 'not ready for tasking' : 'ready for tasking') + ' (set by ' + (({ D:'drone operator', A:'AOC', W:'White Force' })[e.by] || 'White Force') + ')', null, e);
+      break; }
     case 'aoc_msg': {
       const tx = String(p.text || '').trim().slice(0, 500); if (!tx) break;
       const from = e.by === 'A' ? 'A' : 'W';
@@ -2311,7 +2349,7 @@ const LS = { get(k){ try { return sessionStorage.getItem(k); } catch(e){ return 
 
 const pref = { get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : v; } catch(e){ return d; } }, set(k, v){ try { localStorage.setItem(k, v); } catch(e){} } };
 let wakeLock = null;
-function wakeWanted(){ return !!app.role && (app.role === 'OC' || app.role[0] === 'T') && pref.get('marala-wake', '1') === '1'; }
+function wakeWanted(){ return !!app.role && (app.role === 'OC' || app.role === 'D' || app.role[0] === 'T') && pref.get('marala-wake', '1') === '1'; }
 async function wakeSync(){
   const ok = 'wakeLock' in navigator;
   try {
@@ -2367,6 +2405,7 @@ function msgIncoming(S){
   const r = app.role; if (!r) return null;
   if (r === 'W') return (S.occhats || []).filter(m => m.from === 'oc').length + (S.aocChat || []).filter(m => m.from === 'A').length;
   if (r === 'A') return (S.aocChat || []).filter(m => m.from === 'W').length;
+  if (r === 'D') return S.requests.filter(x => x.kind === 'drone').length;
   if (r === 'B' || r === 'R') return (S.tchats || []).filter(m => m.side === r && m.from === 'team').length + S.liaison.filter(m => m.side !== r).length;
   if (r === 'TB' || r === 'TR'){ const me = teamGet(r[1]); return me ? (S.tchats || []).filter(m => m.side === r[1] && m.team === me.id && m.from !== 'team').length : null; }
   if (r === 'OC'){ const me = ocGet(); return me ? (S.occhats || []).filter(m => m.oc === me.id && m.from === 'wc').length + (S.ocAnns || []).length + (S.ocReqs || []).filter(x => x.oc === me.id && x.reply).length : null; }
@@ -2553,8 +2592,8 @@ function toast(msg, bad){
 }
 
 /* ---------- routing ---------- */
-function show(id){ ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite') closeFullMap(); }
-function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'W' ? 'White Force' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
+function show(id){ ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone') closeFullMap(); }
+function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'D' ? 'Drone operator' : r === 'W' ? 'White Force' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
   if (!app.role && saved && app.cfg) app.role = saved;
@@ -2565,12 +2604,13 @@ function route(){
   if (!app.cfg){ app.role = null; renderGate(); return; }
   if (!app.role){ renderGate(); return; }
   $('#switchRole').hidden = false;
-  $('#roleBadge').innerHTML = '<span class="badge side-' + (app.role === 'P' || app.role === 'OC' ? 'W' : app.role[0] === 'T' ? app.role[1] : app.role) + '">' + esc(roleLabel(app.role)) + '</span>';
+  $('#roleBadge').innerHTML = '<span class="badge side-' + (app.role === 'P' || app.role === 'OC' || app.role === 'D' ? 'W' : app.role[0] === 'T' ? app.role[1] : app.role) + '">' + esc(roleLabel(app.role)) + '</span>';
   if (app.role !== 'W'){ document.title = BASE_TITLE; chimeN = null; }
   setTimeout(wakeSync, 0);
   if (app.role === 'W' || app.role === 'A'){ show('#vWhite'); buildWhite(); aocMode(app.role === 'A'); }
   else if (app.role === 'P'){ show('#vPublic'); buildPublic(); }
   else if (app.role === 'OC'){ show('#vOC'); buildOC(); }
+  else if (app.role === 'D'){ show('#vDrone'); buildDrone(); }
   else if (app.role[0] === 'T'){ show('#vTeam'); buildTeam(app.role[1]); }
   else { show('#vWing'); buildWing(app.role); }
   refresh(true);
@@ -2602,28 +2642,29 @@ function renderGate(){
   $('#gateAdmin').hidden = !app.cfg || !!app.multi; $('#adminErr').hidden = true; $('#adminInput').value = '';
   const roles = $('#gateRoles');
   if (!app.cfg){
-    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Sample game with recorded moves. PINs: White Force 0000, AOC 9999, Blue Force 1111, Red Force 2222. A new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
+    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Sample game with recorded moves. PINs: White Force 0000, AOC 9999, Blue Force 1111, Red Force 2222, drone operator 7777. A new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
     const gi = $('#gateImport'); if (gi) gi.onchange = () => importBackup(gi.files[0]);
     const ls = $('#loadSample'); if (ls) ls.onclick = loadSample;
     return;
   }
   const cards = [
-    ['A', 'AOC', 'Air Operations Center: the full picture of both forces, the score and the log. Sends messages, injects and intel packages.'],
+    ['A', 'AOC', 'Air Operations Center: the full picture of both forces, the score and the log. Sets priorities for both forces and sends reminders.'],
     ['W', 'White Force', 'Runs the clock, checks reports, sends injects and sees through the fog of war.'],
     ['B', 'Blue Force · Coalition', 'The US-led Coalition Wing Commander’s board: sites, reports, actions and points.'],
     ['R', 'Red Force · North Korea', 'The North Korean Wing Commander’s board: sites, reports, actions and points.'],
     ['P', 'Public screen', 'Clock, escalation meter and public news. No PIN needed.'],
     ['TB', 'Blue Force fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
     ['TR', 'Red Force fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
-    ['OC', 'POC', 'Phone screen for POCs and the mayor: check 9-lines, send calls, site arrivals and messages to the White Force.']
+    ['OC', 'POC', 'Phone screen for POCs and the mayor: check 9-lines, send calls, site arrivals and messages to the White Force.'],
+    ['D', 'Drone operator', 'Phone screen for the drone operator: answer drone flight requests, set drone readiness and see the full map.']
   ];
-  roles.innerHTML = cards.map(([k, t, d]) => '<button type="button" class="role side-' + (k === 'P' || k === 'OC' ? 'W' : k[0] === 'T' ? k[1] : k) + '" data-role="' + k + '"><b>' + esc(t) + '</b><p>' + esc(d) + '</p></button>').join('');
+  roles.innerHTML = cards.map(([k, t, d]) => '<button type="button" class="role side-' + (k === 'P' || k === 'OC' || k === 'D' ? 'W' : k[0] === 'T' ? k[1] : k) + '" data-role="' + k + '"><b>' + esc(t) + '</b><p>' + esc(d) + '</p></button>').join('');
   $$('.role', roles).forEach(b => b.onclick = () => pickRole(b.dataset.role));
 }
 let pendingRole = null;
 function pickRole(r){
   if (r === 'P'){ setRole('P'); return; }
-  pendingRole = r; $('#pinForm').hidden = false; $('#pinForm').className = 'panel side-' + (r === 'OC' ? 'W' : r[0] === 'T' ? r[1] : r); $('#pinTitle').textContent = 'PIN for the ' + roleLabel(r) + ' view'; $('#pinErr').hidden = true; $('#pinInput').value = ''; $('#pinInput').focus();
+  pendingRole = r; $('#pinForm').hidden = false; $('#pinForm').className = 'panel side-' + (r === 'OC' || r === 'D' ? 'W' : r[0] === 'T' ? r[1] : r); $('#pinTitle').textContent = 'PIN for the ' + roleLabel(r) + ' view'; $('#pinErr').hidden = true; $('#pinInput').value = ''; $('#pinInput').focus();
 }
 function setRole(r){ app.role = r; LS.set('marala-role-' + (app.gid || 'none'), r); $('#pinForm').hidden = true; route(); }
 $('#pinForm').addEventListener('submit', ev => {
@@ -2631,7 +2672,7 @@ $('#pinForm').addEventListener('submit', ev => {
   const r = pendingRole; if (!r || !app.cfg) return;
   const want = app.cfg.pins[r] || (r[0] === 'T' ? app.cfg.pins[r[1]] : null);
   const ok = !!want && secret(app.cfg.salt, $('#pinInput').value) === want;
-  if (!ok){ $('#pinErr').hidden = false; $('#pinErr').textContent = r === 'OC' && !want ? 'This game was set up before the POC screen existed. Set up a new game to use it.' : r === 'A' && !want ? 'This game has no AOC PIN yet. The exercises officers add one on the admin page under Edit game.' : 'That PIN is not right.'; return; }
+  if (!ok){ $('#pinErr').hidden = false; $('#pinErr').textContent = r === 'OC' && !want ? 'This game was set up before the POC screen existed. Set up a new game to use it.' : r === 'D' && !want ? 'This game has no drone operator PIN yet. The exercises officers add one on the admin page under Edit game.' : r === 'A' && !want ? 'This game has no AOC PIN yet. The exercises officers add one on the admin page under Edit game.' : 'That PIN is not right.'; return; }
   setRole(r);
 });
 $('#pinCancel').onclick = () => { $('#pinForm').hidden = true; pendingRole = null; };
@@ -2665,12 +2706,12 @@ $('#setupForm').addEventListener('submit', async ev => {
   { const fl = $('#sMapFile').files[0]; if (fl){ try { const mf = await readMapFile(fl); mapEv = { id:'map' + uid(), ts:Date.now(), type:'map_config', side:null, by:'W', p:mf.p }; } catch(e){ $('#setupErr').hidden = false; $('#setupErr').textContent = e.message; return; } } }
   const salt = Math.random().toString(36).slice(2, 10);
   const val = id => $(id).value.trim();
-  const pins = { W:val('#sPinW'), A:val('#sPinA'), B:val('#sPinB'), R:val('#sPinR'), TB:val('#sPinTB'), TR:val('#sPinTR'), OC:val('#sPinOC') };
-  if (new Set(Object.values(pins)).size < 7){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use seven different PINs so each view stays separate.'; return; }
+  const pins = { W:val('#sPinW'), A:val('#sPinA'), B:val('#sPinB'), R:val('#sPinR'), TB:val('#sPinTB'), TR:val('#sPinTR'), OC:val('#sPinOC'), D:val('#sPinD') };
+  if (new Set(Object.values(pins)).size < 8){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use eight different PINs so each view stays separate.'; return; }
   const startG = parseHHMM(val('#sStart')), lengthMin = Math.round(+val('#sLen'));
   if (startG == null || !(lengthMin >= 30 && lengthMin <= 300)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter the start as 24-hour time like 0830, and a length from 30 to 300 minutes.'; return; }
   const cfg = { name:val('#sName') || 'Game', salt, createdAt:Date.now(), startG, lengthMin,
-    pins:{ W:secret(salt, pins.W), A:secret(salt, pins.A), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR), OC:secret(salt, pins.OC) },
+    pins:{ W:secret(salt, pins.W), A:secret(salt, pins.A), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR), OC:secret(salt, pins.OC), D:secret(salt, pins.D) },
     codes:{ harbor:codeList(salt, 'Harbor'), fuel:codeList(salt, 'Fuel'), radar:codeList(salt, 'Radar'), airstrip:codeList(salt, 'Airstrip'), town:{ cap:words(val('#cTown')).map(w => secret(salt, w)) } } };
   if (app.multi){
     const gpin = $('#sGamePin').value;
@@ -2765,7 +2806,7 @@ $('#adFile').addEventListener('submit', ev => {
 function adminEdit(g){
   ad.editing = g; const f = $('#adEdit'); f.hidden = false; $('#adEMsg').textContent = '';
   $('#adEditTitle').textContent = 'Edit ' + (g.name || 'game'); $('#adEName').value = g.name || ''; $('#adEPin').value = g.pin || ''; $('#adEListed').checked = g.listed !== false; $('#adEStarter').checked = !(g.cfg && g.cfg.blank); $('#adEStarter').closest('label').hidden = !!(g.cfg && g.cfg.blank);
-  ['#adPW', '#adPB', '#adPR', '#adPTB', '#adPTR', '#adPOC'].forEach(s => $(s).value = '');
+  ['#adPW', '#adPA', '#adPB', '#adPR', '#adPTB', '#adPTR', '#adPOC', '#adPD'].forEach(s => $(s).value = '');
   f.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 $('#adECancel').onclick = () => { $('#adEdit').hidden = true; ad.editing = null; };
@@ -2775,7 +2816,7 @@ $('#adEdit').addEventListener('submit', async ev => {
   const name = $('#adEName').value.trim() || 'Game', pin = normPin($('#adEPin').value), listed = $('#adEListed').checked, blank = !$('#adEStarter').checked;
   if (!pin){ msg('Enter a game PIN.'); return; }
   const cfg = JSON.parse(JSON.stringify(g.cfg)); cfg.name = name; cfg.blank = blank;
-  const np = { W:'#adPW', A:'#adPA', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC' };
+  const np = { W:'#adPW', A:'#adPA', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC', D:'#adPD' };
   const given = Object.entries(np).map(([k, s]) => [k, $(s).value.trim()]).filter(([, v]) => v);
   if (new Set(given.map(([, v]) => v)).size < given.length){ msg('Each new role PIN must be different.'); return; }
   given.forEach(([k, v]) => cfg.pins[k] = secret(cfg.salt, v));
@@ -2826,7 +2867,7 @@ $('#adLGo').onclick = async () => {
 /* ---------- sample (local only) ---------- */
 function loadSample(){
   const salt = 'sample01';
-  app.cfg = { name:'Sample game', salt, sample:true, pins:{ W:secret(salt, '0000'), A:secret(salt, '9999'), B:secret(salt, '1111'), R:secret(salt, '2222') },
+  app.cfg = { name:'Sample game', salt, sample:true, pins:{ W:secret(salt, '0000'), A:secret(salt, '9999'), B:secret(salt, '1111'), R:secret(salt, '2222'), D:secret(salt, '7777') },
     codes:{ harbor:secret(salt, 'ANCHOR'), fuel:secret(salt, 'BARREL'), radar:secret(salt, 'ECHO'), airstrip:secret(salt, 'RUNWAY'), town:secret(salt, 'MAYOR') } };
   app.gid = 'sample';
   const t0 = Date.now() - 46 * 60000; let n = 0;
@@ -3131,7 +3172,7 @@ function lmapEnsure(el, M){
     const tog = L.control({ position:'topright' });
     tog.onAdd = () => {
       const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref();
-      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => (app.role === 'W' || app.role === 'OC') ? k !== 'wp' : !['wpB', 'wpR', 'wpq'].includes(k)).map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
+      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => (app.role === 'W' || app.role === 'A' || app.role === 'OC' || app.role === 'D') ? k !== 'wp' : !['wpB', 'wpR', 'wpq'].includes(k)).map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
       L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
       d.querySelector('[data-gtbtn]').onclick = () => { const l = d.querySelector('.gt-list'); l.hidden = !l.hidden; if (!l.hidden) l.style.maxHeight = Math.max(120, map.getSize().y - 70) + 'px'; };
       d.addEventListener('change', ev => { if (ev.target.matches('[data-gtbase]')){ const np = gridPref(); np.base = ev.target.value; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gtbase]').forEach(x => x.value = np.base); $$('.lmap').forEach(x => { if (x._lm) applyGridPref(x._lm); }); return; } const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gt="' + k + '"]').forEach(x => x.checked = ev.target.checked); $$('.lmap').forEach(x => { if (!x._lm) return; applyGridPref(x._lm); drawFine(x._lm); if (x._lm.args && app.S) drawDyn(x._lm, app.S, x._lm.args[0], x._lm.args[1]); }); });
@@ -3328,11 +3369,12 @@ function jamMapInto(el, S, side){
 }
 function openFullMap(side){
   const S = app.S;
-  if (side && jammed(S, side)){ toast('Your datalink is jammed. The map is down until ' + hhmm(S.jam[side]) + '.', true); return; }
+  const ctl = app.role === 'W' || app.role === 'A';
+  if (side && !ctl && jammed(S, side)){ toast('Your datalink is jammed. The map is down until ' + hhmm(S.jam[side]) + '.', true); return; }
   if (!(mapCfg(S) || (app.role === 'W' && app.previewMap)) || !window.L){ toast('The real map isn’t set up yet. The White Force sets it under Map setup.', true); return; }
   if ($('#mapfs')) return;
   const ov = document.createElement('div'); ov.id = 'mapfs'; ov.className = 'mapfs';
-  ov.innerHTML = '<div class="bar"><b>' + esc(side ? SIDES[side].name + ' picture of Marala' : 'White Force map (no fog of war)') + '</b><span class="small muted">Tap anywhere for its grid: <span class="mono" data-lastclick>—</span></span><button type="button" data-closefs>Close map</button></div><div class="lmap" data-fsmap></div>';
+  ov.innerHTML = '<div class="bar"><b>' + esc(side ? SIDES[side].name + (ctl ? ' view: what their C2 sees' : ' picture of Marala') : app.role === 'A' ? 'AOC map (no fog of war)' : app.role === 'D' ? 'Drone operator map (no fog of war)' : 'White Force map (no fog of war)') + '</b><span class="small muted">Tap anywhere for its grid: <span class="mono" data-lastclick>—</span></span><button type="button" data-closefs>Close map</button></div><div class="lmap" data-fsmap></div>';
   document.body.appendChild(ov);
   app.fsSide = side; app.fsEl = $('[data-fsmap]', ov);
   $('[data-closefs]', ov).onclick = closeFullMap;
@@ -3744,7 +3786,7 @@ function teamTick(S, side, now){
   }
 }
 function uavNotify(S){
-  const r = app.role; if (!r || r === 'W' || r === 'A' || r === 'P' || r === 'OC') return;
+  const r = app.role; if (!r || r === 'W' || r === 'A' || r === 'P' || r === 'OC' || r === 'D') return;
   const sd = r[0] === 'T' ? r[1] : r, u = S.uav[sd], sp = S.spotted[sd];
   if (app.uavRole !== r){ app.uavRole = r; app.uavSeen = u ? u.id : null; app.spotSeen = sp ? sp.id : null; return; }
   const buzz = () => { try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} };
@@ -3767,6 +3809,7 @@ function buildWing(side){
     </div>
     <nav class="wnav" data-cnav aria-label="Wing CC sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-cnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['map', 'Map'], ['intel', 'Intel', 'data-cnint'], ['act', 'Actions'], ['rep', 'Reports and claims', 'data-cnct'], ['teams', 'Fireteams', 'data-cnchat'], ['liaison', 'Liaison'], ['req', 'Requests', 'data-cnreq'], ['msg', 'Messages']].map(([k, n, c]) => '<button type="button" role="tab" data-ctab="' + k + '">' + n + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div data-warbar></div>
+    <div data-pri></div>
     <div class="wing-grid" data-cgrid>
       <div class="stack" style="gap:14px;min-width:0" data-sec="map intel"><div class="panel" data-sec="map">
         <div class="map-head"><h2>Your picture of Marala</h2><span class="small muted" data-radar></span><button type="button" data-fullmap>Full screen map</button></div>
@@ -4055,7 +4098,11 @@ function renderWing(S, side, now){
   { const n = reqs.filter(r => r.status === 'open').length, c = $('[data-cnreq]', v); if (c){ c.hidden = !n; c.textContent = n; } const ne = $('[data-cnesc]', v); if (ne) ne.textContent = '· Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ') · Diplomatic points ' + S.hn[side] + ' · Points ' + sc.total; }
   const kindName = { drone:'Drone flight', show:'Show of force', strike:'Strike', wp:'Waypoint request' };
   $('[data-reqs]', v).innerHTML = reqs.length ? reqs.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + kindName[r.kind] + '</b> <span class="muted small">' + hhmm(r.g) + '</span><div class="small">' + esc(r.text) + '</div>' + (r.answer ? '<div class="small muted">Answer: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : 'ok') + '">' + (r.status === 'open' ? 'With the White Force' : 'Done') + '</span></div>').join('') : '<div class="empty">Drone flights, shows of force, strikes and waypoint requests wait here until the White Force answers.</div>';
-  $('[data-dronecount]', v).textContent = jammed(S, side) ? 'Jammed until ' + hhmm(S.jam[side]) : droneReady(S, side) ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side)));
+  { const box = $('[data-pri]', v), r = (S.aocPri || {})[side], k = r ? r.id + '|' + r.ack : 'none';
+    if (box.dataset.k !== k){ box.dataset.k = k; box.innerHTML = priHTML(r, true); }
+    if (app.priFor === side && r && app.priSeen !== r.id) toast(r.items.length ? 'New AOC priorities received. Acknowledge them at the top of the board.' : 'AOC: no new priorities. ' + PRI_DEFAULT);
+    app.priFor = side; app.priSeen = r ? r.id : null; }
+  $('[data-dronecount]', v).textContent = S.droneDown ? 'Routine maintenance · not ready for tasking' : jammed(S, side) ? 'Jammed until ' + hhmm(S.jam[side]) : droneReady(S, side) ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side)));
   { const el = $('[data-left="show"]', v); if (el) el.textContent = S.uses.show[side] ? '1 left' : 'used'; }
   { const el = $('[data-left="strike"]', v); if (el) el.textContent = S.uses.cstrike[side] + ' cache strike' + (S.uses.cstrike[side] === 1 ? '' : 's') + ' left · ' + (S.uses.strike[side] ? '1 strike on ' + SIDES[OTHER[side]].name : 'wing strike used'); }
   const lock = !S.clock.started || S.endex;
@@ -4078,7 +4125,7 @@ function renderWing(S, side, now){
   $$('form[data-f] button[type="submit"]', v).forEach(b => {
     const f = b.closest('form').dataset.f;
     let off = lock;
-    if (f === 'drone') off = off || !droneReady(S, side);
+    if (f === 'drone') off = off || !droneReady(S, side) || !!S.droneDown;
     if (f === 'uav') off = off || !uavReady;
     if (f === 'show') off = off || S.uses.show[side] < 1;
     if (f === 'strike') off = off || (S.uses.cstrike[side] < 1 && S.uses.strike[side] < 1);
@@ -4138,10 +4185,10 @@ function renderPic(S, v){
   $('[data-picst]', v).textContent = 'STARTEX ' + hhmm(START_G); $('[data-picen]', v).textContent = 'ENDEX ' + hhmm(END_G);
   $('[data-picesc]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + '</span> <span class="mono">' + S.esc + '</span>';
   $('[data-picsb]', v).textContent = score(S, 'B').total; $('[data-picsr]', v).textContent = score(S, 'R').total;
-  const mapEl = $('[data-picmap]', v), showPoc = $('[data-picpoc]', v).checked, now = Date.now();
+  const fv = fogSide(S), mapEl = $('[data-picmap]', v), pocBox = $('[data-picpoc]', v), showPoc = pocBox.checked && !fv, now = Date.now(); pocBox.disabled = !!fv;
   const pocs = Object.entries(S.ocPos || {}).map(([id, x]) => ({ o:S.ocs[id], x, age:(now - x.ts) / 60000 })).filter(r => r.o && !r.o.removed && r.age < PIC_POC_LIFE);
-  $('[data-picpocn]', v).textContent = pocs.length + ' of ' + Object.values(S.ocs).filter(o => !o.removed).length + ' POCs located in the last ' + PIC_POC_LIFE + ' min';
-  if (renderMapInto(mapEl, S, null, { noPins:true, deployedOnly:true }) && mapEl._lm){ const st = mapEl._lm; if (!st.picPoc) st.picPoc = L.layerGroup().addTo(st.map); st.picPoc.clearLayers();
+  $('[data-picpocn]', v).textContent = fv ? fogNote(S, fv) : pocs.length + ' of ' + Object.values(S.ocs).filter(o => !o.removed).length + ' POCs located in the last ' + PIC_POC_LIFE + ' min';
+  if (renderMapInto(mapEl, S, fv, { noPins:true, deployedOnly:true }) && mapEl._lm){ const st = mapEl._lm; if (!st.picPoc) st.picPoc = L.layerGroup().addTo(st.map); st.picPoc.clearLayers();
     if (showPoc) pocs.forEach(r => { const op = r.age < 5 ? 1 : .45; L.circleMarker(r.x.pt, { radius:8, color:'#ffffff', weight:2.5, opacity:op, fillColor:'#e040fb', fillOpacity:op }).bindTooltip(esc(r.o.name + ' · ' + ocWhere(S, r.o) + ' · ' + new Date(r.x.ts).toTimeString().slice(0, 5)), { permanent:r.age < 5, direction:'right', className:'teamlbl', offset:[10, 0], opacity:op }).addTo(st.picPoc); }); }
   const intel = []; allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), os = [oB, oR].filter(Boolean); if (!os.length) return;
     intel.push({ n:i + 1, title:fillT(P.title), a:Math.min(...os.map(o => o.g)), b:Math.max(...os.map(o => o.due)), done:os.every(o => o.done), to:oB && oR ? 'both' : oB ? 'B' : 'R' }); });
@@ -4169,6 +4216,134 @@ function renderPic(S, v){
   const msgs = comms.filter(c => c.kind === 'msg').map(c => ({ g:c.g, to:c.to, label:c.from + ': ' + c.text }));
   const tl = '<div class="tl-lab"><span style="height:23px"></span><span style="height:' + (ih + 1) + 'px">Intel packages</span><span>Injects</span><span>Messages</span></div><div class="tl-track"><div class="tl-axis">' + ax + '</div><div class="tl-lane" style="height:' + ih + 'px">' + bars + '</div><div class="tl-lane">' + mk(injs, 'inj') + '</div><div class="tl-lane">' + mk(msgs, 'msg') + '</div>' + nowL + '</div>';
   { const tb = $('[data-pictl]', v); if (tb.dataset.h !== tl){ tb.dataset.h = tl; tb.innerHTML = tl; } }
+  { const P = S.aocPri || {}, h = ['B', 'R'].map(sd => { const r = P[sd]; return '<div class="side-' + sd + '">' + priHTML(r, false, SIDES[sd].name) + '</div>'; }).join('');
+    const el = $('[data-pricur]', v); if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
+  renderAssets(S, v);
+}
+function renderPlan(S, v){
+  const box = $('[data-plansec]', v); if (!box || box.hasAttribute('data-off')) return;
+  const showSent = $('[data-plansent]', v).checked, lvlNow = levelIndex(S.esc), rows = [];
+  const toChip = to => picTo(to === 'public' ? 'public' : to);
+  (S.injq || []).forEach(q => { const sent = q.sent != null; rows.push({ key:'q' + q.qid, t:q.at != null ? START_G + q.at : q.lvl != null ? 10000 + q.lvl : 20000, when:q.at != null ? hhmm(START_G + q.at) : q.lvl != null ? 'At ' + LEVELS[q.lvl].name : 'Unset', tag:'Inject', done:sent, title:q.label, to:q.to,
+    stat:sent ? '<span class="chip ok">Sent ' + hhmm(q.sent) + '</span>' : q.lvl != null && lvlNow >= q.lvl ? '<span class="chip wait">Trigger reached</span>' : '<span class="chip">Queued</span>',
+    body:'<div style="white-space:pre-wrap">' + esc(sent ? q.sentText : fillT(q.text)) + '</div><div class="small muted">From: ' + esc(hqFrom(q.from)) + '</div>' + (q.note ? '<div class="small muted">White Force note: ' + esc(q.note) + '</div>' : '') }); });
+  const queued = new Set((S.injq || []).map(q => q.tid).filter(Boolean));
+  allTemplates(S).filter(t => !queued.has(t.id) && (t.at != null || t.lvl != null)).forEach(t => rows.push({ key:'t' + t.id, t:t.at != null ? START_G + t.at : 10000 + t.lvl, when:t.at != null ? hhmm(START_G + t.at) : 'At ' + LEVELS[t.lvl].name, tag:'Inject', done:false, title:t.label, to:t.to,
+    stat:'<span class="chip">Template, not queued</span>', body:'<div style="white-space:pre-wrap">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">White Force note: ' + esc(t.note) + '</div>' : '') }));
+  allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), sent = !!(oB || oR), tr = intelTruth(P);
+    const st = sent ? ['B', 'R'].map(sd => { const o = sd === 'B' ? oB : oR; return o ? SIDES[sd].name + (o.done ? ' closed' : ' due ' + hhmm(o.due)) : ''; }).filter(Boolean).join(' \u00b7 ') : '';
+    rows.push({ key:'p' + P.id, t:START_G + P.at, when:hhmm(START_G + P.at), tag:'Intel ' + (i + 1), done:sent, title:fillT(P.title), to:oB && oR ? 'both' : oB ? 'B' : oR ? 'R' : null,
+      stat:sent ? '<span class="chip ' + ((oB && !oB.done) || (oR && !oR.done) ? 'wait' : 'ok') + '">' + esc(st) + '</span>' : '<span class="chip">Not deployed</span>',
+      body:'<div><b>Question:</b> ' + esc(fillT(P.q)) + '</div><div>' + (P.opts || []).map((o, j) => '<div class="opt' + (tr.as.includes(j) ? ' ok' : '') + '">' + String.fromCharCode(65 + j) + '. ' + esc(fillT(o)) + (tr.as.includes(j) ? ' \u2713 correct' : '') + '</div>').join('') + '</div>' +
+        P.items.map(it => '<div class="ip-it' + (tr.fs.includes(it.k) ? ' f' : '') + '"><b>' + esc(it.k) + '. ' + esc(it.disc || '') + '</b> <span class="small muted">' + esc([it.rating, fillT(it.dtg || ''), it.src].filter(Boolean).join(' \u00b7 ')) + '</span>' + (tr.fs.includes(it.k) ? ' <span class="chip no">False or misleading</span>' : '') + '<div>' + esc(fillT(it.text)) + '</div></div>').join('') +
+        '<div class="small muted">Answer window ' + (P.win || 15) + ' min' + (P.wp ? ' \u00b7 Waypoint: ' + esc(P.wp.label) : '') + (P.blast ? ' \u00b7 Explosion at ' + esc(P.blast.grid) : '') + '</div>' }); });
+  rows.sort((a, b) => a.t - b.t);
+  const vis = rows.filter(r => showSent || !r.done), open = new Set($$('details[open]', $('[data-planlist]', v)).map(x => x.dataset.k));
+  $('[data-plann]', v).textContent = rows.filter(r => !r.done).length + ' upcoming' + (rows.some(r => r.done) ? ' \u00b7 ' + rows.filter(r => r.done).length + ' out' : '');
+  const h = vis.length ? vis.map(r => '<details class="pic-item plan-it' + (r.done ? ' done' : '') + '" data-k="' + esc(r.key) + '"' + (open.has(r.key) ? ' open' : '') + '><summary><span class="tm">' + esc(r.when) + '</span><span class="pic-tag">' + esc(r.tag) + '</span><span class="ttl"><b>' + esc(r.title) + '</b></span>' + (r.to ? toChip(r.to) : '') + r.stat + '</summary><div class="plan-body">' + r.body + '</div></details>').join('') : '<div class="pic-empty">Nothing upcoming.</div>';
+  { const el = $('[data-planlist]', v); if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
+  const M = mapCfg(S), wq = (S.wps || []).filter(w => !w.del && w.to === 'none');
+  $('[data-planwpn]', v).textContent = wq.length ? wq.length + ' not deployed' : '';
+  const wh = wq.length ? wq.map(w => '<div class="pic-item"><div class="pic-it"><span style="flex:0 0 auto">' + wpSvg(w.sym, 22, w.color) + '</span><b>' + esc(w.label) + '</b><span class="small muted">' + esc(WP_SYMS[w.sym] || '') + '</span>' + (w.pkg ? '<span class="chip">intel package</span>' : '') + '</div>' + (w.desc ? '<div class="pic-text">' + esc(w.desc) + '</div>' : '') + '<div class="pic-meta"><span class="mono">' + esc(fmtPt(w.pt)) + '</span><span>' + (squareOf(M, w.pt) ? 'Square ' + squareOf(M, w.pt) : '') + '</span></div></div>').join('') : '<div class="pic-empty">Every waypoint and interest marker is deployed.</div>';
+  { const el = $('[data-planwp]', v); if (el.dataset.h !== wh){ el.dataset.h = wh; el.innerHTML = wh; } }
+  renderMapInto($('[data-planmap]', v), S, null, { noPins:true });
+}
+function fogSide(S){ return (app.role === 'W' || app.role === 'A') && app.fogView && !S.reveal ? app.fogView : null; }
+function fogNote(S, sd){ return 'Showing what ' + SIDES[sd].name + ' C2 sees' + (jammed(S, sd) ? '. Their datalink is jammed until ' + hhmm(S.jam[sd]) + ', so their map is down' : '') + '.'; }
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-fogv]'); if (!b || !(app.role === 'W' || app.role === 'A')) return;
+  app.fogView = b.dataset.fogv || null;
+  $$('[data-fogv]').forEach(x => x.setAttribute('aria-pressed', String((x.dataset.fogv || null) === app.fogView)));
+  refresh(true);
+});
+function priHTML(r, canAck, who){
+  const items = r && r.items.length ? r.items : null, fresh = !!(r && r.ack == null);
+  const meta = r ? 'Effective ' + hhmm(r.g) + (r.ack != null ? ' · Acknowledged ' + hhmm(r.ack) : canAck ? '' : ' · Not yet acknowledged') : 'Standing priority';
+  return '<section class="pri' + (fresh && canAck ? ' new' : '') + '" aria-label="AOC priorities"><div class="pri-h"><h2>' + (who ? esc(who) : 'AOC Priorities') + '</h2><span class="small muted">' + meta + '</span>' + (fresh && canAck ? '<span class="chip new">New</span><button type="button" class="btn-side pri-push" data-priack="' + r.id + '" style="flex:0 0 auto">Acknowledge</button>' : '') + '</div>' +
+    (items ? items.map((x, i) => '<div class="pri-li"><b>Priority ' + (i + 1) + '</b><span>' + esc(x) + '</span></div>').join('') + (r.intent ? '<div class="pri-g"><b>Commander’s guidance:</b> ' + esc(r.intent) + '</div>' : '') : '<div class="pri-def">' + (r ? 'No new priorities. ' : '') + esc(PRI_DEFAULT) + '</div>') + '</section>';
+}
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-priack]'); if (!b || (app.role !== 'B' && app.role !== 'R')) return;
+  b.disabled = true; writeEvent('aoc_pri_ack', app.role, { id:b.dataset.priack }); toast('Acknowledged. The AOC can see it.');
+});
+function asbSt(cls, t){ return '<span class="asb-st ' + cls + '">' + esc(t) + '</span>'; }
+function droneStatusHTML(S, ctl){
+  const down = !!S.droneDown, open = S.requests.filter(r => r.kind === 'drone' && r.status === 'open').length;
+  return '<div class="drone-st ' + (down ? 'no' : 'ok') + '"><span><span class="small muted">Shared ISR drone</span><br><b>' + (down ? 'NOT READY FOR TASKING' : 'READY FOR TASKING') + '</b></span><span class="small muted">' + (S.droneAt != null ? 'Since ' + hhmm(S.droneAt) + ' · ' : '') + open + ' request' + (open === 1 ? '' : 's') + ' open' + (down ? ' · Forces see: routine maintenance' : '') + '</span>' + (ctl ? '<button type="button" class="pri-push" data-dronetoggle="' + (down ? '0' : '1') + '" style="flex:0 0 auto">' + (down ? 'Set ready for tasking' : 'Set not ready') + '</button>' : '') + '</div>';
+}
+function renderAssets(S, v){
+  const rows = [
+    ['Drone flight', sd => S.droneDown ? asbSt('no', 'Not ready for tasking') : jammed(S, sd) ? asbSt('no', 'Datalink jammed') : droneReady(S, sd) ? asbSt('ok', 'Ready') : asbSt('wait', 'Ready at ' + hhmm(Math.ceil(S.droneLast[sd] + droneEvery(S, sd))))],
+    ['Drone requests open', sd => { const n = S.requests.filter(r => r.kind === 'drone' && r.side === sd && r.status === 'open').length; return n ? asbSt('wait', n + ' waiting') : 'None'; }],
+    ['UAV', sd => { const u = S.uav[sd], n = uavEvery(S, sd); return uavPhase(S, sd) === 'live' ? asbSt('wait', 'Airborne now') : !u || S.g - u.g >= n - 1e-9 ? asbSt('ok', 'Ready') : asbSt('wait', 'Ready at ' + hhmm(Math.ceil(u.g + n))); }],
+    ['Jamming', sd => { const l = S.jamLast[sd]; return l == null || S.g - l >= JAM_EVERY - 1e-9 ? asbSt('ok', 'Ready') : asbSt('wait', 'Ready at ' + hhmm(Math.ceil(l + JAM_EVERY))); }],
+    ['Datalink', sd => jammed(S, sd) ? asbSt('no', 'Jammed until ' + hhmm(S.jam[sd])) : asbSt('ok', 'Up')],
+    ['Show of force', sd => S.uses.show[sd] ? asbSt('ok', '1 left') : asbSt('no', 'Used')],
+    ['Strike on the other force', sd => S.uses.strike[sd] ? asbSt('ok', 'Available') : asbSt('no', 'Used')],
+    ['Cache strikes', sd => S.uses.cstrike[sd] ? asbSt('ok', S.uses.cstrike[sd] + ' left') : asbSt('no', 'None left')],
+    ['Town office', sd => !S.access[sd] ? asbSt('no', 'Closed by the mayor') : S.office[sd] ? asbSt('ok', 'Open') : asbSt('', 'Not open')],
+    ['Aid package', sd => esc(aidText(S, sd, true))],
+    ['Sites held', sd => esc(SITE_KEYS.filter(k => S.sites[k] && S.sites[k].holder === sd).map(k => SITES[k].name + (S.sites[k].contested ? ' (stalemate)' : '')).join(', ') || 'None')],
+    ['Fireteams signed in', sd => String(liveTeams(S, sd).length)]
+  ];
+  const h = '<thead><tr><th>Asset</th><th><span class="chip B">Blue Force</span></th><th><span class="chip R">Red Force</span></th></tr></thead><tbody>' + rows.map(([n, f]) => '<tr><td>' + esc(n) + '</td><td>' + f('B') + '</td><td>' + f('R') + '</td></tr>').join('') + '</tbody>';
+  { const el = $('[data-asbt]', v); if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
+  { const d = droneStatusHTML(S, true), el = $('[data-asbdrone]', v); if (el.dataset.h !== d){ el.dataset.h = d; el.innerHTML = d; } }
+  $('[data-asbn]', v).textContent = 'As of ' + hhmm(S.g);
+}
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-dronetoggle]'); if (!b || !['W', 'A', 'D'].includes(app.role)) return;
+  const down = b.dataset.dronetoggle === '1';
+  if (app.role !== 'D' && !confirm(down ? 'Set the drone to not ready for tasking? The forces see routine maintenance and cannot request flights.' : 'Set the drone to ready for tasking?')) return;
+  writeEvent('drone_status', null, { down }); toast(down ? 'Drone set to not ready for tasking.' : 'Drone set to ready for tasking.');
+});
+
+/* ---------- drone operator view ---------- */
+function buildDrone(){
+  if (app.built === 'drone') return; app.built = 'drone';
+  const v = $('#vDrone');
+  v.innerHTML = `
+  <div class="stack">
+    <div class="panel"><div class="act-head"><h2>Drone operator</h2><span class="small muted">White Force · <b class="mono" data-clock>—</b></span></div>
+      <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
+      <label class="chk"><input type="checkbox" data-msgsound checked> Sound for new drone requests</label></div>
+    <div class="panel dr-big"><h2 style="margin:0">Drone readiness</h2>
+      <div class="dr-state" data-drstate></div>
+      <div class="dr-btns"><button type="button" class="btn-side" data-dronetoggle="0" data-drready>Ready for tasking</button><button type="button" data-dronetoggle="1" data-drdown>Not ready (in use)</button></div>
+      <p class="small muted" style="margin:0" data-drnote></p></div>
+    <div class="panel stack"><div class="act-head"><h2>Drone requests</h2><span class="small muted" data-drn></span></div><div class="stack" data-drreqs></div></div>
+    <div class="panel stack"><h2>Answered</h2><div class="list" data-drdone></div></div>
+    <div class="panel stack"><div class="act-head"><h2>Map</h2><span class="small muted">No fog of war</span></div>
+      <div class="row" style="justify-content:flex-start"><button type="button" data-drfull style="flex:0 0 auto">Full screen map</button></div>
+      <div class="map-wrap" data-drmap></div><div data-drlegend></div></div>
+  </div>`;
+  $('[data-drfull]', v).onclick = () => openFullMap(null);
+  v.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-dranswer]'); if (!b) return;
+    const id = b.dataset.dranswer, box = $('#dra-' + id), tx = box ? box.value.trim() : '';
+    if (!tx){ toast('Type the answer first.', true); if (box) box.focus(); return; }
+    b.disabled = true; writeEvent('resolve', null, { req:id, result:'answer', text:tx }); app.drDraft && delete app.drDraft[id]; toast('Answer sent to the force.');
+  });
+  v.addEventListener('input', ev => { const t = ev.target.closest('[data-drdraft]'); if (!t) return; app.drDraft = app.drDraft || {}; app.drDraft[t.dataset.drdraft] = t.value; });
+  app.drSeen = null;
+}
+function renderDrone(S){
+  const v = $('#vDrone'); if (!$('[data-drreqs]', v)) return;
+  const down = !!S.droneDown, st = $('[data-drstate]', v);
+  st.className = 'dr-state ' + (down ? 'no' : 'ok'); st.textContent = down ? 'NOT READY FOR TASKING' : 'READY FOR TASKING';
+  $('[data-drready]', v).setAttribute('aria-pressed', String(!down)); $('[data-drdown]', v).setAttribute('aria-pressed', String(down));
+  $('[data-drnote]', v).textContent = (S.droneAt != null ? 'Set at ' + hhmm(S.droneAt) + '. ' : '') + (down ? 'The forces see “Routine maintenance. Not ready for tasking.” and cannot request a flight.' : 'The forces can request a flight. Set Not ready while the drone is flying or down.') + ' Next flight allowed: Blue Force ' + (droneReady(S, 'B') ? 'now' : hhmm(Math.ceil(S.droneLast.B + droneEvery(S, 'B')))) + ' · Red Force ' + (droneReady(S, 'R') ? 'now' : hhmm(Math.ceil(S.droneLast.R + droneEvery(S, 'R')))) + '.';
+  const open = S.requests.filter(r => r.kind === 'drone' && r.status === 'open'), done = S.requests.filter(r => r.kind === 'drone' && r.status !== 'open').slice(-10).reverse();
+  $('[data-drn]', v).textContent = open.length ? open.length + ' waiting' : 'None waiting';
+  const box = $('[data-drreqs]', v), k = open.map(r => r.id).join();
+  if (box.dataset.k !== k && !typingIn(box)){ box.dataset.k = k; const dr = app.drDraft || {};
+    box.innerHTML = open.length ? open.map(r => '<div class="dr-req side-' + r.side + '"><div class="act-head"><span class="badge side-' + r.side + '">' + SIDES[r.side].name + '</span><span class="small muted">Requested ' + hhmm(r.g) + ' · ' + picAgo(S.g - r.g) + '</span></div><div class="q">' + esc(r.text || '(no question)') + '</div><label>Answer<textarea id="dra-' + r.id + '" data-drdraft="' + r.id + '" maxlength="200" placeholder="What the drone sees">' + esc(dr[r.id] || '') + '</textarea></label><button type="button" class="btn-side team-big" data-dranswer="' + r.id + '">Send answer to ' + SIDES[r.side].name + '</button></div>').join('') : '<div class="empty">No drone requests waiting.</div>'; }
+  const dh = done.length ? done.map(r => '<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <span class="small muted">' + hhmm(r.g) + '</span><div><b>' + esc(r.text) + '</b></div><div class="small">' + esc(r.answer || '') + '</div></div></div>').join('') : '<div class="empty">Nothing answered yet.</div>';
+  { const el = $('[data-drdone]', v); if (el.dataset.h !== dh){ el.dataset.h = dh; el.innerHTML = dh; } }
+  const ids = open.map(r => r.id); if (app.drSeen && ids.some(id => !app.drSeen.includes(id))){ const r = open.find(x => !app.drSeen.includes(x.id)); toast('New drone request from ' + SIDES[r.side].name + ': ' + r.text); }
+  app.drSeen = S.requests.filter(r => r.kind === 'drone').map(r => r.id);
+  wakeShow();
+  const real = renderMapInto($('[data-drmap]', v), S, null); $('[data-drlegend]', v).innerHTML = real ? realLegend() : legendHTML(null);
 }
 function renderAocChat(S, v){
   const me = app.role === 'A' ? 'A' : 'W', other = me === 'A' ? 'W' : 'A', ms = S.aocChat || [], key = 'marala-aocseen-' + (app.gid || 'none') + '-' + me;
@@ -4226,7 +4401,7 @@ function aocMode(on){
   if (!on && cur && cur.hasAttribute('data-aoc-only')) $('[data-wtab="all"]', v).click();
 }
 function buildWhite(){
-  if (app.built === 'white') return; app.built = 'white';
+  if (app.built === 'white') return; app.built = 'white'; app.fogView = null;
   const v = $('#vWhite');
   const sideCol = s => `
     <div class="panel side-${s}" data-sec="calls" data-aoc-off>
@@ -4248,7 +4423,7 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <nav class="wnav" data-wnav aria-label="White Force sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['wf', 'White Force'], ['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : k === 'wf' ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-wnav aria-label="White Force sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['wf', 'White Force'], ['plan', 'Upcoming'], ['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : k === 'wf' || k === 'plan' ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
@@ -4275,6 +4450,17 @@ function buildWhite(){
           <div class="pic-card"><div class="pic-h"><h3>POC traffic</h3><span data-wfpocn></span></div><div class="pic-list" data-wfpoc></div></div>
         </div>
       </section>
+      <section class="wfsec" data-sec="plan" data-plansec data-aoc-only>
+        <div class="wfcol">
+          <div class="pic-card"><div class="pic-h"><h3>Injects and intel packages</h3><span data-plann></span></div>
+            <div class="row" style="justify-content:flex-start;align-items:center"><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-plansent> Show sent and deployed</label><span class="small muted" style="flex:1 1 200px">Read-only. Planned times can change; the White Force sends injects and deploys packages.</span></div>
+            <div class="pic-list" data-planlist></div></div>
+        </div>
+        <div class="wfcol">
+          <div class="pic-card"><div class="pic-h"><h3>Waypoints and interest markers not deployed</h3><span data-planwpn></span></div><div class="pic-list" data-planwp></div></div>
+          <div class="pic-card"><div class="pic-h"><h3>Full map</h3><span class="small muted">Includes markers the forces cannot see yet (faded)</span></div><div class="map-wrap" data-planmap></div><div class="row" style="justify-content:flex-start"><button type="button" data-planfull style="flex:0 0 auto">Full screen map</button></div></div>
+        </div>
+      </section>
       <section class="pic" data-sec="pic" data-pic>
         <div class="pic-head">
           <div class="pic-tile"><span class="k">Board time</span><b class="mono pic-big" data-clock>—</b><span class="pic-sub" data-picphase></span></div>
@@ -4284,7 +4470,7 @@ function buildWhite(){
         </div>
         <div class="pic-main">
           <div class="pic-card pic-mapcard">
-            <div class="pic-tools"><button type="button" class="btn-side" data-picping>Ping all devices</button><label class="chk"><input type="checkbox" data-picpoc> Show POCs</label><span class="small muted" data-picpocn></span><button type="button" data-picfull class="pic-push">Full screen</button></div>
+            <div class="pic-tools"><button type="button" class="btn-side" data-picping>Ping all devices</button><label class="chk"><input type="checkbox" data-picpoc> Show POCs</label><span class="small muted" data-picpocn></span><div class="fogseg" role="group" aria-label="Map view" data-fogctl><button type="button" data-fogv="" aria-pressed="true">All (no fog of war)</button><button type="button" data-fogv="B" aria-pressed="false">Blue Force view</button><button type="button" data-fogv="R" aria-pressed="false">Red Force view</button></div><button type="button" data-picfull class="pic-push">Full screen</button></div>
             <div class="pic-map" data-picmap></div>
             <div class="pic-legend"><span><i style="background:#3d7dff"></i>Blue Force</span><span><i style="background:#ff4d42"></i>Red Force</span><span><i style="background:#e040fb"></i>POC</span><span><i class="hol"></i>Site not held</span><span class="muted">Fireteams and POCs show their last reported position.</span></div>
           </div>
@@ -4293,10 +4479,25 @@ function buildWhite(){
             <div class="pic-card pic-fill"><div class="pic-h"><h3>Communications</h3><span data-piccomn></span></div><div class="pic-list pic-comms" data-piccomms></div></div>
           </div>
         </div>
+        <div class="pic-row2">
+          <div class="pic-card" data-pricard><div class="pic-h"><h3>AOC Priorities</h3><span class="small muted">What each force sees at the top of its board</span></div>
+            <div class="pri-cur" data-pricur></div>
+            <form class="stack" data-prif data-aoc-only>
+              <label>Send to<select name="to"><option value="both">Both forces</option><option value="B">Blue Force</option><option value="R">Red Force</option></select></label>
+              <label>Priority 1<input name="p1" maxlength="200" autocomplete="off" placeholder="Example: Maintain ISR coverage of the harbor"></label>
+              <label>Priority 2 (optional)<input name="p2" maxlength="200" autocomplete="off"></label>
+              <label>Priority 3 (optional)<input name="p3" maxlength="200" autocomplete="off"></label>
+              <label>Commander’s guidance (optional)<input name="intent" maxlength="300" autocomplete="off" placeholder="Example: Avoid escalation with the other force in Marala Town"></label>
+              <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto">Send priorities</button><button type="button" data-prireset style="flex:0 0 auto">Return to standing priority</button></div>
+            </form></div>
+          <div class="pic-card" data-asb><div class="pic-h"><h3>Asset status board</h3><span class="small muted" data-asbn></span></div>
+            <div data-asbdrone></div>
+            <div class="asb-wrap"><table class="asb" data-asbt></table></div></div>
+        </div>
         <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Deployed intel packages, injects and messages</span></div><div class="pic-tl" data-pictl></div></div>
       </section>
       <div class="panel" data-sec="map create">
-        <div class="map-head"><h2 data-wmaptitle>White Force map</h2><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
+        <div class="map-head"><h2 data-wmaptitle>White Force map</h2><div class="fogseg" role="group" aria-label="Map view" data-fogctl><button type="button" data-fogv="" aria-pressed="true">All (no fog of war)</button><button type="button" data-fogv="B" aria-pressed="false">Blue Force view</button><button type="button" data-fogv="R" aria-pressed="false">Red Force view</button></div><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
         <div class="sitectl" data-sitectl data-aoc-off></div>
@@ -4477,9 +4678,18 @@ function buildWhite(){
     if (d && confirm('Remove "' + q.label + '" from the queue? The template stays.')) writeEvent('injq_del', null, { qid:q.qid });
     if (u){ useTpl(q); writeEvent('injq_del', null, { qid:q.qid }); toast('Moved to the message box. Edit it, then press Send.'); }
   });
-  $('[data-fullmap]', v).onclick = () => openFullMap(null);
+  $('[data-fullmap]', v).onclick = () => openFullMap(fogSide(app.S));
   { const pc = $('[data-picpoc]', v); pc.checked = pref.get('marala-picpoc', '1') === '1'; pc.onchange = () => { pref.set('marala-picpoc', pc.checked ? '1' : '0'); refresh(true); }; }
-  $('[data-picfull]', v).onclick = () => openFullMap(null);
+  $('[data-picfull]', v).onclick = () => openFullMap(fogSide(app.S));
+  $('[data-planfull]', v).onclick = () => openFullMap(null);
+  $('[data-plansent]', v).onchange = () => refresh(true);
+  $('[data-prif]', v).addEventListener('submit', ev => { ev.preventDefault(); if (app.role !== 'A') return;
+    const f = ev.currentTarget, items = ['p1', 'p2', 'p3'].map(k => f.elements[k].value.trim()).filter(Boolean), to = f.elements.to.value, nm = ({ both:'both forces', B:'Blue Force', R:'Red Force' })[to];
+    if (!items.length){ toast('Enter Priority 1 first.', true); f.elements.p1.focus(); return; }
+    if (!confirm('Send ' + items.length + ' priorit' + (items.length === 1 ? 'y' : 'ies') + ' to ' + nm + '? They replace the current priorities on that board.')) return;
+    writeEvent('aoc_pri', null, { to, items, intent:f.elements.intent.value.trim() }); ['p1', 'p2', 'p3', 'intent'].forEach(k => f.elements[k].value = ''); toast('Priorities sent to ' + nm + '.'); });
+  $('[data-prireset]', v).onclick = () => { if (app.role !== 'A') return; const f = $('[data-prif]', v), to = f.elements.to.value, nm = ({ both:'both forces', B:'Blue Force', R:'Red Force' })[to];
+    if (!confirm('Return ' + nm + ' to the standing priority (“' + PRI_DEFAULT + '”)?')) return; writeEvent('aoc_pri', null, { to, reset:true }); toast(nm + ' returned to the standing priority.'); };
   $$('[data-aocf]', v).forEach(f => f.addEventListener('submit', ev => { ev.preventDefault(); const t = f.elements.text.value.trim(); if (!t) return; writeEvent('aoc_msg', null, { text:t }); f.reset(); f.elements.text.focus(); }));
   $('[data-picping]', v).onclick = () => { const S = app.S; if (!S) return; const n = Object.values(S.ocs).filter(o => !o.removed).length;
     if (S.clock.started) writeEvent('ping', null, { to:'both' });
@@ -4491,10 +4701,10 @@ function buildWhite(){
     if (cols.every(c => c.every(Boolean))){ cols.forEach(c => { const col = document.createElement('div'); col.className = 'wcol'; c.forEach(el => col.appendChild(el)); g.appendChild(col); }); kids.filter(c => !cols.flat().includes(c)).forEach(el => { el.classList.add('wfull'); g.appendChild(el); }); } }
   const setTab = (k, scroll) => {
     $$('[data-wtab]', v).forEach(b => b.setAttribute('aria-selected', b.dataset.wtab === k ? 'true' : 'false'));
-    $$('[data-sec]', v).forEach(el => { const sec = el.dataset.sec.split(' '), on = k === 'all' ? !sec.includes('pic') : sec.includes(k); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
+    $$('[data-sec]', v).forEach(el => { const sec = el.dataset.sec.split(' '), on = k === 'all' ? !sec.includes('pic') && !sec.includes('plan') : sec.includes(k); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
     $('[data-wgrid]', v).classList.toggle('filtered', k !== 'all');
     $('[data-wgrid]', v).classList.toggle('picmode', k === 'pic');
-    if (k === 'pic' || k === 'wf') setTimeout(() => refresh(true), 0);
+    if (k === 'pic' || k === 'wf' || k === 'plan') setTimeout(() => refresh(true), 0);
     if (k === 'intel'){ const f = $('[data-ipbuild]', v); if (f) f.open = true; }
     if (k === 'setup'){ const f = $('[data-mapsetup]', v); if (f) f.open = true; }
     pref.set('marala-wtab', k);
@@ -5043,8 +5253,9 @@ function renderWhite(S, now){
   const wf = $('form[data-wf="window"]', v), wk = START_G + '|' + END_G;
   if (wf && app.winKey !== wk && !wf.contains(document.activeElement)){ app.winKey = wk; wf.elements.start.value = hhmm(START_G); wf.elements.len.value = END_G - START_G; }
   if (wf) Array.from(wf.elements).forEach(x => x.disabled = S.clock.started);
-  $('[data-mapnote]', v).textContent = '';
-  const real = renderMapInto($('[data-map]', v), S, null);
+  const fvm = fogSide(S);
+  $('[data-mapnote]', v).textContent = fvm ? fogNote(S, fvm) : '';
+  const real = renderMapInto($('[data-map]', v), S, fvm, fvm ? { noPins:true } : undefined);
   $('[data-legend]', v).innerHTML = real ? realLegend() : legendHTML(null);
   $('[data-clk="start"]', v).textContent = 'Start the game (' + hhmm(START_G) + ')';
   $('[data-wteamsB]', v).innerHTML = teamRows(S, 'B', true);
@@ -5123,7 +5334,7 @@ function renderWhite(S, now){
   const voids = app.events.filter(e => e.type === 'void').length;
   if (app.multi){ const ng = $('[data-newgame]', v), rs = $('[data-restore]', v); if (ng) ng.hidden = true; if (rs) rs.hidden = true; }
   renderPic(S, v);
-  if (app.role === 'A') renderWF(S, v);
+  if (app.role === 'A'){ renderWF(S, v); renderPlan(S, v); }
   $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · Saved on this computer' : ' · Shared');
 }
 
@@ -5141,6 +5352,7 @@ function refresh(force){
     if (app.role === 'W' || app.role === 'A') renderWhite(S, now);
     else if (app.role === 'P') renderPublic(S);
     else if (app.role === 'OC') renderOC(S);
+    else if (app.role === 'D') renderDrone(S);
     else if (app.role[0] === 'T') renderTeam(S, app.role[1]);
     else renderWing(S, app.role, now);
     if (app.fsEl && app.fsEl._lm && mapCfg(S)) drawDyn(app.fsEl._lm, S, app.fsSide);
