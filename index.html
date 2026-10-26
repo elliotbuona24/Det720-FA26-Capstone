@@ -337,7 +337,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
     </div>
     <div id="gateNoGame" class="panel" hidden>
       <h2>No game set up yet</h2>
-      <p class="muted" style="margin:0">No game is active. The white cell creates the game.</p>
+      <p class="muted" style="margin:0">No game is active. The White Force creates the game.</p>
       <div><button type="button" class="btn-side side-W" id="gotoSetup">Set up a new game</button></div>
     </div>
     <div id="gameMenu" class="stack" hidden>
@@ -356,16 +356,16 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label for="pinInput">PIN for this view<input id="pinInput" type="password" inputmode="numeric" autocomplete="off"></label>
         <div style="flex:0 0 auto" class="row"><button type="submit" class="btn-side" id="pinGo">Open view</button><button type="button" id="pinCancel">Back</button></div>
       </div>
-      <p id="pinErr" class="small" style="color:var(--bad);margin:0" hidden>That PIN doesn't match this game. Ask the white cell for the right one.</p>
+      <p id="pinErr" class="small" style="color:var(--bad);margin:0" hidden>That PIN doesn't match this game. Ask the White Force for the right one.</p>
     </form>
     <div id="gateAdmin" class="panel" hidden>
       <h2>Start a new game</h2>
-      <p class="muted small" style="margin:0">Replaces the current game on every screen. Enter the white cell PIN, or the admin recovery code if the PIN is lost.</p>
+      <p class="muted small" style="margin:0">Replaces the current game on every screen. Enter the White Force PIN, or the admin recovery code if the PIN is lost.</p>
       <form id="adminForm" class="row">
-        <label for="adminInput">White cell PIN or recovery code<input id="adminInput" type="password" autocomplete="off"></label>
+        <label for="adminInput">White Force PIN or recovery code<input id="adminInput" type="password" autocomplete="off"></label>
         <div style="flex:0 0 auto" class="row"><button type="submit" class="btn-side side-W">Continue</button></div>
       </form>
-      <p id="adminErr" class="small" style="color:var(--bad);margin:0" hidden>That doesn't match the white cell PIN or the recovery code.</p>
+      <p id="adminErr" class="small" style="color:var(--bad);margin:0" hidden>That doesn't match the White Force PIN or the recovery code.</p>
     </div>
   </section>
 
@@ -382,9 +382,9 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side side-W" id="adNew" style="flex:0 0 auto">Create a new game</button><button type="button" id="adNewFile" style="flex:0 0 auto">Create a game from a backup file</button><button type="button" id="adRefresh" style="flex:0 0 auto">Refresh</button></div>
       </div>
       <form id="adFile" class="panel stack" hidden><h2>Create a game from a backup file</h2>
-        <p class="small muted" style="margin:0">Uses everything in the file: events, code words and role PINs. Enter a new white cell PIN to replace the one in the file.</p>
+        <p class="small muted" style="margin:0">Uses everything in the file: events, code words and role PINs. Enter a new White Force PIN to replace the one in the file.</p>
         <label for="adFileIn">Backup file<input id="adFileIn" type="file" accept=".json,application/json" required></label>
-        <div class="row"><label for="adFileName">Game name<input id="adFileName" maxlength="60" required></label><label for="adFilePin">Game PIN<input id="adFilePin" maxlength="12" required autocomplete="off"></label><label for="adFileW">New white cell PIN (optional)<input id="adFileW" maxlength="12" autocomplete="off"></label></div>
+        <div class="row"><label for="adFileName">Game name<input id="adFileName" maxlength="60" required></label><label for="adFilePin">Game PIN<input id="adFilePin" maxlength="12" required autocomplete="off"></label><label for="adFileW">New White Force PIN (optional)<input id="adFileW" maxlength="12" autocomplete="off"></label></div>
         <label class="chk"><input type="checkbox" id="adFileListed" checked> Show on the game menu</label>
         <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side side-W" style="flex:0 0 auto">Create game</button><button type="button" id="adFileCancel" style="flex:0 0 auto">Cancel</button><span class="small muted" id="adFileMsg"></span></div>
       </form>
@@ -393,7 +393,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label class="chk"><input type="checkbox" id="adEListed"> Show on the game menu</label>
         <label class="chk"><input type="checkbox" id="adEStarter"> Keep the sample intel packages as fixed packages (older games only)</label>
         <p class="small muted" style="margin:0">New role PINs (leave blank to keep the current PIN)</p>
-        <div class="row"><label for="adPW">White cell<input id="adPW" maxlength="12" autocomplete="off"></label><label for="adPA">AOC<input id="adPA" maxlength="12" autocomplete="off"></label><label for="adPB">Blue Force C2<input id="adPB" maxlength="12" autocomplete="off"></label><label for="adPR">Red Force C2<input id="adPR" maxlength="12" autocomplete="off"></label></div>
+        <div class="row"><label for="adPW">White Force<input id="adPW" maxlength="12" autocomplete="off"></label><label for="adPA">AOC<input id="adPA" maxlength="12" autocomplete="off"></label><label for="adPB">Blue Force C2<input id="adPB" maxlength="12" autocomplete="off"></label><label for="adPR">Red Force C2<input id="adPR" maxlength="12" autocomplete="off"></label></div>
         <div class="row"><label for="adPTB">Blue Force fireteam<input id="adPTB" maxlength="12" autocomplete="off"></label><label for="adPTR">Red Force fireteam<input id="adPTR" maxlength="12" autocomplete="off"></label><label for="adPOC">POC<input id="adPOC" maxlength="12" autocomplete="off"></label></div>
         <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side side-W" style="flex:0 0 auto">Save changes</button><button type="button" id="adEBackup" style="flex:0 0 auto">Download backup</button><button type="button" id="adEDelete" style="flex:0 0 auto">Delete game</button><button type="button" id="adECancel" style="flex:0 0 auto">Close</button></div>
         <p class="small muted" id="adEMsg" style="margin:0"></p>
@@ -418,7 +418,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
       <div class="row" style="align-items:end"><label for="sMapFile">Map file (optional)<input id="sMapFile" type="file" accept=".json,application/json"></label><button type="button" id="sMapClear" style="flex:0 0 auto">Clear</button><p class="small muted" style="margin:0;flex:2 1 260px">Leave empty to use the standard Area 5 map. Choose a map file, such as the training layout, to start this game on that map instead.</p></div>
       <div class="row">
         <label for="sName">Game name<input id="sName" value="Capstone" required></label>
-        <label for="sPinW">White cell PIN<input id="sPinW" required autocomplete="off"></label>
+        <label for="sPinW">White Force PIN<input id="sPinW" required autocomplete="off"></label>
         <label for="sPinA">AOC PIN<input id="sPinA" required autocomplete="off"></label>
         <label for="sPinB">Blue Force PIN<input id="sPinB" required autocomplete="off"></label>
         <label for="sPinR">Red Force PIN<input id="sPinR" required autocomplete="off"></label>
@@ -1652,7 +1652,7 @@ function apply(S, e, cfg){
         const spend = () => { if (!m.reuse) S.usedCodes[ck] = true; };
         if (!m.cap && !m.def){ c.note = 'Code word did not match.'; }
         else if (!m.reuse && S.usedCodes[ck]){ c.note = 'Code word already used.'; }
-        else if (s.contested && !s.contestBy){ c.note = 'Stalemate: both wings are at the site. It cannot be captured until one wing leaves and the white cell clears the stalemate.'; }
+        else if (s.contested && !s.contestBy){ c.note = 'Stalemate: both wings are at the site. It cannot be captured until one wing leaves and the White Force clears the stalemate.'; }
         else if (s.holder === side && s.contested && s.contestBy){
           if (!m.def){ c.note = 'Defense code word required.'; }
           else {
@@ -1866,16 +1866,16 @@ function apply(S, e, cfg){
         if (p.result === 'add' || p.result === 'queue'){
           const to = p.result === 'add' ? r.side : 'none';
           S.wps.push({ id:'wpr-' + r.id, pt:r.pt, label:r.label, sym:'pin', color:null, to, g:S.g, grid:r.grid, req:r.side });
-          r.answer = p.result === 'add' ? 'Added to your map.' : 'Approved. Pending placement by the white cell.';
-          if (p.result === 'add') pushFeed(S, r.side, 'New waypoint from the white cell: ' + r.label + (r.grid ? ' at ' + r.grid : '') + '.', 'hq', { label:'Waypoint', team:true });
-          else pushFeed(S, r.side, 'Waypoint request approved: ' + r.label + '. Pending placement by the white cell.', 'hq', { label:'Waypoint' });
+          r.answer = p.result === 'add' ? 'Added to your map.' : 'Approved. Pending placement by the White Force.';
+          if (p.result === 'add') pushFeed(S, r.side, 'New waypoint from the White Force: ' + r.label + (r.grid ? ' at ' + r.grid : '') + '.', 'hq', { label:'Waypoint', team:true });
+          else pushFeed(S, r.side, 'Waypoint request approved: ' + r.label + '. Pending placement by the White Force.', 'hq', { label:'Waypoint' });
           pushLog(S, rn + ' waypoint request ' + (p.result === 'add' ? 'added: ' : 'moved to the waypoint queue: ') + r.label, r.side, e);
         } else { r.answer = 'Declined.' + (p.text ? ' ' + String(p.text).slice(0, 140) : ''); pushFeed(S, r.side, 'Waypoint request declined: ' + r.label + '.', 'alert', { label:'Waypoint' }); pushLog(S, rn + ' waypoint request declined: ' + r.label, r.side, e); }
         S.ver++;
       } else if (r.kind === 'drone'){ pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.'), 'hq'); pushLog(S, rn + ' drone flight answered', r.side, e); }
       else if (r.kind === 'show'){
         if (r.teams) Object.values(r.teams).forEach(t => { if (t.st === 'inside') t.st = p.result === 'defied' ? 'stayed' : 'left'; });
-        if (p.result === 'defied' && r.charged){ pushLog(S, 'Show of force at ' + r.text + ' closed by the white cell', null, e); }
+        if (p.result === 'defied' && r.charged){ pushLog(S, 'Show of force at ' + r.text + ' closed by the White Force', null, e); }
         else if (p.result === 'defied'){ raise(S, OTHER[r.side], ESC.defied); pushFeed(S, OTHER[r.side], 'You did not leave. Escalation +10 charged to you.', 'alert'); pushLog(S, SIDES[OTHER[r.side]].name + ' ignored the show of force (escalation +10)', OTHER[r.side], e); }
         else { pushFeed(S, r.side, 'The other wing left ' + r.text + '.', 'good'); pushLog(S, SIDES[OTHER[r.side]].name + ' left after the show of force', OTHER[r.side], e); }
       } else if (r.kind === 'strike'){
@@ -2028,7 +2028,7 @@ function apply(S, e, cfg){
       const t = side && p.team ? S.teams[side][p.team] : null;
       if (!t || t.removed){ pushLog(S, 'Fireteam removal refused: no such team', side, e, 'rejected'); break; }
       t.removed = true; t.status = 'Removed'; S.ver++;
-      pushLog(S, nm + ' fireteam ' + t.name + ' removed by ' + (e.by === 'W' ? 'the white cell' : 'the Wing Commander'), side, e);
+      pushLog(S, nm + ' fireteam ' + t.name + ' removed by ' + (e.by === 'W' ? 'the White Force' : 'the Wing Commander'), side, e);
       Object.values(S.ocs).forEach(o => { if (!o.removed && o.side === side && o.team === t.id){ o.side = null; o.team = null; o.detached = { name:t.name, g:S.g }; pushLog(S, 'POC ' + o.name + ' unattached: ' + t.name + ' was removed', null, e); } });
       break; }
     case 'window_set': pushLog(S, 'Game window set: clock starts ' + hhmm(START_G) + ', ' + (END_G - START_G) + ' minutes', null, e); break;
@@ -2080,13 +2080,13 @@ function apply(S, e, cfg){
       const o = S.ocs[p.oc], tx = String(p.text || '').trim().slice(0, 300); if (!o || o.removed || !tx) break;
       const from = p.from === 'wc' ? 'wc' : 'oc';
       S.occhats.push({ id:e.id, oc:o.id, from, text:tx, g:S.g }); S.ver++;
-      pushLog(S, from === 'wc' ? 'White cell to POC ' + o.name + ': ' + tx : 'POC ' + o.name + ' to white cell: ' + tx, null, e);
+      pushLog(S, from === 'wc' ? 'White Force to POC ' + o.name + ': ' + tx : 'POC ' + o.name + ' to White Force: ' + tx, null, e);
       break; }
     case 'oc_ping': {
-      if (p.all){ if (!S.ocPings) S.ocPings = []; const live = Object.values(S.ocs).filter(o => !o.removed); live.forEach(o => S.ocPings.push({ id:e.id, oc:o.id, ts:e.ts, g:S.g })); S.ver++; pushLog(S, (e.by === 'A' ? 'AOC' : 'White cell') + ' requested the position of every POC (' + live.length + ')', null, e); break; }
+      if (p.all){ if (!S.ocPings) S.ocPings = []; const live = Object.values(S.ocs).filter(o => !o.removed); live.forEach(o => S.ocPings.push({ id:e.id, oc:o.id, ts:e.ts, g:S.g })); S.ver++; pushLog(S, (e.by === 'A' ? 'AOC' : 'White Force') + ' requested the position of every POC (' + live.length + ')', null, e); break; }
       const o = S.ocs[p.oc]; if (!o || o.removed) break;
       if (!S.ocPings) S.ocPings = []; S.ocPings.push({ id:e.id, oc:o.id, ts:e.ts, g:S.g }); S.ver++;
-      pushLog(S, 'White cell requested the position of POC ' + o.name, null, e);
+      pushLog(S, 'White Force requested the position of POC ' + o.name, null, e);
       break; }
     case 'oc_pos': {
       const o = S.ocs[p.oc]; if (!o || o.removed || !Array.isArray(p.pt) || p.pt.length !== 2 || !p.pt.every(Number.isFinite)) break;
@@ -2105,7 +2105,7 @@ function apply(S, e, cfg){
       const tx = String(p.text || '').trim().slice(0, 500); if (!tx) break;
       const from = e.by === 'A' ? 'A' : 'W';
       if (!S.aocChat) S.aocChat = []; S.aocChat.push({ id:e.id, from, text:tx, g:S.g }); S.ver++;
-      pushLog(S, (from === 'A' ? 'AOC to white cell: ' : 'White cell to AOC: ') + tx, null, e);
+      pushLog(S, (from === 'A' ? 'AOC to White Force: ' : 'White Force to AOC: ') + tx, null, e);
       break; }
     case 'ocann': {
       const tx = String(p.text || '').trim().slice(0, 400); if (!tx) break;
@@ -2115,7 +2115,7 @@ function apply(S, e, cfg){
     case 'oc_res': {
       const r = S.ocReqs.find(x => x.id === p.req); if (!r || r.status !== 'open') break;
       r.status = p.ok ? 'ok' : 'no'; r.resG = S.g; S.ver++;
-      { const rp = String(p.reply || '').trim().slice(0, 300); if (rp){ r.reply = rp; pushLog(S, 'White cell reply to POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + rp, null, e); } }
+      { const rp = String(p.reply || '').trim().slice(0, 300); if (rp){ r.reply = rp; pushLog(S, 'White Force reply to POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + rp, null, e); } }
       if (r.kind === 'call' && p.ok){ const c = OC_CALLS[r.call]; apply(S, { id:e.id, ts:e.ts, type:c.ev, side:r.side, p:Object.assign({}, c.p, r.call === 'aid' ? { at:r.g } : {}), by:e.by }, cfg); }
       else if (r.kind === 'stale' && p.ok){ const st = S.sites[r.site]; if (st && !st.contestBy && !st.contested) apply(S, { id:e.id, ts:e.ts, type:'site_contested', side:null, p:{ site:r.site, on:true }, by:e.by }, cfg); else pushLog(S, 'Stalemate report from POC ' + ((S.ocs[r.oc] || {}).name || '') + ' not applied: ' + (SITES[r.site] ? SITES[r.site].name : 'site') + (st && st.contestBy ? ' is under contention' : ' is already in stalemate'), null, e, 'rejected'); }
       else if (r.kind === 'stale') pushLog(S, 'Stalemate report from POC ' + ((S.ocs[r.oc] || {}).name || '') + ' declined: ' + (SITES[r.site] ? SITES[r.site].name : 'site'), null, e);
@@ -2131,7 +2131,7 @@ function apply(S, e, cfg){
       break; }
     case 'nine_res': {
       const n = S.nines.find(x => x.id === p.nine); if (!n || n.status !== 'open') break;
-      n.status = p.ok ? 'ok' : 'no'; n.by = String(p.by || 'White cell').slice(0, 50); n.resG = S.g; S.ver++;
+      n.status = p.ok ? 'ok' : 'no'; n.by = String(p.by || 'White Force').slice(0, 50); n.resG = S.g; S.ver++;
       if (p.ok) pushFeed(S, n.side, 'Strike 9-line from ' + n.name + ' checked by ' + n.by + ': ' + nineText(n) + '. Available under Pressure options, Strike.', 'hq', { label:'9-line', team:true, tid:n.team });
       else pushFeed(S, n.side, n.name + ': strike 9-line not accepted.', 'alert', { label:'9-line', team:true, tid:n.team, only:true });
       pushLog(S, '9-line from ' + n.name + (p.ok ? ' accepted and sent to ' : ' denied, not sent to ') + SIDES[n.side].name + ' C2 (' + n.by + ')', n.side, e);
@@ -2148,7 +2148,7 @@ function apply(S, e, cfg){
       if (Number.isInteger(p.min) && p.min >= 3 && p.min <= 90) S.siteTimer[k] = p.min;
       if (p.from){ const w = S.wps.find(x => x.id === p.from && !x.del); if (w) w.del = true; }
       S.ver++;
-      pushFeed(S, 'both', 'New site: ' + name + (p.grid ? ' at ' + p.grid : '') + '. Scores like every other site.', 'hq', { label:'White cell', team:true });
+      pushFeed(S, 'both', 'New site: ' + name + (p.grid ? ' at ' + p.grid : '') + '. Scores like every other site.', 'hq', { label:'White Force', team:true });
       pushLog(S, 'New site created: ' + name + (p.grid ? ' at ' + p.grid : '') + ' (' + cap.length + ' capture, ' + def.length + ' defense code words)', null, e);
       break; }
     case 'site_remove': {
@@ -2156,13 +2156,13 @@ function apply(S, e, cfg){
       if (i < 0 || !SITES[k] || !SITES[k].dyn){ pushLog(S, 'Site removal refused', null, e, 'rejected'); break; }
       const st = S.sites[k];
       SITE_KEYS.splice(i, 1); SITES[k].removed = true; st.contested = false; st.contestBy = null; st.contestUntil = null; S.ver++;
-      pushFeed(S, 'both', 'Site removed: ' + SITES[k].name + '. It no longer scores.', 'hq', { label:'White cell', team:true });
+      pushFeed(S, 'both', 'Site removed: ' + SITES[k].name + '. It no longer scores.', 'hq', { label:'White Force', team:true });
       pushLog(S, 'Site removed: ' + SITES[k].name + (st.holder ? ' (was held by ' + SIDES[st.holder].name + ')' : ''), null, e);
       break; }
     case 'wp_clear': {
       const live = S.wps.filter(w => !w.del); if (!live.length) break;
       const had = new Set(); live.forEach(w => { wpSides(w.to).forEach(sd => had.add(sd)); w.del = true; });
-      had.forEach(sd => pushFeed(S, sd, 'All white cell waypoints were withdrawn.', 'hq', { label:'Waypoint', team:true }));
+      had.forEach(sd => pushFeed(S, sd, 'All White Force waypoints were withdrawn.', 'hq', { label:'Waypoint', team:true }));
       S.ver++; pushLog(S, 'All waypoints cleared (' + live.length + ')', null, e);
       break; }
     case 'wp_add': case 'wp_edit': case 'wp_del': {
@@ -2188,7 +2188,7 @@ function apply(S, e, cfg){
       }
       S.ver++;
       const now = w.del ? [] : wpSides(w.to), where = w.grid ? ' at ' + w.grid : '';
-      now.filter(sd => !before.includes(sd)).forEach(sd => pushFeed(S, sd, 'New waypoint from the white cell: ' + w.label + where + '.' + (w.desc ? ' ' + w.desc : ''), 'hq', { label:'Waypoint', team:true }));
+      now.filter(sd => !before.includes(sd)).forEach(sd => pushFeed(S, sd, 'New waypoint from the White Force: ' + w.label + where + '.' + (w.desc ? ' ' + w.desc : ''), 'hq', { label:'Waypoint', team:true }));
       if (moved) now.filter(sd => before.includes(sd)).forEach(sd => pushFeed(S, sd, 'Waypoint moved: ' + w.label + ' is now' + where + '.', 'hq', { label:'Waypoint', team:true }));
       before.filter(sd => !now.includes(sd)).forEach(sd => pushFeed(S, sd, 'Waypoint withdrawn: ' + w.label + '.', 'hq', { label:'Waypoint', team:true }));
       pushLog(S, (e.type === 'wp_add' ? 'Waypoint added: ' : e.type === 'wp_del' ? 'Waypoint deleted: ' : !before.length && now.length ? 'Waypoint deployed: ' : before.length && !now.length ? 'Waypoint returned to queue: ' : 'Waypoint changed: ') + w.label + ' (' + WP_SYMS[w.sym] + ')' + where + ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name), null, e);
@@ -2203,8 +2203,8 @@ function apply(S, e, cfg){
       const pt = Array.isArray(p.pt) && p.pt.length === 2 && p.pt.every(Number.isFinite) ? p.pt : null;
       S.wcPos = pt; S.ver++;
       const where = String(p.grid || '').slice(0, 60);
-      if (pt){ pushFeed(S, 'both', 'The white cell has moved' + (where ? ' to ' + where : '') + '. It shows on your map as the alien.', 'hq', { label:'White cell' }); pushLog(S, 'White cell moved' + (where ? ' to ' + where : ''), null, e); }
-      else { pushFeed(S, 'both', 'The white cell is back at its planned spot' + (where ? ', ' + where : '') + '.', 'hq', { label:'White cell' }); pushLog(S, 'White cell back at its planned spot', null, e); }
+      if (pt){ pushFeed(S, 'both', 'The White Force has moved' + (where ? ' to ' + where : '') + '. It shows on your map as the alien.', 'hq', { label:'White Force' }); pushLog(S, 'White Force moved' + (where ? ' to ' + where : ''), null, e); }
+      else { pushFeed(S, 'both', 'The White Force is back at its planned spot' + (where ? ', ' + where : '') + '.', 'hq', { label:'White Force' }); pushLog(S, 'White Force back at its planned spot', null, e); }
       break; }
     case 'map_config': S.map = p && p.sw && p.ne ? Object.assign({}, p, { outline:Array.isArray(p.outline) ? p.outline.map(q => Array.isArray(q) ? q : q && Number.isFinite(q.lat) && Number.isFinite(q.lng) ? [q.lat, q.lng] : null).filter(Boolean) : null }) : null; S.wps = S.wps.filter(w => !(w.poi && !w.touched && w.to === 'none' && !w.del)); seedPois(S, S.map ? S.map.pois : DEFAULT_POIS, e.id); S.ver++; pushLog(S, 'Map updated', null, e); break;
     case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:hqFrom(p.label), comm:'msg' }); pushLog(S, 'Message to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
@@ -2217,7 +2217,7 @@ function apply(S, e, cfg){
       break; }
   }
 }
-const VOID_NAMES = { injq_send:'inject', occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'white cell move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', tpl_save:'inject template', tpl_del:'inject template deletion', oc_ping:'POC position request', oc_pos:'POC position', report_ack:'report acknowledgement', show_oc:'POC show of force report', aid_del:'aid package delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'stalemate change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
+const VOID_NAMES = { injq_send:'inject', occhat:'POC message', ocann:'POC announcement', act_wpreq:'waypoint request', iedhit:'IED casualty', tchat:'fireteam message', ct_req:'contention request', ct_res:'contention request answer', site_new:'new site', site_remove:'site removal', wp_clear:'waypoint clear', wp_add:'waypoint', wp_edit:'waypoint change', wp_del:'waypoint deletion', intel_edit:'intel package edit', oc_join:'POC sign-in', oc_assign:'POC assignment', oc_edit:'POC change', oc_req:'POC request', oc_res:'answer to a POC request', nine:'strike 9-line', nine_res:'9-line check', ping:'position request', wc_pos:'White Force move', claim:'site claim', contact:'activity report', act_drone:'drone flight', act_uav:'UAV launch', act_jam:'datalink jam', act_show:'show of force', act_strike:'strike request', act_statement:'public statement', act_aid:'aid delivery', tpl_save:'inject template', tpl_del:'inject template deletion', oc_ping:'POC position request', oc_pos:'POC position', report_ack:'report acknowledgement', show_oc:'POC show of force report', aid_del:'aid package delivery', intel_answer:'intel package answer', liaison:'liaison message', handover_offer:'handover offer', handover_reply:'handover answer', order:'order to fireteams', pos:'fireteam position report', team_remove:'fireteam removal', team_map:'fireteam map use', ied:'IED credit', cache:'militia cache credit', conduct:'conduct call', civaid:'civilian aid credit', provocation:'provocation charge', sabotage:'flag pull', firstfire:'firing-first charge', returnfire:'return-fire charge', detonation:'explosion', msg:'message', adjust:'score adjustment', site_set:'site change', site_contested:'stalemate change', office:'town office change', intel_deploy:'intel package release', intel_close:'early intel package close', verdict:'report verdict', resolve:'request answer' };
 function voidNotice(S, t, e, restore){
   if (!t || !VOID_NAMES[t.type]) return;
   const p = t.p || {}, sd = t.side === 'B' || t.side === 'R' ? t.side : null;
@@ -2232,8 +2232,8 @@ function voidNotice(S, t, e, restore){
   if (!dest && t.type === 'verdict'){ const c = S.contacts.find(x => x.id === p.contact); dest = c ? c.side : 'both'; }
   if (!dest && t.type === 'resolve'){ const r = S.requests.find(x => x.id === p.req); dest = r ? r.side : 'both'; }
   const mine = dest === 'B' || dest === 'R';
-  const text = 'White cell ' + (restore ? 'restored ' : 'voided ') + (mine && sd ? 'your ' : 'the ') + what + (at ? ' from ' + at : '') + (restore ? '.' : '. The board has recalculated as if it never happened.');
-  pushFeed(S, dest || 'both', text, restore ? 'hq' : 'alert', { label:'White cell', team:false });
+  const text = 'White Force ' + (restore ? 'restored ' : 'voided ') + (mine && sd ? 'your ' : 'the ') + what + (at ? ' from ' + at : '') + (restore ? '.' : '. The board has recalculated as if it never happened.');
+  pushFeed(S, dest || 'both', text, restore ? 'hq' : 'alert', { label:'White Force', team:false });
   pushLog(S, (restore ? 'Restored: ' : 'Voided: ') + what + (at ? ' from ' + at : '') + (sd ? ' (' + SIDES[sd].name + ')' : ''), sd, e);
 }
 function replay(cfg, events, now, step, cache){
@@ -2450,7 +2450,7 @@ async function connect(){
     try { db = await firebaseDb(fb); app.online = 'firebase'; }
     catch(e){
       setBanner('Can\u2019t reach the online board. Check this device\u2019s internet connection, then reload the page.');
-      $('#gateRoles').innerHTML = '<div class="panel"><h2>Not connected</h2><p class="muted small" style="margin:0">The board needs the internet to load. If the connection is down for good, the white cell can carry on with the offline copy and a backup file.</p><div class="row" style="justify-content:flex-start"><button type="button" onclick="location.reload()" style="flex:0 0 auto">Try again</button></div></div>';
+      $('#gateRoles').innerHTML = '<div class="panel"><h2>Not connected</h2><p class="muted small" style="margin:0">The board needs the internet to load. If the connection is down for good, the White Force can carry on with the offline copy and a backup file.</p><div class="row" style="justify-content:flex-start"><button type="button" onclick="location.reload()" style="flex:0 0 auto">Try again</button></div></div>';
       return;
     }
   } else {
@@ -2460,7 +2460,7 @@ async function connect(){
   if (db){ app.mode = 'remote'; app.db = db; setBanner(''); if (app.online === 'firebase'){ app.multi = true; lobbyStart(); } else subscribeMeta(); }
   else {
     app.mode = 'local';
-    setBanner('Running on this computer only. Open this page in more windows on the same computer for the other screens; they stay in sync. Use the white cell\u2019s "Download backup" to save the game.');
+    setBanner('Running on this computer only. Open this page in more windows on the same computer for the other screens; they stay in sync. Use the White Force\u2019s "Download backup" to save the game.');
     const s = localLoad();
     if (s && s.cfg){ app.gid = s.gid; app.cfg = s.cfg; app.events = s.events || []; } else { app.cfg = null; app.gid = null; }
     window.addEventListener('storage', ev => { if (ev.key === LKEY) localPull(); });
@@ -2554,7 +2554,7 @@ function toast(msg, bad){
 
 /* ---------- routing ---------- */
 function show(id){ ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite') closeFullMap(); }
-function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'W' ? 'White cell' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
+function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'W' ? 'White Force' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
   if (!app.role && saved && app.cfg) app.role = saved;
@@ -2602,20 +2602,20 @@ function renderGate(){
   $('#gateAdmin').hidden = !app.cfg || !!app.multi; $('#adminErr').hidden = true; $('#adminInput').value = '';
   const roles = $('#gateRoles');
   if (!app.cfg){
-    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Sample game with recorded moves. PINs: white cell 0000, AOC 9999, Blue Force 1111, Red Force 2222. A new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
+    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Sample game with recorded moves. PINs: White Force 0000, AOC 9999, Blue Force 1111, Red Force 2222. A new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
     const gi = $('#gateImport'); if (gi) gi.onchange = () => importBackup(gi.files[0]);
     const ls = $('#loadSample'); if (ls) ls.onclick = loadSample;
     return;
   }
   const cards = [
     ['A', 'AOC', 'Air Operations Center: the full picture of both forces, the score and the log. Sends messages, injects and intel packages.'],
-    ['W', 'White cell', 'Runs the clock, checks reports, sends injects and sees through the fog of war.'],
+    ['W', 'White Force', 'Runs the clock, checks reports, sends injects and sees through the fog of war.'],
     ['B', 'Blue Force · Coalition', 'The US-led Coalition Wing Commander’s board: sites, reports, actions and points.'],
     ['R', 'Red Force · North Korea', 'The North Korean Wing Commander’s board: sites, reports, actions and points.'],
     ['P', 'Public screen', 'Clock, escalation meter and public news. No PIN needed.'],
     ['TB', 'Blue Force fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
     ['TR', 'Red Force fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
-    ['OC', 'POC', 'Phone screen for POCs and the mayor: check 9-lines, send calls, site arrivals and messages to the white cell.']
+    ['OC', 'POC', 'Phone screen for POCs and the mayor: check 9-lines, send calls, site arrivals and messages to the White Force.']
   ];
   roles.innerHTML = cards.map(([k, t, d]) => '<button type="button" class="role side-' + (k === 'P' || k === 'OC' ? 'W' : k[0] === 'T' ? k[1] : k) + '" data-role="' + k + '"><b>' + esc(t) + '</b><p>' + esc(d) + '</p></button>').join('');
   $$('.role', roles).forEach(b => b.onclick = () => pickRole(b.dataset.role));
@@ -2686,7 +2686,7 @@ $('#setupForm').addEventListener('submit', async ev => {
     if (mapEv) await writeEvent('map_config', null, mapEv.p);
     app.wantSetup = false; app.role = app.mode === 'local' ? 'W' : null;
     $('#setupForm').reset();
-    toast('Game created. You are on the white cell view.');
+    toast('Game created. You are on the White Force view.');
     route();
   } catch(err){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'The game was not created (' + ((err && err.code) || 'error') + '). ' + (app.online === 'firebase' ? 'Check the internet connection and the database rules in Firebase.' : 'Only people who can edit this board can start a game.'); }
 });
@@ -2800,7 +2800,7 @@ $('#adEBackup').onclick = async () => {
   const g = ad.editing; if (!g || !g.key || !g.cfg) return;
   try { const evs = await adminEvents(g.key), blob = new Blob([JSON.stringify({ app:'marala-board', gid:g.gid, cfg:g.cfg, events:evs }, null, 1)], { type:'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'marala-' + String(g.name || 'game').replace(/[^\w-]+/g, '-') + '-' + new Date().toISOString().slice(0, 10) + '.json'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
-    toast('Backup downloaded (' + evs.length + ' events). For an after-action report, download the backup from the game\u2019s white cell instead.'); }
+    toast('Backup downloaded (' + evs.length + ' events). For an after-action report, download the backup from the game\u2019s White Force instead.'); }
   catch(e){ toast('Backup failed (' + (e.code || e.message || 'error') + ').', true); }
 };
 $('#adEDelete').onclick = async () => {
@@ -3002,7 +3002,7 @@ function legendHTML(side){
     '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
 }
 function scoreTable(S, sides){
-  const rows = [['hold', 'Site captures and time held'], ['sites', 'Sites held (+5 each at ENDEX)'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['iedhit', 'IED casualties'], ['cache', 'Militia cache'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White cell adjustments']];
+  const rows = [['hold', 'Site captures and time held'], ['sites', 'Sites held (+5 each at ENDEX)'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['iedhit', 'IED casualties'], ['cache', 'Militia cache'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White Force adjustments']];
   const sc = {}; sides.forEach(s => sc[s] = score(S, s));
   let h = '<table class="score"><thead><tr><th>Points</th>' + sides.map(s => '<th><span class="chip ' + s + '">' + SIDES[s].name + '</span></th>').join('') + '</tr></thead><tbody>';
   rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if ((k === 'adj' || k === 'iedhit') && sides.every(s => !sc[s][k])) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
@@ -3031,7 +3031,7 @@ const ContourLayer = L.TileLayer.extend({
     return CONTOUR_URL + '?bbox=' + [x0, y1 - t, x0 + t, y1].map(v => v.toFixed(2)).join(',') + '&bboxSR=3857&imageSR=3857&size=' + this.getTileSize().x + ',' + this.getTileSize().y + '&dpi=96&format=png32&transparent=true&f=image';
   }
 });
-const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'Blue Force HQ'], ['lzR', 'Red Force HQ'], ['wc', 'White cell (planned spot)']];
+const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'Blue Force HQ'], ['lzR', 'Red Force HQ'], ['wc', 'White Force (planned spot)']];
 const WP_DEF = { pin:'#ffcf5a', obj:'#ffcf5a', rally:'#2e7d32', cp:'#1565c0', lz:'#6a1b9a', hazard:'#ffb300', aid:'#c62828', supply:'#8d6e63', fuel:'#ef6c00', water:'#0288d1', danger:'#b71c1c', star:'#ffd54f', target:'#d32f2f', eye:'#00897b', camp:'#558b2f', building:'#607d8b', vehicle:'#455a64', radio:'#5e35b1', circle:'#ffcf5a', square:'#29b6f6', triangle:'#ff7043', diamond:'#ab47bc', plus:'#43a047', xmark:'#e53935', question:'#9e9e9e', info:'#1976d2', arrow:'#ffcf5a', home:'#3949ab' };
 const WP_COLORS = ['#ffcf5a', '#ff7043', '#e53935', '#ab47bc', '#3949ab', '#1976d2', '#29b6f6', '#00897b', '#43a047', '#8d6e63', '#9e9e9e', '#ffffff', '#212121'];
 function wpInk(c){ const n = parseInt(c.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#1b1b1b' : '#ffffff'; }
@@ -3165,7 +3165,7 @@ function lmapEnsure(el, M){
   drawFine(st);
   return st;
 }
-const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['bounds', 'Play area boundary', '#ffffff'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White cell location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'Blue Force waypoints', '#5b8cff'], ['wpR', 'Red Force waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8']];
+const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['bounds', 'Play area boundary', '#ffffff'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White Force location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'Blue Force waypoints', '#5b8cff'], ['wpR', 'Red Force waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8']];
 const LAYER_DEFAULTS = { base:'sat', play:true, bounds:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true, wpB:true, wpR:true, wpq:true };
 function gridPref(){ try { return Object.assign({}, LAYER_DEFAULTS, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return Object.assign({}, LAYER_DEFAULTS); } }
 function applyGridPref(st){
@@ -3271,7 +3271,7 @@ function drawDyn(st, S, side, opts){
     tip(L.circleMarker(pt, { radius:11, color:v.holder ? SIDE_HEX[v.holder] : '#ffffff', weight:3, dashArray:(v.reported || v.stale) ? '4 3' : null, fillColor:hollow ? '#111' : SIDE_HEX[v.holder], fillOpacity:hollow ? .45 : .9 }), SITES[k].name + ' · ' + sub).addTo(LS.sites);
   });
   const wcp = wcSpot(S);
-  if (wcp) L.marker(wcp, { icon:WC_ICON(), zIndexOffset:900 }).bindTooltip('White cell' + (S.wcPos ? ' (moved)' : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[14, 0] }).bindPopup('<b>White cell</b><br><span class="mono">' + esc(fmtPt(wcp)) + '</span>' + (squareOf(M, wcp) ? '<br>Play square ' + squareOf(M, wcp) : '')).addTo(LS.wc);
+  if (wcp) L.marker(wcp, { icon:WC_ICON(), zIndexOffset:900 }).bindTooltip('White Force' + (S.wcPos ? ' (moved)' : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[14, 0] }).bindPopup('<b>White Force</b><br><span class="mono">' + esc(fmtPt(wcp)) + '</span>' + (squareOf(M, wcp) ? '<br>Play square ' + squareOf(M, wcp) : '')).addTo(LS.wc);
   (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side)) && !(opts && opts.deployedOnly && w.to === 'none')).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + (w.desc ? esc(w.desc) + '<br>' : '') + '<span class="small">' + esc(WP_SYMS[w.sym]) + '</span><br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(side ? LS.wp : w.to === 'none' ? LS.wpq : w.to === 'B' ? LS.wpB : w.to === 'R' ? LS.wpR : (pr.wpB ? LS.wpB : LS.wpR)));
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
@@ -3329,10 +3329,10 @@ function jamMapInto(el, S, side){
 function openFullMap(side){
   const S = app.S;
   if (side && jammed(S, side)){ toast('Your datalink is jammed. The map is down until ' + hhmm(S.jam[side]) + '.', true); return; }
-  if (!(mapCfg(S) || (app.role === 'W' && app.previewMap)) || !window.L){ toast('The real map isn’t set up yet. The white cell sets it under Map setup.', true); return; }
+  if (!(mapCfg(S) || (app.role === 'W' && app.previewMap)) || !window.L){ toast('The real map isn’t set up yet. The White Force sets it under Map setup.', true); return; }
   if ($('#mapfs')) return;
   const ov = document.createElement('div'); ov.id = 'mapfs'; ov.className = 'mapfs';
-  ov.innerHTML = '<div class="bar"><b>' + esc(side ? SIDES[side].name + ' picture of Marala' : 'White cell map (no fog of war)') + '</b><span class="small muted">Tap anywhere for its grid: <span class="mono" data-lastclick>—</span></span><button type="button" data-closefs>Close map</button></div><div class="lmap" data-fsmap></div>';
+  ov.innerHTML = '<div class="bar"><b>' + esc(side ? SIDES[side].name + ' picture of Marala' : 'White Force map (no fog of war)') + '</b><span class="small muted">Tap anywhere for its grid: <span class="mono" data-lastclick>—</span></span><button type="button" data-closefs>Close map</button></div><div class="lmap" data-fsmap></div>';
   document.body.appendChild(ov);
   app.fsSide = side; app.fsEl = $('[data-fsmap]', ov);
   $('[data-closefs]', ov).onclick = closeFullMap;
@@ -3418,7 +3418,7 @@ function buildOC(){
   if (app.built === 'oc') return; app.built = 'oc';
   const v = $('#vOC'), me = ocGet();
   if (!me){
-    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>POC Sign In</h2><p class="small muted" style="margin:0">Your name and assignment identify your calls to the white cell.</p><form class="stack" data-ocjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><label>Attached to<select name="assign" data-ocjoinassign></select></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div><div class="panel stack"><h2>Already signed in before?</h2><p class="small muted" style="margin:0">Select your name to resume an existing POC profile.</p><div class="list" data-ocrejoin></div></div></div>';
+    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>POC Sign In</h2><p class="small muted" style="margin:0">Your name and assignment identify your calls to the White Force.</p><form class="stack" data-ocjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><label>Attached to<select name="assign" data-ocjoinassign></select></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div><div class="panel stack"><h2>Already signed in before?</h2><p class="small muted" style="margin:0">Select your name to resume an existing POC profile.</p><div class="list" data-ocrejoin></div></div></div>';
     $('[data-ocrejoin]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-ocrejoinid]'); if (!b) return; ocSet({ id:b.dataset.ocrejoinid, name:b.dataset.name }); app.built = null; buildOC(); refresh(true); toast('Welcome back, ' + b.dataset.name + '.'); });
     $('[data-ocjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const fd = new FormData(ev.target), name = String(fd.get('name') || '').trim(); if (!name) return; const id = 'o' + uid(); ocSet({ id, name }); writeEvent('oc_join', null, Object.assign({ oc:id, name }, ocParse(fd.get('assign')))); app.built = null; buildOC(); refresh(true); });
     return;
@@ -3433,7 +3433,7 @@ function buildOC(){
     <div class="panel stack" data-ocshowbox hidden><h2>Show of force on your team's wing</h2><p class="small muted" style="margin:0">Report whether your team left the area. The board also checks GPS at the deadline; your report settles it if the phone does not answer.</p><div class="list" data-ocshows></div></div>
     <div class="panel stack" data-ocannbox hidden><h2>Announcements</h2><div class="list" data-ocanns></div></div>
     <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
-    <div class="panel stack"><h2>Calls for the white cell</h2><p class="small muted" style="margin:0">Calls take effect only after white cell approval.</p>
+    <div class="panel stack"><h2>Calls for the White Force</h2><p class="small muted" style="margin:0">Calls take effect only after White Force approval.</p>
       <div class="row"><label>Wing<select data-ocside><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
       <div class="evgrid">${Object.entries(OC_CALLS).map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div></div>
     <div class="panel stack"><h2>Stalemate</h2>
@@ -3443,13 +3443,13 @@ function buildOC(){
     <div class="panel stack"><h2>At a site</h2>
       <div class="row"><label>Site<select data-ocsite data-siteopts data-town="Marala Town">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">Blue Force</option><option value="R">Red Force</option><option value="both">Both wings</option></select></label></div>
       <label>Note (optional)<input data-ocsitenote maxlength="120" placeholder="Example: Starting the cipher now"></label>
-      <button type="button" class="btn-side" data-ocsitesend>Tell the white cell</button></div>
-    <div class="panel stack"><h2>Messages with the white cell</h2><div class="chatlog" data-occlog></div><form class="row" data-occf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
+      <button type="button" class="btn-side" data-ocsitesend>Tell the White Force</button></div>
+    <div class="panel stack"><h2>Messages with the White Force</h2><div class="chatlog" data-occlog></div><form class="row" data-occf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
     <div class="panel stack"><h2>Your requests</h2><div class="list" data-ocmine></div></div>
     <div class="panel stack"><div class="act-head"><h2>My position</h2><span class="small muted">Shown only on this phone · fades after 5 minutes</span></div>
       <div class="small" data-ocselftxt>Tap Find my position to place a marker on your map and read your coordinates.</div>
       <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-ocself style="flex:0 0 auto">Find my position</button><button type="button" data-ocselfclr style="flex:0 0 auto" hidden>Remove marker</button></div></div>
-    <details class="panel" data-ocmapbox><summary><b>Map</b> <span class="small muted">(same view as the white cell)</span></summary>
+    <details class="panel" data-ocmapbox><summary><b>Map</b> <span class="small muted">(same view as the White Force)</span></summary>
       <div class="stack" style="margin-top:10px"><p class="small muted" style="margin:0">No fog of war. Not for cadet viewing.</p>
       <div class="row" style="justify-content:flex-start"><button type="button" data-ocfull style="flex:0 0 auto">Full screen map</button></div>
       <div class="map-wrap" data-ocmap></div><div data-oclegend></div></div></details>
@@ -3457,9 +3457,9 @@ function buildOC(){
   $('[data-ocmapbox]', v).addEventListener('toggle', () => refresh(true));
   $('[data-occf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return; } await writeEvent('occhat', null, { oc:me.id, from:'oc', text:tx }); f.text.value = ''; });
   $('[data-ocfull]', v).onclick = () => openFullMap(null);
-  const send = async (p, msg) => { if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return false; } await writeEvent('oc_req', null, Object.assign({ oc:me.id }, p)); toast(msg || 'Sent to the white cell.'); return true; };
+  const send = async (p, msg) => { if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return false; } await writeEvent('oc_req', null, Object.assign({ oc:me.id }, p)); toast(msg || 'Sent to the White Force.'); return true; };
   $('[data-ocassign]', v).onchange = ev => writeEvent('oc_assign', null, Object.assign({ oc:me.id }, ocParse(ev.target.value)));
-  $('[data-ocsignout]', v).onclick = () => { if (!confirm('Sign out on this phone? The white cell keeps your name until it removes you.')) return; ocSet(null); app.built = null; buildOC(); refresh(true); };
+  $('[data-ocsignout]', v).onclick = () => { if (!confirm('Sign out on this phone? The White Force keeps your name until it removes you.')) return; ocSet(null); app.built = null; buildOC(); refresh(true); };
   v.addEventListener('click', async ev => {
     const c = ev.target.closest('[data-occall]');
     if (c){ const k = c.dataset.occall, sd = $('[data-ocside]', v).value; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; if (await send({ kind:'call', call:k, side:sd, text:$('[data-ocnote]', v).value })) $('[data-ocnote]', v).value = ''; return; }
@@ -3474,7 +3474,7 @@ function buildOC(){
     if (sh){ const left = sh.dataset.left === '1'; if (!confirm(left ? 'Confirm your team left the area?' : 'Report that your team did not leave? The wing takes +10 escalation.')) return; writeEvent('show_oc', null, { req:sh.dataset.ocshow, oc:me.id, left }); toast('Sent to the board.'); return; }
     const n = ev.target.closest('[data-ocnine]');
     if (n){ const o = app.S && app.S.ocs[me.id]; await writeEvent('nine_res', null, { nine:n.dataset.ocnine, ok:n.dataset.ok === '1', by:(o ? o.name : me.name) }); toast(n.dataset.ok === '1' ? 'Sent to their C2.' : 'Sent back to the team.'); return; }
-    if (ev.target.closest('[data-ocstalesend]')){ const k = $('[data-ocstalesite]', v).value; if (!SITES[k]) return; if (!confirm('Report a stalemate at ' + SITES[k].name + '?')) return; await send({ kind:'stale', site:k }, 'Stalemate reported to the white cell.'); return; }
+    if (ev.target.closest('[data-ocstalesend]')){ const k = $('[data-ocstalesite]', v).value; if (!SITES[k]) return; if (!confirm('Report a stalemate at ' + SITES[k].name + '?')) return; await send({ kind:'stale', site:k }, 'Stalemate reported to the White Force.'); return; }
     if (ev.target.closest('[data-ocsitesend]')){ const who = $('[data-ocwho]', v).value; if (await send({ kind:'site', site:$('[data-ocsite]', v).value, who:who === 'both' ? 'both' : 'one', side:who === 'both' ? null : who, text:$('[data-ocsitenote]', v).value })) $('[data-ocsitenote]', v).value = ''; return; }
   });
   app.ocSideSet = false;
@@ -3488,7 +3488,7 @@ function renderOC(S){
     return;
   }
   const o = S.ocs[me.id];
-  if (o && o.removed){ ocSet(null); toast('The white cell removed you. Sign in again if that was a mistake.', true); app.built = null; buildOC(); renderOC(S); return; }
+  if (o && o.removed){ ocSet(null); toast('The White Force removed you. Sign in again if that was a mistake.', true); app.built = null; buildOC(); renderOC(S); return; }
   if (!$('[data-ocmine]', v)) return;
   { const box = $('[data-ocshowbox]', v), list = o && o.team ? S.requests.filter(r => r.kind === 'show' && r.side === OTHER[o.side] && r.center && (r.status === 'open' || r.closed > S.g)) : [];
     box.hidden = !list.length;
@@ -3497,11 +3497,11 @@ function renderOC(S){
         (r.status === 'open' && st !== 'left' && st !== 'stayed' ? '<div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocshow="' + r.id + '" data-left="1">Team left</button><button type="button" data-ocshow="' + r.id + '" data-left="0">Team stayed</button></div>' : '') + '</div>'; }).join('');
     const sl = $('[data-ocshows]', v); if (sl.dataset.k !== html){ sl.dataset.k = html; sl.innerHTML = html; } }
   { const lg = $('[data-occlog]', v), ms = S.occhats.filter(m => m.oc === me.id), k = String(ms.length);
-    if (lg.dataset.k !== k){ lg.dataset.k = k; lg.innerHTML = ms.length ? ms.slice(-40).map(m => '<div class="chatmsg' + (m.from === 'oc' ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' · ' + (m.from === 'wc' ? 'White cell' : esc(o ? o.name : 'You')) + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages.</div>'; lg.scrollTop = lg.scrollHeight; }
+    if (lg.dataset.k !== k){ lg.dataset.k = k; lg.innerHTML = ms.length ? ms.slice(-40).map(m => '<div class="chatmsg' + (m.from === 'oc' ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' · ' + (m.from === 'wc' ? 'White Force' : esc(o ? o.name : 'You')) + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages.</div>'; lg.scrollTop = lg.scrollHeight; }
     const an = S.ocAnns, ab = $('[data-ocannbox]', v); ab.hidden = !an.length; if (ab.dataset.k !== String(an.length)){ ab.dataset.k = String(an.length); $('[data-ocanns]', v).innerHTML = an.slice().reverse().map(a => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(a.g) + '</span> ' + esc(a.text) + '</div></div>').join(''); }
     const nIn = ms.filter(m => m.from === 'wc').length + an.length;
     if (app.ocInFor !== me.id){ app.ocInFor = me.id; app.ocInN = nIn; }
-    else if (nIn > app.ocInN){ app.ocInN = nIn; const last = [...ms.filter(m => m.from === 'wc'), ...an].sort((a, b) => a.g - b.g).pop(); toast((an.includes(last) ? 'Announcement: ' : 'White cell: ') + last.text); }
+    else if (nIn > app.ocInN){ app.ocInN = nIn; const last = [...ms.filter(m => m.from === 'wc'), ...an].sort((a, b) => a.g - b.g).pop(); toast((an.includes(last) ? 'Announcement: ' : 'White Force: ') + last.text); }
   }
   wakeShow(); refreshSiteSelects(v);
   if (o) $('[data-ocname]', v).textContent = o.name;
@@ -3522,8 +3522,8 @@ function renderOC(S){
   const mb = $('[data-ocmapbox]', v);
   if (mb && mb.open){ const real = renderMapInto($('[data-ocmap]', v), S, null); $('[data-oclegend]', v).innerHTML = real ? realLegend() : legendHTML(null); }
   const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
-  $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + (r.reply ? '<div class="small"><b>White cell ' + hhmm(r.resG) + ':</b> ' + esc(r.reply) + '</div>' : '') + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'stale' ? (r.status === 'ok' ? 'marked' : 'not marked') : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : r.reply ? 'replied' : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
-  { const reps = S.ocReqs.filter(r => r.oc === me.id && r.reply), n = reps.length; if (app.ocRepN == null || app.ocRepFor !== me.id){ app.ocRepFor = me.id; app.ocRepN = n; } else if (n > app.ocRepN){ app.ocRepN = n; toast('White cell reply: ' + reps[n - 1].reply); } }
+  $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + (r.reply ? '<div class="small"><b>White Force ' + hhmm(r.resG) + ':</b> ' + esc(r.reply) + '</div>' : '') + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'stale' ? (r.status === 'ok' ? 'marked' : 'not marked') : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : r.reply ? 'replied' : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
+  { const reps = S.ocReqs.filter(r => r.oc === me.id && r.reply), n = reps.length; if (app.ocRepN == null || app.ocRepFor !== me.id){ app.ocRepFor = me.id; app.ocRepN = n; } else if (n > app.ocRepN){ app.ocRepN = n; toast('White Force reply: ' + reps[n - 1].reply); } }
 }
 function occSeenKey(id){ return 'marala-occhat-' + (app.gid || 'none') + '-' + id; }
 function occUnread(S, id){ const n = S.occhats.filter(m => m.oc === id && m.from === 'oc').length; let seen = 0; try { seen = +localStorage.getItem(occSeenKey(id)) || 0; } catch(e){} return Math.max(0, n - seen); }
@@ -3545,7 +3545,7 @@ function renderOCChatWhite(S, v){
   }
   if (app.occOpen){ const o = S.ocs[app.occOpen], ms = S.occhats.filter(m => m.oc === app.occOpen), lg = $('[data-occwlog]', v), k = app.occOpen + '|' + ms.length;
     $('[data-occhead]', v).textContent = 'Messages with ' + o.name;
-    if (lg.dataset.k !== k){ lg.dataset.k = k; lg.innerHTML = ms.length ? ms.slice(-60).map(m => '<div class="chatmsg' + (m.from === 'wc' ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' · ' + (m.from === 'wc' ? 'White cell' : esc(o.name)) + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages.</div>'; lg.scrollTop = lg.scrollHeight; } }
+    if (lg.dataset.k !== k){ lg.dataset.k = k; lg.innerHTML = ms.length ? ms.slice(-60).map(m => '<div class="chatmsg' + (m.from === 'wc' ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' · ' + (m.from === 'wc' ? 'White Force' : esc(o.name)) + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages.</div>'; lg.scrollTop = lg.scrollHeight; } }
   { const box = $('[data-ocannw]', v), k = String(S.ocAnns.length); if (box.dataset.k !== k){ box.dataset.k = k; box.innerHTML = S.ocAnns.slice(-3).reverse().map(a => '<div class="li"><div class="grow"><span class="small muted">Sent ' + hhmm(a.g) + '</span> ' + esc(a.text) + '</div></div>').join(''); } }
   return tot;
 }
@@ -3646,7 +3646,7 @@ function buildTeam(side){
       <button type="button" class="btn-side team-big" data-ctsend>Request contention</button>
       <div class="list" data-ctlist></div></div>
     <div class="panel stack"><h2>Strike 9-line</h2>
-      <p class="small muted" style="margin:0">Read the full 9-line to your POC first. Only the target and location are sent. Your POC or the white cell must confirm it before it reaches your C2.</p>
+      <p class="small muted" style="margin:0">Read the full 9-line to your POC first. Only the target and location are sent. Your POC or the White Force must confirm it before it reaches your C2.</p>
       <div class="row"><label>Target<select data-ntarget><option value="cache">Militia weapons cache</option><option value="other">${esc(SIDES[OTHER[side]].name)} position</option></select></label><label>Location<input data-nloc maxlength="40" autocomplete="off" placeholder="Example: 5892 2345 or D4"></label></div>
       <button type="button" class="btn-side team-big" data-nsend>Send 9-line for checking</button>
       <div class="list" data-nlist></div></div>
@@ -3666,7 +3666,7 @@ function buildTeam(side){
     if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; }
     if (!loc){ toast('Add the target location first.', true); return; }
     await writeEvent('nine', side, { team:me.id, name:me.name, target:$('[data-ntarget]', v).value, loc });
-    $('[data-nloc]', v).value = ''; toast('Sent. Your POC or the white cell will check it.');
+    $('[data-nloc]', v).value = ''; toast('Sent. Your POC or the White Force will check it.');
   };
   $('[data-rename]', v).onclick = () => { const n = prompt('Fireteam name', me.name); if (n && n.trim()){ teamSet(side, { id:me.id, name:n.trim().slice(0, 40) }); app.built = null; buildTeam(side); refresh(true); } };
   $('[data-leave]', v).onclick = async () => {
@@ -3793,7 +3793,7 @@ function buildWing(side){
           <div class="act"><div class="act-head"><b>Public statement</b><span class="cost">Once per incident · True <span class="esc-down">−5</span> · False <span class="esc-up">+15</span></span></div>
             <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Incident<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">Who did it<select id="stB-${side}" name="blame"><option value="militia">The militia</option><option value="other">${esc(other)}</option></select></label></div><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
           <div class="act"><div class="act-head"><b>Aid packages</b><span class="cost">Needs an open town office · On time <span class="esc-down">diplomatic points +5</span> · Missed <span class="esc-up">diplomatic points −10</span></span></div>
-            <p class="small muted" style="margin:0">A package is ready 20 minutes after the town office opens and 20 minutes after each delivery or missed deadline. A fireteam must deliver it to the Marala Town office within 15 minutes. Its POC reports the delivery to the white cell. The first wing to deliver each package number earns diplomatic points +1 more.</p>
+            <p class="small muted" style="margin:0">A package is ready 20 minutes after the town office opens and 20 minutes after each delivery or missed deadline. A fireteam must deliver it to the Marala Town office within 15 minutes. Its POC reports the delivery to the White Force. The first wing to deliver each package number earns diplomatic points +1 more.</p>
             <div data-aidstate class="small"></div></div>
           <details class="act"><summary>Pressure options (they raise escalation)</summary>
             <div class="stack" style="margin-top:8px">
@@ -3810,7 +3810,7 @@ function buildWing(side){
             </div></details>
         </div>
         <div data-pane="rep" class="stack" hidden>
-          <div class="act"><div class="act-head"><b>Report activity</b><span class="cost">+2 when the white cell confirms it</span></div>
+          <div class="act"><div class="act-head"><b>Report activity</b><span class="cost">+2 when the White Force confirms it</span></div>
             <form class="stack" data-f="contact">
               <div class="row"><label for="ctK-${side}">What was seen<select id="ctK-${side}" name="kind"><option value="team">${esc(other)} team</option><option value="site">${esc(other)} flag on a site</option><option value="other">Other activity</option></select></label>
               <label for="ctS-${side}">Which site (for a flag)<select id="ctS-${side}" name="site" data-siteopts data-blank="1"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
@@ -3830,7 +3830,7 @@ function buildWing(side){
             <div class="list" data-claims></div></div>
         </div>
         <div data-pane="req" class="stack" hidden>
-          <div class="act"><div class="act-head"><b>Request a waypoint</b><span class="cost">Placed by the white cell</span></div>
+          <div class="act"><div class="act-head"><b>Request a waypoint</b><span class="cost">Placed by the White Force</span></div>
             <form class="stack" data-f="wpreq"><div class="row"><label for="wrL-${side}">Label<input id="wrL-${side}" name="label" maxlength="60" required placeholder="Example: Rally point north"></label></div>
               <div class="row" style="align-items:end"><label for="wrP-${side}">Location (play square, MGRS or lat/long)<input id="wrP-${side}" name="loc" maxlength="60" required autocomplete="off" placeholder="Example: D4, 5892 2345 or 40.82601, -77.85812"></label><button type="button" data-wrtap style="flex:0 0 auto">Use last map tap</button></div>
               <label for="wrN-${side}">Note (optional)<input id="wrN-${side}" name="note" maxlength="140"></label>
@@ -3844,7 +3844,7 @@ function buildWing(side){
             <form class="stack" data-f="order"><label for="orT-${side}">To<select id="orT-${side}" name="team" data-teamsel><option value="all">All fireteams</option></select></label><label for="orX-${side}">Order<input id="orX-${side}" name="text" maxlength="300" required placeholder="Example: Claim Radar Ridge, then hold and report in 20 minutes"></label><div><button class="btn-side" type="submit">Send order</button></div></form></div>
         </div>
         <div data-pane="liaison" class="stack" hidden>
-          <p class="small muted" style="margin:0">Direct channel to the other Wing Commander. The white cell sees all messages.</p>
+          <p class="small muted" style="margin:0">Direct channel to the other Wing Commander. The White Force sees all messages.</p>
           <div class="act"><form class="stack" data-f="liaison"><label for="lzX-${side}">Message<input id="lzX-${side}" name="text" maxlength="400" required placeholder="Example: Our team will be at Radar Ridge for the next 20 minutes. Please stay clear."></label>
             <div class="row"><label for="lzS-${side}">Declare a site (optional)<select id="lzS-${side}" name="site" data-siteopts data-blank="1" data-town="Marala Town"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label for="lzU-${side}">Until<input id="lzU-${side}" name="until" maxlength="5" inputmode="numeric" placeholder="Example: 0900"></label></div>
             <div><button class="btn-side" type="submit">Send to the other wing</button></div></form></div>
@@ -4010,7 +4010,7 @@ function reportCheck(S, c){
 function aidText(S, side, short){
   const a = aidOf(S, side);
   if (!a.on) return short ? 'Aid: no town office' : 'No aid packages: the wing has no open town office.';
-  if (a.due != null) return (short ? 'Aid package ' + a.n + ' due ' : 'Aid package ' + a.n + ' is ready. Deliver it to the Marala Town office by ') + hhmm(a.due) + (a.hold || aidPending(S, side, a) ? (short ? ' (delivery report pending)' : '. A delivery report is awaiting white cell confirmation.') : short ? '' : '.');
+  if (a.due != null) return (short ? 'Aid package ' + a.n + ' due ' : 'Aid package ' + a.n + ' is ready. Deliver it to the Marala Town office by ') + hhmm(a.due) + (a.hold || aidPending(S, side, a) ? (short ? ' (delivery report pending)' : '. A delivery report is awaiting White Force confirmation.') : short ? '' : '.');
   return (short ? 'Next aid package ' : 'Next aid package ready at ') + hhmm(a.next) + (short ? '' : '.') + (a.made || a.missed ? (short ? '' : ' Delivered ' + a.made + ', missed ' + a.missed + '.') : '');
 }
 function renderWing(S, side, now){
@@ -4054,7 +4054,7 @@ function renderWing(S, side, now){
   const reqs = S.requests.filter(r => r.side === side);
   { const n = reqs.filter(r => r.status === 'open').length, c = $('[data-cnreq]', v); if (c){ c.hidden = !n; c.textContent = n; } const ne = $('[data-cnesc]', v); if (ne) ne.textContent = '· Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ') · Diplomatic points ' + S.hn[side] + ' · Points ' + sc.total; }
   const kindName = { drone:'Drone flight', show:'Show of force', strike:'Strike', wp:'Waypoint request' };
-  $('[data-reqs]', v).innerHTML = reqs.length ? reqs.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + kindName[r.kind] + '</b> <span class="muted small">' + hhmm(r.g) + '</span><div class="small">' + esc(r.text) + '</div>' + (r.answer ? '<div class="small muted">Answer: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : 'ok') + '">' + (r.status === 'open' ? 'With the white cell' : 'Done') + '</span></div>').join('') : '<div class="empty">Drone flights, shows of force, strikes and waypoint requests wait here until the white cell answers.</div>';
+  $('[data-reqs]', v).innerHTML = reqs.length ? reqs.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + kindName[r.kind] + '</b> <span class="muted small">' + hhmm(r.g) + '</span><div class="small">' + esc(r.text) + '</div>' + (r.answer ? '<div class="small muted">Answer: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : 'ok') + '">' + (r.status === 'open' ? 'With the White Force' : 'Done') + '</span></div>').join('') : '<div class="empty">Drone flights, shows of force, strikes and waypoint requests wait here until the White Force answers.</div>';
   $('[data-dronecount]', v).textContent = jammed(S, side) ? 'Jammed until ' + hhmm(S.jam[side]) : droneReady(S, side) ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side)));
   { const el = $('[data-left="show"]', v); if (el) el.textContent = S.uses.show[side] ? '1 left' : 'used'; }
   { const el = $('[data-left="strike"]', v); if (el) el.textContent = S.uses.cstrike[side] + ' cache strike' + (S.uses.cstrike[side] === 1 ? '' : 's') + ' left · ' + (S.uses.strike[side] ? '1 strike on ' + SIDES[OTHER[side]].name : 'wing strike used'); }
@@ -4104,7 +4104,7 @@ function renderPublic(S){
   $('[data-feed]', v).innerHTML = feedHTML(S.feed.filter(f => f.to === 'public' || f.to === 'both'), 'The start, explosions, public statements and the end of the game appear here.');
 }
 
-/* ---------- white cell ---------- */
+/* ---------- White Force ---------- */
 function allTemplates(S){ return S && S.tpls ? S.tpls : []; }
 const TEMPLATES = [
   { at:0, phase:'Phase 1', label:'STARTEX orders', to:'both', text:'AOC: secure the sites on your side of the island first and stay clear of the other force. The mayor will meet each force separately later this morning. The militia is active on island roads: report every suspected device with a 9-line.' },
@@ -4146,7 +4146,7 @@ function renderPic(S, v){
   const intel = []; allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), os = [oB, oR].filter(Boolean); if (!os.length) return;
     intel.push({ n:i + 1, title:fillT(P.title), a:Math.min(...os.map(o => o.g)), b:Math.max(...os.map(o => o.due)), done:os.every(o => o.done), to:oB && oR ? 'both' : oB ? 'B' : 'R' }); });
   const injs = (S.injq || []).filter(q => q.sent != null).map(q => ({ g:q.sent, label:q.label, to:q.to }));
-  const comms = S.feed.filter(f => f.comm).map(f => ({ g:f.g, from:hqFrom(f.label), to:f.to, text:f.text, kind:f.comm })).concat((S.ocAnns || []).map(a => ({ g:a.g, from:'White cell', to:'poc', text:a.text, kind:'msg' }))).sort((x, y) => y.g - x.g);
+  const comms = S.feed.filter(f => f.comm).map(f => ({ g:f.g, from:hqFrom(f.label), to:f.to, text:f.text, kind:f.comm })).concat((S.ocAnns || []).map(a => ({ g:a.g, from:'White Force', to:'poc', text:a.text, kind:'msg' }))).sort((x, y) => y.g - x.g);
   const openI = intel.filter(x => !x.done), recent = injs.filter(q => S.g - q.g <= 20).sort((x, y) => y.g - x.g);
   const next = (S.injq || []).filter(q => q.sent == null && q.at != null).sort((x, y) => x.at - y.at)[0];
   $('[data-picoutn]', v).textContent = openI.length + ' intel · ' + recent.length + ' recent inject' + (recent.length === 1 ? '' : 's');
@@ -4177,10 +4177,10 @@ function renderAocChat(S, v){
   if (panels.length && document.visibilityState === 'visible'){ seen = theirs; try { localStorage.setItem(key, String(seen)); } catch(e){} }
   const un = Math.max(0, theirs - seen), k = ms.length + '|' + me;
   $$('[data-aocchat]', v).forEach(el => { if (el.dataset.k === k) return; el.dataset.k = k;
-    el.innerHTML = ms.length ? ms.slice(-80).map(m => '<div class="chatmsg' + (m.from === me ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' · ' + (m.from === 'A' ? 'AOC' : 'White cell') + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages yet. ' + (me === 'A' ? 'Direct the white cell or ask about the field here.' : 'Messages from the AOC land here.') + '</div>';
+    el.innerHTML = ms.length ? ms.slice(-80).map(m => '<div class="chatmsg' + (m.from === me ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' · ' + (m.from === 'A' ? 'AOC' : 'White Force') + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages yet. ' + (me === 'A' ? 'Direct the White Force or ask about the field here.' : 'Messages from the AOC land here.') + '</div>';
     el.scrollTop = el.scrollHeight; });
   $$('[data-aocn]', v).forEach(el => el.textContent = un ? un + ' unread' : '');
-  if (me === 'A'){ $$('[data-aocun]', v).forEach(el => { el.hidden = !un; el.textContent = un; }); if (app.aocToastN != null && un > app.aocToastN) toast('New message from the white cell. Open the White Force tab.'); app.aocToastN = un; }
+  if (me === 'A'){ $$('[data-aocun]', v).forEach(el => { el.hidden = !un; el.textContent = un; }); if (app.aocToastN != null && un > app.aocToastN) toast('New message from the White Force. Open the White Force tab.'); app.aocToastN = un; }
   return me === 'W' ? un : 0;
 }
 function wfWaiting(S){
@@ -4203,15 +4203,15 @@ function renderWF(S, v){
   const cats = ['Reports', '9-lines', 'Requests', 'POC calls', 'Alerts'], cnt = {}; W.forEach(w => cnt[w.cat] = (cnt[w.cat] || 0) + 1);
   const side = s => s === 'B' || s === 'R' ? '<span class="chip ' + s + '">' + SIDES[s].name + '</span>' : '';
   const h1 = '<div class="wf-counts">' + cats.map(c => '<div class="wf-count' + (cnt[c] ? ' on' : '') + '"><b>' + (cnt[c] || 0) + '</b><span>' + c + '</span></div>').join('') + '</div>' +
-    (W.length ? W.slice().reverse().map(w => '<div class="pic-item"><div class="pic-it"><span class="pic-tag">' + esc(w.cat) + '</span><b>' + esc(w.title) + '</b>' + side(w.side) + '</div><div class="pic-meta"><span>' + esc(w.text) + '</span><span>Waiting since ' + hhmm(w.g) + ' · ' + picAgo(S.g - w.g) + '</span></div></div>').join('') : '<div class="pic-empty">Nothing is waiting on the white cell.</div>');
+    (W.length ? W.slice().reverse().map(w => '<div class="pic-item"><div class="pic-it"><span class="pic-tag">' + esc(w.cat) + '</span><b>' + esc(w.title) + '</b>' + side(w.side) + '</div><div class="pic-meta"><span>' + esc(w.text) + '</span><span>Waiting since ' + hhmm(w.g) + ' · ' + picAgo(S.g - w.g) + '</span></div></div>').join('') : '<div class="pic-empty">Nothing is waiting on the White Force.</div>');
   { const el = $('[data-wfwait]', v); if (el.dataset.h !== h1){ el.dataset.h = h1; el.innerHTML = h1; } }
   $('[data-wfwaitn]', v).textContent = W.length ? W.length + ' waiting' : 'Clear';
   const R = S.log.filter(l => l.by === 'W' && l.type !== 'tick' && !/^(clock|tpl_|injq_add|injq_del|map_|wp_|ip_|oc_edit|oc_assign|window_set|aoc_msg)/.test(l.type)).slice(-40).reverse();
-  const h2 = R.length ? R.map(l => '<div class="pic-item' + (l.status === 'rejected' ? ' wf-rej' : '') + '"><div class="pic-meta"><span class="mono">' + hhmm(l.g) + '</span>' + side(l.side) + '</div><div class="pic-text">' + esc(l.text) + '</div></div>').join('') : '<div class="pic-empty">White cell decisions appear here as they are made.</div>';
+  const h2 = R.length ? R.map(l => '<div class="pic-item' + (l.status === 'rejected' ? ' wf-rej' : '') + '"><div class="pic-meta"><span class="mono">' + hhmm(l.g) + '</span>' + side(l.side) + '</div><div class="pic-text">' + esc(l.text) + '</div></div>').join('') : '<div class="pic-empty">White Force decisions appear here as they are made.</div>';
   { const el = $('[data-wfrul]', v); if (el.dataset.h !== h2){ el.dataset.h = h2; el.innerHTML = h2; } }
   $('[data-wfruln]', v).textContent = R.length ? 'Last ' + R.length : '';
-  const T = (S.occhats || []).map(m => { const o = S.ocs[m.oc]; return { g:m.g, from:m.from === 'wc' ? 'White cell' : 'POC ' + (o ? o.name : ''), to:m.from === 'wc' ? 'POC ' + (o ? o.name : '') : 'White cell', where:o ? ocWhere(S, o) : '', text:m.text }; }).concat((S.ocAnns || []).map(a => ({ g:a.g, from:'White cell', to:'All POCs', where:'', text:a.text }))).sort((x, y) => y.g - x.g).slice(0, 60);
-  const h3 = T.length ? T.map(m => '<div class="pic-item"><div class="pic-meta"><span><span class="mono">' + hhmm(m.g) + '</span> · ' + esc(m.from) + ' → ' + esc(m.to) + '</span><span>' + esc(m.where) + '</span></div><div class="pic-text">' + esc(m.text) + '</div></div>').join('') : '<div class="pic-empty">Messages between the white cell and the POCs appear here.</div>';
+  const T = (S.occhats || []).map(m => { const o = S.ocs[m.oc]; return { g:m.g, from:m.from === 'wc' ? 'White Force' : 'POC ' + (o ? o.name : ''), to:m.from === 'wc' ? 'POC ' + (o ? o.name : '') : 'White Force', where:o ? ocWhere(S, o) : '', text:m.text }; }).concat((S.ocAnns || []).map(a => ({ g:a.g, from:'White Force', to:'All POCs', where:'', text:a.text }))).sort((x, y) => y.g - x.g).slice(0, 60);
+  const h3 = T.length ? T.map(m => '<div class="pic-item"><div class="pic-meta"><span><span class="mono">' + hhmm(m.g) + '</span> · ' + esc(m.from) + ' → ' + esc(m.to) + '</span><span>' + esc(m.where) + '</span></div><div class="pic-text">' + esc(m.text) + '</div></div>').join('') : '<div class="pic-empty">Messages between the White Force and the POCs appear here.</div>';
   { const el = $('[data-wfpoc]', v); if (el.dataset.h !== h3){ el.dataset.h = h3; el.innerHTML = h3; } }
   $('[data-wfpocn]', v).textContent = T.length ? T.length + ' message' + (T.length === 1 ? '' : 's') : '';
 }
@@ -4219,8 +4219,8 @@ function aocMode(on){
   const v = $('#vWhite'); v.classList.toggle('aocv', on);
   const nm = { queue:on ? 'Points' : 'Queue' };
   $$('[data-wtab]', v).forEach(b => { const s = $('[data-wtabname]', b); if (s && nm[b.dataset.wtab]) s.textContent = nm[b.dataset.wtab]; });
-  const mt = $('[data-wmaptitle]', v); if (mt) mt.textContent = on ? 'AOC map' : 'White cell map';
-  const nav = $('[data-wnav]', v); if (nav) nav.setAttribute('aria-label', on ? 'AOC sections' : 'White cell sections');
+  const mt = $('[data-wmaptitle]', v); if (mt) mt.textContent = on ? 'AOC map' : 'White Force map';
+  const nav = $('[data-wnav]', v); if (nav) nav.setAttribute('aria-label', on ? 'AOC sections' : 'White Force sections');
   if (on && !app.aocLanded){ app.aocLanded = true; $('[data-wtab="pic"]', v).click(); }
   const cur = $('[data-wtab][aria-selected="true"]', v); if (on && cur && cur.hasAttribute('data-aoc-off')) $('[data-wtab="pic"]', v).click();
   if (!on && cur && cur.hasAttribute('data-aoc-only')) $('[data-wtab="all"]', v).click();
@@ -4248,7 +4248,7 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['wf', 'White Force'], ['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : k === 'wf' ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-wnav aria-label="White Force sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['wf', 'White Force'], ['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : k === 'wf' ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
@@ -4266,12 +4266,12 @@ function buildWhite(){
     <div class="white-grid" data-wgrid>
       <section class="wfsec" data-sec="wf" data-wfsec data-aoc-only>
         <div class="wfcol">
-          <div class="pic-card wf-chat"><div class="pic-h"><h3>Messages with the white cell</h3><span data-aocn></span></div><div class="chatlog" data-aocchat></div>
-            <form class="row" data-aocf style="align-items:end"><label>Message to the white cell<input name="text" maxlength="500" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
-          <div class="pic-card"><div class="pic-h"><h3>Waiting on the white cell</h3><span data-wfwaitn></span></div><div class="pic-list" data-wfwait></div></div>
+          <div class="pic-card wf-chat"><div class="pic-h"><h3>Messages with the White Force</h3><span data-aocn></span></div><div class="chatlog" data-aocchat></div>
+            <form class="row" data-aocf style="align-items:end"><label>Message to the White Force<input name="text" maxlength="500" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
+          <div class="pic-card"><div class="pic-h"><h3>Waiting on the White Force</h3><span data-wfwaitn></span></div><div class="pic-list" data-wfwait></div></div>
         </div>
         <div class="wfcol">
-          <div class="pic-card"><div class="pic-h"><h3>White cell decisions</h3><span data-wfruln></span></div><div class="pic-list" data-wfrul></div></div>
+          <div class="pic-card"><div class="pic-h"><h3>White Force decisions</h3><span data-wfruln></span></div><div class="pic-list" data-wfrul></div></div>
           <div class="pic-card"><div class="pic-h"><h3>POC traffic</h3><span data-wfpocn></span></div><div class="pic-list" data-wfpoc></div></div>
         </div>
       </section>
@@ -4296,16 +4296,16 @@ function buildWhite(){
         <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Deployed intel packages, injects and messages</span></div><div class="pic-tl" data-pictl></div></div>
       </section>
       <div class="panel" data-sec="map create">
-        <div class="map-head"><h2 data-wmaptitle>White cell map</h2><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
+        <div class="map-head"><h2 data-wmaptitle>White Force map</h2><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
         <div class="sitectl" data-sitectl data-aoc-off></div>
         <div class="stack wcctl" data-wcctl data-aoc-off style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
-          <div class="small"><b>White cell location</b> <span class="muted">(shown on all maps)</span>: <span class="mono" data-wcnow>—</span></div>
+          <div class="small"><b>White Force location</b> <span class="muted">(shown on all maps)</span>: <span class="mono" data-wcnow>—</span></div>
           <div class="row" style="justify-content:flex-start;align-items:end" data-wcrow><button type="button" data-wcgps style="flex:0 0 auto">Use my GPS</button><button type="button" data-wctap style="flex:0 0 auto">Move to last map tap</button><label style="flex:1 1 180px">Or type a grid<input data-wcgrid placeholder="Example: 5893 2334 or 40.82601, -77.85812"></label><button type="button" data-wcset style="flex:0 0 auto">Move</button><button type="button" data-wcback style="flex:0 0 auto">Back to planned spot</button></div>
         </div>
         <div class="stack wpctl" data-aoc-off style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
-          <div class="small"><b>Waypoints</b> <span class="muted">New waypoints enter the queue, visible to the white cell only. Deploying one notifies the selected wing's C2 and fireteams.</span></div>
+          <div class="small"><b>Waypoints</b> <span class="muted">New waypoints enter the queue, visible to the White Force only. Deploying one notifies the selected wing's C2 and fireteams.</span></div>
           <div class="row" style="align-items:end"><label>Label<input data-wplabel maxlength="60" placeholder="Example: Casualty collection point"></label><span data-wpprev style="flex:0 0 auto;align-self:center"></span><span class="small muted" data-wpsymname style="flex:0 0 auto;align-self:center"></span></div>
           <label>Description (optional; shown when the waypoint is opened)<input data-wpdesc maxlength="200"></label>
           <input type="hidden" data-wpsym value="pin">
@@ -4341,7 +4341,7 @@ function buildWhite(){
           <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">Blue Force only</option><option value="R">Red Force only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="AOC" maxlength="30"></label></div>
             <label>Message<textarea name="text" maxlength="700" required></textarea></label><div><button class="btn-side" type="submit">Send</button></div></form></div>
         <div class="panel" data-sec="msg"><div class="act-head"><h2>Inject queue</h2><span class="small muted" data-injqn></span></div>
-          <p class="small muted" style="margin:0">Queued injects wait here until you send them. Tap a row to read the message and the white cell note.</p>
+          <p class="small muted" style="margin:0">Queued injects wait here until you send them. Tap a row to read the message and the White Force note.</p>
           <div class="row" style="justify-content:flex-start"><button type="button" data-injqall style="flex:0 0 auto">Queue all timed templates</button><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-injqsent> Show sent</label></div>
           <div class="list scrolllist" data-injq></div></div>
         <div class="panel" data-sec="msg"><details data-tpldet><summary><b>Inject templates</b> <span class="small muted" data-tpln></span></summary>
@@ -4398,19 +4398,19 @@ function buildWhite(){
           </fieldset>
           <div class="stack" data-ipbpieces></div>
           <div class="row" style="align-items:end" data-ipbaddrow><label>Add another piece of intel<select data-ipbadd><option value="">Choose the kind of intel…</option>${IPB_KINDS.map(d => '<option>' + d + '</option>').join('')}</select></label></div>
-          <label>White cell note (why the false pieces are false; only you see it)<input data-ipb="note" maxlength="300" placeholder="Example: The photo is two days older than the attack."></label>
+          <label>White Force note (why the false pieces are false; only you see it)<input data-ipb="note" maxlength="300" placeholder="Example: The photo is two days older than the attack."></label>
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-ipbsave style="flex:0 0 auto">Save package</button><span class="small muted" data-ipbmsg></span></div>
           <h3 class="small muted" style="margin:6px 0 0">Packages built here</h3><div class="list" data-ipblist></div>
           <div class="row" style="justify-content:flex-start"><button type="button" data-ipbexport style="flex:0 0 auto">Download packages</button><label for="ipbImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload packages<input id="ipbImport" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted">Saves all packages built here, including photos, as one file for another game.</span></div>
         </div></details>
       <div class="panel span2 stack" data-sec="create" data-aoc-off><h2>Inject templates</h2>
-        <p class="small muted" style="margin:0">Write the injects the white cell will send during the game. Each template appears under Send a message, where one tap fills in the message. A planned time or an escalation level is optional and only helps the white cell decide when to send it.</p>
+        <p class="small muted" style="margin:0">Write the injects the White Force will send during the game. Each template appears under Send a message, where one tap fills in the message. A planned time or an escalation level is optional and only helps the White Force decide when to send it.</p>
         <div class="row" style="align-items:end"><label>Start from<select data-tplsrc><option value="">A blank template</option>${TEMPLATES.map((t, i) => '<option value="' + i + '">Sample: ' + esc(t.label) + '</option>').join('')}</select></label><button type="button" data-tplload style="flex:0 0 auto">Load</button><button type="button" data-tplall style="flex:0 0 auto">Add all sample templates</button></div>
         <p class="small muted" style="margin:0">Samples are starting points only. Nothing appears under Send a message until it is saved here, and every saved template can be edited or deleted.</p>
         <form class="stack" data-tplf>
           <div class="row"><label for="tplLabel">Name<input id="tplLabel" name="label" maxlength="60" required placeholder="Example: IED tip (Blue Force)"></label><label for="tplTo" style="flex:0 0 160px">To<select id="tplTo" name="to"><option value="both">Both wings</option><option value="B">Blue Force only</option><option value="R">Red Force only</option><option value="public">Public screen</option></select></label><label for="tplFrom" style="flex:0 0 200px">From<input id="tplFrom" name="from" maxlength="30" value="AOC"></label></div>
           <label for="tplText">Message<textarea id="tplText" name="text" maxlength="700" required placeholder="Example: Locals saw men burying something on your supply road. Check it before your next move."></textarea></label>
-          <div class="row"><label for="tplAt" style="flex:0 0 200px">Planned time (minutes after STARTEX)<input id="tplAt" name="at" type="number" min="0" max="300" placeholder="Optional"></label><label for="tplLvl" style="flex:0 0 220px">Or send at escalation level<select id="tplLvl" name="lvl"><option value="">No level</option><option value="1">Tension or higher</option><option value="2">Crisis or higher</option><option value="3">Brink or higher</option></select></label><label for="tplNote">White cell note (only the white cell sees it)<input id="tplNote" name="note" maxlength="500" placeholder="Optional: what the POCs need to set up"></label></div>
+          <div class="row"><label for="tplAt" style="flex:0 0 200px">Planned time (minutes after STARTEX)<input id="tplAt" name="at" type="number" min="0" max="300" placeholder="Optional"></label><label for="tplLvl" style="flex:0 0 220px">Or send at escalation level<select id="tplLvl" name="lvl"><option value="">No level</option><option value="1">Tension or higher</option><option value="2">Crisis or higher</option><option value="3">Brink or higher</option></select></label><label for="tplNote">White Force note (only the White Force sees it)<input id="tplNote" name="note" maxlength="500" placeholder="Optional: what the POCs need to set up"></label></div>
           <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto" data-tplsave>Save template</button><button type="button" data-tplclear style="flex:0 0 auto">Clear</button><span class="small muted" data-tplmode></span></div>
         </form>
         <h3 class="small muted" style="margin:6px 0 0">Templates in this game</h3><div class="list" data-tpllist></div>
@@ -4508,7 +4508,7 @@ function buildWhite(){
     if (srm){ const k = srm.dataset.siterm, st = app.S && app.S.sites[k]; if (!st || !SITES[k]) return; if (!confirm('Remove ' + SITES[k].name + '?' + (st.holder ? ' ' + SIDES[st.holder].name + ' loses the site; points already earned there stay.' : '') + ' Both wings are notified.')) return; writeEvent('site_remove', null, { k }); return; }
     const iv = ev.target.closest('[data-ipview]');
     if (iv){ const cur = $('[data-wtab][aria-selected="true"]', v); if (cur && !['all', 'intel'].includes(cur.dataset.wtab)) $('[data-wtab="intel"]', v).click(); const f = $('[data-ipbuild]', v); $('[data-ipbsrc]', f).value = iv.dataset.ipview; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); return; }
-    const nr = ev.target.closest('[data-nineres]'); if (nr){ writeEvent('nine_res', null, { nine:nr.dataset.nineres, ok:nr.dataset.ok === '1', by:'White cell' }); return; }
+    const nr = ev.target.closest('[data-nineres]'); if (nr){ writeEvent('nine_res', null, { nine:nr.dataset.nineres, ok:nr.dataset.ok === '1', by:'White Force' }); return; }
     const orq = ev.target.closest('[data-ocres]'); if (orq){ const inp = orq.closest('.li') && orq.closest('.li').querySelector('[data-ocreply]'); writeEvent('oc_res', null, { req:orq.dataset.ocres, ok:orq.dataset.ok === '1', reply:inp ? inp.value.trim() : '' }); return; }
     const sv = ev.target.closest('[data-ocsave]');
     if (sv){ const id = sv.dataset.ocsave, S = app.S, o = S && S.ocs[id]; if (!o) return; const nm = $('[data-ocnamein="' + id + '"]', v).value.trim(), as = ocParse($('[data-ocassignin="' + id + '"]', v).value);
@@ -4528,7 +4528,7 @@ function buildWhite(){
   $('[data-wpcolor]', v).addEventListener('input', ev => { wpForm.color = ev.target.value; wpPrev(); });
   $('[data-wpclear]', v).onclick = wpReset;
   wpPrev();
-  $('[data-wppick]', v).onclick = ev => { app.wpPick = !app.wpPick; ev.currentTarget.classList.toggle('btn-side', app.wpPick); if (app.wpPick) toast('Tap the waypoint location on the white cell map.'); };
+  $('[data-wppick]', v).onclick = ev => { app.wpPick = !app.wpPick; ev.currentTarget.classList.toggle('btn-side', app.wpPick); if (app.wpPick) toast('Tap the waypoint location on the White Force map.'); };
   $('[data-wptap]', v).onclick = () => { if (!app.lastClick){ toast('Tap the map first.', true); return; } $('[data-wploc]', v).value = fmtPt(app.lastClick); };
   $('[data-wpadd]', v).onclick = () => {
     const pt = locate(mapCfg(app.S), $('[data-wploc]', v).value), label = $('[data-wplabel]', v).value.trim(), sym = $('[data-wpsym]', v).value, color = wpCur();
@@ -4589,10 +4589,10 @@ function buildWhite(){
   $('[data-occclose]', v).onclick = () => occOpen(null);
   $('[data-occwf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx || !app.occOpen) return; await writeEvent('occhat', null, { oc:app.occOpen, from:'wc', text:tx }); f.text.value = ''; });
   $('[data-ocannf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!confirm('Send this announcement to every POC?')) return; await writeEvent('ocann', null, { text:tx }); f.text.value = ''; toast('Announcement sent to all POCs.'); });
-  const wcMove = pt => { const M = mapCfg(app.S), sq = squareOf(M, pt); writeEvent('wc_pos', null, { pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt) }); toast('White cell moved. Every map shows it.'); };
+  const wcMove = pt => { const M = mapCfg(app.S), sq = squareOf(M, pt); writeEvent('wc_pos', null, { pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt) }); toast('White Force moved. Every map shows it.'); };
   $('[data-wctap]', v).onclick = () => { if (!app.lastClick){ toast('Tap the spot on the map first.', true); return; } wcMove(app.lastClick.slice()); };
   $('[data-wcset]', v).onclick = () => { const pt = locate(mapCfg(app.S), $('[data-wcgrid]', v).value); if (!pt){ toast('That grid didn\u2019t read.', true); return; } $('[data-wcgrid]', v).value = ''; wcMove(pt); };
-  $('[data-wcback]', v).onclick = () => { const M = mapCfg(app.S), pt = M && M.sites && M.sites.wc; writeEvent('wc_pos', null, { pt:null, grid:pt ? ((squareOf(M, pt) ? squareOf(M, pt) + ', ' : '') + fmtPt(pt)) : '' }); toast('White cell back at its planned spot.'); };
+  $('[data-wcback]', v).onclick = () => { const M = mapCfg(app.S), pt = M && M.sites && M.sites.wc; writeEvent('wc_pos', null, { pt:null, grid:pt ? ((squareOf(M, pt) ? squareOf(M, pt) + ', ' : '') + fmtPt(pt)) : '' }); toast('White Force back at its planned spot.'); };
   $('[data-wcgps]', v).onclick = () => {
     if (!navigator.geolocation){ toast('This device has no GPS access.', true); return; }
     toast('Getting your position…');
@@ -4661,7 +4661,7 @@ function ipbPieceHTML(k){
             '<div class="row" style="align-items:end"><label>Or paste a photo link<input data-f="url" maxlength="600" placeholder="Example: https://upload.wikimedia.org/…/photo.jpg"></label><button type="button" data-f="usel" style="flex:0 0 auto">Use link</button></div>' +
             '<div class="row" style="align-items:end"><label>Or search free photos (Wikimedia Commons)<input data-f="q" maxlength="80" placeholder="Example: Abandoned truck"></label><button type="button" data-f="search" style="flex:0 0 auto">Search</button></div><div class="ipb-results" data-f="results"></div>' +
             '<div class="row" style="align-items:end"><label style="flex:0 0 150px">Or snapshot the map<select data-f="zoom"><option value="16">Wide (about 2 km)</option><option value="17" selected>Medium (about 1 km)</option><option value="18">Close (about 500 m)</option><option value="19">Very close (about 250 m)</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-f="lbl" checked> Grid label</label><button type="button" data-f="snap" style="flex:0 0 auto">Snapshot at last map tap</button></div>' +
-            '<p class="small muted" style="margin:0">Snapshot uses the last tap on the white cell map. Last tap: <span class="mono" data-lastclick>—</span></p></div></div>' +
+            '<p class="small muted" style="margin:0">Snapshot uses the last tap on the White Force map. Last tap: <span class="mono" data-lastclick>—</span></p></div></div>' +
     '<label class="chk"><input type="checkbox" data-f="false"> This piece is false or misleading</label></fieldset>';
 }
 function ipbRead(){
@@ -4802,7 +4802,7 @@ async function mapSnapshot(pt, z, label){
 }
 async function ipbSnap(pc){
   const k = pc.dataset.ipbpiece, pt = app.lastClick;
-  if (!pt){ toast('Tap the spot on the white cell map first, then press Snapshot.', true); return; }
+  if (!pt){ toast('Tap the spot on the White Force map first, then press Snapshot.', true); return; }
   const z = +$('[data-f="zoom"]', pc).value || 17, lbl = $('[data-f="lbl"]', pc).checked;
   toast('Taking the snapshot…');
   try { const d = await mapSnapshot(pt, z, lbl); ipb.imgs[k] = { data:d, credit:'Satellite imagery: Esri, Maxar' }; ipbSync(); toast('Snapshot added (' + Math.round(d.length / 1024) + ' KB).'); }
