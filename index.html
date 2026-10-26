@@ -28,7 +28,7 @@ const RECOVERY_CODE_HASH = "3nonh9lo9n";
 :root{
   --bg:#e9ece8; --panel:#fbfbf8; --panel-2:#f2f4f0; --ink:#17202a; --muted:#56616c; --line:#a3ada6;
   --sea:#c9dde3; --sea-line:#b3cbd3; --land:#e6dcc0; --land-edge:#a8996d; --grid:rgba(23,32,42,.22);
-  --blu:#1d5cc0; --blu-soft:#dce7fb; --red:#bf2f28; --red-soft:#f9dfdc; --wc:#3d4a3f; --wc-soft:#dfe6dd;
+  --blu:#1d5cc0; --blu-soft:#dce7fb; --red:#bf2f28; --red-soft:#f9dfdc; --wc:#3d4a3f; --wc-soft:#dfe6dd; --aoc:#8a6514; --aoc-soft:#f4ead2;
   --e0:#2d8a57; --e1:#c39a1d; --e2:#d5712a; --e3:#bf2f28; --e4:#5c1414;
   --good:#2d8a57; --warn:#b7791f; --bad:#bf2f28; --focus:#1d5cc0;
   --display:'Saira Condensed','Arial Narrow',Arial,sans-serif;
@@ -38,14 +38,14 @@ const RECOVERY_CODE_HASH = "3nonh9lo9n";
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0e1316; --panel:#151c21; --panel-2:#1b242a; --ink:#e4e9ec; --muted:#97a3ad; --line:#46545e;
   --sea:#11232b; --sea-line:#1a333d; --land:#2a2a21; --land-edge:#6a6245; --grid:rgba(228,233,236,.16);
-  --blu:#6c9ff0; --blu-soft:#172a48; --red:#ee6d62; --red-soft:#3c1c19; --wc:#b9c7b6; --wc-soft:#202a22;
+  --blu:#6c9ff0; --blu-soft:#172a48; --red:#ee6d62; --red-soft:#3c1c19; --wc:#b9c7b6; --wc-soft:#202a22; --aoc:#e2bd62; --aoc-soft:#2c2614;
   --e0:#4fb97c; --e1:#e2bd47; --e2:#f0914c; --e3:#ee6d62; --e4:#b14a4a;
   --good:#4fb97c; --warn:#e2bd47; --bad:#ee6d62; --focus:#6c9ff0; color-scheme:dark;
 }}
 :root[data-theme="dark"]{
   --bg:#0e1316; --panel:#151c21; --panel-2:#1b242a; --ink:#e4e9ec; --muted:#97a3ad; --line:#46545e;
   --sea:#11232b; --sea-line:#1a333d; --land:#2a2a21; --land-edge:#6a6245; --grid:rgba(228,233,236,.16);
-  --blu:#6c9ff0; --blu-soft:#172a48; --red:#ee6d62; --red-soft:#3c1c19; --wc:#b9c7b6; --wc-soft:#202a22;
+  --blu:#6c9ff0; --blu-soft:#172a48; --red:#ee6d62; --red-soft:#3c1c19; --wc:#b9c7b6; --wc-soft:#202a22; --aoc:#e2bd62; --aoc-soft:#2c2614;
   --e0:#4fb97c; --e1:#e2bd47; --e2:#f0914c; --e3:#ee6d62; --e4:#b14a4a;
   --good:#4fb97c; --warn:#e2bd47; --bad:#ee6d62; --focus:#6c9ff0; color-scheme:dark;
 }
@@ -78,6 +78,8 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .side-B{--side:var(--blu);--side-soft:var(--blu-soft)}
 .side-R{--side:var(--red);--side-soft:var(--red-soft)}
 .side-W{--side:var(--wc);--side-soft:var(--wc-soft)}
+.side-A{--side:var(--aoc);--side-soft:var(--aoc-soft)}
+#vWhite.aocv [data-aoc-off],#vWhite.aocv [data-act="void"],#vWhite.aocv [data-ipview]{display:none!important}
 .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:var(--side);background:var(--side-soft);border:1px solid var(--side);border-radius:4px;padding:2px 8px}
 .chip{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--muted);background:var(--panel-2)}
 .chip.ok{color:var(--good);border-color:var(--good)}
@@ -260,7 +262,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
   <section id="gate" class="gate" hidden>
     <div class="stack">
       <h1>Marala Island Board</h1>
-      <p class="lede">Live game board for the Capstone exercise: BLUFOR (US-led Coalition) versus REDFOR (North Korea).</p>
+      <p class="lede">Live game board for the Capstone exercise: Blue Force (US-led Coalition) versus Red Force (North Korea).</p>
     </div>
     <div id="gateNoGame" class="panel" hidden>
       <h2>No game set up yet</h2>
@@ -320,8 +322,8 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label class="chk"><input type="checkbox" id="adEListed"> Show on the game menu</label>
         <label class="chk"><input type="checkbox" id="adEStarter"> Keep the sample intel packages as fixed packages (older games only)</label>
         <p class="small muted" style="margin:0">New role PINs (leave blank to keep the current PIN)</p>
-        <div class="row"><label for="adPW">White cell<input id="adPW" maxlength="12" autocomplete="off"></label><label for="adPB">BLUFOR C2<input id="adPB" maxlength="12" autocomplete="off"></label><label for="adPR">REDFOR C2<input id="adPR" maxlength="12" autocomplete="off"></label></div>
-        <div class="row"><label for="adPTB">BLUFOR fireteam<input id="adPTB" maxlength="12" autocomplete="off"></label><label for="adPTR">REDFOR fireteam<input id="adPTR" maxlength="12" autocomplete="off"></label><label for="adPOC">POC<input id="adPOC" maxlength="12" autocomplete="off"></label></div>
+        <div class="row"><label for="adPW">White cell<input id="adPW" maxlength="12" autocomplete="off"></label><label for="adPA">AOC<input id="adPA" maxlength="12" autocomplete="off"></label><label for="adPB">Blue Force C2<input id="adPB" maxlength="12" autocomplete="off"></label><label for="adPR">Red Force C2<input id="adPR" maxlength="12" autocomplete="off"></label></div>
+        <div class="row"><label for="adPTB">Blue Force fireteam<input id="adPTB" maxlength="12" autocomplete="off"></label><label for="adPTR">Red Force fireteam<input id="adPTR" maxlength="12" autocomplete="off"></label><label for="adPOC">POC<input id="adPOC" maxlength="12" autocomplete="off"></label></div>
         <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side side-W" style="flex:0 0 auto">Save changes</button><button type="button" id="adEBackup" style="flex:0 0 auto">Download backup</button><button type="button" id="adEDelete" style="flex:0 0 auto">Delete game</button><button type="button" id="adECancel" style="flex:0 0 auto">Close</button></div>
         <p class="small muted" id="adEMsg" style="margin:0"></p>
       </form>
@@ -346,12 +348,13 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
       <div class="row">
         <label for="sName">Game name<input id="sName" value="Capstone" required></label>
         <label for="sPinW">White cell PIN<input id="sPinW" required autocomplete="off"></label>
-        <label for="sPinB">BLUFOR PIN<input id="sPinB" required autocomplete="off"></label>
-        <label for="sPinR">REDFOR PIN<input id="sPinR" required autocomplete="off"></label>
+        <label for="sPinA">AOC PIN<input id="sPinA" required autocomplete="off"></label>
+        <label for="sPinB">Blue Force PIN<input id="sPinB" required autocomplete="off"></label>
+        <label for="sPinR">Red Force PIN<input id="sPinR" required autocomplete="off"></label>
       </div>
       <div class="row">
-        <label for="sPinTB">BLUFOR fireteam PIN<input id="sPinTB" required autocomplete="off"></label>
-        <label for="sPinTR">REDFOR fireteam PIN<input id="sPinTR" required autocomplete="off"></label>
+        <label for="sPinTB">Blue Force fireteam PIN<input id="sPinTB" required autocomplete="off"></label>
+        <label for="sPinTR">Red Force fireteam PIN<input id="sPinTR" required autocomplete="off"></label>
         <label for="sPinOC">POC PIN<input id="sPinOC" required autocomplete="off"></label>
         <label for="sStart">Board clock starts at<input id="sStart" value="0600" maxlength="5" inputmode="numeric" required></label>
         <label for="sLen">Game length (minutes)<input id="sLen" type="number" min="30" max="300" step="5" value="120" required></label>
@@ -1143,7 +1146,7 @@ const GEO = (() => {
 })();
 </script>
 <script id="engine">
-const SIDES = { B:{key:'B', name:'BLUFOR', long:'BLUFOR · US-led Coalition'}, R:{key:'R', name:'REDFOR', long:'REDFOR · North Korea'} };
+const SIDES = { B:{key:'B', name:'Blue Force', long:'Blue Force · US-led Coalition'}, R:{key:'R', name:'Red Force', long:'Red Force · North Korea'} };
 const OTHER = { B:'R', R:'B' };
 const SITES = {
   harbor:  { name:'Harbor',      grid:'E4', col:4, row:3, letter:'H' },
@@ -1296,7 +1299,7 @@ function engSquare(M, pt){
 }
 function showBlocked(S){
   const M = engMap(S), pts = Object.assign({}, (M && M.sites) || {}, S.sitePts || {}), out = {};
-  [['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ']].forEach(([k, n]) => { const q = engSquare(M, pts[k]); if (q) out[q] = n; });
+  [['town', 'Marala Town'], ['lzB', 'Blue Force HQ'], ['lzR', 'Red Force HQ']].forEach(([k, n]) => { const q = engSquare(M, pts[k]); if (q) out[q] = n; });
   if (!out.E3 && !pts.town) out.E3 = 'Marala Town';
   return out;
 }
@@ -1334,7 +1337,7 @@ function uavPhase(S, side){ const u = S.uav && S.uav[side]; if (!u) return ''; c
 const LEVELS = [
   { name:'Competition', min:0 }, { name:'Tension', min:25 }, { name:'Crisis', min:50 }, { name:'Brink', min:75 }, { name:'War', min:100 }
 ];
-const PROBLEMS = [{"id":"p1","at":5,"win":15,"title":"The airstrip gate bomb","q":"Who planted the bomb at the airstrip gate two nights ago?","opts":["BLUFOR (the Coalition)","REDFOR (North Korea)","The Marala First Front (militia)","Not enough information"],"items":[{"k":"A","disc":"SIGINT","rating":"A2","dtg":"032358R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"Gift is at the gate. Walk home through the paddies.\" Direction finding puts the transmitter within 500 m of the gate."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"040214R DEC 26","src":"Airstrip gate camera, still frame","text":"Two men in civilian fishing gear, no uniforms or weapons, leave a bag at the gate and walk west toward the fishing village."},{"k":"C","disc":"HUMINT","rating":"F6","dtg":"041900R DEC 26","src":"Walk-in source, first contact, reunification party member, asked to be paid","text":"\"I watched Coalition soldiers carry a bag to the airstrip gate around 0200.\""},{"k":"D","disc":"GEOINT","rating":"B2","dtg":"Terrain study, current","src":"Road and foot-path analysis","text":"The only vehicle road to the gate runs through the Coalition checkpoint, which logged no traffic from 0100 to 0400. A foot path along the paddy dikes links the fishing village to the gate: 400 m, about 6 minutes on foot."}],"a":"4uviw2t474","f":"25bfal3rpyq"},{"id":"p2","at":20,"win":15,"title":"Where are the mayor's meetings?","q":"Where will the mayor meet each foreign force today?","opts":["The harbor fish market","Town Hall","The church","The airstrip"],"items":[{"k":"A","disc":"SIGINT","rating":"F3","dtg":"05{+18}R DEC 26","src":"Intercepted cell call, unregistered phone near the harbor","text":"\"Tell the foreigners the mayor moved her meetings to the fish market.\""},{"k":"B","disc":"HUMINT","rating":"B2","dtg":"05{+12}R DEC 26","src":"Mayor's driver, regular contact","text":"Told to keep the car at Town Hall from {+50} to {+90} for two meetings."},{"k":"C","disc":"IMINT","rating":"A2","dtg":"05{+15}R DEC 26","src":"Drone video, Marala Town and harbor","text":"Police setting up a cordon and chairs outside Town Hall. The harbor fish market is empty, stalls shuttered."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Tide tables and road survey","src":"Harbor road","text":"The harbor road floods at high tide from {+10} to {+100}. No vehicle can reach the fish market until it drains."}],"a":"2dj32folanx","f":"10ylo7q1h9c"},{"id":"p3","at":30,"win":12,"title":"The roadside explosion","q":"Who set off the explosion at {+25}?","opts":["BLUFOR (the Coalition)","The Marala First Front (militia)","REDFOR (North Korea)","An accident"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"05{+29}R DEC 26","src":"Shopkeeper near the blast, met once before","text":"At {+20} a man on a motorbike left a sack at the roadside and rode north toward the quarry."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+23}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The bird flies in two minutes. Ride north after.\" Direction finding: transmitter near the blast site."},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"05{+10}R DEC 26","src":"Weather station on the ridge, with terrain overlay","text":"Dense fog over the blast area from {+10} to {+40}. Visibility under 20 m."},{"k":"D","disc":"IMINT","rating":"F6","dtg":"05{+24}R DEC 26 (as posted)","src":"Photo posted online, metadata stripped","text":"Clear, sunny photo of armed soldiers standing at the blast site."}],"a":"1bncd0lno9j","f":"f2igowkl9o","blast":{"grid":"C3","truth":"militia","cas":false}},{"id":"p4","at":45,"win":15,"title":"The militia cache","q":"Where is the militia hiding its weapons cache?","opts":["The church basement in town","The harbor warehouse","The old quarry shed","The fuel depot"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"05{-30}R DEC 26","src":"Quarry foreman, regular contact","text":"The stolen explosive was loaded into a red van with no plates."},{"k":"B","disc":"GEOINT","rating":"A1","dtg":"Terrain database, 2019 survey","src":"Structures near the quarry","text":"The old quarry shed was torn down in 2020. The nearest standing building that could hide a cache is the church in Marala Town."},{"k":"C","disc":"SIGINT","rating":"B2","dtg":"05{-38}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The van is in the barn by the stones. Keep the doors shut.\" Direction finding: bearing crosses the quarry."},{"k":"D","disc":"IMINT","rating":"A1","dtg":"05{+40}R DEC 26","src":"Drone still, quarry area","text":"A red van with no plates parked inside the open doors of a shed at the quarry. Fresh tire tracks lead in."}],"a":"20dazhp7ngh","f":"14d6b7eo0cf"},{"id":"p5","at":60,"win":14,"title":"The north-road device","q":"Is there a live device on the north road, and where?","opts":["No, it's a hoax","Yes, at the north-road culvert","Yes, but on the coast road","Not enough information"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"05{-90}R DEC 26","src":"Fisherman, met once before","text":"Saw two men digging at the north-road culvert before dawn."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+52}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The gift under the north road is wrapped. Wait for a patrol.\""},{"k":"C","disc":"IMINT","rating":"A1","dtg":"011030R DEC 26","src":"Satellite image, north road","text":"The road is under water. The culvert can't be seen."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"River gauge and road survey, current","src":"North road","text":"The water dropped below the road on 3 December, and the road has been passable since. The culvert is the only place on this stretch where something could be hidden."}],"a":"24zbs04alk3","f":"2aqfn1cwyoi"},{"id":"p6","at":85,"win":15,"title":"The fisherman's death","q":"What killed the fisherman found on the coast footpath this morning?","opts":["A Coalition patrol shot him","A North Korean patrol shot him","A militia mine on the footpath","He drowned"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"05{+70}R DEC 26","src":"Village doctor, regular contact","text":"Wounds to the legs and lower body from blast fragments. No bullet wounds."},{"k":"B","disc":"SIGINT","rating":"C4","dtg":"05{-55}R DEC 26","src":"Intercepted phone call between two villagers","text":"\"The patrol opened fire on him near the jetty. Everyone heard the shots.\""},{"k":"C","disc":"IMINT","rating":"A2","dtg":"05{-20}R DEC 26","src":"Drone still, coast footpath","text":"A small fresh crater on the footpath. No vehicle tracks, and no soldiers within 1 km."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Hazard map, updated monthly","src":"Coast footpath","text":"The footpath is a known militia mine belt. Two blasts there since August."}],"a":"1te7463vlc1","f":"146dci2oh7e"},{"id":"p7","at":105,"win":15,"title":"The ambush","q":"Where will the militia ambush the next patrol?","opts":["The north road","The coast road bend","The quarry road cut","No ambush is planned"],"items":[{"k":"A","disc":"GEOINT","rating":"B2","dtg":"Line-of-sight study, 2019 elevation data","src":"Island roads","text":"The coast road bend is open ground with no cover. The only spot with cover for an ambush is the quarry road cut."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"05{+98}R DEC 26","src":"Drone still, coast road bend","text":"Fresh boulders piled where the coast road meets the sea. Three motorbikes hidden behind them."},{"k":"C","disc":"HUMINT","rating":"C2","dtg":"05{+90}R DEC 26","src":"Fisherman, met twice before","text":"\"Men told us to keep our boats off the beach at the road bend today.\""},{"k":"D","disc":"SIGINT","rating":"A2","dtg":"05{+101}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"Wait at the big rocks where the road meets the sea. Let the first truck pass.\""}],"a":"1o7tzdbealm","f":"10dxsd5hl1r"},{"id":"p8","at":125,"win":15,"title":"The rally threat","q":"What is the militia planning for the election rally?","opts":["A car bomb at the town gate","An attack on the mayor's stage","A peaceful protest only","Nothing; the rally is cancelled"],"items":[{"k":"A","disc":"IMINT","rating":"A1","dtg":"05{+115}R DEC 26","src":"Drone video, town square","text":"Crews building a stage in the square with crowd barriers. The back of the stage opens onto an alley."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+118}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"When she starts speaking, the stage comes down. Come in through the alley.\""},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"Town plan and police posts, current","src":"Town square","text":"The alley behind the stage is the only approach not covered by the town gate checkpoint."},{"k":"D","disc":"HUMINT","rating":"B2","dtg":"042000R DEC 26","src":"Mayor's aide, regular contact","text":"\"The rally is cancelled because of the protests.\""}],"a":"1todrsj1mx6","f":"1d4vxhwehca"}];
+const PROBLEMS = [{"id":"p1","at":5,"win":15,"title":"The airstrip gate bomb","q":"Who planted the bomb at the airstrip gate two nights ago?","opts":["Blue Force (the Coalition)","Red Force (North Korea)","The Marala First Front (militia)","Not enough information"],"items":[{"k":"A","disc":"SIGINT","rating":"A2","dtg":"032358R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"Gift is at the gate. Walk home through the paddies.\" Direction finding puts the transmitter within 500 m of the gate."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"040214R DEC 26","src":"Airstrip gate camera, still frame","text":"Two men in civilian fishing gear, no uniforms or weapons, leave a bag at the gate and walk west toward the fishing village."},{"k":"C","disc":"HUMINT","rating":"F6","dtg":"041900R DEC 26","src":"Walk-in source, first contact, reunification party member, asked to be paid","text":"\"I watched Coalition soldiers carry a bag to the airstrip gate around 0200.\""},{"k":"D","disc":"GEOINT","rating":"B2","dtg":"Terrain study, current","src":"Road and foot-path analysis","text":"The only vehicle road to the gate runs through the Coalition checkpoint, which logged no traffic from 0100 to 0400. A foot path along the paddy dikes links the fishing village to the gate: 400 m, about 6 minutes on foot."}],"a":"4uviw2t474","f":"25bfal3rpyq"},{"id":"p2","at":20,"win":15,"title":"Where are the mayor's meetings?","q":"Where will the mayor meet each foreign force today?","opts":["The harbor fish market","Town Hall","The church","The airstrip"],"items":[{"k":"A","disc":"SIGINT","rating":"F3","dtg":"05{+18}R DEC 26","src":"Intercepted cell call, unregistered phone near the harbor","text":"\"Tell the foreigners the mayor moved her meetings to the fish market.\""},{"k":"B","disc":"HUMINT","rating":"B2","dtg":"05{+12}R DEC 26","src":"Mayor's driver, regular contact","text":"Told to keep the car at Town Hall from {+50} to {+90} for two meetings."},{"k":"C","disc":"IMINT","rating":"A2","dtg":"05{+15}R DEC 26","src":"Drone video, Marala Town and harbor","text":"Police setting up a cordon and chairs outside Town Hall. The harbor fish market is empty, stalls shuttered."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Tide tables and road survey","src":"Harbor road","text":"The harbor road floods at high tide from {+10} to {+100}. No vehicle can reach the fish market until it drains."}],"a":"2dj32folanx","f":"10ylo7q1h9c"},{"id":"p3","at":30,"win":12,"title":"The roadside explosion","q":"Who set off the explosion at {+25}?","opts":["Blue Force (the Coalition)","The Marala First Front (militia)","Red Force (North Korea)","An accident"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"05{+29}R DEC 26","src":"Shopkeeper near the blast, met once before","text":"At {+20} a man on a motorbike left a sack at the roadside and rode north toward the quarry."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+23}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The bird flies in two minutes. Ride north after.\" Direction finding: transmitter near the blast site."},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"05{+10}R DEC 26","src":"Weather station on the ridge, with terrain overlay","text":"Dense fog over the blast area from {+10} to {+40}. Visibility under 20 m."},{"k":"D","disc":"IMINT","rating":"F6","dtg":"05{+24}R DEC 26 (as posted)","src":"Photo posted online, metadata stripped","text":"Clear, sunny photo of armed soldiers standing at the blast site."}],"a":"1bncd0lno9j","f":"f2igowkl9o","blast":{"grid":"C3","truth":"militia","cas":false}},{"id":"p4","at":45,"win":15,"title":"The militia cache","q":"Where is the militia hiding its weapons cache?","opts":["The church basement in town","The harbor warehouse","The old quarry shed","The fuel depot"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"05{-30}R DEC 26","src":"Quarry foreman, regular contact","text":"The stolen explosive was loaded into a red van with no plates."},{"k":"B","disc":"GEOINT","rating":"A1","dtg":"Terrain database, 2019 survey","src":"Structures near the quarry","text":"The old quarry shed was torn down in 2020. The nearest standing building that could hide a cache is the church in Marala Town."},{"k":"C","disc":"SIGINT","rating":"B2","dtg":"05{-38}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The van is in the barn by the stones. Keep the doors shut.\" Direction finding: bearing crosses the quarry."},{"k":"D","disc":"IMINT","rating":"A1","dtg":"05{+40}R DEC 26","src":"Drone still, quarry area","text":"A red van with no plates parked inside the open doors of a shed at the quarry. Fresh tire tracks lead in."}],"a":"20dazhp7ngh","f":"14d6b7eo0cf"},{"id":"p5","at":60,"win":14,"title":"The north-road device","q":"Is there a live device on the north road, and where?","opts":["No, it's a hoax","Yes, at the north-road culvert","Yes, but on the coast road","Not enough information"],"items":[{"k":"A","disc":"HUMINT","rating":"C3","dtg":"05{-90}R DEC 26","src":"Fisherman, met once before","text":"Saw two men digging at the north-road culvert before dawn."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+52}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"The gift under the north road is wrapped. Wait for a patrol.\""},{"k":"C","disc":"IMINT","rating":"A1","dtg":"011030R DEC 26","src":"Satellite image, north road","text":"The road is under water. The culvert can't be seen."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"River gauge and road survey, current","src":"North road","text":"The water dropped below the road on 3 December, and the road has been passable since. The culvert is the only place on this stretch where something could be hidden."}],"a":"24zbs04alk3","f":"2aqfn1cwyoi"},{"id":"p6","at":85,"win":15,"title":"The fisherman's death","q":"What killed the fisherman found on the coast footpath this morning?","opts":["A Coalition patrol shot him","A North Korean patrol shot him","A militia mine on the footpath","He drowned"],"items":[{"k":"A","disc":"HUMINT","rating":"B2","dtg":"05{+70}R DEC 26","src":"Village doctor, regular contact","text":"Wounds to the legs and lower body from blast fragments. No bullet wounds."},{"k":"B","disc":"SIGINT","rating":"C4","dtg":"05{-55}R DEC 26","src":"Intercepted phone call between two villagers","text":"\"The patrol opened fire on him near the jetty. Everyone heard the shots.\""},{"k":"C","disc":"IMINT","rating":"A2","dtg":"05{-20}R DEC 26","src":"Drone still, coast footpath","text":"A small fresh crater on the footpath. No vehicle tracks, and no soldiers within 1 km."},{"k":"D","disc":"GEOINT","rating":"A1","dtg":"Hazard map, updated monthly","src":"Coast footpath","text":"The footpath is a known militia mine belt. Two blasts there since August."}],"a":"1te7463vlc1","f":"146dci2oh7e"},{"id":"p7","at":105,"win":15,"title":"The ambush","q":"Where will the militia ambush the next patrol?","opts":["The north road","The coast road bend","The quarry road cut","No ambush is planned"],"items":[{"k":"A","disc":"GEOINT","rating":"B2","dtg":"Line-of-sight study, 2019 elevation data","src":"Island roads","text":"The coast road bend is open ground with no cover. The only spot with cover for an ambush is the quarry road cut."},{"k":"B","disc":"IMINT","rating":"A1","dtg":"05{+98}R DEC 26","src":"Drone still, coast road bend","text":"Fresh boulders piled where the coast road meets the sea. Three motorbikes hidden behind them."},{"k":"C","disc":"HUMINT","rating":"C2","dtg":"05{+90}R DEC 26","src":"Fisherman, met twice before","text":"\"Men told us to keep our boats off the beach at the road bend today.\""},{"k":"D","disc":"SIGINT","rating":"A2","dtg":"05{+101}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"Wait at the big rocks where the road meets the sea. Let the first truck pass.\""}],"a":"1o7tzdbealm","f":"10dxsd5hl1r"},{"id":"p8","at":125,"win":15,"title":"The rally threat","q":"What is the militia planning for the election rally?","opts":["A car bomb at the town gate","An attack on the mayor's stage","A peaceful protest only","Nothing; the rally is cancelled"],"items":[{"k":"A","disc":"IMINT","rating":"A1","dtg":"05{+115}R DEC 26","src":"Drone video, town square","text":"Crews building a stage in the square with crowd barriers. The back of the stage opens onto an alley."},{"k":"B","disc":"SIGINT","rating":"A2","dtg":"05{+118}R DEC 26","src":"Intercept, known militia handheld frequency","text":"\"When she starts speaking, the stage comes down. Come in through the alley.\""},{"k":"C","disc":"GEOINT","rating":"A1","dtg":"Town plan and police posts, current","src":"Town square","text":"The alley behind the stage is the only approach not covered by the town gate checkpoint."},{"k":"D","disc":"HUMINT","rating":"B2","dtg":"042000R DEC 26","src":"Mayor's aide, regular contact","text":"\"The rally is cancelled because of the protests.\""}],"a":"1todrsj1mx6","f":"1d4vxhwehca"}];
 function fillT(str){ return String(str == null ? '' : str).replace(/\{([+-]\d+)\}/g, (_, n) => hhmm(START_G + Number(n))); }
 function allProblems(S){
   const cs = (S && S.customOrder ? S.customOrder : []).map(id => S.custom[id]).filter(Boolean), reps = {};
@@ -1423,6 +1426,7 @@ function gameAt(S, t){
   if (!S.clock.running) return S.clock.anchorG;
   return Math.min(END_G, S.clock.anchorG + Math.max(0, t - S.clock.anchorReal) / 60000);
 }
+function hqFrom(x){ x = String(x || '').trim(); return !x || /^(higher headquarters|higher hq|hhq)$/i.test(x) ? 'AOC' : x; }
 function pushFeed(S, to, text, kind, extra){ S.feed.push(Object.assign({ id:'f' + S.feed.length, to, text, kind:kind||'hq', g:S.g }, extra||{})); }
 function pushLog(S, text, side, e, status){ S.log.push({ id:e ? e.id : 'l' + S.log.length, g:S.g, text, side:side||null, status:status||'ok', type:e ? e.type : 'tick', by:e ? e.by : 'system' }); }
 function checkAccess(S, side){
@@ -1469,7 +1473,7 @@ function tick(S, g){
   ['B','R'].forEach(side => pushFeed(S, side, hhmm(g) + ' update: ' + parts[side].join(', '), 'tick'));
   if (S.esc >= 50 && !S.war && g - S.crisisCallAt >= 20){
     S.crisisCallAt = g;
-    pushFeed(S, 'both', 'Higher headquarters warning: escalation is at ' + S.esc + '. One more serious incident could start a war.', 'alert');
+    pushFeed(S, 'both', 'AOC warning: escalation is at ' + S.esc + '. One more serious incident could start a war.', 'alert');
   }
   pushLog(S, hhmm(g) + ' board update', null);
 }
@@ -1661,15 +1665,15 @@ function apply(S, e, cfg){
       break; }
     case 'injq_add': {
       if (!S.injq) S.injq = [];
-      (Array.isArray(p.items) ? p.items : []).forEach(it => { if (!it || typeof it.qid !== 'string' || S.injq.some(q => q.qid === it.qid) || !it.tpl || !it.tpl.text) return; const t = it.tpl; S.injq.push({ qid:it.qid, tid:String(t.id || ''), label:String(t.label || 'Inject').slice(0, 60), to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:String(t.from || 'Higher headquarters').slice(0, 30), text:String(t.text).slice(0, 700), note:String(t.note || '').slice(0, 500), at:Number.isFinite(t.at) ? t.at : null, lvl:Number.isInteger(t.lvl) ? t.lvl : null, sent:null }); });
+      (Array.isArray(p.items) ? p.items : []).forEach(it => { if (!it || typeof it.qid !== 'string' || S.injq.some(q => q.qid === it.qid) || !it.tpl || !it.tpl.text) return; const t = it.tpl; S.injq.push({ qid:it.qid, tid:String(t.id || ''), label:String(t.label || 'Inject').slice(0, 60), to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), text:String(t.text).slice(0, 700), note:String(t.note || '').slice(0, 500), at:Number.isFinite(t.at) ? t.at : null, lvl:Number.isInteger(t.lvl) ? t.lvl : null, sent:null }); });
       S.ver++; break; }
     case 'injq_del': { if (!S.injq) break; const ix = S.injq.findIndex(q => q.qid === p.qid && q.sent == null); if (ix >= 0){ S.injq.splice(ix, 1); S.ver++; } break; }
     case 'injq_send': {
       const q = (S.injq || []).find(x => x.qid === p.qid); if (!q || q.sent != null) break;
       const text = fillT(p.text ? String(p.text).slice(0, 700) : q.text);
       q.sent = S.g; q.sentText = text; S.ver++;
-      pushFeed(S, q.to, text, q.to === 'public' ? 'public' : 'hq', { label:q.from });
-      pushLog(S, 'Inject sent (' + q.label + ') to ' + ({ B:'BLUFOR', R:'REDFOR', both:'both wings', public:'the public screen' })[q.to] + ': ' + text, null, e);
+      pushFeed(S, q.to, text, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from) });
+      pushLog(S, 'Inject sent (' + q.label + ') to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[q.to] + ': ' + text, null, e);
       break; }
     case 'guess_ack': { const a = (S.guessAlerts || []).find(x => x.id === p.id); if (a){ a.ack = true; S.ver++; } break; }
     case 'oob_ack': { const o = (S.oobs || []).find(x => x.id === p.id); if (o){ o.ack = true; S.ver++; } break; }
@@ -1760,7 +1764,7 @@ function apply(S, e, cfg){
       if (!ctr){ pushLog(S, nm + ' show of force refused: no valid location', side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: the location could not be read. Choose a site, tap the map, or enter MGRS or lat/long. No show of force was used.', 'alert'); break; }
       const shT = p.site ? SITES[p.site].name : String(p.label || '').trim().slice(0, 40) || (engSquare(M, ctr) ? 'a point in ' + engSquare(M, ctr) : 'the named point');
       if (boundOut(S, ctr) > 0){ pushLog(S, nm + ' show of force refused: outside the play area', side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: that location is outside the play area. No show of force was used.', 'alert'); break; }
-      const hit = [['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ']].find(([k]) => pts[k] && distM(ctr, pts[k]) <= rad);
+      const hit = [['town', 'Marala Town'], ['lzB', 'Blue Force HQ'], ['lzR', 'Red Force HQ']].find(([k]) => pts[k] && distM(ctr, pts[k]) <= rad);
       if (hit){ pushLog(S, nm + ' show of force refused: the ' + rad + ' m area around ' + shT + ' includes ' + hit[1], side, e, 'rejected'); pushFeed(S, side, 'Show of force refused: the ' + rad + ' m area around ' + shT + ' includes ' + hit[1] + ' (' + distM(ctr, pts[hit[0]]) + ' m away). A show of force cannot cover Marala Town or either HQ. No show of force was used.', 'alert'); break; }
       if (!useUp(S, side, 'show', e, 'Show of force')) break; raise(S, side, ESC.show);
       const r = { id:e.id, ts:e.ts, side, kind:'show', text:shT, site:p.site || null, center:ctr, radius:rad, square:engSquare(M, ctr), status:'open', g:S.g, until:Math.min(END_G, S.g + SHOW_LEAVE), closed:Math.min(END_G, S.g + SHOW_CLOSED), teams:{} };
@@ -1933,7 +1937,7 @@ function apply(S, e, cfg){
       S.edits[P.id] = { title:String(k.title).slice(0, 80), q:String(k.q).slice(0, 200), opts:k.opts.map(o => String(o).slice(0, 100)), items:k.items, note:String(k.note || '').slice(0, 300), a:k.a, f:k.f, v:(prev ? prev.v : 0) + 1 };
       S.intelVer++;
       const to = ['B', 'R'].filter(sd => intelOpen(S, P.id, sd));
-      to.forEach(sd => pushFeed(S, sd, 'Intel package ' + (i + 1) + ' was updated by higher headquarters.', 'hq', { label:'Intel' }));
+      to.forEach(sd => pushFeed(S, sd, 'Intel package ' + (i + 1) + ' was updated by the AOC.', 'hq', { label:'Intel' }));
       pushLog(S, 'Intel package ' + (i + 1) + ' (' + k.title + ') edited' + (to.length ? ' after it was sent' : ''), null, e);
       break; }
     case 'intel_custom_del': {
@@ -2020,7 +2024,7 @@ function apply(S, e, cfg){
       const t = p.tpl || {}, id = String(t.id || '').slice(0, 40), text = String(t.text || '').trim().slice(0, 700), label = String(t.label || '').trim().slice(0, 60);
       if (!/^t[\w-]{3,40}$/.test(id) || !text || !label){ pushLog(S, 'Inject template refused: incomplete', null, e, 'rejected'); break; }
       if (!S.tpls) S.tpls = [];
-      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:String(t.from || 'Higher headquarters').trim().slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 500) };
+      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 500) };
       const ix = S.tpls.findIndex(x => x.id === id), ph = String(t.phase || (ix >= 0 && S.tpls[ix].phase) || '').trim().slice(0, 20); if (ph) tp.phase = ph; if (ix >= 0) S.tpls[ix] = tp; else S.tpls.push(tp); S.ver++;
       pushLog(S, 'Inject template ' + (ix >= 0 ? 'updated' : 'saved') + ': ' + label, null, e);
       break; }
@@ -2125,7 +2129,7 @@ function apply(S, e, cfg){
       else { pushFeed(S, 'both', 'The white cell is back at its planned spot' + (where ? ', ' + where : '') + '.', 'hq', { label:'White cell' }); pushLog(S, 'White cell back at its planned spot', null, e); }
       break; }
     case 'map_config': S.map = p && p.sw && p.ne ? Object.assign({}, p, { outline:Array.isArray(p.outline) ? p.outline.map(q => Array.isArray(q) ? q : q && Number.isFinite(q.lat) && Number.isFinite(q.lng) ? [q.lat, q.lng] : null).filter(Boolean) : null }) : null; S.wps = S.wps.filter(w => !(w.poi && !w.touched && w.to === 'none' && !w.del)); seedPois(S, S.map ? S.map.pois : DEFAULT_POIS, e.id); S.ver++; pushLog(S, 'Map updated', null, e); break;
-    case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:p.label || 'Higher headquarters' }); pushLog(S, 'Message to ' + ({ B:'BLUFOR', R:'REDFOR', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
+    case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:hqFrom(p.label) }); pushLog(S, 'Message to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
     case 'adjust': {
       const d = Number(p.delta) || 0;
       if (p.field === 'esc'){ if (d > 0) raise(S, side || null, d); else lower(S, -d); }
@@ -2471,7 +2475,7 @@ function toast(msg, bad){
 
 /* ---------- routing ---------- */
 function show(id){ ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite') closeFullMap(); }
-function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'W' ? 'White cell' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
+function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'W' ? 'White cell' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
   if (!app.role && saved && app.cfg) app.role = saved;
@@ -2485,7 +2489,7 @@ function route(){
   $('#roleBadge').innerHTML = '<span class="badge side-' + (app.role === 'P' || app.role === 'OC' ? 'W' : app.role[0] === 'T' ? app.role[1] : app.role) + '">' + esc(roleLabel(app.role)) + '</span>';
   if (app.role !== 'W'){ document.title = BASE_TITLE; chimeN = null; }
   setTimeout(wakeSync, 0);
-  if (app.role === 'W'){ show('#vWhite'); buildWhite(); }
+  if (app.role === 'W' || app.role === 'A'){ show('#vWhite'); buildWhite(); aocMode(app.role === 'A'); }
   else if (app.role === 'P'){ show('#vPublic'); buildPublic(); }
   else if (app.role === 'OC'){ show('#vOC'); buildOC(); }
   else if (app.role[0] === 'T'){ show('#vTeam'); buildTeam(app.role[1]); }
@@ -2519,18 +2523,19 @@ function renderGate(){
   $('#gateAdmin').hidden = !app.cfg || !!app.multi; $('#adminErr').hidden = true; $('#adminInput').value = '';
   const roles = $('#gateRoles');
   if (!app.cfg){
-    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Sample game with recorded moves. PINs: white cell 0000, BLUFOR 1111, REDFOR 2222. A new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
+    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Sample game with recorded moves. PINs: white cell 0000, AOC 9999, Blue Force 1111, Red Force 2222. A new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
     const gi = $('#gateImport'); if (gi) gi.onchange = () => importBackup(gi.files[0]);
     const ls = $('#loadSample'); if (ls) ls.onclick = loadSample;
     return;
   }
   const cards = [
+    ['A', 'AOC', 'Air Operations Center: the full picture of both forces, the score and the log. Sends messages, injects and intel packages.'],
     ['W', 'White cell', 'Runs the clock, checks reports, sends injects and sees through the fog of war.'],
-    ['B', 'BLUFOR · Coalition', 'The US-led Coalition Wing Commander’s board: sites, reports, actions and points.'],
-    ['R', 'REDFOR · North Korea', 'The North Korean Wing Commander’s board: sites, reports, actions and points.'],
+    ['B', 'Blue Force · Coalition', 'The US-led Coalition Wing Commander’s board: sites, reports, actions and points.'],
+    ['R', 'Red Force · North Korea', 'The North Korean Wing Commander’s board: sites, reports, actions and points.'],
     ['P', 'Public screen', 'Clock, escalation meter and public news. No PIN needed.'],
-    ['TB', 'BLUFOR fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
-    ['TR', 'REDFOR fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
+    ['TB', 'Blue Force fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
+    ['TR', 'Red Force fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
     ['OC', 'POC', 'Phone screen for POCs and the mayor: check 9-lines, send calls, site arrivals and messages to the white cell.']
   ];
   roles.innerHTML = cards.map(([k, t, d]) => '<button type="button" class="role side-' + (k === 'P' || k === 'OC' ? 'W' : k[0] === 'T' ? k[1] : k) + '" data-role="' + k + '"><b>' + esc(t) + '</b><p>' + esc(d) + '</p></button>').join('');
@@ -2547,7 +2552,7 @@ $('#pinForm').addEventListener('submit', ev => {
   const r = pendingRole; if (!r || !app.cfg) return;
   const want = app.cfg.pins[r] || (r[0] === 'T' ? app.cfg.pins[r[1]] : null);
   const ok = !!want && secret(app.cfg.salt, $('#pinInput').value) === want;
-  if (!ok){ $('#pinErr').hidden = false; $('#pinErr').textContent = r === 'OC' && !want ? 'This game was set up before the POC screen existed. Set up a new game to use it.' : 'That PIN is not right.'; return; }
+  if (!ok){ $('#pinErr').hidden = false; $('#pinErr').textContent = r === 'OC' && !want ? 'This game was set up before the POC screen existed. Set up a new game to use it.' : r === 'A' && !want ? 'This game has no AOC PIN yet. The exercises officers add one on the admin page under Edit game.' : 'That PIN is not right.'; return; }
   setRole(r);
 });
 $('#pinCancel').onclick = () => { $('#pinForm').hidden = true; pendingRole = null; };
@@ -2581,12 +2586,12 @@ $('#setupForm').addEventListener('submit', async ev => {
   { const fl = $('#sMapFile').files[0]; if (fl){ try { const mf = await readMapFile(fl); mapEv = { id:'map' + uid(), ts:Date.now(), type:'map_config', side:null, by:'W', p:mf.p }; } catch(e){ $('#setupErr').hidden = false; $('#setupErr').textContent = e.message; return; } } }
   const salt = Math.random().toString(36).slice(2, 10);
   const val = id => $(id).value.trim();
-  const pins = { W:val('#sPinW'), B:val('#sPinB'), R:val('#sPinR'), TB:val('#sPinTB'), TR:val('#sPinTR'), OC:val('#sPinOC') };
-  if (new Set(Object.values(pins)).size < 6){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use six different PINs so each view stays separate.'; return; }
+  const pins = { W:val('#sPinW'), A:val('#sPinA'), B:val('#sPinB'), R:val('#sPinR'), TB:val('#sPinTB'), TR:val('#sPinTR'), OC:val('#sPinOC') };
+  if (new Set(Object.values(pins)).size < 7){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use seven different PINs so each view stays separate.'; return; }
   const startG = parseHHMM(val('#sStart')), lengthMin = Math.round(+val('#sLen'));
   if (startG == null || !(lengthMin >= 30 && lengthMin <= 300)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter the start as 24-hour time like 0830, and a length from 30 to 300 minutes.'; return; }
   const cfg = { name:val('#sName') || 'Game', salt, createdAt:Date.now(), startG, lengthMin,
-    pins:{ W:secret(salt, pins.W), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR), OC:secret(salt, pins.OC) },
+    pins:{ W:secret(salt, pins.W), A:secret(salt, pins.A), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR), OC:secret(salt, pins.OC) },
     codes:{ harbor:codeList(salt, 'Harbor'), fuel:codeList(salt, 'Fuel'), radar:codeList(salt, 'Radar'), airstrip:codeList(salt, 'Airstrip'), town:{ cap:words(val('#cTown')).map(w => secret(salt, w)) } } };
   if (app.multi){
     const gpin = $('#sGamePin').value;
@@ -2691,7 +2696,7 @@ $('#adEdit').addEventListener('submit', async ev => {
   const name = $('#adEName').value.trim() || 'Game', pin = normPin($('#adEPin').value), listed = $('#adEListed').checked, blank = !$('#adEStarter').checked;
   if (!pin){ msg('Enter a game PIN.'); return; }
   const cfg = JSON.parse(JSON.stringify(g.cfg)); cfg.name = name; cfg.blank = blank;
-  const np = { W:'#adPW', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC' };
+  const np = { W:'#adPW', A:'#adPA', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC' };
   const given = Object.entries(np).map(([k, s]) => [k, $(s).value.trim()]).filter(([, v]) => v);
   if (new Set(given.map(([, v]) => v)).size < given.length){ msg('Each new role PIN must be different.'); return; }
   given.forEach(([k, v]) => cfg.pins[k] = secret(cfg.salt, v));
@@ -2742,7 +2747,7 @@ $('#adLGo').onclick = async () => {
 /* ---------- sample (local only) ---------- */
 function loadSample(){
   const salt = 'sample01';
-  app.cfg = { name:'Sample game', salt, sample:true, pins:{ W:secret(salt, '0000'), B:secret(salt, '1111'), R:secret(salt, '2222') },
+  app.cfg = { name:'Sample game', salt, sample:true, pins:{ W:secret(salt, '0000'), A:secret(salt, '9999'), B:secret(salt, '1111'), R:secret(salt, '2222') },
     codes:{ harbor:secret(salt, 'ANCHOR'), fuel:secret(salt, 'BARREL'), radar:secret(salt, 'ECHO'), airstrip:secret(salt, 'RUNWAY'), town:secret(salt, 'MAYOR') } };
   app.gid = 'sample';
   const t0 = Date.now() - 46 * 60000; let n = 0;
@@ -2759,7 +2764,7 @@ function loadSample(){
     ev(25, 'detonation', null, { grid:'C2', truth:'militia' }),
     ev(27, 'act_drone', 'B', { text:'Who holds the Airstrip at B5?' }, 'B'),
     ev(28, 'claim', 'B', { site:'radar', code:secret(salt, 'ECHO') }, 'B'),
-    ev(30, 'resolve', null, { req:'s009', text:'REDFOR flag at the Airstrip, 3 personnel on site.' }),
+    ev(30, 'resolve', null, { req:'s009', text:'Red Force flag at the Airstrip, 3 personnel on site.' }),
     ev(31, 'act_statement', 'R', { incident:'s008', blame:'other' }, 'R'),
     ev(33, 'provocation', 'R', {}),
     ev(35, 'claim', 'B', { site:'town', code:secret(salt, 'MAYOR') }, 'B'),
@@ -2875,8 +2880,8 @@ function mapSVG(S, side){
   for (let r = 0; r <= 5; r++) o += '<line x1="30" y1="' + (30 + r * 80) + '" x2="630" y2="' + (30 + r * 80) + '" stroke="var(--grid)" stroke-width="1"/>';
   'ABCDEF'.split('').forEach((L, c) => o += '<text class="axis" x="' + CX(c) + '" y="20" text-anchor="middle">' + L + '</text>');
   for (let r = 0; r < 5; r++) o += '<text class="axis" x="14" y="' + (CY(r) + 4) + '" text-anchor="middle">' + (r + 1) + '</text>';
-  if (!side || side === 'B' || S.reveal) o += '<rect x="' + (CX(0) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--blu-soft)" stroke="var(--blu)" stroke-width="2"/><text class="lbl" x="' + CX(0) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">BLUFOR HQ</text><text class="sub" x="' + CX(0) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">A3</text>';
-  if (!side || side === 'R' || S.reveal) o += '<rect x="' + (CX(5) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2"/><text class="lbl" x="' + CX(5) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">REDFOR HQ</text><text class="sub" x="' + CX(5) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">F3</text>';
+  if (!side || side === 'B' || S.reveal) o += '<rect x="' + (CX(0) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--blu-soft)" stroke="var(--blu)" stroke-width="2"/><text class="lbl" x="' + CX(0) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">Blue Force HQ</text><text class="sub" x="' + CX(0) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">A3</text>';
+  if (!side || side === 'R' || S.reveal) o += '<rect x="' + (CX(5) - 34) + '" y="' + (CY(2) - 22) + '" width="68" height="44" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2"/><text class="lbl" x="' + CX(5) + '" y="' + (CY(2) - 2) + '" text-anchor="middle">Red Force HQ</text><text class="sub" x="' + CX(5) + '" y="' + (CY(2) + 13) + '" text-anchor="middle">F3</text>';
   const tB = S.office.B && S.access.B, tR = S.office.R && S.access.R;
   const showB = !side || S.reveal || side === 'B' ? tB : false, showR = !side || S.reveal || side === 'R' ? tR : false;
   o += '<rect x="' + (CX(2) - 36) + '" y="' + (CY(2) - 26) + '" width="' + (CX(3) - CX(2) + 72) + '" height="52" rx="8" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>';
@@ -2911,8 +2916,8 @@ function mapSVG(S, side){
 }
 function legendHTML(side){
   return '<div class="legend">' +
-    '<span><i class="sw" style="background:var(--blu);border-color:var(--blu)"></i>BLUFOR held</span>' +
-    '<span><i class="sw" style="background:var(--red);border-color:var(--red)"></i>REDFOR held</span>' +
+    '<span><i class="sw" style="background:var(--blu);border-color:var(--blu)"></i>Blue Force held</span>' +
+    '<span><i class="sw" style="background:var(--red);border-color:var(--red)"></i>Red Force held</span>' +
     (side ? '<span><i class="sw" style="border-style:dashed;border-color:var(--muted)"></i>Reported or last seen</span><span><i class="sw"></i>Unknown</span>' : '<span><i class="sw"></i>Neutral</span>') +
     '<span><i class="sw" style="border-color:var(--e2);border-style:dashed"></i>Contention or stalemate</span>' +
     '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
@@ -2927,7 +2932,7 @@ function scoreTable(S, sides){
 }
 function feedHTML(items, empty){
   if (!items.length) return '<div class="empty">' + esc(empty) + '</div>';
-  return items.slice().reverse().map(f => '<div class="item ' + (f.kind === 'alert' ? 'alert' : f.kind === 'good' ? 'good' : f.kind === 'public' ? 'public' : f.kind === 'tick' ? '' : 'hq') + '"><span class="t">' + hhmm(f.g) + ' · ' + esc(f.label || (f.kind === 'tick' ? 'Board' : f.to === 'public' ? 'Public' : f.kind === 'good' || f.kind === 'alert' ? 'Board' : 'Higher headquarters')) + '</span><span>' + esc(f.text) + '</span></div>').join('');
+  return items.slice().reverse().map(f => '<div class="item ' + (f.kind === 'alert' ? 'alert' : f.kind === 'good' ? 'good' : f.kind === 'public' ? 'public' : f.kind === 'tick' ? '' : 'hq') + '"><span class="t">' + hhmm(f.g) + ' · ' + esc(f.label ? hqFrom(f.label) : f.kind === 'tick' ? 'Board' : f.to === 'public' ? 'Public' : f.kind === 'good' || f.kind === 'alert' ? 'Board' : 'AOC') + '</span><span>' + esc(f.text) + '</span></div>').join('');
 }
 function keepSelect(sel, html){ const v = sel.value; sel.innerHTML = html; if ([...sel.options].some(o => o.value === v)) sel.value = v; }
 
@@ -2947,7 +2952,7 @@ const ContourLayer = L.TileLayer.extend({
     return CONTOUR_URL + '?bbox=' + [x0, y1 - t, x0 + t, y1].map(v => v.toFixed(2)).join(',') + '&bboxSR=3857&imageSR=3857&size=' + this.getTileSize().x + ',' + this.getTileSize().y + '&dpi=96&format=png32&transparent=true&f=image';
   }
 });
-const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'BLUFOR HQ'], ['lzR', 'REDFOR HQ'], ['wc', 'White cell (planned spot)']];
+const MAP_POINTS = [['harbor', 'Harbor'], ['fuel', 'Fuel Depot'], ['radar', 'Radar Ridge'], ['airstrip', 'Airstrip'], ['town', 'Marala Town'], ['lzB', 'Blue Force HQ'], ['lzR', 'Red Force HQ'], ['wc', 'White cell (planned spot)']];
 const WP_DEF = { pin:'#ffcf5a', obj:'#ffcf5a', rally:'#2e7d32', cp:'#1565c0', lz:'#6a1b9a', hazard:'#ffb300', aid:'#c62828', supply:'#8d6e63', fuel:'#ef6c00', water:'#0288d1', danger:'#b71c1c', star:'#ffd54f', target:'#d32f2f', eye:'#00897b', camp:'#558b2f', building:'#607d8b', vehicle:'#455a64', radio:'#5e35b1', circle:'#ffcf5a', square:'#29b6f6', triangle:'#ff7043', diamond:'#ab47bc', plus:'#43a047', xmark:'#e53935', question:'#9e9e9e', info:'#1976d2', arrow:'#ffcf5a', home:'#3949ab' };
 const WP_COLORS = ['#ffcf5a', '#ff7043', '#e53935', '#ab47bc', '#3949ab', '#1976d2', '#29b6f6', '#00897b', '#43a047', '#8d6e63', '#9e9e9e', '#ffffff', '#212121'];
 function wpInk(c){ const n = parseInt(c.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#1b1b1b' : '#ffffff'; }
@@ -3081,7 +3086,7 @@ function lmapEnsure(el, M){
   drawFine(st);
   return st;
 }
-const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['bounds', 'Play area boundary', '#ffffff'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White cell location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'BLUFOR waypoints', '#5b8cff'], ['wpR', 'REDFOR waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8']];
+const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['bounds', 'Play area boundary', '#ffffff'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White cell location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'Blue Force waypoints', '#5b8cff'], ['wpR', 'Red Force waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8']];
 const LAYER_DEFAULTS = { base:'sat', play:true, bounds:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true, wpB:true, wpR:true, wpq:true };
 function gridPref(){ try { return Object.assign({}, LAYER_DEFAULTS, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return Object.assign({}, LAYER_DEFAULTS); } }
 function applyGridPref(st){
@@ -3154,7 +3159,7 @@ const PIN_LIFE = 5 * 60000;
 function mapPins(S){
   const now = Date.now(), out = [];
   if (app.role === 'OC' && app.ocSelf && now - app.ocSelf.t < PIN_LIFE) out.push({ pt:app.ocSelf.pt, acc:app.ocSelf.acc, t:app.ocSelf.t, label:'You · ' + new Date(app.ocSelf.t).toTimeString().slice(0, 5) });
-  if (app.role === 'W' && S.ocPos) Object.entries(S.ocPos).forEach(([id, x]) => { const o = S.ocs[id]; if (!o || o.removed || now - x.ts >= PIN_LIFE || (app.ocPinHide && app.ocPinHide.has(id + ':' + x.ts))) return; out.push({ pt:x.pt, acc:x.acc, t:x.ts, label:'POC ' + o.name + ' · ' + ocWhere(S, o) + ' · ' + new Date(x.ts).toTimeString().slice(0, 5) }); });
+  if ((app.role === 'W' || app.role === 'A') && S.ocPos) Object.entries(S.ocPos).forEach(([id, x]) => { const o = S.ocs[id]; if (!o || o.removed || now - x.ts >= PIN_LIFE || (app.ocPinHide && app.ocPinHide.has(id + ':' + x.ts))) return; out.push({ pt:x.pt, acc:x.acc, t:x.ts, label:'POC ' + o.name + ' · ' + ocWhere(S, o) + ' · ' + new Date(x.ts).toTimeString().slice(0, 5) }); });
   return out;
 }
 function drawPins(st, S){
@@ -3175,7 +3180,7 @@ function drawDyn(st, S, side, opts){
   if (!M) return;
   const pr = gridPref(), LS = st.lay, pts = Object.assign({}, M.sites || {}, S.sitePts || {});
   const tip = (m, text, dir, off) => m.bindTooltip(esc(text), { permanent:!!pr.sitenames, direction:dir || 'top', className:'sitelbl', offset:off || [0, -10] });
-  [['lzB', 'BLUFOR HQ', 'B'], ['lzR', 'REDFOR HQ', 'R']].forEach(([k, name, sd]) => { if (side && sd !== side && !S.reveal) return; if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name).addTo(LS.sites); });
+  [['lzB', 'Blue Force HQ', 'B'], ['lzR', 'Red Force HQ', 'R']].forEach(([k, name, sd]) => { if (side && sd !== side && !S.reveal) return; if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name).addTo(LS.sites); });
   SITE_KEYS.forEach(k => {
     const pt = pts[k]; if (!pt) return;
     const v = siteView(S, side, k), raw = S.sites[k];
@@ -3191,7 +3196,7 @@ function drawDyn(st, S, side, opts){
   (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side))).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + (w.desc ? esc(w.desc) + '<br>' : '') + '<span class="small">' + esc(WP_SYMS[w.sym]) + '</span><br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(side ? LS.wp : w.to === 'none' ? LS.wpq : w.to === 'B' ? LS.wpB : w.to === 'R' ? LS.wpR : (pr.wpB ? LS.wpB : LS.wpR)));
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
-    const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' · BLUFOR office' : '') + (open('R') ? ' · REDFOR office' : '') : (open(side) ? ' · Your office is open' : ''));
+    const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' · Blue Force office' : '') + (open('R') ? ' · Red Force office' : '') : (open(side) ? ' · Your office is open' : ''));
     const dec = S.declared.town;
     if (dec && dec.until > S.g) L.circle(pts.town, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(LS.sites);
     tip(L.circleMarker(pts.town, { radius:11, color:'#ffffff', weight:2, fillColor:'#888', fillOpacity:.75 }), txt).addTo(LS.sites);
@@ -3235,7 +3240,7 @@ function renderMapInto(el, S, side, opts){
   return false;
 }
 function realLegend(){
-  return '<div class="legend"><span><i class="sw" style="background:#3d7dff;border-color:#3d7dff"></i>BLUFOR</span><span><i class="sw" style="background:#ff4d42;border-color:#ff4d42"></i>REDFOR</span><span><i class="sw" style="border-style:dashed;border-color:var(--muted)"></i>Reported or last seen</span><span style="color:#b38f00">▬ Play grid</span><span style="color:#1f9cc4">▬ MGRS grid</span><span><svg width="18" height="13" viewBox="2 4 28 19" style="vertical-align:-2px"><rect x="2" y="4" width="28" height="19" fill="#3d7dff" fill-opacity=".55" stroke="#3d7dff" stroke-width="2"/><path d="M2 4L30 23M30 4L2 23" stroke="#fff" stroke-width="1.5"/></svg> BLUFOR fireteam</span><span><svg width="18" height="13" viewBox="2 4 28 19" style="vertical-align:-2px"><rect x="2" y="4" width="28" height="19" fill="#ff4d42" fill-opacity=".55" stroke="#ff4d42" stroke-width="2"/><path d="M2 4L30 23M30 4L2 23" stroke="#fff" stroke-width="1.5"/></svg> REDFOR fireteam</span><span>▲ Reported sighting</span><span>Dashed symbol: UAV last seen</span><span>Layers ▾ on the map hides any of these</span><span style="color:var(--e2)">✸ Explosion</span><span>Tap the map for a grid</span></div>';
+  return '<div class="legend"><span><i class="sw" style="background:#3d7dff;border-color:#3d7dff"></i>Blue Force</span><span><i class="sw" style="background:#ff4d42;border-color:#ff4d42"></i>Red Force</span><span><i class="sw" style="border-style:dashed;border-color:var(--muted)"></i>Reported or last seen</span><span style="color:#b38f00">▬ Play grid</span><span style="color:#1f9cc4">▬ MGRS grid</span><span><svg width="18" height="13" viewBox="2 4 28 19" style="vertical-align:-2px"><rect x="2" y="4" width="28" height="19" fill="#3d7dff" fill-opacity=".55" stroke="#3d7dff" stroke-width="2"/><path d="M2 4L30 23M30 4L2 23" stroke="#fff" stroke-width="1.5"/></svg> Blue Force fireteam</span><span><svg width="18" height="13" viewBox="2 4 28 19" style="vertical-align:-2px"><rect x="2" y="4" width="28" height="19" fill="#ff4d42" fill-opacity=".55" stroke="#ff4d42" stroke-width="2"/><path d="M2 4L30 23M30 4L2 23" stroke="#fff" stroke-width="1.5"/></svg> Red Force fireteam</span><span>▲ Reported sighting</span><span>Dashed symbol: UAV last seen</span><span>Layers ▾ on the map hides any of these</span><span style="color:var(--e2)">✸ Explosion</span><span>Tap the map for a grid</span></div>';
 }
 function jamMapInto(el, S, side){
   if (el._lm){ el._lm.map.remove(); el._lm = null; el.classList.remove('lmap'); }
@@ -3350,14 +3355,14 @@ function buildOC(){
     <div class="panel stack" data-ocannbox hidden><h2>Announcements</h2><div class="list" data-ocanns></div></div>
     <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
     <div class="panel stack"><h2>Calls for the white cell</h2><p class="small muted" style="margin:0">Calls take effect only after white cell approval.</p>
-      <div class="row"><label>Wing<select data-ocside><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
+      <div class="row"><label>Wing<select data-ocside><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
       <div class="evgrid">${Object.entries(OC_CALLS).map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div></div>
     <div class="panel stack"><h2>Stalemate</h2>
       <p class="small muted" style="margin:0">Both wings at the same neutral site before either team has started the activity. Not used during contention.</p>
       <div class="row"><label>Site<select data-ocstalesite data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
       <button type="button" class="btn-side" data-ocstalesend>Report stalemate</button></div>
     <div class="panel stack"><h2>At a site</h2>
-      <div class="row"><label>Site<select data-ocsite data-siteopts data-town="Marala Town">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select></label></div>
+      <div class="row"><label>Site<select data-ocsite data-siteopts data-town="Marala Town">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">Blue Force</option><option value="R">Red Force</option><option value="both">Both wings</option></select></label></div>
       <label>Note (optional)<input data-ocsitenote maxlength="120" placeholder="Example: Starting the cipher now"></label>
       <button type="button" class="btn-side" data-ocsitesend>Tell the white cell</button></div>
     <div class="panel stack"><h2>Messages with the white cell</h2><div class="chatlog" data-occlog></div><form class="row" data-occf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
@@ -3660,7 +3665,7 @@ function teamTick(S, side, now){
   }
 }
 function uavNotify(S){
-  const r = app.role; if (!r || r === 'W' || r === 'P' || r === 'OC') return;
+  const r = app.role; if (!r || r === 'W' || r === 'A' || r === 'P' || r === 'OC') return;
   const sd = r[0] === 'T' ? r[1] : r, u = S.uav[sd], sp = S.spotted[sd];
   if (app.uavRole !== r){ app.uavRole = r; app.uavSeen = u ? u.id : null; app.spotSeen = sp ? sp.id : null; return; }
   const buzz = () => { try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} };
@@ -3691,7 +3696,7 @@ function buildWing(side){
         <h2>Your reports of ${esc(other)}</h2>
         <div class="list" data-contacts></div>
       </div>
-      <div class="panel stack ip-panel" data-sec="intel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">For the Intel cell</span></div><p class="small muted" style="margin:0">Each package contains several pieces of intel; at least one is false or misleading. +2 for the correct answer. +2 for selecting every false piece and no true pieces. One submission per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>OSINT</dt><dd>Open-source intelligence: news, social media posts and other public information.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 050915R DEC 26 is 5 December, 0915 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from higher headquarters arrive here during the game.</div></div></div></div>
+      <div class="panel stack ip-panel" data-sec="intel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">For the Intel cell</span></div><p class="small muted" style="margin:0">Each package contains several pieces of intel; at least one is false or misleading. +2 for the correct answer. +2 for selecting every false piece and no true pieces. One submission per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted radio and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>OSINT</dt><dd>Open-source intelligence: news, social media posts and other public information.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 050915R DEC 26 is 5 December, 0915 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="stack" data-intel><div class="empty">Intel packages from the AOC arrive here during the game.</div></div></div></div>
       <div class="panel" data-sec="act rep teams liaison req">
         <div class="tabs" role="tablist" data-ctabs>
           <button type="button" role="tab" aria-selected="true" data-tab="act">Commander's actions</button>
@@ -3868,7 +3873,7 @@ function renderIntel(S, side, v){
   let open = 0;
   $$('[id^="ip-' + side + '-"]', box).forEach(c => { if (!intelOpen(S, c.id.slice(4 + side.length), side)) c.remove(); });
   if (out.length && box.querySelector('.empty')) box.innerHTML = '';
-  if (!out.length && !box.children.length) box.innerHTML = '<div class="empty">Intel packages from higher headquarters arrive here during the game.</div>';
+  if (!out.length && !box.children.length) box.innerHTML = '<div class="empty">Intel packages from the AOC arrive here during the game.</div>';
   out.forEach(({ P, i }) => {
     const id = 'ip-' + side + '-' + P.id, ver = String((S.edits[P.id] && S.edits[P.id].v) || 0);
     let card = document.getElementById(id);
@@ -4002,7 +4007,7 @@ function renderWing(S, side, now){
     if (f === 'drone') off = off || jammed(S, side);
     b.disabled = off;
   });
-  $('[data-feed]', v).innerHTML = feedHTML(S.feed.filter(f => !f.only && (f.to === side || f.to === 'both' || f.to === 'public')), 'Messages from higher headquarters, board updates and public news appear here.');
+  $('[data-feed]', v).innerHTML = feedHTML(S.feed.filter(f => !f.only && (f.to === side || f.to === 'both' || f.to === 'public')), 'Messages from the AOC, board updates and public news appear here.');
 }
 
 /* ---------- public view ---------- */
@@ -4023,29 +4028,37 @@ function renderPublic(S){
 /* ---------- white cell ---------- */
 function allTemplates(S){ return S && S.tpls ? S.tpls : []; }
 const TEMPLATES = [
-  { at:0, phase:'Phase 1', label:'STARTEX orders', to:'both', text:'Higher headquarters: secure the sites on your side of the island first and stay clear of the other force. The mayor will meet each force separately later this morning. The militia is active on island roads: report every suspected device with a 9-line.' },
-  { at:10, phase:'Phase 1', label:'IED tip (BLUFOR)', to:'B', text:'Locals saw men burying something on your supply road. Check it before your next move.' },
-  { at:15, phase:'Phase 1', label:'IED tip (REDFOR)', to:'R', text:'Locals saw men burying something on your supply road. Check it before your next move.' },
-  { at:35, phase:'Phase 1', label:'Injured farmer (BLUFOR)', to:'B', text:'A farmer is hurt near your sector. Send a team to treat him (TCCC) and call in a MEDEVAC 9-line.' },
-  { at:45, phase:'Phase 1', label:'Injured farmer (REDFOR)', to:'R', text:'A farmer is hurt near your sector. Send a team to treat him (TCCC) and call in a MEDEVAC 9-line.' },
+  { at:0, phase:'Phase 1', label:'STARTEX orders', to:'both', text:'AOC: secure the sites on your side of the island first and stay clear of the other force. The mayor will meet each force separately later this morning. The militia is active on island roads: report every suspected device with a 9-line.' },
+  { at:10, phase:'Phase 1', label:'IED tip (Blue Force)', to:'B', text:'Locals saw men burying something on your supply road. Check it before your next move.' },
+  { at:15, phase:'Phase 1', label:'IED tip (Red Force)', to:'R', text:'Locals saw men burying something on your supply road. Check it before your next move.' },
+  { at:35, phase:'Phase 1', label:'Injured farmer (Blue Force)', to:'B', text:'A farmer is hurt near your sector. Send a team to treat him (TCCC) and call in a MEDEVAC 9-line.' },
+  { at:45, phase:'Phase 1', label:'Injured farmer (Red Force)', to:'R', text:'A farmer is hurt near your sector. Send a team to treat him (TCCC) and call in a MEDEVAC 9-line.' },
   { at:50, phase:'Phase 2', label:'Mayor invitations', to:'both', text:'The mayor will meet the Coalition at Town Hall at {+60} and North Korea at {+75}. Send one team with your Wing Commander’s message. Weapons slung in town.' },
-  { at:60, phase:'Phase 2', label:'Mayor meets BLUFOR', to:'B', text:'The mayor is ready for you at Town Hall now.' },
+  { at:60, phase:'Phase 2', label:'Mayor meets Blue Force', to:'B', text:'The mayor is ready for you at Town Hall now.' },
   { at:70, phase:'Phase 2', label:'Cache revealed', to:'both', text:'Police confirm a militia weapons cache at the old quarry shed. Clear it or strike it. Work it out with the other force; the mayor is watching.' },
-  { at:75, phase:'Phase 2', label:'Mayor meets REDFOR', to:'R', text:'The mayor is ready for you at Town Hall now.' },
-  { at:90, phase:'Phase 2', label:'Commander’s assessment', to:'both', text:'Higher headquarters wants your Wing Commander’s assessment by {+100}: what you hold, where the other force is, and your plan for the next hour.' },
+  { at:75, phase:'Phase 2', label:'Mayor meets Red Force', to:'R', text:'The mayor is ready for you at Town Hall now.' },
+  { at:90, phase:'Phase 2', label:'Commander’s assessment', to:'both', text:'The AOC wants your Wing Commander’s assessment by {+100}: what you hold, where the other force is, and your plan for the next hour.' },
   { at:110, phase:'Phase 3', label:'Coast road ambush', to:'both', text:'A patrol on the coast road reports militia contact at the bend. Casualties possible.' },
   { at:135, phase:'Phase 3', label:'Election rally', to:'both', text:'The mayor’s election rally starts in the town square at {+145}. Both forces are asked to secure separate sectors. Agree the boundary with the other Wing Commander before you move.' },
   { at:150, phase:'Phase 3', label:'Attack on the stage', to:'both', text:'Explosion and gunfire at the rally stage. Casualties reported. Militia fleeing through the alley behind the stage.' },
   { at:155, phase:'Phase 3', label:'Final report call', to:'both', text:'Report all known enemy positions and your final assessment by {+165}.' },
-  { lvl:1, label:'Shared checkpoint', to:'both', text:'Higher headquarters orders you to inspect the bridge checkpoint within 15 minutes. The other force has the same order. Work out the timing with the other Wing Commander.' },
+  { lvl:1, label:'Shared checkpoint', to:'both', text:'The AOC orders you to inspect the bridge checkpoint within 15 minutes. The other force has the same order. Work out the timing with the other Wing Commander.' },
   { lvl:2, label:'Militia between you', to:'both', text:'Militia gunmen have opened fire near both forces at the center of the island. Do not fire on each other.' },
-  { lvl:3, label:'Off-ramp', to:'both', text:'Higher headquarters: pull back from your nearest site under contention or stalemate within 10 minutes. Coordinate the withdrawal with the other force.' }
+  { lvl:3, label:'Off-ramp', to:'both', text:'AOC: pull back from your nearest site under contention or stalemate within 10 minutes. Coordinate the withdrawal with the other force.' }
 ];
+function aocMode(on){
+  const v = $('#vWhite'); v.classList.toggle('aocv', on);
+  const nm = { queue:on ? 'Points' : 'Queue' };
+  $$('[data-wtab]', v).forEach(b => { const s = $('[data-wtabname]', b); if (s && nm[b.dataset.wtab]) s.textContent = nm[b.dataset.wtab]; });
+  const mt = $('[data-wmaptitle]', v); if (mt) mt.textContent = on ? 'AOC map' : 'White cell map';
+  const nav = $('[data-wnav]', v); if (nav) nav.setAttribute('aria-label', on ? 'AOC sections' : 'White cell sections');
+  const cur = $('[data-wtab][aria-selected="true"]', v); if (on && cur && cur.hasAttribute('data-aoc-off')) $('[data-wtab="all"]', v).click();
+}
 function buildWhite(){
   if (app.built === 'white') return; app.built = 'white';
   const v = $('#vWhite');
   const sideCol = s => `
-    <div class="panel side-${s}" data-sec="calls">
+    <div class="panel side-${s}" data-sec="calls" data-aoc-off>
       <div class="act-head"><span class="badge side-${s}">${SIDES[s].name}</span><span class="small muted" data-wstat="${s}"></span></div>
       <div class="evgrid">
         <button type="button" data-ev="ied" data-side="${s}" data-r="real">Real IED cleared<small>+2 points · Diplomatic points +5</small></button>
@@ -4064,11 +4077,11 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '">' + n + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
-      <div class="panel stat wide" style="min-width:0"><h2>Clock</h2>
+      <div class="panel stat wide" style="min-width:0" data-aoc-off><h2>Clock</h2>
         <div class="row" style="align-items:center">
           <button type="button" class="btn-side" data-clk="start" style="flex:0 0 auto">Start the game</button>
           <button type="button" data-clk="pause" style="flex:0 0 auto">Pause</button>
@@ -4081,15 +4094,15 @@ function buildWhite(){
     <div data-warbar></div>
     <div class="white-grid" data-wgrid>
       <div class="panel" data-sec="map create">
-        <div class="map-head"><h2>White cell map</h2><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
+        <div class="map-head"><h2 data-wmaptitle>White cell map</h2><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
-        <div class="sitectl" data-sitectl></div>
-        <div class="stack wcctl" data-wcctl style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
+        <div class="sitectl" data-sitectl data-aoc-off></div>
+        <div class="stack wcctl" data-wcctl data-aoc-off style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
           <div class="small"><b>White cell location</b> <span class="muted">(shown on all maps)</span>: <span class="mono" data-wcnow>—</span></div>
           <div class="row" style="justify-content:flex-start;align-items:end" data-wcrow><button type="button" data-wcgps style="flex:0 0 auto">Use my GPS</button><button type="button" data-wctap style="flex:0 0 auto">Move to last map tap</button><label style="flex:1 1 180px">Or type a grid<input data-wcgrid placeholder="Example: 5893 2334 or 40.82601, -77.85812"></label><button type="button" data-wcset style="flex:0 0 auto">Move</button><button type="button" data-wcback style="flex:0 0 auto">Back to planned spot</button></div>
         </div>
-        <div class="stack wpctl" style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
+        <div class="stack wpctl" data-aoc-off style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
           <div class="small"><b>Waypoints</b> <span class="muted">New waypoints enter the queue, visible to the white cell only. Deploying one notifies the selected wing's C2 and fireteams.</span></div>
           <div class="row" style="align-items:end"><label>Label<input data-wplabel maxlength="60" placeholder="Example: Casualty collection point"></label><span data-wpprev style="flex:0 0 auto;align-self:center"></span><span class="small muted" data-wpsymname style="flex:0 0 auto;align-self:center"></span></div>
           <label>Description (optional; shown when the waypoint is opened)<input data-wpdesc maxlength="200"></label>
@@ -4111,16 +4124,16 @@ function buildWhite(){
         </div>
       </div>
       <div class="stack" style="gap:14px;min-width:0" data-sec="queue msg">
-        <div class="panel" data-sec="queue"><div class="act-head"><h2>POCs</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
+        <div class="panel" data-sec="queue" data-aoc-off><div class="act-head"><h2>POCs</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
           <details data-ocroster style="margin-top:8px"><summary class="small"><b>Manage POCs</b> <span class="muted" data-ocn></span></summary><div class="list" data-ocrows style="margin-top:6px"></div></details></div>
-        <div class="panel stack" data-sec="queue msg"><div class="act-head"><h2>POC messages</h2><span class="small muted" data-occhatn></span></div><label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
+        <div class="panel stack" data-sec="queue msg" data-aoc-off><div class="act-head"><h2>POC messages</h2><span class="small muted" data-occhatn></span></div><label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
           <div class="list" data-occhatlist></div>
           <div class="act stack" data-occbox hidden><div class="act-head"><b data-occhead>Messages</b><button type="button" data-occclose style="flex:0 0 auto">Close</button></div><div class="chatlog" data-occwlog></div><form class="row" data-occwf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
           <form class="stack" data-ocannf style="border-top:1px dashed var(--line);padding-top:8px"><label>Announcement to all POCs<textarea name="text" rows="2" maxlength="400" required></textarea></label><div><button type="submit" style="flex:0 0 auto">Send announcement</button></div></form>
           <div class="list" data-ocannw></div></div>
-        <div class="panel" data-sec="queue"><div class="act-head"><h2>Waiting on you</h2><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-chime> Sound alert</label></div><div class="list" data-queue></div></div>
+        <div class="panel" data-sec="queue" data-aoc-off><div class="act-head"><h2>Waiting on you</h2><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-chime> Sound alert</label></div><div class="list" data-queue></div></div>
         <div class="panel" data-sec="msg"><h2>Send a message</h2>
-          <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="Higher headquarters" maxlength="30"></label></div>
+          <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">Blue Force only</option><option value="R">Red Force only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="AOC" maxlength="30"></label></div>
             <label>Message<textarea name="text" maxlength="700" required></textarea></label><div><button class="btn-side" type="submit">Send</button></div></form></div>
         <div class="panel" data-sec="msg"><div class="act-head"><h2>Inject queue</h2><span class="small muted" data-injqn></span></div>
           <p class="small muted" style="margin:0">Queued injects wait here until you send them. Tap a row to read the message and the white cell note.</p>
@@ -4131,19 +4144,19 @@ function buildWhite(){
           <div class="list scrolllist" data-templates></div></details></div>
       </div>
       <div class="stack" style="gap:14px;min-width:0" data-sec="queue intel">
-      <div class="panel" data-sec="queue"><div class="act-head"><h2>Waypoint queue</h2><span class="small muted" data-wpqn></span></div><div class="list" data-wpqq></div></div>
+      <div class="panel" data-sec="queue" data-aoc-off><div class="act-head"><h2>Waypoint queue</h2><span class="small muted" data-wpqn></span></div><div class="list" data-wpqq></div></div>
       <div class="panel" data-sec="queue"><h2>Points</h2><div data-score></div></div>
       <div class="panel" data-sec="intel"><h2>Intel packages</h2><p class="small muted" style="margin:0">Packages are sent only when deployed. The answer window starts at deployment.</p><div class="list scrolllist" data-intelw></div>
-        <h2>Explosions</h2>
-        <form class="stack" data-wf="detonation"><div class="row"><label>Explosion at grid<input name="grid" maxlength="8" placeholder="Example: C2" required></label><label>Really caused by<select name="truth"><option value="militia">Militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="cas" style="width:auto"> Casualties</label><div><button type="submit">Tell both wings</button></div></form>
+        <h2 data-aoc-off>Explosions</h2>
+        <form class="stack" data-wf="detonation" data-aoc-off><div class="row"><label>Explosion at grid<input name="grid" maxlength="8" placeholder="Example: C2" required></label><label>Really caused by<select name="truth"><option value="militia">Militia</option><option value="B">Blue Force</option><option value="R">Red Force</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="cas" style="width:auto"> Casualties</label><div><button type="submit">Tell both wings</button></div></form>
       </div>
       </div>
       ${sideCol('B')}
       ${sideCol('R')}
-      <div class="panel" data-sec="teams"><h2>Fireteams</h2><div class="row" style="justify-content:flex-start;align-items:center;margin:2px 0 6px"><span class="small muted" style="flex:1 1 100%">Silent GPS request. Only phones with the board open respond. Teams are not notified.</span><button type="button" data-ping="both" style="flex:0 0 auto">Ping every team</button><button type="button" data-ping="B" style="flex:0 0 auto">Ping BLUFOR</button><button type="button" data-ping="R" style="flex:0 0 auto">Ping REDFOR</button></div><h3 class="small muted" style="margin:4px 0">BLUFOR</h3><div class="list" data-wteamsB></div><h3 class="small muted" style="margin:10px 0 4px">REDFOR</h3><div class="list" data-wteamsR></div></div>
+      <div class="panel" data-sec="teams"><h2>Fireteams</h2><div class="row" style="justify-content:flex-start;align-items:center;margin:2px 0 6px" data-aoc-off><span class="small muted" style="flex:1 1 100%">Silent GPS request. Only phones with the board open respond. Teams are not notified.</span><button type="button" data-ping="both" style="flex:0 0 auto">Ping every team</button><button type="button" data-ping="B" style="flex:0 0 auto">Ping Blue Force</button><button type="button" data-ping="R" style="flex:0 0 auto">Ping Red Force</button></div><h3 class="small muted" style="margin:4px 0">Blue Force</h3><div class="list" data-wteamsB></div><h3 class="small muted" style="margin:10px 0 4px">Red Force</h3><div class="list" data-wteamsR></div></div>
       <div class="panel" data-sec="msg"><h2>C2 liaison</h2><p class="small muted" style="margin:0">Everything the Wing Commanders say to each other.</p><div class="feed" data-wliaison style="max-height:360px"></div><div class="list" data-woffers></div></div>
       <div class="panel span2" data-sec="log"><div class="act-head"><h2>Log</h2><span class="small muted">Voided entries are removed from every screen</span></div><div class="feed" data-log style="max-height:420px"></div></div>
-      <details class="panel span2 mapset" data-mapsetup data-sec="setup"><summary><b>Map setup</b> <span class="small muted">(before STARTEX)</span></summary>
+      <details class="panel span2 mapset" data-mapsetup data-sec="setup" data-aoc-off><summary><b>Map setup</b> <span class="small muted">(before STARTEX)</span></summary>
         <div class="stack" style="margin-top:10px">
           <p class="small muted" style="margin:0">MGRS or latitude and longitude in any common format, or the last map click. Last click: <b class="mono" data-lastclick>—</b></p>
           <div class="li"><label>Find the field: center on<input data-mcenter placeholder="Example: 40.8275, -77.8570 or an MGRS grid"></label><button type="button" data-mshow>Show on the map</button></div>
@@ -4155,14 +4168,14 @@ function buildWhite(){
           <div class="row" style="justify-content:flex-start"><button type="button" data-mpoiadd style="flex:0 0 auto">Add last click as an interest point</button></div>
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-msave style="flex:0 0 auto">Save the map for every screen</button><label for="mFile" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load a map file<input id="mFile" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted" data-mmsg></span></div>
         </div></details>
-      <details class="panel span2 mapset" data-ipbuild data-sec="intel create"><summary><b>Intel package builder</b> <span class="small muted">(custom packages and photos)</span></summary>
+      <details class="panel span2 mapset" data-ipbuild data-sec="intel create" data-aoc-off><summary><b>Intel package builder</b> <span class="small muted">(custom packages and photos)</span></summary>
         <div class="stack" style="margin-top:10px">
           <p class="small muted" style="margin:0">A package has a question, four answers and two to eight pieces of intel. Mark the correct answer and every false or misleading piece. Saved packages appear in the Intel packages list. Saving a built-in package creates a replacement version.</p>
           <div class="row" style="align-items:end"><label>Start from<select data-ipbsrc><option value="">A blank package</option></select></label><button type="button" data-ipbload style="flex:0 0 auto">Load</button><button type="button" class="btn-side" data-ipbgen style="flex:0 0 auto">Generate a draft</button><button type="button" data-ipbclear style="flex:0 0 auto">Clear</button></div>
           <p class="small" data-ipbmode style="margin:0"></p>
           <div class="row"><label>Title<input data-ipb="title" maxlength="80" placeholder="Example: The coast road ambush"></label><label style="flex:0 0 110px">Intended time (T+ min)<input data-ipb="at" type="number" min="0" max="300" value="60"></label><label style="flex:0 0 110px">Window (min)<input data-ipb="win" type="number" min="3" max="60" value="15"></label></div>
           <label>Question<input data-ipb="q" maxlength="200" placeholder="Example: Who set the ambush on the coast road?"></label>
-          <div class="row" style="align-items:end"><label>Explosion with this package (optional): grid<input data-ipb="bgrid" maxlength="24" placeholder="Example: C3"></label><label style="flex:0 0 170px">Really caused by<select data-ipb="btruth"><option value="militia">The militia</option><option value="B">BLUFOR</option><option value="R">REDFOR</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-ipb="bcas"> Casualties</label></div>
+          <div class="row" style="align-items:end"><label>Explosion with this package (optional): grid<input data-ipb="bgrid" maxlength="24" placeholder="Example: C3"></label><label style="flex:0 0 170px">Really caused by<select data-ipb="btruth"><option value="militia">The militia</option><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-ipb="bcas"> Casualties</label></div>
           <fieldset class="ipb-piece stack" data-ipbwp><legend>Map points with this package (optional)</legend>
             <p class="small muted" style="margin:0" data-ipbwpnote>Deployed to each wing that receives the package, at the moment it is deployed.</p>
             <div class="row" style="align-items:end"><label>Start from a waypoint<select data-ipbwpfrom></select></label></div>
@@ -4185,24 +4198,24 @@ function buildWhite(){
           <h3 class="small muted" style="margin:6px 0 0">Packages built here</h3><div class="list" data-ipblist></div>
           <div class="row" style="justify-content:flex-start"><button type="button" data-ipbexport style="flex:0 0 auto">Download packages</button><label for="ipbImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload packages<input id="ipbImport" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted">Saves all packages built here, including photos, as one file for another game.</span></div>
         </div></details>
-      <div class="panel span2 stack" data-sec="create"><h2>Inject templates</h2>
+      <div class="panel span2 stack" data-sec="create" data-aoc-off><h2>Inject templates</h2>
         <p class="small muted" style="margin:0">Write the injects the white cell will send during the game. Each template appears under Send a message, where one tap fills in the message. A planned time or an escalation level is optional and only helps the white cell decide when to send it.</p>
         <div class="row" style="align-items:end"><label>Start from<select data-tplsrc><option value="">A blank template</option>${TEMPLATES.map((t, i) => '<option value="' + i + '">Sample: ' + esc(t.label) + '</option>').join('')}</select></label><button type="button" data-tplload style="flex:0 0 auto">Load</button><button type="button" data-tplall style="flex:0 0 auto">Add all sample templates</button></div>
         <p class="small muted" style="margin:0">Samples are starting points only. Nothing appears under Send a message until it is saved here, and every saved template can be edited or deleted.</p>
         <form class="stack" data-tplf>
-          <div class="row"><label for="tplLabel">Name<input id="tplLabel" name="label" maxlength="60" required placeholder="Example: IED tip (BLUFOR)"></label><label for="tplTo" style="flex:0 0 160px">To<select id="tplTo" name="to"><option value="both">Both wings</option><option value="B">BLUFOR only</option><option value="R">REDFOR only</option><option value="public">Public screen</option></select></label><label for="tplFrom" style="flex:0 0 200px">From<input id="tplFrom" name="from" maxlength="30" value="Higher headquarters"></label></div>
+          <div class="row"><label for="tplLabel">Name<input id="tplLabel" name="label" maxlength="60" required placeholder="Example: IED tip (Blue Force)"></label><label for="tplTo" style="flex:0 0 160px">To<select id="tplTo" name="to"><option value="both">Both wings</option><option value="B">Blue Force only</option><option value="R">Red Force only</option><option value="public">Public screen</option></select></label><label for="tplFrom" style="flex:0 0 200px">From<input id="tplFrom" name="from" maxlength="30" value="AOC"></label></div>
           <label for="tplText">Message<textarea id="tplText" name="text" maxlength="700" required placeholder="Example: Locals saw men burying something on your supply road. Check it before your next move."></textarea></label>
           <div class="row"><label for="tplAt" style="flex:0 0 200px">Planned time (minutes after STARTEX)<input id="tplAt" name="at" type="number" min="0" max="300" placeholder="Optional"></label><label for="tplLvl" style="flex:0 0 220px">Or send at escalation level<select id="tplLvl" name="lvl"><option value="">No level</option><option value="1">Tension or higher</option><option value="2">Crisis or higher</option><option value="3">Brink or higher</option></select></label><label for="tplNote">White cell note (only the white cell sees it)<input id="tplNote" name="note" maxlength="500" placeholder="Optional: what the POCs need to set up"></label></div>
           <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto" data-tplsave>Save template</button><button type="button" data-tplclear style="flex:0 0 auto">Clear</button><span class="small muted" data-tplmode></span></div>
         </form>
         <h3 class="small muted" style="margin:6px 0 0">Templates in this game</h3><div class="list" data-tpllist></div>
       </div>
-      <div class="panel span2 stack" data-sec="create"><h2>Creation files</h2>
+      <div class="panel span2 stack" data-sec="create" data-aoc-off><h2>Creation files</h2>
         <p class="small muted" style="margin:0">Download every intel package and inject template built in this game as one file, including photos and map points. Send the file to the exercises officers, who upload it into the game where it will be used. Uploading adds to a game; it never deletes anything.</p>
         <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-crexport style="flex:0 0 auto">Download packages and injects</button><label for="crImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload creation files<input id="crImport" type="file" accept=".json,application/json" multiple style="display:none"></label><label for="crCombine" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Combine files into one<input id="crCombine" type="file" accept=".json,application/json" multiple style="display:none"></label></div>
         <p class="small muted" style="margin:0">Upload creation files adds every package and template from the files you choose to this game. Combine files into one merges several teams’ files into a single download without changing this game; use it to review everything before execution day.</p>
       </div>
-      <div class="panel" data-sec="setup"><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
+      <div class="panel" data-sec="setup" data-aoc-off><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
   </div>`;
   $$('[data-ev]', v).forEach(b => b.onclick = () => {
@@ -4216,7 +4229,7 @@ function buildWhite(){
     ev.preventDefault(); const fd = new FormData(f), k = f.dataset.wf, s = f.dataset.side || null;
     if (k === 'adjust') writeEvent('adjust', s, { field:fd.get('field'), delta:Number(fd.get('delta')) || 0, reason:fd.get('reason') });
     if (k === 'detonation') writeEvent('detonation', null, { grid:String(fd.get('grid')).toUpperCase(), truth:fd.get('truth'), casualties:!!fd.get('cas') });
-    if (k === 'msg') writeEvent('msg', null, { to:fd.get('to'), text:fd.get('text'), label:fd.get('label') || 'Higher headquarters' });
+    if (k === 'msg') writeEvent('msg', null, { to:fd.get('to'), text:fd.get('text'), label:hqFrom(fd.get('label')) });
     if (k === 'window'){ const st = parseHHMM(fd.get('start')), len = Math.round(+fd.get('len')); if (st == null || !(len >= 30 && len <= 300)){ toast('Use 24-hour time like 0830 and a length from 30 to 300 minutes.', true); return; } if (app.S && app.S.clock.started){ toast('The game has already started. Use Set board time instead.', true); return; } writeEvent('window_set', null, { startG:st, lengthMin:len }); app.winKey = null; toast('Start time saved: ' + hhmm(st) + ', ' + len + ' minutes.'); return; }
     if (k === 'clockset'){ const m = /^(\d{2})(\d{2})$/.exec(String(fd.get('t')).trim()); if (!m){ toast('Use 24-hour time like 0900.', true); return; } writeEvent('clock_set', null, { g:(+m[1]) * 60 + (+m[2]) - 360 }); }
     if (k !== 'adjust' && k !== 'msg') f.reset();
@@ -4232,22 +4245,22 @@ function buildWhite(){
   });
   { const tf = $('[data-tplf]', v), tplClear = () => { tf.reset(); tf.dataset.id = ''; tf.dataset.phase = ''; $('[data-tplmode]', v).textContent = ''; };
     tf.addEventListener('submit', async ev => { ev.preventDefault(); const fd = new FormData(tf), at = String(fd.get('at') || '').trim(), lvl = String(fd.get('lvl') || '');
-      const tpl = { id:tf.dataset.id || ('t' + uid()), label:String(fd.get('label') || '').trim(), to:fd.get('to'), from:String(fd.get('from') || '').trim() || 'Higher headquarters', text:String(fd.get('text') || '').trim(), at:at === '' ? null : +at, lvl:lvl === '' ? null : +lvl, note:String(fd.get('note') || '').trim(), phase:tf.dataset.phase || '' };
+      const tpl = { id:tf.dataset.id || ('t' + uid()), label:String(fd.get('label') || '').trim(), to:fd.get('to'), from:hqFrom(fd.get('from')), text:String(fd.get('text') || '').trim(), at:at === '' ? null : +at, lvl:lvl === '' ? null : +lvl, note:String(fd.get('note') || '').trim(), phase:tf.dataset.phase || '' };
       if (!tpl.label || !tpl.text){ toast('Add a name and a message.', true); return; }
       await writeEvent('tpl_save', null, { tpl }); toast(tf.dataset.id ? 'Template updated.' : 'Template saved. It is under Send a message.'); tplClear(); });
     $('[data-tplclear]', v).onclick = tplClear;
-    $('[data-tplload]', v).onclick = () => { const i = $('[data-tplsrc]', v).value, t = TEMPLATES[+i]; if (i === '' || !t) { tplClear(); return; } tplClear(); tf.dataset.phase = t.phase || ''; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = t.from || 'Higher headquarters'; tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; $('[data-tplmode]', v).textContent = 'New template from the sample. Edit it, then save.'; };
+    $('[data-tplload]', v).onclick = () => { const i = $('[data-tplsrc]', v).value, t = TEMPLATES[+i]; if (i === '' || !t) { tplClear(); return; } tplClear(); tf.dataset.phase = t.phase || ''; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; $('[data-tplmode]', v).textContent = 'New template from the sample. Edit it, then save.'; };
     $('[data-tplall]', v).onclick = async () => { const have = new Set((app.S.tpls || []).map(t => t.id)), todo = TEMPLATES.map((t, i) => Object.assign({ id:'tsample-' + i }, t)).filter(t => !have.has(t.id));
       if (!todo.length){ toast('All sample templates are already in this game.'); return; }
       if (!confirm('Add ' + todo.length + ' sample template' + (todo.length === 1 ? '' : 's') + ' to this game? Each can be edited or deleted afterward.')) return;
       for (const tpl of todo) await writeEvent('tpl_save', null, { tpl }); toast('Added ' + todo.length + ' template' + (todo.length === 1 ? '' : 's') + '.'); };
     $('[data-tpllist]', v).addEventListener('click', ev => { const e = ev.target.closest('[data-tpledit]'), d = ev.target.closest('[data-tpldel]'), S = app.S;
-      if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = t.from || 'Higher headquarters'; tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
+      if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
       if (d){ const t = (S.tpls || []).find(x => x.id === d.dataset.tpldel); if (t && confirm('Delete the template "' + t.label + '"?')) writeEvent('tpl_del', null, { id:t.id }); } });
     $('[data-crexport]', v).onclick = crExport;
     $('#crImport', v).onchange = () => { const fl = Array.from($('#crImport', v).files); $('#crImport', v).value = ''; if (fl.length) crImport(fl); };
     $('#crCombine', v).onchange = () => { const fl = Array.from($('#crCombine', v).files); $('#crCombine', v).value = ''; if (fl.length) crCombine(fl); }; }
-  const useTpl = t => { const f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = t.from || 'Higher headquarters'; f.text.value = fillT(t.text); f.scrollIntoView({ behavior:'smooth', block:'center' }); f.text.focus(); };
+  const useTpl = t => { const f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = hqFrom(t.from); f.text.value = fillT(t.text); f.scrollIntoView({ behavior:'smooth', block:'center' }); f.text.focus(); };
   const qItem = t => ({ qid:'q' + uid(), tpl:{ id:t.id, label:t.label, to:t.to, from:t.from, text:t.text, note:t.note, at:t.at, lvl:t.lvl } });
   $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'), q = ev.target.closest('[data-tplq]'); const k = b ? b.dataset.tpl : q ? q.dataset.tplq : null; if (k == null) return; const t = allTemplates(app.S)[+k]; if (!t) return; if (b) useTpl(t); else { writeEvent('injq_add', null, { items:[qItem(t)] }); toast('Queued: ' + t.label + '.'); } });
   $('[data-injqall]', v).onclick = () => { const S = app.S, have = new Set((S.injq || []).map(q => q.tid)), todo = allTemplates(S).filter(t => t.at != null && !have.has(t.id)); if (!todo.length){ toast('Every timed template is already in the queue.'); return; } if (!confirm('Add ' + todo.length + ' timed template' + (todo.length === 1 ? '' : 's') + ' to the inject queue?')) return; writeEvent('injq_add', null, { items:todo.map(qItem) }); };
@@ -4647,15 +4660,15 @@ function ipbGenerate(){
     { t:'cache', title:p => 'Weapons moved through ' + p, q:p => 'Who is moving weapons through ' + p + '?' }
   ];
   const who = ['B', 'R', 'M'];
-  const opts = ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'];
+  const opts = ['Blue Force (the Coalition)', 'Red Force (North Korea)', 'The Marala First Front (militia)', 'Not enough information'];
   const truth = r(who), decoy = r(who.filter(x => x !== truth));
   const [, place] = r(places), kind = r(kinds);
   const day = 4, hr = 1 + Math.floor(Math.random() * 4), mm = String(Math.floor(Math.random() * 6) * 10).padStart(2, '0');
   const dtg = (d, h, m) => String(d).padStart(2, '0') + String(h).padStart(2, '0') + m + 'R DEC 26';
   const look = { B:'tan uniforms with Coalition patches', R:'dark uniforms, speaking Korean', M:'fishing clothes and red armbands' };
-  const veh = { B:'a tan Coalition 4x4 with a unit number on the door', R:'a dark green truck with no plates, the kind REDFOR uses', M:'two men on foot carrying sacks, no vehicle' };
+  const veh = { B:'a tan Coalition 4x4 with a unit number on the door', R:'a dark green truck with no plates, the kind Red Force uses', M:'two men on foot carrying sacks, no vehicle' };
   const sig = { B:'Coalition patrol net: "Task done at the site, returning to base."', R:'Korean-language net: "Package placed. Return to the depot by the north road."', M:'Known militia handheld: "The foreigners will blame each other. Walk home through the paddies."' };
-  const geo = { B:'The only vehicle route from the Coalition camp to the site passes their own checkpoint, which logged one vehicle out at the time.', R:'The REDFOR camp sits 600 m away with a covered track straight to the site; a vehicle makes it in 4 minutes.', M:'A footpath from the fishing village reaches the site in about 6 minutes on foot, out of sight of both camps.' };
+  const geo = { B:'The only vehicle route from the Coalition camp to the site passes their own checkpoint, which logged one vehicle out at the time.', R:'The Red Force camp sits 600 m away with a covered track straight to the site; a vehicle makes it in 4 minutes.', M:'A footpath from the fishing village reaches the site in about 6 minutes on foot, out of sight of both camps.' };
   const hum = { B:'"I saw soldiers in ' + look.B + ' at the site that night."', R:'"Men in ' + look.R + ' were at the site around ' + hr + ' in the morning."', M:'"My cousin\u2019s friends in ' + look.M + ' came back from the site laughing before dawn."' };
   const osi = { B:'Coalition trucks drove away from the site with their lights off last night.', R:'North Korean soldiers were at the site last night, everyone saw them.', M:'Front fighters say they hit the foreigners where it hurts last night.' };
   const extra = Math.random() < .4, keys = IPB_KEYS.slice(0, extra ? 5 : 4).split('');
@@ -4676,7 +4689,7 @@ function ipbGenerate(){
   ipbFill({ keepWp:true, title:kind.title(place2), q:kind.q(place2), at:+($('[data-ipb="at"]', ipbForm()).value || 60), win:15, opts, items, aIdx:who.indexOf(truth), fKeys, note:'False: ' + fKeys.map((k, j) => 'piece ' + k + ' (' + fds[j] + ')').join(' and ') + (fKeys.length > 1 ? ' point' : ' points') + ' at ' + opts[who.indexOf(decoy)].split(' (')[0] + ', but ' + fds.map(d => why[d]).join('; and ') + '.' + (imintFalse ? ' Add a photo that looks convincing but is the wrong place or time.' : ' Add a photo to the IMINT piece that matches its description.') });
   toast('Draft generated. Edit anything, add the IMINT photo, then save.');
 }
-const IPB_OPT_EX = ['BLUFOR (the Coalition)', 'REDFOR (North Korea)', 'The Marala First Front (militia)', 'Not enough information'];
+const IPB_OPT_EX = ['Blue Force (the Coalition)', 'Red Force (North Korea)', 'The Marala First Front (militia)', 'Not enough information'];
 function ipbOpts(vals, right){
   const box = $('[data-ipbopts]', ipbForm()); if (!box) return;
   box.innerHTML = vals.map((v, k) => '<div class="row"><input type="checkbox" name="ipbA" value="' + k + '"' + (right.includes(k) ? ' checked' : '') + ' aria-label="Answer ' + (k + 1) + ' is correct"><input data-ipbopt="' + k + '" maxlength="100" value="' + esc(v) + '" placeholder="' + (IPB_OPT_EX[k] ? 'Example: ' + IPB_OPT_EX[k] : 'Answer ' + (k + 1)) + '"><button type="button" data-ipboptdel="' + k + '" style="flex:0 0 auto"' + (vals.length <= 2 ? ' disabled' : '') + '>Remove</button></div>').join('');
@@ -4807,7 +4820,7 @@ function renderWhite(S, now){
   const v = $('#vWhite'), lvl = levelIndex(S.esc);
   $('[data-esclvl]', v).innerHTML = '· <span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
   $('[data-ladder]', v).innerHTML = ladderHTML(S);
-  $('[data-escby]', v).textContent = 'Caused by BLUFOR ' + S.escBy.B + ' · REDFOR ' + S.escBy.R + (S.decayed.B || S.decayed.R ? ' (worn off so far: BLUFOR ' + S.decayed.B + ', REDFOR ' + S.decayed.R + ')' : '');
+  $('[data-escby]', v).textContent = 'Caused by Blue Force ' + S.escBy.B + ' · Red Force ' + S.escBy.R + (S.decayed.B || S.decayed.R ? ' (worn off so far: Blue Force ' + S.decayed.B + ', Red Force ' + S.decayed.R + ')' : '');
   $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + '. Play the casualty event.</div>' : '';
   $('[data-clk="start"]', v).disabled = S.clock.started;
   $('[data-clk="pause"]', v).disabled = !S.clock.running;
@@ -4829,10 +4842,10 @@ function renderWhite(S, now){
     if (app.injqKey !== k2){ app.injqKey = k2; const box = $('[data-injq]', v), open = new Set($$('details[open]', box).map(x => x.dataset.q)), vis = Q.filter(q => showSent || q.sent == null), waiting = Q.filter(q => q.sent == null).length;
       $('[data-injqn]', v).textContent = waiting + ' waiting' + (Q.length - waiting ? ' · ' + (Q.length - waiting) + ' sent' : '');
       box.innerHTML = vis.length ? vis.map(q => { const due = q.at != null ? hhmm(START_G + q.at) : q.lvl != null ? LEVELS[q.lvl].name : '\u2014', hot = q.sent == null && ((q.at != null && S.clock.started && S.g >= START_G + q.at) || (q.lvl != null && lvlNow >= q.lvl));
-        return '<details class="li cmp' + (hot ? ' hot' : '') + '" data-q="' + q.qid + '"' + (open.has(q.qid) ? ' open' : '') + '><summary><span class="tm">' + due + '</span><span class="chip ' + (q.to === 'both' || q.to === 'public' ? '' : q.to) + '" style="flex:0 0 auto">' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[q.to] + '</span><span class="ttl"><b>' + esc(q.label) + '</b></span>' + (q.sent != null ? '<span class="chip ok" style="flex:0 0 auto">Sent ' + hhmm(q.sent) + '</span>' : '<button type="button" class="btn-side" data-injqsend="' + q.qid + '" style="flex:0 0 auto">Send</button>') + '</summary>' +
+        return '<details class="li cmp' + (hot ? ' hot' : '') + '" data-q="' + q.qid + '"' + (open.has(q.qid) ? ' open' : '') + '><summary><span class="tm">' + due + '</span><span class="chip ' + (q.to === 'both' || q.to === 'public' ? '' : q.to) + '" style="flex:0 0 auto">' + ({ both:'Both', B:'Blue Force', R:'Red Force', public:'Public' })[q.to] + '</span><span class="ttl"><b>' + esc(q.label) + '</b></span>' + (q.sent != null ? '<span class="chip ok" style="flex:0 0 auto">Sent ' + hhmm(q.sent) + '</span>' : '<button type="button" class="btn-side" data-injqsend="' + q.qid + '" style="flex:0 0 auto">Send</button>') + '</summary>' +
           '<div class="small" style="white-space:pre-wrap">' + esc(q.sent != null ? q.sentText : fillT(q.text)) + '</div><div class="small muted">From: ' + esc(q.from) + '</div>' + (q.note ? '<div class="small muted">Note: ' + esc(q.note) + '</div>' : '') + (q.sent == null ? '<div class="row" style="justify-content:flex-start;margin-top:6px"><button type="button" data-injquse="' + q.qid + '" style="flex:0 0 auto">Edit before sending</button><button type="button" data-injqdel="' + q.qid + '" style="flex:0 0 auto">Remove from queue</button></div>' : '') + '</details>'; }).join('') : '<div class="empty">' + (Q.length ? 'Every queued inject has been sent.' : 'The queue is empty. Queue templates below, or use Queue all timed templates.') + '</div>'; } }
-  if (app.tplKey !== tkey){ app.tplKey = tkey; const qd = new Set((S.injq || []).map(q => q.tid)); $('[data-tpln]', v).textContent = '(' + TP.length + ')'; $('[data-templates]', v).innerHTML = TP.length ? TP.map((t, i) => [t, i]).sort((x, y) => ((x[0].at != null ? x[0].at : x[0].lvl != null ? 1000 + x[0].lvl : 2000) - (y[0].at != null ? y[0].at : y[0].lvl != null ? 1000 + y[0].lvl : 2000)) || x[1] - y[1]).map(([t, i]) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<div class="li cmp' + (ok ? ' hot' : '') + '"><span class="tm">' + (t.at != null ? hhmm(START_G + t.at) : t.lvl != null ? LEVELS[t.lvl].name : 'Any') + '</span><span class="chip ' + (t.to === 'both' || t.to === 'public' ? '' : t.to) + '" style="flex:0 0 auto">' + ({ both:'Both', B:'BLUFOR', R:'REDFOR', public:'Public' })[t.to] + '</span><span class="ttl">' + esc(t.label) + '</span><button type="button" data-tpl="' + i + '" style="flex:0 0 auto">Use</button><button type="button" data-tplq="' + i + '" style="flex:0 0 auto">' + (qd.has(t.id) ? 'Queue again' : 'Queue') + '</button></div>'; }).join('') : '<div class="empty">No inject templates in this game. Build them in Intel and inject creation.</div>';
-    const tl = $('[data-tpllist]', v); if (tl){ const own = S.tpls || []; tl.innerHTML = own.length ? own.map(t => '<div class="li"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">' + ({ both:'Both wings', B:'BLUFOR', R:'REDFOR', public:'Public screen' })[t.to] + (t.at != null ? ' · ' + hhmm(START_G + t.at) : t.lvl != null ? ' · ' + LEVELS[t.lvl].name + ' or higher' : '') + '</span><div class="small">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">Note: ' + esc(t.note) + '</div>' : '') + '</div><button type="button" data-tpledit="' + esc(t.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-tpldel="' + esc(t.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No templates built in this game yet.</div>'; } }
+  if (app.tplKey !== tkey){ app.tplKey = tkey; const qd = new Set((S.injq || []).map(q => q.tid)); $('[data-tpln]', v).textContent = '(' + TP.length + ')'; $('[data-templates]', v).innerHTML = TP.length ? TP.map((t, i) => [t, i]).sort((x, y) => ((x[0].at != null ? x[0].at : x[0].lvl != null ? 1000 + x[0].lvl : 2000) - (y[0].at != null ? y[0].at : y[0].lvl != null ? 1000 + y[0].lvl : 2000)) || x[1] - y[1]).map(([t, i]) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<div class="li cmp' + (ok ? ' hot' : '') + '"><span class="tm">' + (t.at != null ? hhmm(START_G + t.at) : t.lvl != null ? LEVELS[t.lvl].name : 'Any') + '</span><span class="chip ' + (t.to === 'both' || t.to === 'public' ? '' : t.to) + '" style="flex:0 0 auto">' + ({ both:'Both', B:'Blue Force', R:'Red Force', public:'Public' })[t.to] + '</span><span class="ttl">' + esc(t.label) + '</span><button type="button" data-tpl="' + i + '" style="flex:0 0 auto">Use</button><button type="button" data-tplq="' + i + '" style="flex:0 0 auto">' + (qd.has(t.id) ? 'Queue again' : 'Queue') + '</button></div>'; }).join('') : '<div class="empty">No inject templates in this game. Build them in Intel and inject creation.</div>';
+    const tl = $('[data-tpllist]', v); if (tl){ const own = S.tpls || []; tl.innerHTML = own.length ? own.map(t => '<div class="li"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">' + ({ both:'Both wings', B:'Blue Force', R:'Red Force', public:'Public screen' })[t.to] + (t.at != null ? ' · ' + hhmm(START_G + t.at) : t.lvl != null ? ' · ' + LEVELS[t.lvl].name + ' or higher' : '') + '</span><div class="small">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">Note: ' + esc(t.note) + '</div>' : '') + '</div><button type="button" data-tpledit="' + esc(t.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-tpldel="' + esc(t.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No templates built in this game yet.</div>'; } }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
   { const mk = JSON.stringify([M0 && M0.sw, M0 && M0.ne, M0 && M0.sites, M0 && M0.pois]); if (app.mapKey !== mk && !(ms && ms.contains(document.activeElement))){ app.mapKey = mk; app.mapFilled = false; } }
   if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); $('[data-mpois]', ms).value = (M0.pois || []).map(x => x.name + ' | ' + fmtPt(x.pt)).join('\n'); }
@@ -4842,8 +4855,8 @@ function renderWhite(S, now){
       const queued = live.filter(w => w.to === 'none'), dep = live.filter(w => w.to !== 'none');
       const head = w => '<span style="flex:0 0 auto">' + wpSvg(w.sym, 24, w.color) + '</span><div class="grow"><b>' + esc(w.label) + '</b> <span class="small muted">' + esc(WP_SYMS[w.sym]) + '</span>' + (w.pkg ? ' <span class="chip">intel package</span>' : '') + (w.desc ? '<div class="small">' + esc(w.desc) + '</div>' : '') + '<div class="small mono">' + esc(fmtPt(w.pt)) + (squareOf(M, w.pt) ? ' · Square ' + squareOf(M, w.pt) : '') + '</div></div>';
       const tools = w => '<button type="button" data-wpsite="' + w.id + '" style="flex:0 0 auto">Make site</button><input type="color" data-wprecolor="' + w.id + '" value="' + (w.color || WP_DEF[w.sym] || '#ffcf5a') + '" aria-label="Color" style="flex:0 0 38px;width:38px;height:30px;padding:0 2px"><button type="button" data-wpedit="' + w.id + '" style="flex:0 0 auto">Edit</button><button type="button" data-wpdel="' + w.id + '" style="flex:0 0 auto">Delete</button>';
-      const deploy = w => '<select data-wpdto aria-label="Visibility for ' + esc(w.label) + '" style="flex:0 0 150px"><option value="">Visibility…</option><option value="B">BLUFOR</option><option value="R">REDFOR</option><option value="both">Both wings</option></select><button type="button" class="btn-side" data-wpdeploy="' + w.id + '" style="flex:0 0 auto">Deploy</button>';
-      const vis = w => '<select data-wpvis="' + w.id + '" aria-label="Visible to" style="flex:0 0 150px">' + [['B', 'BLUFOR'], ['R', 'REDFOR'], ['both', 'Both wings']].map(([k, n]) => '<option value="' + k + '"' + (w.to === k ? ' selected' : '') + '>' + n + '</option>').join('') + '</select><button type="button" data-wpundeploy="' + w.id + '" style="flex:0 0 auto">Return to queue</button>';
+      const deploy = w => '<select data-wpdto aria-label="Visibility for ' + esc(w.label) + '" style="flex:0 0 150px"><option value="">Visibility…</option><option value="B">Blue Force</option><option value="R">Red Force</option><option value="both">Both wings</option></select><button type="button" class="btn-side" data-wpdeploy="' + w.id + '" style="flex:0 0 auto">Deploy</button>';
+      const vis = w => '<select data-wpvis="' + w.id + '" aria-label="Visible to" style="flex:0 0 150px">' + [['B', 'Blue Force'], ['R', 'Red Force'], ['both', 'Both wings']].map(([k, n]) => '<option value="' + k + '"' + (w.to === k ? ' selected' : '') + '>' + n + '</option>').join('') + '</select><button type="button" data-wpundeploy="' + w.id + '" style="flex:0 0 auto">Return to queue</button>';
       $('[data-wpcount]', v).textContent = live.length ? live.length + ' waypoint' + (live.length === 1 ? '' : 's') + ' · ' + queued.length + ' in queue · ' + dep.length + ' deployed' : '';
       qb.innerHTML = queued.length ? queued.map(w => '<div class="li">' + head(w) + deploy(w) + tools(w) + '</div>').join('') : '<div class="empty">No waypoints in the queue.</div>';
       qq.innerHTML = queued.length ? queued.map(w => '<div class="li">' + head(w) + deploy(w) + '</div>').join('') : '<div class="empty">No waypoints in the queue.</div>';
@@ -4852,7 +4865,7 @@ function renderWhite(S, now){
     } }
   { const wp = wcSpot(S), M = mapCfg(S); $('[data-wcnow]', v).textContent = wp ? (squareOf(M, wp) ? squareOf(M, wp) + ' · ' : '') + fmtPt(wp) + (S.wcPos ? ' (moved)' : ' (planned spot)') : 'not set'; $('[data-wcback]', v).disabled = !S.wcPos; }
   if (!typingIn($('[data-sitectl]', v))) $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Stalemate</span>' : '') + '</span>' +
-    '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>BLUFOR</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>REDFOR</option></select>' +
+    '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>Blue Force</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>Red Force</option></select>' +
     (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<label class="small" style="flex:0 0 auto;display:flex;align-items:center;gap:4px;flex-direction:row;margin:0">Timer<input type="number" data-timer="' + k + '" min="3" max="90" step="1" value="' + (S.siteTimer[k] || 15) + '" aria-label="Contention timer for ' + SITES[k].name + ' in minutes" style="width:64px">min</label>' + (SITES[k].dyn ? '<button type="button" data-siterm="' + k + '">Remove site</button>' : '') + '<button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear stalemate') : 'Mark stalemate') + '</button></div>'; }).join('') +
     '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">Town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
   renderOCWhite(S, v);
@@ -4874,7 +4887,7 @@ function renderWhite(S, now){
   });
   { const ne = $('[data-wnesc]', v); if (ne) ne.textContent = '· Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ')'; }
   const occUn = renderOCChatWhite(S, v);
-  { const pend = occUn + q.length + S.nines.filter(n => n.status === 'open').length + S.ocReqs.filter(r => r.status === 'open').length; whiteAttention(pend); const cb = $('[data-chime]', v); if (cb && !cb.dataset.wired){ cb.dataset.wired = '1'; cb.checked = pref.get('marala-chime', '1') === '1'; cb.onchange = () => { pref.set('marala-chime', cb.checked ? '1' : '0'); if (cb.checked){ chimeAt = 0; chime(); } }; } }
+  { const pend = occUn + q.length + S.nines.filter(n => n.status === 'open').length + S.ocReqs.filter(r => r.status === 'open').length; whiteAttention(app.role === 'A' ? 0 : pend); const cb = $('[data-chime]', v); if (cb && !cb.dataset.wired){ cb.dataset.wired = '1'; cb.checked = pref.get('marala-chime', '1') === '1'; cb.onchange = () => { pref.set('marala-chime', cb.checked ? '1' : '0'); if (cb.checked){ chimeAt = 0; chime(); } }; } }
   $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force, strikes and waypoint requests land here.</div>';
   $('[data-score]', v).innerHTML = scoreTable(S, ['B', 'R']);
   const running = S.clock.started && !S.endex;
@@ -4883,7 +4896,7 @@ function renderWhite(S, now){
     const tr = intelTruth(P), oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R');
     const st = s => { const o = s === 'B' ? oB : oR, m = S.intel[s][P.id]; return '<span class="chip ' + s + '" style="flex:0 0 auto">' + SIDES[s].name + ': ' + (!o ? 'Not sent' : o.done ? (m ? '+' + (m.pts || 0) : 'no answer') : m ? 'locked ' + hhmm(m.g) : 'working, due ' + hhmm(o.due)) + '</span>'; };
     let btns = '';
-    if (!oB && !oR) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="B"' + (running ? '' : ' disabled') + '>BLUFOR only</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="R"' + (running ? '' : ' disabled') + '>REDFOR only</button>';
+    if (!oB && !oR) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="B"' + (running ? '' : ' disabled') + '>Blue Force only</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="R"' + (running ? '' : ' disabled') + '>Red Force only</button>';
     else if (!oB || !oR) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>';
     if ((oB && !oB.done) || (oR && !oR.done)) btns += '<button type="button" data-act="ipclose" data-id="' + P.id + '">Close now</button>';
     btns += '<button type="button" data-ipview="' + P.id + '">View / edit</button>';
@@ -4892,7 +4905,7 @@ function renderWhite(S, now){
     return '<details class="li cmp" data-p="' + P.id + '"' + (open.has(P.id) ? ' open' : '') + '><summary><span class="tm">' + hhmm(START_G + P.at) + '</span><span class="ttl"><b>' + (i + 1) + '. ' + esc(fillT(P.title)) + '</b></span><span class="chip ' + (sent ? (oB && !oB.done) || (oR && !oR.done) ? 'wait' : 'ok' : '') + '" style="flex:0 0 auto">' + esc(stat) + '</span></summary><div class="grow">' + (P.custom ? ' <span class="chip wait">built here</span>' : '') + (P.items.some(it => it.img || it.imgUrl) ? ' <span class="chip">photo</span>' : '') + (P.wp ? ' <span class="chip">waypoint: ' + esc(P.wp.label) + '</span>' : '') + (P.blast ? ' <span class="chip no">explosion at ' + esc(P.blast.grid) + '</span>' : '') + ' <span class="small muted">Intended ' + hhmm(START_G + P.at) + ' · ' + P.win + '-minute window</span><div class="small muted">Key: ' + esc(ansText(P, tr)) + ' · False: ' + esc(falseText(P, tr)) + (P.items.length !== 4 ? ' · ' + P.items.length + ' pieces' : '') + '</div><div class="row" style="justify-content:flex-start;margin-top:4px">' + st('B') + st('R') + '</div></div>' + (btns ? '<div class="row ipw" style="justify-content:flex-start;margin-top:6px">' + btns + '</div>' : '') + '</details>';
   }).join('') || '<div class="empty">No intel packages in this game yet.</div>'; if (box.dataset.h !== ih){ box.dataset.h = ih; box.innerHTML = ih; } }
   ['B', 'R'].forEach(s => { const el = $('[data-wstat="' + s + '"]', v); if (el) el.textContent = 'Diplomatic points ' + S.hn[s] + (S.access[s] ? '' : ' (office closed)') + ' · Escalation caused ' + S.escBy[s] + ' · ' + aidText(S, s, true); });
-  $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · From ' + SIDES[l.by].name : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
+  $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · From ' + SIDES[l.by].name : l.by === 'A' ? ' · AOC screen' : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
   const voids = app.events.filter(e => e.type === 'void').length;
   if (app.multi){ const ng = $('[data-newgame]', v), rs = $('[data-restore]', v); if (ng) ng.hidden = true; if (rs) rs.hidden = true; }
   $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · Saved on this computer' : ' · Shared');
@@ -4906,10 +4919,10 @@ function refresh(force){
   const evKey = app.events.length + '|' + (app.events.length ? app.events[app.events.length - 1].id : '');
   let S = app.S;
   if (force || !S || app.replayKey !== evKey || now - (app.replayAt || 0) >= 3000){ if (!app.rcache || app.rcache.gid !== app.gid) app.rcache = { gid:app.gid }; S = replayCached(app.rcache, app.cfg, app.events, now); app.S = S; app.replayKey = evKey; app.replayAt = now; }
-  const sig = (app.ocSelf || (app.role === 'W' && S.ocPos && Object.keys(S.ocPos).length) ? Math.floor(now / 20000) + '|' : '') + app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer + '|' + S.ver + '|' + uavPhase(S, 'B') + uavPhase(S, 'R') + jammed(S, 'B') + jammed(S, 'R');
+  const sig = (app.ocSelf || ((app.role === 'W' || app.role === 'A') && S.ocPos && Object.keys(S.ocPos).length) ? Math.floor(now / 20000) + '|' : '') + app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer + '|' + S.ver + '|' + uavPhase(S, 'B') + uavPhase(S, 'R') + jammed(S, 'B') + jammed(S, 'R');
   if (force || sig !== app.sig){
     app.sig = sig;
-    if (app.role === 'W') renderWhite(S, now);
+    if (app.role === 'W' || app.role === 'A') renderWhite(S, now);
     else if (app.role === 'P') renderPublic(S);
     else if (app.role === 'OC') renderOC(S);
     else if (app.role[0] === 'T') renderTeam(S, app.role[1]);
