@@ -136,6 +136,18 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .tl-now span{position:absolute;top:-1px;left:4px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--panel);background:var(--bad);border-radius:3px;padding:0 4px}
 @media (max-width:1000px){.pic-main{grid-template-columns:minmax(0,1fr)}.pic-head{grid-template-columns:repeat(2,minmax(0,1fr))}.pic-prog{grid-column:1/-1;order:3}}
 @media (max-width:560px){.pic-big{font-size:32px}.pic-tl{grid-template-columns:90px minmax(0,1fr)}}
+#vWhite:not(.aocv) [data-aoc-only]{display:none!important}
+.white-grid>.wfsec{grid-column:1/-1!important}
+.wfsec{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+.wfsec>.pic-card:first-child{grid-row:span 2}
+.wfsec .pic-list{max-height:clamp(320px,60vh,760px);overflow-y:auto;padding-right:4px}
+.wf-counts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:4px}
+.wf-count{border:1px solid var(--line);border-radius:8px;padding:8px 6px;text-align:center;display:grid;gap:2px;color:var(--muted)}
+.wf-count b{font-family:var(--mono);font-size:24px;line-height:1}
+.wf-count span{font-family:var(--display);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.wf-count.on{color:var(--ink);border-color:var(--warn);background:var(--panel-2)}.wf-count.on b{color:var(--warn)}
+.wf-rej{border-color:var(--bad)}
+@media (max-width:900px){.wfsec{grid-template-columns:minmax(0,1fr)}.wfsec>.pic-card:first-child{grid-row:auto}.wf-counts{grid-template-columns:repeat(3,minmax(0,1fr))}}
 #vWhite.aocv [data-aoc-off],#vWhite.aocv [data-act="void"],#vWhite.aocv [data-ipview]{display:none!important}
 .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:var(--side);background:var(--side-soft);border:1px solid var(--side);border-radius:4px;padding:2px 8px}
 .chip{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--muted);background:var(--panel-2)}
@@ -4149,6 +4161,38 @@ function renderPic(S, v){
   const tl = '<div class="tl-lab"><span style="height:23px"></span><span style="height:' + (ih + 1) + 'px">Intel packages</span><span>Injects</span><span>Messages</span></div><div class="tl-track"><div class="tl-axis">' + ax + '</div><div class="tl-lane" style="height:' + ih + 'px">' + bars + '</div><div class="tl-lane">' + mk(injs, 'inj') + '</div><div class="tl-lane">' + mk(msgs, 'msg') + '</div>' + nowL + '</div>';
   { const tb = $('[data-pictl]', v); if (tb.dataset.h !== tl){ tb.dataset.h = tl; tb.innerHTML = tl; } }
 }
+function wfWaiting(S){
+  const out = [], kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request', wp:'Waypoint request' };
+  const add = (cat, side, g, title, text) => out.push({ cat, side, g, title, text });
+  S.contacts.filter(c => !c.verdict).forEach(c => add('Reports', c.side, c.g, c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag report' : c.kind === 'team' ? 'Team sighting' : 'Activity report', (c.grid || '') + (c.note ? ' · ' + c.note : '')));
+  S.contacts.filter(c => c.auto && !c.ack && S.g - c.g <= 10).forEach(c => add('Reports', c.side, c.g, 'Auto-scored report to agree', c.grid || ''));
+  (S.guessAlerts || []).filter(a => !a.ack).forEach(a => add('Alerts', a.side, a.g, 'Repeated wrong code words', a.where || ''));
+  (S.oobs || []).filter(o => !o.back && !o.ack).forEach(o => add('Alerts', o.side, o.g, 'Outside the play area', o.name + ', about ' + o.m + ' m out'));
+  S.requests.filter(r => r.status === 'open').forEach(r => add('Requests', r.side, r.g, kindName[r.kind] || 'Request', r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + (r.text || '?') : r.text || ''));
+  S.nines.filter(n => n.status === 'open').forEach(n => add('9-lines', n.side, n.g, 'Strike 9-line from ' + n.name, nineText(n)));
+  S.ocReqs.filter(r => r.status === 'open').forEach(r => { const o = S.ocs[r.oc]; add('POC calls', r.side || null, r.g, 'From POC ' + (o ? o.name : ''), ocReqText(S, r)); });
+  return out.sort((x, y) => x.g - y.g);
+}
+function renderWF(S, v){
+  const box = $('[data-wfsec]', v); if (!box) return;
+  const W = wfWaiting(S);
+  $$('[data-wfcnt]', v).forEach(el => { el.hidden = !W.length; el.textContent = W.length; });
+  if (box.hasAttribute('data-off')) return;
+  const cats = ['Reports', '9-lines', 'Requests', 'POC calls', 'Alerts'], cnt = {}; W.forEach(w => cnt[w.cat] = (cnt[w.cat] || 0) + 1);
+  const side = s => s === 'B' || s === 'R' ? '<span class="chip ' + s + '">' + SIDES[s].name + '</span>' : '';
+  const h1 = '<div class="wf-counts">' + cats.map(c => '<div class="wf-count' + (cnt[c] ? ' on' : '') + '"><b>' + (cnt[c] || 0) + '</b><span>' + c + '</span></div>').join('') + '</div>' +
+    (W.length ? W.slice().reverse().map(w => '<div class="pic-item"><div class="pic-it"><span class="pic-tag">' + esc(w.cat) + '</span><b>' + esc(w.title) + '</b>' + side(w.side) + '</div><div class="pic-meta"><span>' + esc(w.text) + '</span><span>Waiting since ' + hhmm(w.g) + ' · ' + picAgo(S.g - w.g) + '</span></div></div>').join('') : '<div class="pic-empty">Nothing is waiting on the white cell.</div>');
+  { const el = $('[data-wfwait]', v); if (el.dataset.h !== h1){ el.dataset.h = h1; el.innerHTML = h1; } }
+  $('[data-wfwaitn]', v).textContent = W.length ? W.length + ' waiting' : 'Clear';
+  const R = S.log.filter(l => l.by === 'W' && l.type !== 'tick' && !/^(clock|tpl_|injq_add|injq_del|map_|wp_|ip_|oc_edit|oc_assign|window_set)/.test(l.type)).slice(-40).reverse();
+  const h2 = R.length ? R.map(l => '<div class="pic-item' + (l.status === 'rejected' ? ' wf-rej' : '') + '"><div class="pic-meta"><span class="mono">' + hhmm(l.g) + '</span>' + side(l.side) + '</div><div class="pic-text">' + esc(l.text) + '</div></div>').join('') : '<div class="pic-empty">White cell decisions appear here as they are made.</div>';
+  { const el = $('[data-wfrul]', v); if (el.dataset.h !== h2){ el.dataset.h = h2; el.innerHTML = h2; } }
+  $('[data-wfruln]', v).textContent = R.length ? 'Last ' + R.length : '';
+  const T = (S.occhats || []).map(m => { const o = S.ocs[m.oc]; return { g:m.g, from:m.from === 'wc' ? 'White cell' : 'POC ' + (o ? o.name : ''), to:m.from === 'wc' ? 'POC ' + (o ? o.name : '') : 'White cell', where:o ? ocWhere(S, o) : '', text:m.text }; }).concat((S.ocAnns || []).map(a => ({ g:a.g, from:'White cell', to:'All POCs', where:'', text:a.text }))).sort((x, y) => y.g - x.g).slice(0, 60);
+  const h3 = T.length ? T.map(m => '<div class="pic-item"><div class="pic-meta"><span><span class="mono">' + hhmm(m.g) + '</span> · ' + esc(m.from) + ' → ' + esc(m.to) + '</span><span>' + esc(m.where) + '</span></div><div class="pic-text">' + esc(m.text) + '</div></div>').join('') : '<div class="pic-empty">Messages between the white cell and the POCs appear here.</div>';
+  { const el = $('[data-wfpoc]', v); if (el.dataset.h !== h3){ el.dataset.h = h3; el.innerHTML = h3; } }
+  $('[data-wfpocn]', v).textContent = T.length ? T.length + ' message' + (T.length === 1 ? '' : 's') : '';
+}
 function aocMode(on){
   const v = $('#vWhite'); v.classList.toggle('aocv', on);
   const nm = { queue:on ? 'Points' : 'Queue' };
@@ -4157,6 +4201,7 @@ function aocMode(on){
   const nav = $('[data-wnav]', v); if (nav) nav.setAttribute('aria-label', on ? 'AOC sections' : 'White cell sections');
   if (on && !app.aocLanded){ app.aocLanded = true; $('[data-wtab="pic"]', v).click(); }
   const cur = $('[data-wtab][aria-selected="true"]', v); if (on && cur && cur.hasAttribute('data-aoc-off')) $('[data-wtab="pic"]', v).click();
+  if (!on && cur && cur.hasAttribute('data-aoc-only')) $('[data-wtab="all"]', v).click();
 }
 function buildWhite(){
   if (app.built === 'white') return; app.built = 'white';
@@ -4181,7 +4226,7 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['wf', 'White Force'], ['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : k === 'wf' ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
@@ -4197,6 +4242,11 @@ function buildWhite(){
     </div>
     <div data-warbar></div>
     <div class="white-grid" data-wgrid>
+      <section class="wfsec" data-sec="wf" data-wfsec data-aoc-only>
+        <div class="pic-card"><div class="pic-h"><h3>Waiting on the white cell</h3><span data-wfwaitn></span></div><div class="pic-list" data-wfwait></div></div>
+        <div class="pic-card"><div class="pic-h"><h3>White cell decisions</h3><span data-wfruln></span></div><div class="pic-list" data-wfrul></div></div>
+        <div class="pic-card"><div class="pic-h"><h3>POC traffic</h3><span data-wfpocn></span></div><div class="pic-list" data-wfpoc></div></div>
+      </section>
       <section class="pic" data-sec="pic" data-pic>
         <div class="pic-head">
           <div class="pic-tile"><span class="k">Board time</span><b class="mono pic-big" data-clock>—</b><span class="pic-sub" data-picphase></span></div>
@@ -4412,7 +4462,7 @@ function buildWhite(){
     $$('[data-sec]', v).forEach(el => { const sec = el.dataset.sec.split(' '), on = k === 'all' ? !sec.includes('pic') : sec.includes(k); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
     $('[data-wgrid]', v).classList.toggle('filtered', k !== 'all');
     $('[data-wgrid]', v).classList.toggle('picmode', k === 'pic');
-    if (k === 'pic') setTimeout(() => refresh(true), 0);
+    if (k === 'pic' || k === 'wf') setTimeout(() => refresh(true), 0);
     if (k === 'intel'){ const f = $('[data-ipbuild]', v); if (f) f.open = true; }
     if (k === 'setup'){ const f = $('[data-mapsetup]', v); if (f) f.open = true; }
     pref.set('marala-wtab', k);
@@ -5041,6 +5091,7 @@ function renderWhite(S, now){
   const voids = app.events.filter(e => e.type === 'void').length;
   if (app.multi){ const ng = $('[data-newgame]', v), rs = $('[data-restore]', v); if (ng) ng.hidden = true; if (rs) rs.hidden = true; }
   renderPic(S, v);
+  if (app.role === 'A') renderWF(S, v);
   $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · Saved on this computer' : ' · Shared');
 }
 
