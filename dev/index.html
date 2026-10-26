@@ -139,7 +139,9 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 #vWhite:not(.aocv) [data-aoc-only]{display:none!important}
 .white-grid>.wfsec{grid-column:1/-1!important}
 .wfsec{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
-.wfsec>.pic-card:first-child{grid-row:span 2}
+.wfcol{display:flex;flex-direction:column;gap:14px;min-width:0}
+.wf-chat{border-color:var(--aoc)}.wf-chat .chatlog{max-height:340px;min-height:120px}
+.wnav .cnt.cnt-q{background:var(--muted)}
 .wfsec .pic-list{max-height:clamp(320px,60vh,760px);overflow-y:auto;padding-right:4px}
 .wf-counts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:4px}
 .wf-count{border:1px solid var(--line);border-radius:8px;padding:8px 6px;text-align:center;display:grid;gap:2px;color:var(--muted)}
@@ -147,8 +149,8 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .wf-count span{font-family:var(--display);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
 .wf-count.on{color:var(--ink);border-color:var(--warn);background:var(--panel-2)}.wf-count.on b{color:var(--warn)}
 .wf-rej{border-color:var(--bad)}
-@media (max-width:900px){.wfsec{grid-template-columns:minmax(0,1fr)}.wfsec>.pic-card:first-child{grid-row:auto}.wf-counts{grid-template-columns:repeat(3,minmax(0,1fr))}}
-#vWhite.aocv [data-aoc-off],#vWhite.aocv [data-act="void"],#vWhite.aocv [data-ipview]{display:none!important}
+@media (max-width:900px){.wfsec{grid-template-columns:minmax(0,1fr)}.wf-counts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+#vWhite.aocv [data-aoc-off],#vWhite.aocv [data-act="void"],#vWhite.aocv [data-ipview],#vWhite.aocv [data-act="ipdeploy"],#vWhite.aocv [data-act="ipclose"]{display:none!important}
 .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:var(--side);background:var(--side-soft);border:1px solid var(--side);border-radius:4px;padding:2px 8px}
 .chip{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--muted);background:var(--panel-2)}
 .chip.ok{color:var(--good);border-color:var(--good)}
@@ -2099,6 +2101,12 @@ function apply(S, e, cfg){
       pushLog(S, 'Inject template ' + (ix >= 0 ? 'updated' : 'saved') + ': ' + label, null, e);
       break; }
     case 'tpl_del': { if (!S.tpls) break; const ix = S.tpls.findIndex(x => x.id === p.id); if (ix < 0) break; const t = S.tpls.splice(ix, 1)[0]; S.ver++; pushLog(S, 'Inject template deleted: ' + t.label, null, e); break; }
+    case 'aoc_msg': {
+      const tx = String(p.text || '').trim().slice(0, 500); if (!tx) break;
+      const from = e.by === 'A' ? 'A' : 'W';
+      if (!S.aocChat) S.aocChat = []; S.aocChat.push({ id:e.id, from, text:tx, g:S.g }); S.ver++;
+      pushLog(S, (from === 'A' ? 'AOC to white cell: ' : 'White cell to AOC: ') + tx, null, e);
+      break; }
     case 'ocann': {
       const tx = String(p.text || '').trim().slice(0, 400); if (!tx) break;
       S.ocAnns.push({ id:e.id, text:tx, g:S.g }); S.ver++;
@@ -2357,7 +2365,8 @@ document.addEventListener('keydown', audioUnlock, { capture:true });
 document.addEventListener('change', ev => { if (ev.target.matches && ev.target.matches('[data-msgsound]')){ pref.set('marala-msgsound', ev.target.checked ? '1' : '0'); $$('[data-msgsound]').forEach(x => x.checked = ev.target.checked); if (ev.target.checked){ msgAt = 0; msgSound(); } } });
 function msgIncoming(S){
   const r = app.role; if (!r) return null;
-  if (r === 'W') return (S.occhats || []).filter(m => m.from === 'oc').length;
+  if (r === 'W') return (S.occhats || []).filter(m => m.from === 'oc').length + (S.aocChat || []).filter(m => m.from === 'A').length;
+  if (r === 'A') return (S.aocChat || []).filter(m => m.from === 'W').length;
   if (r === 'B' || r === 'R') return (S.tchats || []).filter(m => m.side === r && m.from === 'team').length + S.liaison.filter(m => m.side !== r).length;
   if (r === 'TB' || r === 'TR'){ const me = teamGet(r[1]); return me ? (S.tchats || []).filter(m => m.side === r[1] && m.team === me.id && m.from !== 'team').length : null; }
   if (r === 'OC'){ const me = ocGet(); return me ? (S.occhats || []).filter(m => m.oc === me.id && m.from === 'wc').length + (S.ocAnns || []).length + (S.ocReqs || []).filter(x => x.oc === me.id && x.reply).length : null; }
@@ -4161,6 +4170,19 @@ function renderPic(S, v){
   const tl = '<div class="tl-lab"><span style="height:23px"></span><span style="height:' + (ih + 1) + 'px">Intel packages</span><span>Injects</span><span>Messages</span></div><div class="tl-track"><div class="tl-axis">' + ax + '</div><div class="tl-lane" style="height:' + ih + 'px">' + bars + '</div><div class="tl-lane">' + mk(injs, 'inj') + '</div><div class="tl-lane">' + mk(msgs, 'msg') + '</div>' + nowL + '</div>';
   { const tb = $('[data-pictl]', v); if (tb.dataset.h !== tl){ tb.dataset.h = tl; tb.innerHTML = tl; } }
 }
+function renderAocChat(S, v){
+  const me = app.role === 'A' ? 'A' : 'W', other = me === 'A' ? 'W' : 'A', ms = S.aocChat || [], key = 'marala-aocseen-' + (app.gid || 'none') + '-' + me;
+  const theirs = ms.filter(m => m.from === other).length; let seen = 0; try { seen = +localStorage.getItem(key) || 0; } catch(e){}
+  const panels = $$('[data-aocchat]', v).filter(el => el.offsetParent && !el.closest('[data-off]'));
+  if (panels.length && document.visibilityState === 'visible'){ seen = theirs; try { localStorage.setItem(key, String(seen)); } catch(e){} }
+  const un = Math.max(0, theirs - seen), k = ms.length + '|' + me;
+  $$('[data-aocchat]', v).forEach(el => { if (el.dataset.k === k) return; el.dataset.k = k;
+    el.innerHTML = ms.length ? ms.slice(-80).map(m => '<div class="chatmsg' + (m.from === me ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' · ' + (m.from === 'A' ? 'AOC' : 'White cell') + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages yet. ' + (me === 'A' ? 'Direct the white cell or ask about the field here.' : 'Messages from the AOC land here.') + '</div>';
+    el.scrollTop = el.scrollHeight; });
+  $$('[data-aocn]', v).forEach(el => el.textContent = un ? un + ' unread' : '');
+  if (me === 'A'){ $$('[data-aocun]', v).forEach(el => { el.hidden = !un; el.textContent = un; }); if (app.aocToastN != null && un > app.aocToastN) toast('New message from the white cell. Open the White Force tab.'); app.aocToastN = un; }
+  return me === 'W' ? un : 0;
+}
 function wfWaiting(S){
   const out = [], kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request', wp:'Waypoint request' };
   const add = (cat, side, g, title, text) => out.push({ cat, side, g, title, text });
@@ -4184,7 +4206,7 @@ function renderWF(S, v){
     (W.length ? W.slice().reverse().map(w => '<div class="pic-item"><div class="pic-it"><span class="pic-tag">' + esc(w.cat) + '</span><b>' + esc(w.title) + '</b>' + side(w.side) + '</div><div class="pic-meta"><span>' + esc(w.text) + '</span><span>Waiting since ' + hhmm(w.g) + ' · ' + picAgo(S.g - w.g) + '</span></div></div>').join('') : '<div class="pic-empty">Nothing is waiting on the white cell.</div>');
   { const el = $('[data-wfwait]', v); if (el.dataset.h !== h1){ el.dataset.h = h1; el.innerHTML = h1; } }
   $('[data-wfwaitn]', v).textContent = W.length ? W.length + ' waiting' : 'Clear';
-  const R = S.log.filter(l => l.by === 'W' && l.type !== 'tick' && !/^(clock|tpl_|injq_add|injq_del|map_|wp_|ip_|oc_edit|oc_assign|window_set)/.test(l.type)).slice(-40).reverse();
+  const R = S.log.filter(l => l.by === 'W' && l.type !== 'tick' && !/^(clock|tpl_|injq_add|injq_del|map_|wp_|ip_|oc_edit|oc_assign|window_set|aoc_msg)/.test(l.type)).slice(-40).reverse();
   const h2 = R.length ? R.map(l => '<div class="pic-item' + (l.status === 'rejected' ? ' wf-rej' : '') + '"><div class="pic-meta"><span class="mono">' + hhmm(l.g) + '</span>' + side(l.side) + '</div><div class="pic-text">' + esc(l.text) + '</div></div>').join('') : '<div class="pic-empty">White cell decisions appear here as they are made.</div>';
   { const el = $('[data-wfrul]', v); if (el.dataset.h !== h2){ el.dataset.h = h2; el.innerHTML = h2; } }
   $('[data-wfruln]', v).textContent = R.length ? 'Last ' + R.length : '';
@@ -4226,7 +4248,7 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['wf', 'White Force'], ['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : k === 'wf' ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['wf', 'White Force'], ['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : k === 'wf' ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
@@ -4243,9 +4265,15 @@ function buildWhite(){
     <div data-warbar></div>
     <div class="white-grid" data-wgrid>
       <section class="wfsec" data-sec="wf" data-wfsec data-aoc-only>
-        <div class="pic-card"><div class="pic-h"><h3>Waiting on the white cell</h3><span data-wfwaitn></span></div><div class="pic-list" data-wfwait></div></div>
-        <div class="pic-card"><div class="pic-h"><h3>White cell decisions</h3><span data-wfruln></span></div><div class="pic-list" data-wfrul></div></div>
-        <div class="pic-card"><div class="pic-h"><h3>POC traffic</h3><span data-wfpocn></span></div><div class="pic-list" data-wfpoc></div></div>
+        <div class="wfcol">
+          <div class="pic-card wf-chat"><div class="pic-h"><h3>Messages with the white cell</h3><span data-aocn></span></div><div class="chatlog" data-aocchat></div>
+            <form class="row" data-aocf style="align-items:end"><label>Message to the white cell<input name="text" maxlength="500" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
+          <div class="pic-card"><div class="pic-h"><h3>Waiting on the white cell</h3><span data-wfwaitn></span></div><div class="pic-list" data-wfwait></div></div>
+        </div>
+        <div class="wfcol">
+          <div class="pic-card"><div class="pic-h"><h3>White cell decisions</h3><span data-wfruln></span></div><div class="pic-list" data-wfrul></div></div>
+          <div class="pic-card"><div class="pic-h"><h3>POC traffic</h3><span data-wfpocn></span></div><div class="pic-list" data-wfpoc></div></div>
+        </div>
       </section>
       <section class="pic" data-sec="pic" data-pic>
         <div class="pic-head">
@@ -4300,6 +4328,9 @@ function buildWhite(){
       <div class="stack" style="gap:14px;min-width:0" data-sec="queue msg">
         <div class="panel" data-sec="queue" data-aoc-off><div class="act-head"><h2>POCs</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
           <details data-ocroster style="margin-top:8px"><summary class="small"><b>Manage POCs</b> <span class="muted" data-ocn></span></summary><div class="list" data-ocrows style="margin-top:6px"></div></details></div>
+        <div class="panel stack" data-sec="queue msg" data-aoc-off><div class="act-head"><h2>AOC</h2><span class="small muted" data-aocn></span></div>
+          <div class="chatlog" data-aocchat></div>
+          <form class="row" data-aocf style="align-items:end"><label>Message to the AOC<input name="text" maxlength="500" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
         <div class="panel stack" data-sec="queue msg" data-aoc-off><div class="act-head"><h2>POC messages</h2><span class="small muted" data-occhatn></span></div><label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
           <div class="list" data-occhatlist></div>
           <div class="act stack" data-occbox hidden><div class="act-head"><b data-occhead>Messages</b><button type="button" data-occclose style="flex:0 0 auto">Close</button></div><div class="chatlog" data-occwlog></div><form class="row" data-occwf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
@@ -4449,6 +4480,7 @@ function buildWhite(){
   $('[data-fullmap]', v).onclick = () => openFullMap(null);
   { const pc = $('[data-picpoc]', v); pc.checked = pref.get('marala-picpoc', '1') === '1'; pc.onchange = () => { pref.set('marala-picpoc', pc.checked ? '1' : '0'); refresh(true); }; }
   $('[data-picfull]', v).onclick = () => openFullMap(null);
+  $$('[data-aocf]', v).forEach(f => f.addEventListener('submit', ev => { ev.preventDefault(); const t = f.elements.text.value.trim(); if (!t) return; writeEvent('aoc_msg', null, { text:t }); f.reset(); f.elements.text.focus(); }));
   $('[data-picping]', v).onclick = () => { const S = app.S; if (!S) return; const n = Object.values(S.ocs).filter(o => !o.removed).length;
     if (S.clock.started) writeEvent('ping', null, { to:'both' });
     if (n) writeEvent('oc_ping', null, { all:true });
@@ -5068,8 +5100,8 @@ function renderWhite(S, now){
     q.push('<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + kindName[r.kind] + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + r.text : r.text) + '</div></div><div class="row" style="flex:1 1 260px">' + ctl + '</div></div>');
   });
   { const ne = $('[data-wnesc]', v); if (ne) ne.textContent = '· Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ')'; }
-  const occUn = renderOCChatWhite(S, v);
-  { const pend = occUn + q.length + S.nines.filter(n => n.status === 'open').length + S.ocReqs.filter(r => r.status === 'open').length; whiteAttention(app.role === 'A' ? 0 : pend); const cb = $('[data-chime]', v); if (cb && !cb.dataset.wired){ cb.dataset.wired = '1'; cb.checked = pref.get('marala-chime', '1') === '1'; cb.onchange = () => { pref.set('marala-chime', cb.checked ? '1' : '0'); if (cb.checked){ chimeAt = 0; chime(); } }; } }
+  const occUn = renderOCChatWhite(S, v), aocUn = renderAocChat(S, v);
+  { const pend = occUn + aocUn + q.length + S.nines.filter(n => n.status === 'open').length + S.ocReqs.filter(r => r.status === 'open').length; whiteAttention(app.role === 'A' ? 0 : pend); const cb = $('[data-chime]', v); if (cb && !cb.dataset.wired){ cb.dataset.wired = '1'; cb.checked = pref.get('marala-chime', '1') === '1'; cb.onchange = () => { pref.set('marala-chime', cb.checked ? '1' : '0'); if (cb.checked){ chimeAt = 0; chime(); } }; } }
   $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force, strikes and waypoint requests land here.</div>';
   $('[data-score]', v).innerHTML = scoreTable(S, ['B', 'R']);
   const running = S.clock.started && !S.endex;
