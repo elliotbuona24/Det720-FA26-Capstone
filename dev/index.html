@@ -79,6 +79,63 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .side-R{--side:var(--red);--side-soft:var(--red-soft)}
 .side-W{--side:var(--wc);--side-soft:var(--wc-soft)}
 .side-A{--side:var(--aoc);--side-soft:var(--aoc-soft)}
+.white-grid>.pic{grid-column:1/-1!important}.white-grid.picmode{display:block}
+.pic{display:grid;gap:14px;min-width:0}
+.pic .k{font-family:var(--display);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pic-head{display:grid;grid-template-columns:minmax(150px,auto) minmax(0,1fr) minmax(150px,auto) minmax(150px,auto);gap:14px}
+.pic-tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:grid;gap:4px;align-content:center;min-width:0}
+.pic-big{font-size:40px;line-height:1;letter-spacing:.02em}
+.pic-mid{font-family:var(--display);font-size:24px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.pic-sub{font-size:13px;color:var(--muted)}
+.pic-row{display:flex;justify-content:space-between;gap:10px}
+.pic-ends{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.pic-bar{height:12px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden}
+.pic-bar i{display:block;height:100%;background:var(--ink);transition:width .6s}
+.pic-score{display:flex;align-items:baseline;gap:10px;font-family:var(--mono);font-size:30px;line-height:1}
+.pic-score .B{color:var(--blu)}.pic-score .R{color:var(--red)}.pic-score span{color:var(--muted);font-size:22px}
+.pic-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,400px);gap:14px;align-items:stretch}
+.pic-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pic-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pic-h h3{margin:0;font-family:var(--display);font-size:16px;letter-spacing:.12em;text-transform:uppercase}
+.pic-h>span{font-size:12.5px;color:var(--muted)}
+.pic-tools{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}.pic-tools .chk{margin:0}.pic-push{margin-left:auto}
+.pic-map.lmap{height:clamp(420px,62vh,820px)}
+.pic-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;align-items:center}
+.pic-legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.pic-legend i.hol{background:#111}
+.pic-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.pic-fill{flex:1 1 auto;min-height:260px}
+.pic-list{display:flex;flex-direction:column;gap:8px}
+.pic-comms{overflow-y:auto;max-height:clamp(260px,40vh,520px);padding-right:4px}
+.pic-item{border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:grid;gap:5px;background:var(--panel)}
+.pic-it{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}.pic-it b{flex:1 1 auto;min-width:0}
+.pic-tag{font-family:var(--display);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.pic-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--muted)}
+.pic-meta .warn{color:var(--warn);font-weight:600}
+.pic-text{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.pic-mini{height:5px;border-radius:3px;background:var(--panel-2);overflow:hidden}.pic-mini i{display:block;height:100%;background:var(--warn)}
+.pic-empty{font-size:13.5px;color:var(--muted);padding:6px 2px}
+.pic-next{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+.chip.both{color:var(--ink);border-color:var(--ink)}
+.pic-tl{display:grid;grid-template-columns:118px minmax(0,1fr);gap:0 10px;overflow-x:auto;padding-bottom:4px}
+.tl-lab{display:flex;flex-direction:column;font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tl-lab span{height:31px;display:flex;align-items:center;flex:0 0 auto}
+.tl-track{position:relative;min-width:560px}
+.tl-axis{position:relative;height:22px;border-bottom:1px solid var(--line)}
+.tl-tk{position:absolute;top:2px;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--muted)}
+.tl-tk:first-child{transform:none}.tl-tk:last-child{transform:translateX(-100%)}
+.tl-lane{position:relative;height:30px;border-bottom:1px dashed var(--line)}
+.tl-bar{position:absolute;height:24px;min-width:6px;border-radius:5px;border:1.5px solid var(--ink);background:var(--panel-2);display:flex;align-items:center;gap:6px;padding:0 6px;overflow:hidden;white-space:nowrap;font-size:12px;box-sizing:border-box}
+.tl-bar b{font-family:var(--mono)}.tl-bar span{overflow:hidden;text-overflow:ellipsis}
+.tl-bar.to-B{border-color:var(--blu);background:var(--blu-soft)}.tl-bar.to-R{border-color:var(--red);background:var(--red-soft)}.tl-bar.to-both{background:linear-gradient(180deg,var(--blu-soft) 50%,var(--red-soft) 50%)}
+.tl-bar.done{opacity:.5}
+.tl-mk{position:absolute;top:8px;width:13px;height:13px;margin-left:-6.5px;transform:rotate(45deg);border:2px solid var(--panel);background:var(--ink);box-shadow:0 0 0 1px var(--ink);box-sizing:border-box}
+.tl-mk.msg{border-radius:50%;transform:none}
+.tl-mk.to-B{background:var(--blu);box-shadow:0 0 0 1px var(--blu)}.tl-mk.to-R{background:var(--red);box-shadow:0 0 0 1px var(--red)}.tl-mk.to-public{background:var(--muted);box-shadow:0 0 0 1px var(--muted)}
+.tl-now{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--bad);z-index:2}
+.tl-now span{position:absolute;top:-1px;left:4px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--panel);background:var(--bad);border-radius:3px;padding:0 4px}
+@media (max-width:1000px){.pic-main{grid-template-columns:minmax(0,1fr)}.pic-head{grid-template-columns:repeat(2,minmax(0,1fr))}.pic-prog{grid-column:1/-1;order:3}}
+@media (max-width:560px){.pic-big{font-size:32px}.pic-tl{grid-template-columns:90px minmax(0,1fr)}}
 #vWhite.aocv [data-aoc-off],#vWhite.aocv [data-act="void"],#vWhite.aocv [data-ipview]{display:none!important}
 .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:var(--side);background:var(--side-soft);border:1px solid var(--side);border-radius:4px;padding:2px 8px}
 .chip{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--muted);background:var(--panel-2)}
@@ -1672,7 +1729,7 @@ function apply(S, e, cfg){
       const q = (S.injq || []).find(x => x.qid === p.qid); if (!q || q.sent != null) break;
       const text = fillT(p.text ? String(p.text).slice(0, 700) : q.text);
       q.sent = S.g; q.sentText = text; S.ver++;
-      pushFeed(S, q.to, text, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from) });
+      pushFeed(S, q.to, text, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label });
       pushLog(S, 'Inject sent (' + q.label + ') to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[q.to] + ': ' + text, null, e);
       break; }
     case 'guess_ack': { const a = (S.guessAlerts || []).find(x => x.id === p.id); if (a){ a.ack = true; S.ver++; } break; }
@@ -2012,6 +2069,7 @@ function apply(S, e, cfg){
       pushLog(S, from === 'wc' ? 'White cell to POC ' + o.name + ': ' + tx : 'POC ' + o.name + ' to white cell: ' + tx, null, e);
       break; }
     case 'oc_ping': {
+      if (p.all){ if (!S.ocPings) S.ocPings = []; const live = Object.values(S.ocs).filter(o => !o.removed); live.forEach(o => S.ocPings.push({ id:e.id, oc:o.id, ts:e.ts, g:S.g })); S.ver++; pushLog(S, (e.by === 'A' ? 'AOC' : 'White cell') + ' requested the position of every POC (' + live.length + ')', null, e); break; }
       const o = S.ocs[p.oc]; if (!o || o.removed) break;
       if (!S.ocPings) S.ocPings = []; S.ocPings.push({ id:e.id, oc:o.id, ts:e.ts, g:S.g }); S.ver++;
       pushLog(S, 'White cell requested the position of POC ' + o.name, null, e);
@@ -2129,7 +2187,7 @@ function apply(S, e, cfg){
       else { pushFeed(S, 'both', 'The white cell is back at its planned spot' + (where ? ', ' + where : '') + '.', 'hq', { label:'White cell' }); pushLog(S, 'White cell back at its planned spot', null, e); }
       break; }
     case 'map_config': S.map = p && p.sw && p.ne ? Object.assign({}, p, { outline:Array.isArray(p.outline) ? p.outline.map(q => Array.isArray(q) ? q : q && Number.isFinite(q.lat) && Number.isFinite(q.lng) ? [q.lat, q.lng] : null).filter(Boolean) : null }) : null; S.wps = S.wps.filter(w => !(w.poi && !w.touched && w.to === 'none' && !w.del)); seedPois(S, S.map ? S.map.pois : DEFAULT_POIS, e.id); S.ver++; pushLog(S, 'Map updated', null, e); break;
-    case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:hqFrom(p.label) }); pushLog(S, 'Message to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
+    case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:hqFrom(p.label), comm:'msg' }); pushLog(S, 'Message to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
     case 'adjust': {
       const d = Number(p.delta) || 0;
       if (p.field === 'esc'){ if (d > 0) raise(S, side || null, d); else lower(S, -d); }
@@ -3193,7 +3251,7 @@ function drawDyn(st, S, side, opts){
   });
   const wcp = wcSpot(S);
   if (wcp) L.marker(wcp, { icon:WC_ICON(), zIndexOffset:900 }).bindTooltip('White cell' + (S.wcPos ? ' (moved)' : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[14, 0] }).bindPopup('<b>White cell</b><br><span class="mono">' + esc(fmtPt(wcp)) + '</span>' + (squareOf(M, wcp) ? '<br>Play square ' + squareOf(M, wcp) : '')).addTo(LS.wc);
-  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side))).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + (w.desc ? esc(w.desc) + '<br>' : '') + '<span class="small">' + esc(WP_SYMS[w.sym]) + '</span><br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(side ? LS.wp : w.to === 'none' ? LS.wpq : w.to === 'B' ? LS.wpB : w.to === 'R' ? LS.wpR : (pr.wpB ? LS.wpB : LS.wpR)));
+  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side)) && !(opts && opts.deployedOnly && w.to === 'none')).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' · ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + (w.desc ? esc(w.desc) + '<br>' : '') + '<span class="small">' + esc(WP_SYMS[w.sym]) + '</span><br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(side ? LS.wp : w.to === 'none' ? LS.wpq : w.to === 'B' ? LS.wpB : w.to === 'R' ? LS.wpR : (pr.wpB ? LS.wpB : LS.wpR)));
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
     const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' · Blue Force office' : '') + (open('R') ? ' · Red Force office' : '') : (open(side) ? ' · Your office is open' : ''));
@@ -3232,7 +3290,7 @@ function renderMapInto(el, S, side, opts){
   const M = (app.role === 'W' && app.previewMap) || mapCfg(S);
   if (M && window.L){
     const st = lmapEnsure(el, M);
-    if (!M.preview){ drawDyn(st, S, side, opts); if (!(opts && opts.team)) drawPins(st, S); } else if (st.lay) Object.values(st.lay).forEach(g => g.clearLayers());
+    if (!M.preview){ drawDyn(st, S, side, opts); if (opts && opts.noPins){ if (st.pins) st.pins.clearLayers(); } else if (!(opts && opts.team)) drawPins(st, S); } else if (st.lay) Object.values(st.lay).forEach(g => g.clearLayers());
     return true;
   }
   if (el._lm){ el._lm.map.remove(); el._lm = null; el.classList.remove('lmap'); }
@@ -4046,13 +4104,59 @@ const TEMPLATES = [
   { lvl:2, label:'Militia between you', to:'both', text:'Militia gunmen have opened fire near both forces at the center of the island. Do not fire on each other.' },
   { lvl:3, label:'Off-ramp', to:'both', text:'AOC: pull back from your nearest site under contention or stalemate within 10 minutes. Coordinate the withdrawal with the other force.' }
 ];
+const PIC_POC_LIFE = 30;
+function picTo(to){ return to === 'B' || to === 'R' ? '<span class="chip ' + to + '">' + SIDES[to].name + '</span>' : to === 'public' ? '<span class="chip">Public</span>' : to === 'poc' ? '<span class="chip">All POCs</span>' : '<span class="chip both">Both</span>'; }
+function picAgo(m){ m = Math.max(0, Math.round(m)); return m < 1 ? 'just now' : m + ' min ago'; }
+function renderPic(S, v){
+  const box = $('[data-pic]', v); if (!box || box.hasAttribute('data-off')) return;
+  const len = Math.max(1, END_G - START_G), started = S.clock.started, g = started ? Math.min(S.g, END_G) : START_G, el = Math.max(0, Math.floor(g - START_G)), left = Math.max(0, Math.ceil(END_G - g)), lvl = levelIndex(S.esc);
+  $('[data-picphase]', v).textContent = !started ? 'Before STARTEX' : S.endex ? 'ENDEX' : S.clock.running ? 'Running' : 'Paused';
+  $('[data-picel]', v).textContent = started ? el + ' min elapsed' : 'Starts ' + hhmm(START_G);
+  $('[data-picleft]', v).textContent = S.endex ? 'Complete' : started ? left + ' min left' : len + ' min planned';
+  $('[data-picfill]', v).style.width = (S.endex ? 100 : el / len * 100).toFixed(1) + '%';
+  $('[data-picst]', v).textContent = 'STARTEX ' + hhmm(START_G); $('[data-picen]', v).textContent = 'ENDEX ' + hhmm(END_G);
+  $('[data-picesc]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + '</span> <span class="mono">' + S.esc + '</span>';
+  $('[data-picsb]', v).textContent = score(S, 'B').total; $('[data-picsr]', v).textContent = score(S, 'R').total;
+  const mapEl = $('[data-picmap]', v), showPoc = $('[data-picpoc]', v).checked, now = Date.now();
+  const pocs = Object.entries(S.ocPos || {}).map(([id, x]) => ({ o:S.ocs[id], x, age:(now - x.ts) / 60000 })).filter(r => r.o && !r.o.removed && r.age < PIC_POC_LIFE);
+  $('[data-picpocn]', v).textContent = pocs.length + ' of ' + Object.values(S.ocs).filter(o => !o.removed).length + ' POCs located in the last ' + PIC_POC_LIFE + ' min';
+  if (renderMapInto(mapEl, S, null, { noPins:true, deployedOnly:true }) && mapEl._lm){ const st = mapEl._lm; if (!st.picPoc) st.picPoc = L.layerGroup().addTo(st.map); st.picPoc.clearLayers();
+    if (showPoc) pocs.forEach(r => { const op = r.age < 5 ? 1 : .45; L.circleMarker(r.x.pt, { radius:8, color:'#ffffff', weight:2.5, opacity:op, fillColor:'#e040fb', fillOpacity:op }).bindTooltip(esc(r.o.name + ' · ' + ocWhere(S, r.o) + ' · ' + new Date(r.x.ts).toTimeString().slice(0, 5)), { permanent:r.age < 5, direction:'right', className:'teamlbl', offset:[10, 0], opacity:op }).addTo(st.picPoc); }); }
+  const intel = []; allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), os = [oB, oR].filter(Boolean); if (!os.length) return;
+    intel.push({ n:i + 1, title:fillT(P.title), a:Math.min(...os.map(o => o.g)), b:Math.max(...os.map(o => o.due)), done:os.every(o => o.done), to:oB && oR ? 'both' : oB ? 'B' : 'R' }); });
+  const injs = (S.injq || []).filter(q => q.sent != null).map(q => ({ g:q.sent, label:q.label, to:q.to }));
+  const comms = S.feed.filter(f => f.comm).map(f => ({ g:f.g, from:hqFrom(f.label), to:f.to, text:f.text, kind:f.comm })).concat((S.ocAnns || []).map(a => ({ g:a.g, from:'White cell', to:'poc', text:a.text, kind:'msg' }))).sort((x, y) => y.g - x.g);
+  const openI = intel.filter(x => !x.done), recent = injs.filter(q => S.g - q.g <= 20).sort((x, y) => y.g - x.g);
+  const next = (S.injq || []).filter(q => q.sent == null && q.at != null).sort((x, y) => x.at - y.at)[0];
+  $('[data-picoutn]', v).textContent = openI.length + ' intel · ' + recent.length + ' recent inject' + (recent.length === 1 ? '' : 's');
+  let out = openI.map(x => { const tot = Math.max(1, x.b - x.a), pct = Math.max(0, Math.min(100, (S.g - x.a) / tot * 100)), rem = Math.max(0, Math.ceil(x.b - S.g));
+    return '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Intel ' + x.n + '</span><b>' + esc(x.title) + '</b>' + picTo(x.to) + '</div><div class="pic-meta"><span>Out ' + hhmm(x.a) + '</span><span class="' + (rem <= 3 ? 'warn' : '') + '">Due ' + hhmm(x.b) + ' · ' + rem + ' min left</span></div><div class="pic-mini"><i style="width:' + pct.toFixed(1) + '%"></i></div></div>'; }).join('');
+  out += recent.map(q => '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Inject</span><b>' + esc(q.label) + '</b>' + picTo(q.to) + '</div><div class="pic-meta"><span>Sent ' + hhmm(q.g) + '</span><span>' + picAgo(S.g - q.g) + '</span></div></div>').join('');
+  if (!out) out = '<div class="pic-empty">' + (started ? 'Nothing out right now.' : 'Nothing is out before STARTEX.') + '</div>';
+  if (next) out += '<div class="pic-next">Next queued inject: <b>' + esc(next.label) + '</b> at ' + hhmm(START_G + next.at) + (started && START_G + next.at > S.g ? ' (in ' + Math.ceil(START_G + next.at - S.g) + ' min)' : '') + '</div>';
+  { const ob = $('[data-picout]', v); if (ob.dataset.h !== out){ ob.dataset.h = out; ob.innerHTML = out; } }
+  $('[data-piccomn]', v).textContent = comms.length + ' sent';
+  const ch = comms.length ? comms.slice(0, 60).map(c => '<div class="pic-item"><div class="pic-meta"><span class="mono">' + hhmm(c.g) + '</span><span>' + esc(c.from) + ' → ' + picTo(c.to) + (c.kind === 'inj' ? ' <span class="pic-tag">Inject</span>' : '') + '</span></div><div class="pic-text">' + esc(c.text) + '</div></div>').join('') : '<div class="pic-empty">Messages and injects sent to the forces appear here.</div>';
+  { const cb = $('[data-piccomms]', v); if (cb.dataset.h !== ch){ cb.dataset.h = ch; cb.innerHTML = ch; } }
+  const pos = t => (Math.max(0, Math.min(len, t - START_G)) / len * 100).toFixed(2) + '%', step = len > 150 ? 30 : len > 60 ? 15 : 10;
+  const rows = []; intel.slice().sort((x, y) => x.a - y.a).forEach(x => { let r = rows.findIndex(end => end <= x.a); if (r < 0){ r = rows.length; rows.push(0); } rows[r] = x.b; x.row = r; });
+  const ih = Math.max(1, rows.length) * 30;
+  let ax = ''; for (let t = START_G; t <= END_G + .01; t += step) ax += '<span class="tl-tk" style="left:' + pos(t) + '">' + hhmm(t) + '</span>';
+  const bars = intel.map(x => '<div class="tl-bar to-' + x.to + (x.done ? ' done' : '') + '" style="left:' + pos(x.a) + ';width:calc(' + pos(x.b) + ' - ' + pos(x.a) + ');top:' + (x.row * 30 + 3) + 'px" title="' + esc('Intel ' + x.n + ': ' + x.title + ' · ' + hhmm(x.a) + ' to ' + hhmm(x.b)) + '"><b>' + x.n + '</b><span>' + esc(x.title) + '</span></div>').join('');
+  const mk = (list, cls) => list.map(c => '<span class="tl-mk ' + cls + ' to-' + c.to + '" style="left:' + pos(c.g) + '" title="' + esc(hhmm(c.g) + ' · ' + String(c.label).slice(0, 140)) + '"></span>').join('');
+  const nowL = started ? '<div class="tl-now" style="left:' + pos(g) + '"><span>' + hhmm(g) + '</span></div>' : '';
+  const msgs = comms.filter(c => c.kind === 'msg').map(c => ({ g:c.g, to:c.to, label:c.from + ': ' + c.text }));
+  const tl = '<div class="tl-lab"><span style="height:23px"></span><span style="height:' + (ih + 1) + 'px">Intel packages</span><span>Injects</span><span>Messages</span></div><div class="tl-track"><div class="tl-axis">' + ax + '</div><div class="tl-lane" style="height:' + ih + 'px">' + bars + '</div><div class="tl-lane">' + mk(injs, 'inj') + '</div><div class="tl-lane">' + mk(msgs, 'msg') + '</div>' + nowL + '</div>';
+  { const tb = $('[data-pictl]', v); if (tb.dataset.h !== tl){ tb.dataset.h = tl; tb.innerHTML = tl; } }
+}
 function aocMode(on){
   const v = $('#vWhite'); v.classList.toggle('aocv', on);
   const nm = { queue:on ? 'Points' : 'Queue' };
   $$('[data-wtab]', v).forEach(b => { const s = $('[data-wtabname]', b); if (s && nm[b.dataset.wtab]) s.textContent = nm[b.dataset.wtab]; });
   const mt = $('[data-wmaptitle]', v); if (mt) mt.textContent = on ? 'AOC map' : 'White cell map';
   const nav = $('[data-wnav]', v); if (nav) nav.setAttribute('aria-label', on ? 'AOC sections' : 'White cell sections');
-  const cur = $('[data-wtab][aria-selected="true"]', v); if (on && cur && cur.hasAttribute('data-aoc-off')) $('[data-wtab="all"]', v).click();
+  if (on && !app.aocLanded){ app.aocLanded = true; $('[data-wtab="pic"]', v).click(); }
+  const cur = $('[data-wtab][aria-selected="true"]', v); if (on && cur && cur.hasAttribute('data-aoc-off')) $('[data-wtab="pic"]', v).click();
 }
 function buildWhite(){
   if (app.built === 'white') return; app.built = 'white';
@@ -4077,7 +4181,7 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-wnav aria-label="White cell sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
@@ -4093,6 +4197,26 @@ function buildWhite(){
     </div>
     <div data-warbar></div>
     <div class="white-grid" data-wgrid>
+      <section class="pic" data-sec="pic" data-pic>
+        <div class="pic-head">
+          <div class="pic-tile"><span class="k">Board time</span><b class="mono pic-big" data-clock>—</b><span class="pic-sub" data-picphase></span></div>
+          <div class="pic-tile pic-prog"><div class="pic-row"><span class="k" data-picel></span><span class="k" data-picleft></span></div><div class="pic-bar"><i data-picfill></i></div><div class="pic-row pic-ends"><span data-picst></span><span data-picen></span></div></div>
+          <div class="pic-tile"><span class="k">Escalation</span><b class="pic-mid" data-picesc></b></div>
+          <div class="pic-tile"><span class="k">Points</span><div class="pic-score"><b class="B" data-picsb></b><span>:</span><b class="R" data-picsr></b></div></div>
+        </div>
+        <div class="pic-main">
+          <div class="pic-card pic-mapcard">
+            <div class="pic-tools"><button type="button" class="btn-side" data-picping>Ping all devices</button><label class="chk"><input type="checkbox" data-picpoc> Show POCs</label><span class="small muted" data-picpocn></span><button type="button" data-picfull class="pic-push">Full screen</button></div>
+            <div class="pic-map" data-picmap></div>
+            <div class="pic-legend"><span><i style="background:#3d7dff"></i>Blue Force</span><span><i style="background:#ff4d42"></i>Red Force</span><span><i style="background:#e040fb"></i>POC</span><span><i class="hol"></i>Site not held</span><span class="muted">Fireteams and POCs show their last reported position.</span></div>
+          </div>
+          <div class="pic-side">
+            <div class="pic-card"><div class="pic-h"><h3>Out now</h3><span data-picoutn></span></div><div class="pic-list" data-picout></div></div>
+            <div class="pic-card pic-fill"><div class="pic-h"><h3>Communications</h3><span data-piccomn></span></div><div class="pic-list pic-comms" data-piccomms></div></div>
+          </div>
+        </div>
+        <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Deployed intel packages, injects and messages</span></div><div class="pic-tl" data-pictl></div></div>
+      </section>
       <div class="panel" data-sec="map create">
         <div class="map-head"><h2 data-wmaptitle>White cell map</h2><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
@@ -4273,14 +4397,22 @@ function buildWhite(){
     if (u){ useTpl(q); writeEvent('injq_del', null, { qid:q.qid }); toast('Moved to the message box. Edit it, then press Send.'); }
   });
   $('[data-fullmap]', v).onclick = () => openFullMap(null);
+  { const pc = $('[data-picpoc]', v); pc.checked = pref.get('marala-picpoc', '1') === '1'; pc.onchange = () => { pref.set('marala-picpoc', pc.checked ? '1' : '0'); refresh(true); }; }
+  $('[data-picfull]', v).onclick = () => openFullMap(null);
+  $('[data-picping]', v).onclick = () => { const S = app.S; if (!S) return; const n = Object.values(S.ocs).filter(o => !o.removed).length;
+    if (S.clock.started) writeEvent('ping', null, { to:'both' });
+    if (n) writeEvent('oc_ping', null, { all:true });
+    toast(!S.clock.started && !n ? 'No phones to ping yet.' : 'Position request sent to ' + (S.clock.started ? 'every fireteam' : '') + (S.clock.started && n ? ' and ' : '') + (n ? n + ' POC' + (n === 1 ? '' : 's') : '') + '. Phones with the board open answer within a minute.'); };
   ipbWire(v);
   { const g = $('[data-wgrid]', v), kids = [...g.children], pick = sel => kids.find(c => c.matches(sel) || c.querySelector(sel));
     const cols = [[kids.find(c => c.dataset.sec === 'map'), pick('.side-B'), pick('[data-wliaison]')], [pick('[data-ocq]'), pick('.side-R'), pick('[data-log]')], [pick('[data-wpqq]'), pick('[data-wteamsB]'), pick('[data-newgame]')]];
     if (cols.every(c => c.every(Boolean))){ cols.forEach(c => { const col = document.createElement('div'); col.className = 'wcol'; c.forEach(el => col.appendChild(el)); g.appendChild(col); }); kids.filter(c => !cols.flat().includes(c)).forEach(el => { el.classList.add('wfull'); g.appendChild(el); }); } }
   const setTab = (k, scroll) => {
     $$('[data-wtab]', v).forEach(b => b.setAttribute('aria-selected', b.dataset.wtab === k ? 'true' : 'false'));
-    $$('[data-sec]', v).forEach(el => { const on = k === 'all' || el.dataset.sec.split(' ').includes(k); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
+    $$('[data-sec]', v).forEach(el => { const sec = el.dataset.sec.split(' '), on = k === 'all' ? !sec.includes('pic') : sec.includes(k); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
     $('[data-wgrid]', v).classList.toggle('filtered', k !== 'all');
+    $('[data-wgrid]', v).classList.toggle('picmode', k === 'pic');
+    if (k === 'pic') setTimeout(() => refresh(true), 0);
     if (k === 'intel'){ const f = $('[data-ipbuild]', v); if (f) f.open = true; }
     if (k === 'setup'){ const f = $('[data-mapsetup]', v); if (f) f.open = true; }
     pref.set('marala-wtab', k);
@@ -4908,6 +5040,7 @@ function renderWhite(S, now){
   $('[data-log]', v).innerHTML = S.log.length ? S.log.slice().reverse().map(l => '<div class="item ' + (l.status === 'rejected' ? 'alert' : l.side ? 'hq' : '') + '"' + (l.side ? ' style="border-left-color:var(--' + (l.side === 'B' ? 'blu' : 'red') + ')"' : '') + '><span class="t">' + hhmm(l.g) + (l.by === 'B' || l.by === 'R' ? ' · From ' + SIDES[l.by].name : l.by === 'A' ? ' · AOC screen' : '') + '</span><span>' + esc(l.text) + '</span>' + (l.type !== 'tick' && l.by !== 'system' && !/^clock/.test(l.type) ? '<span><button type="button" data-act="void" data-id="' + l.id + '" style="padding:2px 8px;font-size:12px">' + (l.type === 'void' ? 'Undo' : 'Void') + '</button></span>' : '') + '</div>').join('') : '<div class="empty">Every event shows up here.</div>';
   const voids = app.events.filter(e => e.type === 'void').length;
   if (app.multi){ const ng = $('[data-newgame]', v), rs = $('[data-restore]', v); if (ng) ng.hidden = true; if (rs) rs.hidden = true; }
+  renderPic(S, v);
   $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · Saved on this computer' : ' · Shared');
 }
 
