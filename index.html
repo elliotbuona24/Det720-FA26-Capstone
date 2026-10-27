@@ -1466,11 +1466,16 @@ function intelPicks(P, h){
 }
 function intelAnswers(P){ return intelPicks(P, P.a); }
 function stmtParty(t){ t = String(t || ''); if (/militia|first front/i.test(t)) return 'militia'; const b = /coalition|blue force|blufor|u\.?s\.?-led/i.test(t), r = /north korea|red force|redfor|dprk/i.test(t); return b && !r ? 'B' : r && !b ? 'R' : null; }
-function stmtTruth(P){ const as = intelAnswers(P); if (!as.length) return null; const ps = as.map(i => stmtParty(fillT(P.opts[i]))); return ps.every(x => x && x === ps[0]) ? ps[0] : null; }
+function stmtTruth(P){ if (P.who === 'militia' || P.who === 'B' || P.who === 'R') return P.who; if (P.who === 'W') return null; const as = intelAnswers(P); if (!as.length) return null; const ps = as.map(i => stmtParty(fillT(P.opts[i]))); return ps.every(x => x && x === ps[0]) ? ps[0] : null; }
+const STMT_PKG_MIN = 10, STMT_BLAST_MIN = 15;
+const STMT_KINDS = ['militia', 'other', 'self', 'deny', 'invest', 'custom'];
+function stmtDue(S, side, x){ if (x.inc) return x.inc.g + STMT_BLAST_MIN; const o = intelOpen(S, x.pkg.id, side); return o ? o.due + STMT_PKG_MIN : -1; }
+function stmtSaid(side, blame, text){ return blame === 'militia' ? '"The militia did this."' : blame === 'other' ? '"' + SIDES[OTHER[side]].name + ' did this."' : blame === 'self' ? '"' + SIDES[side].name + ' takes responsibility."' : blame === 'deny' ? '"' + SIDES[side].name + ' was not involved."' : blame === 'invest' ? '"The matter is under investigation."' : '"' + String(text || '').trim().slice(0, 160) + '"'; }
+function stmtCorrect(side, blame, truth){ return blame === 'militia' ? truth === 'militia' : blame === 'other' ? truth === OTHER[side] : blame === 'self' ? truth === side : truth !== side; }
 function stmtApply(S, side, correct, what, e){
   const nm = SIDES[side].name;
   if (correct){ lower(S, ESC.trueblame); addHN(S, side, 5); pushLog(S, nm + ' told the truth about ' + what + ' (escalation \u22125, diplomatic points +5)', side, e); }
-  else { raise(S, side, ESC.falseblame); addHN(S, side, -10); pushLog(S, nm + ' made a false public statement about ' + what + ' (escalation +15, diplomatic points \u221210)', side, e); }
+  else { raise(S, side, ESC.falseblame); addHN(S, side, -10); pushLog(S, nm + ' made a false public statement about ' + what + ' (escalation +10, diplomatic points \u221210)', side, e); }
 }
 const IPB_KINDS = ['HUMINT', 'SIGINT', 'IMINT', 'GEOINT', 'OSINT'];
 const IED_HIT = 5;
@@ -1501,7 +1506,7 @@ function seedPois(S, pois, tag){ (pois || []).forEach((x, i) => { if (x && Array
 const WP_SYMS = { pin:'Marker', obj:'Objective', rally:'Rally point', cp:'Checkpoint', lz:'Landing zone', hazard:'Hazard or IED', aid:'Aid or casualty', supply:'Supply point', fuel:'Fuel', water:'Water', danger:'Danger area', star:'Point of interest', target:'Target', eye:'Observation post', camp:'Camp', building:'Building', vehicle:'Vehicle', radio:'LMR or comms', circle:'Circle', square:'Square', triangle:'Triangle', diamond:'Diamond', plus:'Plus', xmark:'X mark', question:'Unknown', info:'Information', arrow:'Arrow', home:'Home base' };
 function wpSides(to){ return to === 'both' ? ['B', 'R'] : to === 'B' || to === 'R' ? [to] : []; }
 function wpSeen(w, side){ return !side || wpSides(w.to).includes(side); }
-const ESC = { provocation:5, sabotage:15, firstfire:20, returnfire:5, falseblame:15, show:10, defied:10, jam:5, strikewing:40, quiet:3, trueblame:5 };
+const ESC = { provocation:5, sabotage:15, firstfire:20, returnfire:5, falseblame:10, show:10, defied:10, jam:5, strikewing:40, quiet:3, trueblame:5 };
 
 function levelIndex(esc){ return esc >= 100 ? 4 : esc >= 75 ? 3 : esc >= 50 ? 2 : esc >= 25 ? 1 : 0; }
 function hhmm(g){ const m = 360 + Math.floor(g); return String(Math.floor(m/60)).padStart(2,'0') + String(m%60).padStart(2,'0'); }
@@ -1855,14 +1860,16 @@ function apply(S, e, cfg){
       pushLog(S, nm + ' aid refused: aid packages are delivered by fireteams and confirmed by POCs', side, e, 'rejected'); break;
     case 'act_statement': {
       const pkg = p.pkg ? allProblems(S).find(x => x.id === p.pkg && x.stmt) : null, inc = pkg ? null : S.incidents.find(i => i.id === p.incident);
-      const key = side + ':' + (pkg ? 'pkg:' + pkg.id : p.incident), blame = p.blame === 'other' ? 'other' : 'militia';
-      if ((!inc && !pkg) || S.statements[key] || (pkg && !intelOpen(S, pkg.id, side))){ pushLog(S, nm + ' statement refused', side, e, 'rejected'); break; }
+      const key = side + ':' + (pkg ? 'pkg:' + pkg.id : p.incident), blame = STMT_KINDS.includes(p.blame) ? p.blame : 'militia';
+      if ((!inc && !pkg) || S.statements[key] || (pkg && !intelOpen(S, pkg.id, side)) || (blame === 'custom' && !String(p.text || '').trim())){ pushLog(S, nm + ' statement refused', side, e, 'rejected'); break; }
+      if (S.g > stmtDue(S, side, { pkg, inc }) + 1e-9){ pushLog(S, nm + ' statement refused: past the deadline', side, e, 'rejected'); pushFeed(S, side, 'Public statement refused: the deadline has passed.', 'alert'); break; }
       S.statements[key] = blame;
-      const what = pkg ? '"' + fillT(pkg.title) + '"' : 'the ' + inc.grid + ' explosion', said = blame === 'militia' ? '"The militia did this."' : '"' + SIDES[OTHER[side]].name + ' did this."';
+      const what = pkg ? '"' + fillT(pkg.title) + '"' : 'the ' + inc.grid + ' explosion', said = stmtSaid(side, blame, p.text);
       pushFeed(S, 'public', SIDES[side].name + ' on ' + what + ': ' + said, 'public');
-      const truth = pkg ? stmtTruth(pkg) : inc.truth;
-      if (truth == null){ S.requests.push({ id:e.id, side, kind:'stmt', text:'On ' + what + ': ' + said, blame, pkg:pkg.id, status:'open', g:S.g }); pushLog(S, nm + ' public statement on ' + what + ' (' + said + ') waits for a White Force ruling', side, e); break; }
-      stmtApply(S, side, blame === 'militia' ? truth === 'militia' : truth === OTHER[side], what, e);
+      if (blame === 'invest'){ pushLog(S, nm + ' public statement on ' + what + ': under investigation (no change)', side, e); break; }
+      const truth = blame === 'custom' ? null : pkg ? stmtTruth(pkg) : inc.truth;
+      if (truth == null){ S.requests.push({ id:e.id, side, kind:'stmt', text:'On ' + what + ': ' + said, blame, pkg:pkg ? pkg.id : null, inc:inc ? inc.id : null, status:'open', g:S.g }); pushLog(S, nm + ' public statement on ' + what + ' (' + said + ') waits for a White Force ruling', side, e); break; }
+      stmtApply(S, side, stmtCorrect(side, blame, truth), what, e);
       break; }
     case 'act_jam': {
       const lastJ = S.jamLast[side];
@@ -1917,7 +1924,7 @@ function apply(S, e, cfg){
           pushLog(S, rn + ' waypoint request ' + (p.result === 'add' ? 'added: ' : 'moved to the waypoint queue: ') + r.label, r.side, e);
         } else { r.answer = 'Declined.' + (p.text ? ' ' + String(p.text).slice(0, 140) : ''); pushFeed(S, r.side, 'Waypoint request declined: ' + r.label + '.', 'alert', { label:'Waypoint' }); pushLog(S, rn + ' waypoint request declined: ' + r.label, r.side, e); }
         S.ver++;
-      } else if (r.kind === 'stmt'){ const ok = p.result === 'true'; r.answer = ok ? 'Ruled true.' : 'Ruled false.'; const P = allProblems(S).find(x => x.id === r.pkg); stmtApply(S, r.side, ok, P ? '"' + fillT(P.title) + '"' : 'an intel package', e); pushFeed(S, r.side, 'White Force ruling on your public statement (' + r.text + '): ' + (ok ? 'True: escalation \u22125, diplomatic points +5.' : 'False: escalation +15, diplomatic points \u221210.'), ok ? 'good' : 'alert'); }
+      } else if (r.kind === 'stmt'){ const ok = p.result === 'true'; r.answer = ok ? 'Ruled true.' : 'Ruled false.'; const P = r.pkg ? allProblems(S).find(x => x.id === r.pkg) : null, I = r.inc ? S.incidents.find(x => x.id === r.inc) : null; stmtApply(S, r.side, ok, P ? '"' + fillT(P.title) + '"' : I ? 'the ' + I.grid + ' explosion' : 'an intel package', e); pushFeed(S, r.side, 'White Force ruling on your public statement (' + r.text + '): ' + (ok ? 'True: escalation \u22125, diplomatic points +5.' : 'False: escalation +10, diplomatic points \u221210.'), ok ? 'good' : 'alert'); }
       else if (r.kind === 'drone'){ pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.'), 'hq'); r.by = e.by; pushLog(S, rn + ' drone flight answered' + (e.by === 'D' ? ' by the drone operator' : ''), r.side, e); }
       else if (r.kind === 'show'){
         if (r.teams) Object.values(r.teams).forEach(t => { if (t.st === 'inside') t.st = p.result === 'defied' ? 'stayed' : 'left'; });
@@ -3913,8 +3920,9 @@ function buildWing(side){
           <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> · <span data-uavevery>Once every ${UAV_EVERY} minutes</span> · <span class="esc-up">+10 escalation</span></span></div>
             <p class="small muted" style="margin:0">Shows enemy fireteam positions to you and your fireteams: live for 1 minute, then as last seen for 5 minutes. The enemy wing is not notified.</p>
             <form data-f="uav"><button class="btn-side" type="submit">Launch UAV</button></form></div>
-          <div class="act"><div class="act-head"><b>Public statement</b><span class="chip wait pulse" data-stmtbadge hidden style="margin-left:auto">Public statement expected</span><span class="cost">Once per explosion or intel package · True <span class="esc-down">−5</span> · False <span class="esc-up">+15</span></span></div>
-            <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Explosion or intel package<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">Who did it<select id="stB-${side}" name="blame"><option value="militia">The militia</option><option value="other">${esc(other)}</option></select></label></div><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
+          <div class="act"><div class="act-head"><b>Public statement</b><span class="chip wait pulse" data-stmtbadge hidden style="margin-left:auto">Public statement expected</span><span class="cost">Once per explosion or intel package · True <span class="esc-down">−5</span> · False <span class="esc-up">+10</span></span></div>
+            <p class="small muted" style="margin:0">Due ${STMT_PKG_MIN} minutes after an intel package closes, ${STMT_BLAST_MIN} minutes after an explosion. "Under investigation" changes nothing. Your own wording goes to the White Force to rule on.</p>
+            <form class="stack" data-f="statement"><div class="row"><label for="stI-${side}">Explosion or intel package<select id="stI-${side}" name="inc" required></select></label><label for="stB-${side}">What you say<select id="stB-${side}" name="blame"><option value="militia">The militia did this</option><option value="other">${esc(other)} did this</option><option value="self">We take responsibility</option><option value="deny">We were not involved</option><option value="invest">Under investigation</option><option value="custom">Our own wording</option></select></label></div><label for="stT-${side}" data-sttext hidden>Statement<input id="stT-${side}" name="text" maxlength="160" placeholder="Example: Our forces were not in that square at the time."></label><div><button class="btn-side" type="submit">Make statement</button></div></form></div>
           <div class="act"><div class="act-head"><b>Aid packages</b><span class="cost">Needs an open town office · On time <span class="esc-down">diplomatic points +5</span> · Missed <span class="esc-up">diplomatic points −10</span></span></div>
             <p class="small muted" style="margin:0">A package is ready 20 minutes after the town office opens and 20 minutes after each delivery or missed deadline. A fireteam must deliver it to the Marala Town office within 15 minutes. Its POC reports the delivery to the White Force. The first wing to deliver each package number earns diplomatic points +1 more.</p>
             <div data-aidstate class="small"></div></div>
@@ -3997,7 +4005,8 @@ function buildWing(side){
   setCTab(pref.get('marala-ctab-' + side, 'all'), false);
   const on = (name, fn) => { const f = $('[data-f="' + name + '"]', v); f.addEventListener('submit', async ev => { ev.preventDefault(); if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; } const fd = new FormData(f); const ok = await fn(fd); if (ok !== false){ f.reset(); toast('Sent to the board.'); } }); };
   on('drone', fd => writeEvent('act_drone', side, { text:fd.get('q') }));
-  on('statement', fd => { const v = String(fd.get('inc') || ''); if (!v){ toast('There is no explosion or intel package to make a statement about yet.', true); return false; } return writeEvent('act_statement', side, v.indexOf('pkg:') === 0 ? { pkg:v.slice(4), blame:fd.get('blame') } : { incident:v, blame:fd.get('blame') }); });
+  { const bs = $('[name="blame"]', $('[data-f="statement"]', v)), tl = $('[data-sttext]', v); bs.addEventListener('change', () => { tl.hidden = bs.value !== 'custom'; }); }
+  on('statement', fd => { const v = String(fd.get('inc') || ''), blame = String(fd.get('blame') || ''), text = String(fd.get('text') || '').trim(); if (!v){ toast('There is no explosion or intel package to make a statement about yet.', true); return false; } if (blame === 'custom' && !text){ toast('Write the statement first.', true); return false; } const p = { blame }; if (blame === 'custom') p.text = text; if (v.indexOf('pkg:') === 0) p.pkg = v.slice(4); else p.incident = v; return writeEvent('act_statement', side, p); });
   on('wpreq', fd => { const pt = locate(mapCfg(app.S), String(fd.get('loc') || '')); if (!pt){ toast('That location did not read. Use a play square, MGRS grid or lat/long.', true); return false; } const sq = squareOf(mapCfg(app.S), pt); return writeEvent('act_wpreq', side, { label:String(fd.get('label')).trim(), pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt), note:fd.get('note') }); });
   $('[data-wrtap]', v).onclick = () => { if (!app.lastClick){ toast('No map tap recorded.', true); return; } $('[data-f="wpreq"] [name="loc"]', v).value = fmtPt(app.lastClick); };
   on('uav', () => { if (!confirm('Launch a UAV? Escalation goes up by 10.')) return false; return writeEvent('act_uav', side, {}); });
@@ -4170,9 +4179,9 @@ function renderWing(S, side, now){
     const st = c.verdict ? (c.verdict === 'confirm' ? '<span class="chip ok">Confirmed +1</span>' : '<span class="chip no">Not confirmed</span>') : '<span class="chip wait">Checking</span>';
     return '<div class="li"><div class="grow"><b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid || '') + '</span> <span class="muted small">Seen ' + esc(c.seen) + ' · ' + age + ' min ago' + (age > 15 ? ' · Old' : '') + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' + st + '</div>';
   }).join('') : '<div class="empty">No reports yet. Intel posts them from the Reports tab; each confirmed report is worth 1 point.</div>';
-  const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id]), pkgs = allProblems(S).map((P, i) => [P, i]).filter(([P]) => P.stmt && intelOpen(S, P.id, side) && !S.statements[side + ':pkg:' + P.id]);
-  { const n = incs.length + pkgs.length, bd = $('[data-stmtbadge]', v); if (bd){ bd.hidden = !n || S.endex; bd.textContent = n === 1 ? 'Public statement expected' : n + ' public statements expected'; } }
-  keepSelect($('[name="inc"]', v), incs.length || pkgs.length ? (incs.length ? '<optgroup label="Explosions">' + incs.map(i => '<option value="' + i.id + '">' + esc(i.grid) + ' explosion, ' + hhmm(i.g) + '</option>').join('') + '</optgroup>' : '') + (pkgs.length ? '<optgroup label="Intel packages">' + pkgs.map(([P, i]) => '<option value="pkg:' + P.id + '">Intel ' + (i + 1) + ': ' + esc(fillT(P.title)) + '</option>').join('') + '</optgroup>' : '') : '<option value="">Nothing to make a statement about yet</option>');
+  const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id] && S.g <= stmtDue(S, side, { inc:i }) + 1e-9), pkgs = allProblems(S).map((P, i) => [P, i]).filter(([P]) => P.stmt && intelOpen(S, P.id, side) && !S.statements[side + ':pkg:' + P.id] && S.g <= stmtDue(S, side, { pkg:P }) + 1e-9);
+  { const n = incs.length + pkgs.length, bd = $('[data-stmtbadge]', v); if (bd){ const due = Math.min.apply(null, incs.map(i => stmtDue(S, side, { inc:i })).concat(pkgs.map(([P]) => stmtDue(S, side, { pkg:P })))); bd.hidden = !n || S.endex; bd.textContent = (n === 1 ? 'Public statement expected' : n + ' public statements expected') + (n ? ' \u00b7 next due ' + hhmm(due) : ''); } }
+  keepSelect($('[name="inc"]', v), incs.length || pkgs.length ? (incs.length ? '<optgroup label="Explosions">' + incs.map(i => '<option value="' + i.id + '">' + esc(i.grid) + ' explosion, ' + hhmm(i.g) + ' \u00b7 due ' + hhmm(stmtDue(S, side, { inc:i })) + '</option>').join('') + '</optgroup>' : '') + (pkgs.length ? '<optgroup label="Intel packages">' + pkgs.map(([P, i]) => '<option value="pkg:' + P.id + '">Intel ' + (i + 1) + ': ' + esc(fillT(P.title)) + ' \u00b7 due ' + hhmm(stmtDue(S, side, { pkg:P })) + '</option>').join('') + '</optgroup>' : '') : '<option value="">Nothing to make a statement about right now</option>');
   const claims = S.claims.filter(c => c.side === side);
   $('[data-claims]', v).innerHTML = claims.slice(-4).reverse().map(c => '<div class="li"><span class="grow">' + esc(c.site === 'town' ? 'Marala Town' : SITES[c.site].name) + ' · ' + hhmm(c.g) + ' <span class="small muted">' + esc(c.note) + '</span></span><span class="chip ' + (c.status === 'accepted' ? 'ok' : c.status === 'contest' ? 'wait' : 'no') + '">' + (c.status === 'accepted' ? 'Confirmed' : c.status === 'contest' ? 'Contention' : 'Refused') + '</span></div>').join('');
   const reqs = S.requests.filter(r => r.side === side);
@@ -4317,7 +4326,7 @@ function renderPlan(S, v){
       stat:sent ? '<span class="chip ' + ((oB && !oB.done) || (oR && !oR.done) ? 'wait' : 'ok') + '">' + esc(st) + '</span>' : '<span class="chip">Not deployed</span>' + propChip(S, 'pkg', P.id),
       body:'<div><b>Question:</b> ' + esc(fillT(P.q)) + '</div><div>' + (P.opts || []).map((o, j) => '<div class="opt' + (tr.as.includes(j) ? ' ok' : '') + '">' + String.fromCharCode(65 + j) + '. ' + esc(fillT(o)) + (tr.as.includes(j) ? ' \u2713 correct' : '') + '</div>').join('') + '</div>' +
         P.items.map(it => '<div class="ip-it' + (tr.fs.includes(it.k) ? ' f' : '') + '"><b>' + esc(it.k) + '. ' + esc(it.disc || '') + '</b> <span class="small muted">' + esc([it.rating, fillT(it.dtg || ''), it.src].filter(Boolean).join(' \u00b7 ')) + '</span>' + (tr.fs.includes(it.k) ? ' <span class="chip no">False or misleading</span>' : '') + '<div>' + esc(fillT(it.text)) + '</div></div>').join('') +
-        '<div class="small muted">Answer window ' + (P.win || 15) + ' min' + (P.stmt ? ' \u00b7 Public statement expected' : '') + (P.wp ? ' \u00b7 Waypoint: ' + esc(P.wp.label) : '') + (P.blast ? ' \u00b7 Explosion at ' + esc(P.blast.grid) : '') + '</div>' }); });
+        '<div class="small muted">Answer window ' + (P.win || 15) + ' min' + (P.stmt ? ' \u00b7 Public statement expected (' + (function(t){ return t === 'militia' ? 'truth: the militia' : t ? 'truth: ' + SIDES[t].name : 'White Force rules'; })(stmtTruth(P)) + ')' : '') + (P.wp ? ' \u00b7 Waypoint: ' + esc(P.wp.label) : '') + (P.blast ? ' \u00b7 Explosion at ' + esc(P.blast.grid) : '') + '</div>' }); });
   rows.sort((a, b) => a.t - b.t);
   const vis = rows.filter(r => showSent || !r.done), open = new Set($$('details[open]', $('[data-planlist]', v)).map(x => x.dataset.k));
   $('[data-plann]', v).textContent = rows.filter(r => !r.done).length + ' upcoming' + (rows.some(r => r.done) ? ' \u00b7 ' + rows.filter(r => r.done).length + ' out' : '');
@@ -4859,7 +4868,8 @@ function buildWhite(){
           <div class="row"><label>Title<input data-ipb="title" maxlength="80" placeholder="Example: The coast road ambush"></label><label style="flex:0 0 110px">Intended time (T+ min)<input data-ipb="at" type="number" min="0" max="300" value="60"></label><label style="flex:0 0 110px">Window (min)<input data-ipb="win" type="number" min="3" max="60" value="15"></label></div>
           <label>Question<input data-ipb="q" maxlength="200" placeholder="Example: Who set the ambush on the coast road?"></label>
           <div class="row" style="align-items:end"><label>Explosion with this package (optional): grid<input data-ipb="bgrid" maxlength="24" placeholder="Example: C3"></label><label style="flex:0 0 170px">Really caused by<select data-ipb="btruth"><option value="militia">The militia</option><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-ipb="bcas"> Casualties</label></div>
-          <label class="chk"><input type="checkbox" data-ipb="stmt"> Public statement expected <span class="small muted">(each force that gets this package names who did it; graded by the correct answer when it names the militia, Blue Force or Red Force, otherwise the White Force rules it)</span></label>
+          <div class="row" style="align-items:end"><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-ipb="stmt"> Public statement expected</label><label data-ipbwho>Who is really responsible<select data-ipb="who"><option value="">Read it from the correct answer</option><option value="militia">The militia</option><option value="B">Blue Force</option><option value="R">Red Force</option><option value="W">White Force rules each statement</option></select></label></div>
+          <p class="small muted" style="margin:0" data-ipbwhonote>Each force that gets this package can make one statement, due 10 minutes after the package closes. Statements are graded against who is really responsible; when the board cannot tell, or a force writes its own wording, the White Force rules it.</p>
           <fieldset class="ipb-piece stack" data-ipbwp><legend>Map points with this package (optional)</legend>
             <p class="small muted" style="margin:0" data-ipbwpnote>Deployed to each wing that receives the package, at the moment it is deployed.</p>
             <div class="row" style="align-items:end"><label>Start from a waypoint<select data-ipbwpfrom></select></label></div>
@@ -5210,6 +5220,7 @@ function ipbWpPrev(){
   $('[data-ipbwprev]', f).innerHTML = wpSvg(k, 30, c); $('[data-ipbwsymname]', f).textContent = WP_SYMS[k]; $('[data-ipbwcolor]', f).value = c;
   $$('[data-ipbwsym]', f).forEach(b => b.setAttribute('aria-pressed', b.dataset.ipbwsym === k ? 'true' : 'false'));
 }
+function ipbWho(f){ const on = $('[data-ipb="stmt"]', f).checked; $('[data-ipbwho]', f).hidden = !on; $('[data-ipbwhonote]', f).hidden = !on; }
 function ipbFill(P){
   const f = ipbForm();
   if (!P || !P.keepWp) peSet('pkg', P && app.S ? peOf(app.S, 'pkg', ipb.sentEdit || ipb.id || P.id) : []);
@@ -5217,7 +5228,7 @@ function ipbFill(P){
   $('[data-ipb="title"]', f).value = P ? fillT(P.title) : ''; $('[data-ipb="q"]', f).value = P ? fillT(P.q) : '';
   $('[data-ipb="at"]', f).value = P && P.at != null ? P.at : 60; $('[data-ipb="win"]', f).value = P && P.win ? P.win : 15;
   $('[data-ipb="note"]', f).value = P && P.note || '';
-  $('[data-ipb="bgrid"]', f).value = P && P.blast ? P.blast.grid : ''; $('[data-ipb="btruth"]', f).value = P && P.blast ? P.blast.truth : 'militia'; $('[data-ipb="bcas"]', f).checked = !!(P && P.blast && P.blast.cas); $('[data-ipb="stmt"]', f).checked = !!(P && P.stmt);
+  $('[data-ipb="bgrid"]', f).value = P && P.blast ? P.blast.grid : ''; $('[data-ipb="btruth"]', f).value = P && P.blast ? P.blast.truth : 'militia'; $('[data-ipb="bcas"]', f).checked = !!(P && P.blast && P.blast.cas); $('[data-ipb="stmt"]', f).checked = !!(P && P.stmt); $('[data-ipb="who"]', f).value = P && P.who ? P.who : ''; ipbWho(f);
   const tr = P && P.a ? intelTruth(P) : { a:-1, f:'', fs:[] };
   ipbOpts(P ? P.opts.map(o => fillT(o || '')) : ['', '', '', ''], P ? (P.aIdx != null ? [P.aIdx] : tr.as || []) : []);
   const bad = P ? (P.fKeys || tr.fs || []) : [];
@@ -5452,7 +5463,7 @@ async function ipbSave(){
     }
     const pkg = { id, custom:true, replaces:ipb.replaces || null, at:Math.max(0, Math.round(+val('[data-ipb="at"]') || 0)), win:Math.max(3, Math.round(+val('[data-ipb="win"]') || 15)), title, q, opts, items, note:val('[data-ipb="note"]'),
       wp, wps:ipb.wps.slice(0, 11),
-      stmt:$('[data-ipb="stmt"]', f).checked,
+      stmt:$('[data-ipb="stmt"]', f).checked, who:$('[data-ipb="stmt"]', f).checked ? $('[data-ipb="who"]', f).value : '',
       blast:val('[data-ipb="bgrid"]') ? { grid:val('[data-ipb="bgrid"]').toUpperCase(), truth:$('[data-ipb="btruth"]', f).value, cas:$('[data-ipb="bcas"]', f).checked } : null,
       a:intelKey(id, 'a', ak), f:intelKey(id, 'f', bad.join('')) };
     await writeEvent('intel_custom', null, { pkg }); await peSave('pkg', id);
@@ -5478,6 +5489,7 @@ function ipbWire(v){
   ipbWpSet(null);
   $('[data-ipboptadd]', f).onclick = () => { const o = ipbOptsRead(); if (o.vals.length >= 8) return; ipbOpts(o.vals.concat(''), o.right); $$('[data-ipbopt]', f).pop().focus(); };
   $('[data-ipbopts]', f).addEventListener('click', ev => { const b = ev.target.closest('[data-ipboptdel]'); if (!b) return; const o = ipbOptsRead(), k = +b.dataset.ipboptdel; if (o.vals.length <= 2) return; o.vals.splice(k, 1); ipbOpts(o.vals, o.right.filter(x => x !== k).map(x => x > k ? x - 1 : x)); });
+  $('[data-ipb="stmt"]', f).addEventListener('change', () => ipbWho(f));
   $('[data-ipbclear]', f).onclick = () => { ipb.id = null; ipb.replaces = null; ipb.sentEdit = null; ipbFill(null); };
   $('[data-ipbload]', f).onclick = () => {
     const pid = $('[data-ipbsrc]', f).value; ipb.sentEdit = null; if (!pid){ ipb.id = null; ipb.replaces = null; ipbFill(null); return; }
@@ -5599,7 +5611,7 @@ function renderWhite(S, now){
   const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request', wp:'Waypoint request', stmt:'Public statement to rule on' };
   S.requests.filter(r => r.status === 'open').forEach(r => {
     let ctl = '';
-    if (r.kind === 'stmt') ctl = '<button type="button" class="btn-side" data-act="resolve" data-id="' + r.id + '" data-r="true">True \u00b7 escalation \u22125</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="false">False \u00b7 escalation +15</button>';
+    if (r.kind === 'stmt') ctl = '<button type="button" class="btn-side" data-act="resolve" data-id="' + r.id + '" data-r="true">True \u00b7 escalation \u22125</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="false">False \u00b7 escalation +10</button>';
     if (r.kind === 'drone') ctl = '<input id="ans-' + r.id + '" placeholder="Type the true answer" maxlength="200"><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="answer">Send answer</button>';
     if (r.kind === 'wp') ctl = '<button type="button" class="btn-side" data-act="resolve" data-id="' + r.id + '" data-r="add">Add to ' + SIDES[r.side].name + ' map</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="queue">Add to waypoint queue</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="decline">Decline</button>';
     if (r.kind === 'show') ctl = showStatus(S, r) + '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="complied">' + SIDES[OTHER[r.side]].name + ' left</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="defied">Stayed · +10 to them</button>';

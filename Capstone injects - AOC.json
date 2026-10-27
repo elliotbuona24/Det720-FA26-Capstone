@@ -150,17 +150,6 @@
    "phase": "Phase 2"
   },
   {
-   "id": "tex-13",
-   "label": "Fuel leak at the depot",
-   "to": "both",
-   "from": "Depot workers",
-   "text": "A valve on the main tank at the Fuel Depot, grid 18T TL 59799 21941 (40.81335, -77.84789), play square E3, is leaking. The force holding the depot must send a team to close the valve and set a 10 m safety line within 10 minutes. If no force holds the depot, workers will handle it.",
-   "at": 45,
-   "lvl": null,
-   "note": "[Optional] Site POC checks the holding wing's team: cones or tape for a 10 m line and the valve tag turned to CLOSED. Done in time: Good conduct (+5). Ignored: Poor conduct (−5). No holder: no action.",
-   "phase": "Phase 2"
-  },
-  {
    "id": "tex-14",
    "label": "Family needs escort",
    "to": "both",
