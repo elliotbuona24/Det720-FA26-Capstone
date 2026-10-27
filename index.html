@@ -1854,7 +1854,7 @@ function apply(S, e, cfg){
     case 'act_aid':
       pushLog(S, nm + ' aid refused: aid packages are delivered by fireteams and confirmed by POCs', side, e, 'rejected'); break;
     case 'act_statement': {
-      const pkg = p.pkg ? allProblems(S).find(x => x.id === p.pkg && x.opts.some(o => stmtParty(fillT(o)))) : null, inc = pkg ? null : S.incidents.find(i => i.id === p.incident);
+      const pkg = p.pkg ? allProblems(S).find(x => x.id === p.pkg) : null, inc = pkg ? null : S.incidents.find(i => i.id === p.incident);
       const key = side + ':' + (pkg ? 'pkg:' + pkg.id : p.incident), blame = p.blame === 'other' ? 'other' : 'militia';
       if ((!inc && !pkg) || S.statements[key] || (pkg && !intelOpen(S, pkg.id, side))){ pushLog(S, nm + ' statement refused', side, e, 'rejected'); break; }
       S.statements[key] = blame;
@@ -4170,8 +4170,8 @@ function renderWing(S, side, now){
     const st = c.verdict ? (c.verdict === 'confirm' ? '<span class="chip ok">Confirmed +1</span>' : '<span class="chip no">Not confirmed</span>') : '<span class="chip wait">Checking</span>';
     return '<div class="li"><div class="grow"><b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid || '') + '</span> <span class="muted small">Seen ' + esc(c.seen) + ' · ' + age + ' min ago' + (age > 15 ? ' · Old' : '') + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' + st + '</div>';
   }).join('') : '<div class="empty">No reports yet. Intel posts them from the Reports tab; each confirmed report is worth 1 point.</div>';
-  const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id]), pkgs = allProblems(S).map((P, i) => [P, i]).filter(([P]) => intelOpen(S, P.id, side) && !S.statements[side + ':pkg:' + P.id] && P.opts.some(o => stmtParty(fillT(o))));
-  { const n = incs.length + pkgs.length, bd = $('[data-stmtbadge]', v); if (bd){ bd.hidden = !n || S.endex; bd.textContent = n === 1 ? 'Public statement expected' : n + ' public statements expected'; } }
+  const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id]), pkgs = allProblems(S).map((P, i) => [P, i]).filter(([P]) => intelOpen(S, P.id, side) && !S.statements[side + ':pkg:' + P.id]);
+  { const n = incs.length + pkgs.filter(([P]) => P.opts.some(o => stmtParty(fillT(o)))).length, bd = $('[data-stmtbadge]', v); if (bd){ bd.hidden = !n || S.endex; bd.textContent = n === 1 ? 'Public statement expected' : n + ' public statements expected'; } }
   keepSelect($('[name="inc"]', v), incs.length || pkgs.length ? (incs.length ? '<optgroup label="Explosions">' + incs.map(i => '<option value="' + i.id + '">' + esc(i.grid) + ' explosion, ' + hhmm(i.g) + '</option>').join('') + '</optgroup>' : '') + (pkgs.length ? '<optgroup label="Intel packages">' + pkgs.map(([P, i]) => '<option value="pkg:' + P.id + '">Intel ' + (i + 1) + ': ' + esc(fillT(P.title)) + '</option>').join('') + '</optgroup>' : '') : '<option value="">Nothing to make a statement about yet</option>');
   const claims = S.claims.filter(c => c.side === side);
   $('[data-claims]', v).innerHTML = claims.slice(-4).reverse().map(c => '<div class="li"><span class="grow">' + esc(c.site === 'town' ? 'Marala Town' : SITES[c.site].name) + ' · ' + hhmm(c.g) + ' <span class="small muted">' + esc(c.note) + '</span></span><span class="chip ' + (c.status === 'accepted' ? 'ok' : c.status === 'contest' ? 'wait' : 'no') + '">' + (c.status === 'accepted' ? 'Confirmed' : c.status === 'contest' ? 'Contention' : 'Refused') + '</span></div>').join('');
