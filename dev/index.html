@@ -261,6 +261,7 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .dr-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dr-btns button{font-size:16px;padding:16px 10px;min-height:58px}.dr-btns button[aria-pressed="true"]{outline:3px solid var(--focus);outline-offset:1px}
 .pe{border:1px dashed var(--line);border-radius:8px;padding:8px 10px;display:grid;gap:8px}.pe-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:6px}.pe-row:last-child{border-bottom:0}.pe-row .grow{flex:1 1 200px;min-width:0}
 .pr-card{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:6px;background:var(--panel)}.pr-card.late{border-color:var(--bad)}.pr-card.soon{border-color:var(--warn)}.pr-card .pr-what{font-size:16px;font-weight:700}.pr-card .pr-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px}
+.pr-scroll{overflow-y:auto;overscroll-behavior:contain;padding-right:2px}.pr-more{font-size:13px;text-align:center;margin-top:-4px}
 .pr-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pr-btns button{min-height:48px;font-size:15px}.pr-nav{font-size:15px;font-weight:700}.pr-nav .mono{font-size:20px}
 .pr-tbl{width:100%;border-collapse:collapse;font-size:13px}.pr-tbl th,.pr-tbl td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}.pr-tbl th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}.pr-clash{color:var(--bad);font-weight:600}
 .mk-target{width:26px;height:26px;border-radius:50%;background:#ff9800;border:3px solid #fff;box-shadow:0 0 0 2px #000;animation:tgtpulse 1.4s ease-out infinite}@keyframes tgtpulse{0%{box-shadow:0 0 0 2px #000,0 0 0 0 rgba(255,152,0,.7)}100%{box-shadow:0 0 0 2px #000,0 0 0 22px rgba(255,152,0,0)}}@media (prefers-reduced-motion:reduce){.mk-target{animation:none}}
@@ -3407,7 +3408,7 @@ function drawDyn(st, S, side, opts){
       m.bindTooltip(esc(teamLabel(t) + ' · ' + (f.ping ? 'pinged ' : '') + age + 'm' + (t.status ? ' · ' + t.status : '')), { permanent:!!pr.names, direction:'right', className:'teamlbl', offset:[14, 0] }).addTo(LS.teams);
     });
   });
-  if (!side && ['W', 'A', 'D', 'L'].includes(app.role) && LS.props) drawProps(LS.props, S, pr, opts);
+  if (!side && ['W', 'A', 'D', 'L'].includes(app.role) && LS.props) drawProps(LS.props, S, pr, opts, st);
   const ph = side ? uavPhase(S, side) : '';
   if (ph){
     const u = S.uav[side], o = OTHER[side], fade = ph === 'fade', op = fade ? Math.max(.35, 1 - (S.g - u.g - 1) / 5) : 1;
@@ -4390,8 +4391,9 @@ function propLocate(S, text){
   const k = SITE_KEYS.find(x => SITES[x].name.toLowerCase() === lo); if (k && pts[k]) return pts[k];
   return M ? locate(M, t) : GEO.parsePoint(t);
 }
-function drawProps(layer, S, pr, opts){
-  if (app.role === 'L' && app.propNav){ const r = propSched(S).find(x => x.u.id === app.propNav), tgt = r && (r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt);
+function drawProps(layer, S, pr, opts, st){
+  if (st && st.propFocus) st.propFocus.clearLayers();
+  if (app.role === 'L' && app.propNav){ if (st){ if (!st.propFocus) st.propFocus = L.layerGroup().addTo(st.map); layer = st.propFocus; } const r = propSched(S).find(x => x.u.id === app.propNav), tgt = r && (r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt);
     if (tgt){ L.marker(tgt, { icon:L.divIcon({ className:'', html:'<div class="mk-target"></div>', iconSize:[26, 26], iconAnchor:[13, 13] }), zIndexOffset:2000 }).bindTooltip(esc((r.state === 'out' ? 'Recover: ' : 'Put it here: ') + r.prop.name + (r.u.label ? ' · ' + r.u.label : '')), { permanent:true, direction:'top', className:'sitelbl', offset:[0, -14] }).addTo(layer);
       if (app.propSelf) L.polyline([app.propSelf.pt, tgt], { color:'#ff9800', weight:4, dashArray:'8 6' }).addTo(layer); }
     return; }
@@ -4492,8 +4494,8 @@ function buildProps(){
       <label class="chk"><input type="checkbox" data-msgsound checked> Sound for messages and schedule changes</label></div>
     <div class="panel stack" data-prannbox hidden><h2>Announcements</h2><div class="list" data-pranns></div></div>
     <div class="panel stack" data-prnav hidden></div>
-    <div class="panel stack"><div class="act-head"><h2>To place</h2><span class="small muted" data-prtodon></span></div><div class="stack" data-prtodo></div></div>
-    <div class="panel stack"><div class="act-head"><h2>In the field</h2><span class="small muted" data-proutn></span></div><div class="stack" data-prout></div></div>
+    <div class="panel stack"><div class="act-head"><h2>To place</h2><span class="small muted" data-prtodon></span></div><div class="stack pr-scroll" data-prtodo></div><div class="small muted pr-more" data-prtodomore hidden></div></div>
+    <div class="panel stack"><div class="act-head"><h2>In the field</h2><span class="small muted" data-proutn></span></div><div class="stack pr-scroll" data-prout></div><div class="small muted pr-more" data-proutmore hidden></div></div>
     <div class="panel stack"><h2>Map</h2><p class="small muted" style="margin:0">Orange diamonds are placed props; dashed diamonds are where props still need to go. Show on map on a task shows only that spot. Find my position also shows you to the White Force and AOC for 5 minutes.</p>
       <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-prself style="flex:0 0 auto">Find my position</button><button type="button" data-prfull style="flex:0 0 auto">Full screen map</button></div>
       <div class="map-wrap" data-prmap></div><div data-prlegend></div></div>
@@ -4519,6 +4521,12 @@ function buildProps(){
       toast(g ? 'Placed. Sent to the White Force with your position.' : 'Placed. Sent to the White Force without GPS.'); return; }
     if (rc){ const r = propSched(app.S).find(x => x.u.id === rc.dataset.prrec); if (!r || !confirm('Report ' + r.prop.name + ' recovered?' + (r.claim && r.claim.oc !== me.id ? '\n\n' + r.claim.name + ' claimed this task.' : ''))) return; await writeEvent('prop_recover', null, { use:r.u.id, oc:me.id }); if (app.propNav === r.u.id) propNavStop(); toast('Recovered.'); }
   });
+}
+function propCap(box, more, what){
+  const cards = Array.from(box.children).filter(c => c.classList.contains('pr-card'));
+  if (cards.length <= 2){ box.style.maxHeight = ''; more.hidden = true; return; }
+  const h = cards[1].offsetTop + cards[1].offsetHeight - box.offsetTop + 4; if (h > 40) box.style.maxHeight = h + 'px';
+  more.hidden = false; more.textContent = 'Scroll this list for ' + (cards.length - 2) + ' more ' + what;
 }
 function renderProps(S){
   const v = $('#vProps'), me = propsMe();
@@ -4547,6 +4555,7 @@ function renderProps(S){
   { const ob = $('[data-prout]', v), oh = out.length ? out.map(oc).join('') : '<div class="empty">No props in the field.</div>'; if (ob.dataset.h !== oh){ ob.dataset.h = oh; ob.innerHTML = oh; } $('[data-proutn]', v).textContent = out.length ? out.length + ' out' : ''; }
   { const cat = (S.propOrder || []).map(k => S.props[k]).filter(Boolean), ch = cat.length ? cat.map(c => { const o = out.find(r => r.u.prop === c.id), nx = todo.find(r => r.u.prop === c.id); return '<div class="li"><div class="grow"><b>' + esc(c.name) + '</b><div class="small">' + (o ? 'In the field for ' + esc(o.it ? o.it.label : '?') : 'Available' + (c.home ? ' at ' + esc(c.home) : '')) + (nx ? ' · next: ' + esc(due(nx)) : '') + '</div></div></div>'; }).join('') : '<div class="empty">No props in the catalog.</div>', el = $('[data-prcat]', v); if (el.dataset.h !== ch){ el.dataset.h = ch; el.innerHTML = ch; } }
   { const dh = done.length ? done.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + esc(r.prop.name) + '</b> <span class="small muted">' + hhmm(r.st.placed) + ' to ' + hhmm(r.st.rec) + '</span><div class="small">' + esc(r.it ? r.it.label : '') + '</div></div></div>').join('') : '<div class="empty">Nothing recovered yet.</div>', el = $('[data-prdone]', v); if (el.dataset.h !== dh){ el.dataset.h = dh; el.innerHTML = dh; } $('[data-prdonen]', v).textContent = done.length ? '(' + done.length + ')' : ''; }
+  propCap($('[data-prtodo]', v), $('[data-prtodomore]', v), 'to place'); propCap($('[data-prout]', v), $('[data-proutmore]', v), 'in the field');
   wakeShow(); propNavText();
   const mEl = $('[data-prmap]', v), real = renderMapInto(mEl, S, null); $('[data-prlegend]', v).innerHTML = real ? realLegend() : legendHTML(null);
   if (real && mEl._lm && app.propNav && app.propFitFor !== app.propNav){ const r = rows.find(x => x.u.id === app.propNav), tgt = r && (r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt); if (tgt){ app.propFitFor = app.propNav; const me2 = app.propSelf && Date.now() - app.propSelf.t < 120000 ? app.propSelf.pt : null; if (me2 && GEO.dist(me2, tgt) < 800) mEl._lm.map.fitBounds([me2, tgt], { padding:[50, 50], maxZoom:19 }); else mEl._lm.map.setView(tgt, 19); } }
