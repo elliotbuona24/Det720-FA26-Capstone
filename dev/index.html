@@ -104,9 +104,9 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .pic-legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
 .pic-legend i.hol{background:#111}
 .pic-side{display:flex;flex-direction:column;gap:14px;min-width:0}
-.pic-fill{flex:1 1 auto;min-height:260px}
+.pic-fill{flex:1 1 0;min-height:0}.pic-side>.pic-card:not(.pic-fill){flex:0 1 auto;min-height:0;max-height:45%}.pic-side [data-picout]{overflow-y:auto;min-height:0;padding-right:4px}
 .pic-list{display:flex;flex-direction:column;gap:8px}
-.pic-comms{overflow-y:auto;max-height:clamp(260px,40vh,520px);padding-right:4px}
+.pic-comms{overflow-y:auto;flex:1 1 0;min-height:0;padding-right:4px}@media (min-width:1001px){.pic-side{contain:size}}
 .pic-item{border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:grid;gap:5px;background:var(--panel)}
 .pic-it{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}.pic-it b{flex:1 1 auto;min-width:0}
 .pic-tag{font-family:var(--display);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px}
@@ -134,7 +134,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .tl-mk.to-B{background:var(--blu);box-shadow:0 0 0 1px var(--blu)}.tl-mk.to-R{background:var(--red);box-shadow:0 0 0 1px var(--red)}.tl-mk.to-public{background:var(--muted);box-shadow:0 0 0 1px var(--muted)}
 .tl-now{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--bad);z-index:2}
 .tl-now span{position:absolute;top:-1px;left:4px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--panel);background:var(--bad);border-radius:3px;padding:0 4px}
-@media (max-width:1000px){.pic-main{grid-template-columns:minmax(0,1fr)}.pic-head{grid-template-columns:repeat(2,minmax(0,1fr))}.pic-prog{grid-column:1/-1;order:3}}
+@media (max-width:1000px){.pic-main{grid-template-columns:minmax(0,1fr)}.pic-fill{flex:0 0 auto}.pic-comms{flex:0 0 auto;height:340px}.pic-side>.pic-card:not(.pic-fill){max-height:none}.pic-side [data-picout]{max-height:300px}.pic-head{grid-template-columns:repeat(2,minmax(0,1fr))}.pic-prog{grid-column:1/-1;order:3}}
 @media (max-width:560px){.pic-big{font-size:32px}.pic-tl{grid-template-columns:90px minmax(0,1fr)}}
 #vWhite:not(.aocv) [data-aoc-only]{display:none!important}
 .white-grid>.wfsec{grid-column:1/-1!important}
@@ -1550,7 +1550,7 @@ function tick(S, g){
   const parts = { B:[], R:[] };
   ['B','R'].forEach(side => {
     const air = S.sites.airstrip;
-    parts[side].push(droneReady(S, side) ? 'drone flight ready' : 'next drone flight ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side))));
+    parts[side].push(S.droneDown ? 'drone not ready for tasking' : droneReady(S, side) ? 'drone flight ready' : 'next drone flight ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side))));
     if (S.office[side] && S.access[side]){ addHN(S, side, OFFICE_HN); parts[side].push('diplomatic points +' + OFFICE_HN + ' (town office)'); }
     const held = SITE_KEYS.filter(k => powered(S, k, side)).length;
     if (held){ S.pts[side].hold = (S.pts[side].hold || 0) + held * SITE_HOLD; parts[side].push('+' + held * SITE_HOLD + ' for ' + held + (held === 1 ? ' site' : ' sites') + ' held'); }
@@ -2130,7 +2130,7 @@ function apply(S, e, cfg){
       const intent = p.reset ? '' : String(p.intent || '').trim().slice(0, 300), dest = to.length === 2 ? 'both' : to[0];
       if (!S.aocPri) S.aocPri = { B:null, R:null };
       to.forEach(sd => S.aocPri[sd] = { id:e.id, items, intent, g:S.g, ack:null });
-      pushFeed(S, dest, items.length ? 'AOC priorities effective ' + hhmm(S.g) + ': ' + items.map((x, i) => 'Priority ' + (i + 1) + ': ' + x + '.').join(' ').replace(/\.\./g, '.') + (intent ? ' Commander’s guidance: ' + intent : '') : 'AOC priorities effective ' + hhmm(S.g) + ': no new priorities. ' + PRI_DEFAULT, 'hq', { label:'AOC', comm:'msg' });
+      pushFeed(S, dest, items.length ? 'AOC priorities effective ' + hhmm(S.g) + ': ' + items.map((x, i) => 'Priority ' + (i + 1) + ': ' + x + '.').join(' ').replace(/\.\./g, '.') + (intent ? ' Commander’s guidance: ' + intent : '') : 'AOC priorities effective ' + hhmm(S.g) + ': no new priorities. ' + PRI_DEFAULT, 'hq', { label:'AOC', comm:'msg', priv:true });
       pushLog(S, 'AOC priorities to ' + ({ B:'Blue Force', R:'Red Force', both:'both forces' })[dest] + ': ' + (items.length ? items.join(' / ') : 'returned to the standing priority'), to.length === 1 ? to[0] : null, e);
       S.ver++; break; }
     case 'aoc_pri_ack': { const r = S.aocPri && S.aocPri[side]; if (!r || r.id !== p.id || r.ack != null) break; r.ack = S.g; S.ver++; pushLog(S, nm + ' acknowledged the AOC priorities', side, e); break; }
@@ -2592,6 +2592,7 @@ function toast(msg, bad){
 }
 
 /* ---------- routing ---------- */
+function freshView(sel){ const old = $(sel); $$('.lmap', old).forEach(el => { if (el._lm){ try { el._lm.map.remove(); } catch(e){} el._lm = null; } }); const v = old.cloneNode(false); old.replaceWith(v); return v; }
 function show(id){ ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone') closeFullMap(); }
 function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'D' ? 'Drone operator' : r === 'W' ? 'White Force' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
@@ -3458,7 +3459,7 @@ function ocSet(v){ try { if (v) localStorage.setItem(ocKey(), JSON.stringify(v))
 function ocStat(st){ return '<span class="chip ' + (st === 'ok' ? 'ok' : st === 'no' ? 'no' : 'wait') + '">'; }
 function buildOC(){
   if (app.built === 'oc') return; app.built = 'oc';
-  const v = $('#vOC'), me = ocGet();
+  const v = freshView('#vOC'), me = ocGet();
   if (!me){
     v.innerHTML = '<div class="stack"><div class="panel stack"><h2>POC Sign In</h2><p class="small muted" style="margin:0">Your name and assignment identify your calls to the White Force.</p><form class="stack" data-ocjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><label>Attached to<select name="assign" data-ocjoinassign></select></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div><div class="panel stack"><h2>Already signed in before?</h2><p class="small muted" style="margin:0">Select your name to resume an existing POC profile.</p><div class="list" data-ocrejoin></div></div></div>';
     $('[data-ocrejoin]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-ocrejoinid]'); if (!b) return; ocSet({ id:b.dataset.ocrejoinid, name:b.dataset.name }); app.built = null; buildOC(); refresh(true); toast('Welcome back, ' + b.dataset.name + '.'); });
@@ -3654,7 +3655,7 @@ async function sendTeamPos(side, opts){
 }
 function buildTeam(side){
   if (app.built === 'team-' + side) return; app.built = 'team-' + side;
-  const v = $('#vTeam'); v.className = 'team-view side-' + side;
+  const v = freshView('#vTeam'); v.className = 'team-view side-' + side;
   const me = teamGet(side);
   if (!me){
     v.innerHTML = '<div class="stack"><div class="panel stack"><h2>Create a new fireteam</h2><p class="small muted" style="margin:0">This name appears on your C2’s map and order list.</p><form class="stack" data-tjoin><label>Fireteam name<input name="name" maxlength="40" required placeholder="Input fireteam name"></label><div><button class="btn-side team-big" type="submit">Create ' + esc(SIDES[side].name) + ' fireteam</button></div></form></div><div class="panel stack"><h2>Or join an existing fireteam</h2><p class="small muted" style="margin:0">For a second phone on a team that already signed in.</p><div class="list" data-tjoinlist></div></div></div>';
@@ -3796,7 +3797,7 @@ function uavNotify(S){
 /* ---------- wing view ---------- */
 function buildWing(side){
   if (app.built === 'wing-' + side) return; app.built = 'wing-' + side;
-  const v = $('#vWing'); v.className = 'side-' + side;
+  const v = freshView('#vWing'); v.className = 'side-' + side;
   const other = SIDES[OTHER[side]].name;
   v.innerHTML = `
   <div class="app">
@@ -4148,7 +4149,7 @@ function renderPublic(S){
   $('[data-biglvl]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' · ' + S.esc + '</span>';
   $('[data-ladder]', v).innerHTML = ladderHTML(S, true);
   $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar pulse">War · deterrence failed</div>' : S.reveal ? '<div class="panel"><h2>Final points</h2>' + scoreTable(S, ['B', 'R']) + '<div class="map-wrap">' + mapSVG(S, null) + '</div></div>' : '';
-  $('[data-feed]', v).innerHTML = feedHTML(S.feed.filter(f => f.to === 'public' || f.to === 'both'), 'The start, explosions, public statements and the end of the game appear here.');
+  $('[data-feed]', v).innerHTML = feedHTML(S.feed.filter(f => (f.to === 'public' || f.to === 'both') && !f.priv), 'The start, explosions, public statements and the end of the game appear here.');
 }
 
 /* ---------- White Force ---------- */
@@ -4193,7 +4194,7 @@ function renderPic(S, v){
   const intel = []; allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), os = [oB, oR].filter(Boolean); if (!os.length) return;
     intel.push({ n:i + 1, title:fillT(P.title), a:Math.min(...os.map(o => o.g)), b:Math.max(...os.map(o => o.due)), done:os.every(o => o.done), to:oB && oR ? 'both' : oB ? 'B' : 'R' }); });
   const injs = (S.injq || []).filter(q => q.sent != null).map(q => ({ g:q.sent, label:q.label, to:q.to }));
-  const comms = S.feed.filter(f => f.comm).map(f => ({ g:f.g, from:hqFrom(f.label), to:f.to, text:f.text, kind:f.comm })).concat((S.ocAnns || []).map(a => ({ g:a.g, from:'White Force', to:'poc', text:a.text, kind:'msg' }))).sort((x, y) => y.g - x.g);
+  const comms = S.feed.filter(f => f.comm).map(f => ({ g:f.g, from:hqFrom(f.label), to:f.to, text:f.text, kind:f.comm })).concat((S.ocAnns || []).map(a => ({ g:a.g, from:'White Force', to:'poc', text:a.text, kind:'msg' }))).map((c, i) => Object.assign(c, { i })).sort((x, y) => (y.g - x.g) || (y.i - x.i));
   const openI = intel.filter(x => !x.done), recent = injs.filter(q => S.g - q.g <= 20).sort((x, y) => y.g - x.g);
   const next = (S.injq || []).filter(q => q.sent == null && q.at != null).sort((x, y) => x.at - y.at)[0];
   $('[data-picoutn]', v).textContent = openI.length + ' intel · ' + recent.length + ' recent inject' + (recent.length === 1 ? '' : 's');
@@ -4301,7 +4302,7 @@ document.addEventListener('click', ev => {
 /* ---------- drone operator view ---------- */
 function buildDrone(){
   if (app.built === 'drone') return; app.built = 'drone';
-  const v = $('#vDrone');
+  const v = freshView('#vDrone');
   v.innerHTML = `
   <div class="stack">
     <div class="panel"><div class="act-head"><h2>Drone operator</h2><span class="small muted">White Force · <b class="mono" data-clock>—</b></span></div>
@@ -4402,7 +4403,7 @@ function aocMode(on){
 }
 function buildWhite(){
   if (app.built === 'white') return; app.built = 'white'; app.fogView = null;
-  const v = $('#vWhite');
+  const v = freshView('#vWhite');
   const sideCol = s => `
     <div class="panel side-${s}" data-sec="calls" data-aoc-off>
       <div class="act-head"><span class="badge side-${s}">${SIDES[s].name}</span><span class="small muted" data-wstat="${s}"></span></div>
