@@ -1,0 +1,286 @@
+{
+ "app": "marala-intel",
+ "version": 2,
+ "saved": 1793066370043,
+ "from": "Props Team Instructions (current prop list)",
+ "packages": [],
+ "images": {},
+ "injects": [],
+ "props": [
+  {
+   "id": "pr-ied-a",
+   "name": "IED-A",
+   "home": "Props kit (west and south props lead)",
+   "note": "Paint can with wires. Used at Interest Point #2, then Interest Point #1."
+  },
+  {
+   "id": "pr-ied-b",
+   "name": "IED-B",
+   "home": "Props kit (north and east props lead)",
+   "note": "Small box with wires. Used at Interest Point #7, then Interest Point #9."
+  },
+  {
+   "id": "pr-ied-c",
+   "name": "IED-C",
+   "home": "Props kit (west and south props lead)",
+   "note": "Bag with a 10 m wire (command wire)."
+  },
+  {
+   "id": "pr-ied-d",
+   "name": "IED-D",
+   "home": "Props kit (north and east props lead)",
+   "note": "Flat board with wires (pressure plate)."
+  },
+  {
+   "id": "pr-hoax-1",
+   "name": "HOAX-1",
+   "home": "Props kit (west and south props lead)",
+   "note": "Bag with a card reading HOAX inside."
+  },
+  {
+   "id": "pr-hoax-2",
+   "name": "HOAX-2",
+   "home": "Props kit (north and east props lead)",
+   "note": "Cooler, phone taped to the lid, HOAX card inside."
+  },
+  {
+   "id": "pr-cache",
+   "name": "Cache crate",
+   "home": "Props kit (west and south props lead)",
+   "note": "Crate with training weapons. Stays out until ENDEX."
+  },
+  {
+   "id": "pr-aid-1",
+   "name": "Humanitarian Aid Supply Box #1",
+   "home": "Props kit (north and east props lead)",
+   "note": "Teams carry it to the town office."
+  },
+  {
+   "id": "pr-aid-2",
+   "name": "Humanitarian Aid Supply Box #2",
+   "home": "Props kit (west and south props lead)",
+   "note": "Teams carry it to the town office."
+  },
+  {
+   "id": "pr-aid-3",
+   "name": "Humanitarian Aid Supply Box #3",
+   "home": "Props kit (north and east props lead)",
+   "note": "Teams carry it to the town office."
+  },
+  {
+   "id": "pr-valve",
+   "name": "Valve tag",
+   "home": "Props kit (north and east props lead)",
+   "note": "OPEN/CLOSED tag for the Fuel Depot station. Starts set to OPEN."
+  },
+  {
+   "id": "pr-spare-ied",
+   "name": "Spare IED prop",
+   "home": "Props kit (north and east props lead)",
+   "note": "Use if an IED prop is missing or moved."
+  },
+  {
+   "id": "pr-spare-hoax",
+   "name": "Spare HOAX card",
+   "home": "Props kit (north and east props lead)",
+   "note": "Use if a HOAX card is missing."
+  }
+ ],
+ "propUses": [
+  {
+   "id": "u-ied-a-ip2",
+   "prop": "pr-ied-a",
+   "kind": "tpl",
+   "item": "tex-01",
+   "label": "IED at Interest Point #2",
+   "loc": "Interest Point #2",
+   "pt": [
+    40.81199,
+    -77.84877
+   ],
+   "lead": 10,
+   "keep": 20,
+   "note": "Paint can on the ground with the wires showing, visible from 5 m. Leave before 0600."
+  },
+  {
+   "id": "u-ied-b-ip7",
+   "prop": "pr-ied-b",
+   "kind": "tpl",
+   "item": "tex-02",
+   "label": "IED at Interest Point #7",
+   "loc": "Interest Point #7",
+   "pt": [
+    40.81405,
+    -77.84743
+   ],
+   "lead": 12,
+   "keep": 20,
+   "note": "Box on the ground with a wire showing, visible from 5 m. Leave before 0600."
+  },
+  {
+   "id": "u-aid-1-ip3",
+   "prop": "pr-aid-1",
+   "kind": "tpl",
+   "item": "tex-06",
+   "label": "Supply box off target",
+   "loc": "Interest Point #3",
+   "pt": [
+    40.81384,
+    -77.84931
+   ],
+   "lead": 10,
+   "keep": 93,
+   "note": "Visible from 20 m. Teams carry it to the town office; recover it there or at ENDEX."
+  },
+  {
+   "id": "u-hoax-1-x1",
+   "prop": "pr-hoax-1",
+   "kind": "tpl",
+   "item": "tex-11",
+   "label": "Suspected device (hoax)",
+   "loc": "Point X1",
+   "pt": [
+    40.8119,
+    -77.85023
+   ],
+   "lead": 5,
+   "keep": 20,
+   "note": "Bag on the ground at the point."
+  },
+  {
+   "id": "u-hoax-2-x2",
+   "prop": "pr-hoax-2",
+   "kind": "tpl",
+   "item": "tex-12",
+   "label": "Suspected device (hoax)",
+   "loc": "Point X2",
+   "pt": [
+    40.81405,
+    -77.84668
+   ],
+   "lead": 5,
+   "keep": 20,
+   "note": "Cooler on the ground, phone on the lid."
+  },
+  {
+   "id": "u-valve-fuel",
+   "prop": "pr-valve",
+   "kind": "tpl",
+   "item": "tex-13",
+   "label": "Valve tag for the fuel leak",
+   "loc": "Fuel Depot",
+   "pt": [
+    40.81335,
+    -77.84789
+   ],
+   "lead": 55,
+   "keep": 70,
+   "note": "Hand it to the Fuel Depot station lead before 0550, set to OPEN."
+  },
+  {
+   "id": "u-cache-x5",
+   "prop": "pr-cache",
+   "kind": "tpl",
+   "item": "tex-17",
+   "label": "Militia weapons cache",
+   "loc": "Point X5",
+   "pt": [
+    40.81294,
+    -77.84832
+   ],
+   "lead": 5,
+   "keep": 55,
+   "note": "Leave it until ENDEX, even after a team clears it."
+  },
+  {
+   "id": "u-aid-2-x3",
+   "prop": "pr-aid-2",
+   "kind": "tpl",
+   "item": "tex-20",
+   "label": "Supply box off target",
+   "loc": "Point X3",
+   "pt": [
+    40.81219,
+    -77.84833
+   ],
+   "lead": 15,
+   "keep": 45,
+   "note": "Visible from 20 m. Recover at ENDEX if no one delivered it."
+  },
+  {
+   "id": "u-ied-c-x6",
+   "prop": "pr-ied-c",
+   "kind": "tpl",
+   "item": "tex-21",
+   "label": "Command wire IED",
+   "loc": "Point X6",
+   "pt": [
+    40.81344,
+    -77.84974
+   ],
+   "lead": 5,
+   "keep": 20,
+   "note": "Wait until the family role players leave X6. Lay the wire out with the bag at one end."
+  },
+  {
+   "id": "u-ied-d-x4",
+   "prop": "pr-ied-d",
+   "kind": "tpl",
+   "item": "tex-22",
+   "label": "Pressure plate IED",
+   "loc": "Point X4",
+   "pt": [
+    40.81455,
+    -77.84901
+   ],
+   "lead": 5,
+   "keep": 20,
+   "note": "Flat board on the ground, wires showing."
+  },
+  {
+   "id": "u-ied-a-ip1",
+   "prop": "pr-ied-a",
+   "kind": "tpl",
+   "item": "tex-27",
+   "label": "Second device, south",
+   "loc": "Interest Point #1",
+   "pt": [
+    40.81203,
+    -77.84977
+   ],
+   "lead": 10,
+   "keep": 15,
+   "note": "The ROTOR 3 role player leaves IP1 by 0730. Paint can on the ground, wires showing."
+  },
+  {
+   "id": "u-ied-b-ip9",
+   "prop": "pr-ied-b",
+   "kind": "tpl",
+   "item": "tex-28",
+   "label": "Device near Red Force HQ",
+   "loc": "Interest Point #9",
+   "pt": [
+    40.81449,
+    -77.84719
+   ],
+   "lead": 12,
+   "keep": 13,
+   "note": "Box on the ground with a wire showing."
+  },
+  {
+   "id": "u-aid-3-ip5",
+   "prop": "pr-aid-3",
+   "kind": "tpl",
+   "item": "tex-29",
+   "label": "Supply box off target",
+   "loc": "Interest Point #5",
+   "pt": [
+    40.81346,
+    -77.84844
+   ],
+   "lead": 8,
+   "keep": 10,
+   "note": "Visible from 20 m. Recover at ENDEX if no one delivered it."
+  }
+ ]
+}

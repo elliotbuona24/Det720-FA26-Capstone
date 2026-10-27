@@ -263,6 +263,8 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .pr-card{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:6px;background:var(--panel)}.pr-card.late{border-color:var(--bad)}.pr-card.soon{border-color:var(--warn)}.pr-card .pr-what{font-size:16px;font-weight:700}.pr-card .pr-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px}
 .pr-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pr-btns button{min-height:48px;font-size:15px}.pr-nav{font-size:15px;font-weight:700}.pr-nav .mono{font-size:20px}
 .pr-tbl{width:100%;border-collapse:collapse;font-size:13px}.pr-tbl th,.pr-tbl td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}.pr-tbl th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}.pr-clash{color:var(--bad);font-weight:600}
+.mk-target{width:26px;height:26px;border-radius:50%;background:#ff9800;border:3px solid #fff;box-shadow:0 0 0 2px #000;animation:tgtpulse 1.4s ease-out infinite}@keyframes tgtpulse{0%{box-shadow:0 0 0 2px #000,0 0 0 0 rgba(255,152,0,.7)}100%{box-shadow:0 0 0 2px #000,0 0 0 22px rgba(255,152,0,0)}}@media (prefers-reduced-motion:reduce){.mk-target{animation:none}}
+.pr-claim{font-size:13px;font-weight:600}.pr-claim.me{color:var(--good)}.pr-claim.other{color:var(--warn)}
 .mk-prop{width:14px;height:14px;transform:rotate(45deg);border:2px solid #fff;background:#ff9800;box-shadow:0 0 0 1px #000}.mk-prop.plan{background:transparent;border:2px dashed #ff9800;box-shadow:none}
 .dr-req{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px}.dr-req textarea{width:100%;min-height:64px;font-size:16px;box-sizing:border-box}.dr-req .q{font-size:16px;font-weight:600}
 .team-big{font-size:18px;padding:14px;width:100%}
@@ -1478,7 +1480,7 @@ const OC_CALLS = {
   firstfire:{ ev:'firstfire', p:{}, name:'Fired first', sub:'Escalation +20 · Diplomatic points −15' },
   returnfire:{ ev:'returnfire', p:{}, name:'Returned fire', sub:'Escalation +5' }
 };
-function ocWhere(S, o){ if (!o) return ''; if (o.mayor) return 'Mayor'; if (o.side && o.team){ const t = S.teams[o.side][o.team]; return SIDES[o.side].name + ' · ' + (t ? (t.num ? '#' + t.num + ' ' : '') + t.name : 'Fireteam'); } return 'Not attached'; }
+function ocWhere(S, o){ if (!o) return ''; if (o.props) return 'Props and logistics'; if (o.mayor) return 'Mayor'; if (o.side && o.team){ const t = S.teams[o.side][o.team]; return SIDES[o.side].name + ' · ' + (t ? (t.num ? '#' + t.num + ' ' : '') + t.name : 'Fireteam'); } return 'Not attached'; }
 function nineText(n){ return (n.target === 'cache' ? 'Militia cache' : SIDES[OTHER[n.side]].name + ' position') + ' at ' + (n.loc || '?'); }
 function ocReqText(S, r){
   if (r.kind === 'call') return OC_CALLS[r.call].name + ' for ' + SIDES[r.side].name + (r.text ? ' (' + r.text + ')' : '');
@@ -1513,7 +1515,7 @@ function newState(){
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
     sites, office:{B:false,R:false}, access:{B:true,R:true},
-    uses:{ show:{B:1,R:1}, strike:{B:1,R:1}, cstrike:{B:CACHE_STRIKES,R:CACHE_STRIKES} }, jamLast:{B:null,R:null}, droneLast:{B:null,R:null}, aocPri:{B:null,R:null}, droneDown:false, props:{}, propOrder:[], propUses:{}, propSt:{}, droneAt:null, usedCodes:{}, siteTimer:{}, blasts:{}, aidTick:{B:-1,R:-1},
+    uses:{ show:{B:1,R:1}, strike:{B:1,R:1}, cstrike:{B:CACHE_STRIKES,R:CACHE_STRIKES} }, jamLast:{B:null,R:null}, droneLast:{B:null,R:null}, aocPri:{B:null,R:null}, droneDown:false, props:{}, propOrder:[], propUses:{}, propSt:{}, propClaim:{}, droneAt:null, usedCodes:{}, siteTimer:{}, blasts:{}, aidTick:{B:-1,R:-1},
     cacheDone:null, crisisCallAt:-999, war:false, warAt:null, raised:false, tickIdx:0,
     clock:{ started:false, running:false, anchorReal:0, anchorG:START_G },
     endex:false, reveal:false, jam:{B:null,R:null},
@@ -2088,8 +2090,9 @@ function apply(S, e, cfg){
     case 'oc_join': case 'oc_assign': {
       const id = String(p.oc || ''); if (!/^o[\w-]{3,40}$/.test(id)) break;
       const o = S.ocs[id] || (S.ocs[id] = { id, name:'POC', side:null, team:null, mayor:false, removed:false, g:S.g });
-      if (e.type === 'oc_join'){ o.removed = false; if (p.name) o.name = String(p.name).slice(0, 40); }
+      if (e.type === 'oc_join'){ o.removed = false; if (p.name) o.name = String(p.name).slice(0, 40); o.props = !!p.props; }
       if (o.removed) break;
+      if (o.props){ o.mayor = false; o.side = null; o.team = null; o.detached = null; S.ver++; pushLog(S, (e.type === 'oc_join' ? 'Props and logistics signed in: ' : 'Props and logistics: ') + o.name, null, e); break; }
       o.mayor = !!p.mayor; o.side = !o.mayor && (p.side === 'B' || p.side === 'R') ? p.side : null; o.team = o.side && p.team ? String(p.team) : null; o.detached = null;
       S.ver++;
       pushLog(S, (e.type === 'oc_join' ? 'POC signed in: ' : 'POC now with ') + (e.type === 'oc_join' ? o.name + ' · ' : o.name + ': ') + ocWhere(S, o), null, e);
@@ -2162,15 +2165,24 @@ function apply(S, e, cfg){
       const u = (S.propUses || {})[p.use]; if (!u) break; if (!S.propSt) S.propSt = {};
       const nm = ((S.props || {})[u.prop] || {}).name || 'Prop';
       Object.values(S.propUses).forEach(o => { const so = S.propSt[o.id]; if (o.id !== u.id && o.prop === u.prop && so && so.placed != null && so.rec == null){ so.rec = S.g; so.auto = true; } });
-      S.propSt[u.id] = { placed:S.g, pt:propOk(p.pt) ? p.pt : null, acc:Number.isFinite(p.acc) ? Math.round(p.acc) : null, note:String(p.note || '').trim().slice(0, 200), by:e.by, rec:null, ts:e.ts };
+      const who = (S.ocs || {})[p.oc];
+      S.propSt[u.id] = { placed:S.g, pt:propOk(p.pt) ? p.pt : null, acc:Number.isFinite(p.acc) ? Math.round(p.acc) : null, note:String(p.note || '').trim().slice(0, 200), by:e.by, name:who ? who.name : null, rec:null, ts:e.ts };
+      if (S.propClaim) delete S.propClaim[u.id];
       S.ver++; pushLog(S, 'Prop placed: ' + nm + (u.label ? ' (' + u.label + ')' : '') + (p.note ? '. Note: ' + String(p.note).slice(0, 200) : ''), null, e);
       break; }
     case 'prop_recover': {
       const u = (S.propUses || {})[p.use], st = u && (S.propSt || {})[u.id]; if (!st || st.placed == null || st.rec != null) break;
-      st.rec = S.g; st.recNote = String(p.note || '').trim().slice(0, 200); S.ver++;
+      st.rec = S.g; st.recNote = String(p.note || '').trim().slice(0, 200); st.recName = ((S.ocs || {})[p.oc] || {}).name || null; if (S.propClaim) delete S.propClaim[u.id]; S.ver++;
       pushLog(S, 'Prop recovered: ' + (((S.props || {})[u.prop] || {}).name || 'Prop') + (u.label ? ' (' + u.label + ')' : ''), null, e);
       break; }
-    case 'prop_reset': { const u = (S.propUses || {})[p.use]; if (!u || !(S.propSt || {})[u.id]) break; delete S.propSt[u.id]; S.ver++; pushLog(S, 'Prop status cleared: ' + (((S.props || {})[u.prop] || {}).name || 'Prop'), null, e); break; }
+    case 'prop_claim': {
+      const u = (S.propUses || {})[p.use], o = (S.ocs || {})[p.oc]; if (!u || !o) break; if (!S.propClaim) S.propClaim = {};
+      const nm = ((S.props || {})[u.prop] || {}).name || 'Prop';
+      if (p.release){ if (S.propClaim[u.id] && S.propClaim[u.id].oc === o.id){ delete S.propClaim[u.id]; S.ver++; pushLog(S, o.name + ' released ' + nm + (u.label ? ' (' + u.label + ')' : ''), null, e); } break; }
+      S.propClaim[u.id] = { oc:o.id, name:o.name, g:S.g }; S.ver++;
+      pushLog(S, o.name + ' claimed ' + nm + (u.label ? ' (' + u.label + ')' : ''), null, e);
+      break; }
+    case 'prop_reset': { const u = (S.propUses || {})[p.use]; if (!u || !(S.propSt || {})[u.id]) break; delete S.propSt[u.id]; if (S.propClaim) delete S.propClaim[u.id]; S.ver++; pushLog(S, 'Prop status cleared: ' + (((S.props || {})[u.prop] || {}).name || 'Prop'), null, e); break; }
     case 'aoc_pri': {
       const to = p.to === 'B' || p.to === 'R' ? [p.to] : p.to === 'both' ? ['B', 'R'] : null; if (!to) break;
       const items = p.reset ? [] : (Array.isArray(p.items) ? p.items : []).map(x => String(x || '').trim().slice(0, 200)).filter(Boolean).slice(0, 3);
@@ -2454,14 +2466,14 @@ function msgIncoming(S){
   if (r === 'W') return (S.occhats || []).filter(m => m.from === 'oc').length + (S.aocChat || []).filter(m => m.from === 'A').length;
   if (r === 'A') return (S.aocChat || []).filter(m => m.from === 'W').length;
   if (r === 'D') return S.requests.filter(x => x.kind === 'drone').length;
-  if (r === 'L') return Object.keys(S.propUses || {}).length;
+  if (r === 'L'){ const me = propsMe(); return Object.keys(S.propUses || {}).length + (me ? (S.occhats || []).filter(m => m.oc === me.id && m.from === 'wc').length + (S.ocAnns || []).length : 0); }
   if (r === 'B' || r === 'R') return (S.tchats || []).filter(m => m.side === r && m.from === 'team').length + S.liaison.filter(m => m.side !== r).length;
   if (r === 'TB' || r === 'TR'){ const me = teamGet(r[1]); return me ? (S.tchats || []).filter(m => m.side === r[1] && m.team === me.id && m.from !== 'team').length : null; }
   if (r === 'OC'){ const me = ocGet(); return me ? (S.occhats || []).filter(m => m.oc === me.id && m.from === 'wc').length + (S.ocAnns || []).length + (S.ocReqs || []).filter(x => x.oc === me.id && x.reply).length : null; }
   return null;
 }
 function msgWatch(S){
-  const n = msgIncoming(S), who = app.role + '|' + (app.role === 'OC' ? (ocGet() || {}).id : app.role[0] === 'T' ? (teamGet(app.role[1]) || {}).id : '');
+  const n = msgIncoming(S), who = app.role + '|' + (app.role === 'OC' ? (ocGet() || {}).id : app.role === 'L' ? (propsMe() || {}).id : app.role[0] === 'T' ? (teamGet(app.role[1]) || {}).id : '');
   $$('[data-msgsound]').forEach(x => { if (document.activeElement !== x) x.checked = pref.get('marala-msgsound', '1') === '1'; });
   if (n == null){ app.msgWho = null; return; }
   if (app.msgWho !== who){ app.msgWho = who; app.msgN = n; return; }
@@ -3330,9 +3342,9 @@ const SIDE_HEX = { B:'#3d7dff', R:'#ff4d42' };
 const PIN_LIFE = 5 * 60000;
 function mapPins(S){
   const now = Date.now(), out = [];
-  if (app.role === 'L' && app.propSelf && now - app.propSelf.t < PIN_LIFE) out.push({ pt:app.propSelf.pt, acc:app.propSelf.acc, t:app.propSelf.t, label:'You · ' + new Date(app.propSelf.t).toTimeString().slice(0, 5) });
+  if (app.role === 'L' && app.propSelf && now - app.propSelf.t < PIN_LIFE) out.push({ pt:app.propSelf.pt, acc:app.propSelf.acc, t:app.propSelf.t, color:'#00b8d4', label:'You · ' + new Date(app.propSelf.t).toTimeString().slice(0, 5) });
   if (app.role === 'OC' && app.ocSelf && now - app.ocSelf.t < PIN_LIFE) out.push({ pt:app.ocSelf.pt, acc:app.ocSelf.acc, t:app.ocSelf.t, label:'You · ' + new Date(app.ocSelf.t).toTimeString().slice(0, 5) });
-  if ((app.role === 'W' || app.role === 'A') && S.ocPos) Object.entries(S.ocPos).forEach(([id, x]) => { const o = S.ocs[id]; if (!o || o.removed || now - x.ts >= PIN_LIFE || (app.ocPinHide && app.ocPinHide.has(id + ':' + x.ts))) return; out.push({ pt:x.pt, acc:x.acc, t:x.ts, label:'POC ' + o.name + ' · ' + ocWhere(S, o) + ' · ' + new Date(x.ts).toTimeString().slice(0, 5) }); });
+  if ((app.role === 'W' || app.role === 'A') && S.ocPos) Object.entries(S.ocPos).forEach(([id, x]) => { const o = S.ocs[id]; if (!o || o.removed || now - x.ts >= PIN_LIFE || (app.ocPinHide && app.ocPinHide.has(id + ':' + x.ts))) return; out.push({ pt:x.pt, acc:x.acc, t:x.ts, color:o.props ? '#00b8d4' : null, label:(o.props ? 'Props ' : 'POC ') + o.name + (o.props ? '' : ' · ' + ocWhere(S, o)) + ' · ' + new Date(x.ts).toTimeString().slice(0, 5) }); });
   return out;
 }
 function drawPins(st, S){
@@ -3340,8 +3352,9 @@ function drawPins(st, S){
   st.pins.clearLayers();
   mapPins(S).forEach(pn => {
     const op = Math.max(.15, 1 - (Date.now() - pn.t) / PIN_LIFE);
-    if (pn.acc) L.circle(pn.pt, { radius:Math.min(pn.acc, 100), color:'#e040fb', weight:1, opacity:op * .6, fillColor:'#e040fb', fillOpacity:op * .12, interactive:false }).addTo(st.pins);
-    L.circleMarker(pn.pt, { radius:9, color:'#ffffff', weight:3, opacity:op, fillColor:'#e040fb', fillOpacity:op }).bindTooltip(esc(pn.label) + (pn.acc ? ' · ±' + pn.acc + ' m' : '') + '<br>' + esc(fmtPt(pn.pt)), { permanent:true, direction:'right', className:'sitelbl', offset:[12, 0], opacity:op }).addTo(st.pins);
+    const pc = pn.color || '#e040fb';
+    if (pn.acc) L.circle(pn.pt, { radius:Math.min(pn.acc, 100), color:pc, weight:1, opacity:op * .6, fillColor:pc, fillOpacity:op * .12, interactive:false }).addTo(st.pins);
+    L.circleMarker(pn.pt, { radius:9, color:'#ffffff', weight:3, opacity:op, fillColor:pc, fillOpacity:op }).bindTooltip(esc(pn.label) + (pn.acc ? ' · ±' + pn.acc + ' m' : '') + '<br>' + esc(fmtPt(pn.pt)), { permanent:true, direction:'right', className:'sitelbl', offset:[12, 0], opacity:op }).addTo(st.pins);
   });
 }
 function drawDyn(st, S, side, opts){
@@ -3394,7 +3407,7 @@ function drawDyn(st, S, side, opts){
       m.bindTooltip(esc(teamLabel(t) + ' · ' + (f.ping ? 'pinged ' : '') + age + 'm' + (t.status ? ' · ' + t.status : '')), { permanent:!!pr.names, direction:'right', className:'teamlbl', offset:[14, 0] }).addTo(LS.teams);
     });
   });
-  if (!side && ['W', 'A', 'D', 'L'].includes(app.role) && LS.props) drawProps(LS.props, S, pr);
+  if (!side && ['W', 'A', 'D', 'L'].includes(app.role) && LS.props) drawProps(LS.props, S, pr, opts);
   const ph = side ? uavPhase(S, side) : '';
   if (ph){
     const u = S.uav[side], o = OTHER[side], fade = ph === 'fade', op = fade ? Math.max(.35, 1 - (S.g - u.g - 1) / 5) : 1;
@@ -3579,7 +3592,7 @@ function renderOC(S){
   const v = $('#vOC'), me = ocGet();
   if (!me){
     const sel = $('[data-ocjoinassign]', v); if (sel && document.activeElement !== sel) keepSelect(sel, ocOpts(S));
-    const rj = $('[data-ocrejoin]', v), list = Object.values(S.ocs).filter(o => !o.removed);
+    const rj = $('[data-ocrejoin]', v), list = Object.values(S.ocs).filter(o => !o.removed && !o.props);
     if (rj) rj.innerHTML = list.length ? list.map(o => '<div class="li"><div class="grow"><b>' + esc(o.name) + '</b> <span class="small muted">' + esc(ocWhere(S, o)) + '</span></div><button type="button" data-ocrejoinid="' + esc(o.id) + '" data-name="' + esc(o.name) + '" style="flex:0 0 auto">This is me</button></div>').join('') : '<div class="empty">No POCs have signed in yet.</div>';
     return;
   }
@@ -4243,7 +4256,7 @@ function renderPic(S, v){
   const pocs = Object.entries(S.ocPos || {}).map(([id, x]) => ({ o:S.ocs[id], x, age:(now - x.ts) / 60000 })).filter(r => r.o && !r.o.removed && r.age < PIC_POC_LIFE);
   $('[data-picpocn]', v).textContent = fv ? fogNote(S, fv) : pocs.length + ' of ' + Object.values(S.ocs).filter(o => !o.removed).length + ' POCs located in the last ' + PIC_POC_LIFE + ' min';
   if (renderMapInto(mapEl, S, fv, { noPins:true, deployedOnly:true }) && mapEl._lm){ const st = mapEl._lm; if (!st.picPoc) st.picPoc = L.layerGroup().addTo(st.map); st.picPoc.clearLayers();
-    if (showPoc) pocs.forEach(r => { const op = r.age < 5 ? 1 : .45; L.circleMarker(r.x.pt, { radius:8, color:'#ffffff', weight:2.5, opacity:op, fillColor:'#e040fb', fillOpacity:op }).bindTooltip(esc(r.o.name + ' · ' + ocWhere(S, r.o) + ' · ' + new Date(r.x.ts).toTimeString().slice(0, 5)), { permanent:r.age < 5, direction:'right', className:'teamlbl', offset:[10, 0], opacity:op }).addTo(st.picPoc); }); }
+    if (showPoc) pocs.forEach(r => { const op = r.age < 5 ? 1 : .45; L.circleMarker(r.x.pt, { radius:8, color:'#ffffff', weight:2.5, opacity:op, fillColor:r.o.props ? '#00b8d4' : '#e040fb', fillOpacity:op }).bindTooltip(esc((r.o.props ? 'Props: ' : '') + r.o.name + (r.o.props ? '' : ' · ' + ocWhere(S, r.o)) + ' · ' + new Date(r.x.ts).toTimeString().slice(0, 5)), { permanent:r.age < 5, direction:'right', className:'teamlbl', offset:[10, 0], opacity:op }).addTo(st.picPoc); }); }
   const intel = []; allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), os = [oB, oR].filter(Boolean); if (!os.length) return;
     intel.push({ n:i + 1, title:fillT(P.title), a:Math.min(...os.map(o => o.g)), b:Math.max(...os.map(o => o.due)), done:os.every(o => o.done), to:oB && oR ? 'both' : oB ? 'B' : 'R' }); });
   const injs = (S.injq || []).filter(q => q.sent != null).map(q => ({ g:q.sent, label:q.label, to:q.to }));
@@ -4337,7 +4350,7 @@ function renderAssets(S, v){
     ['Cache strikes', sd => S.uses.cstrike[sd] ? asbSt('ok', S.uses.cstrike[sd] + ' left') : asbSt('no', 'None left')],
     ['Town office', sd => !S.access[sd] ? asbSt('no', 'Closed by the mayor') : S.office[sd] ? asbSt('ok', 'Open') : asbSt('', 'Not open')],
     ['Aid package', sd => esc(aidText(S, sd, true))],
-    ['Sites held', sd => esc(SITE_KEYS.filter(k => S.sites[k] && S.sites[k].holder === sd).map(k => SITES[k].name + (S.sites[k].contested ? ' (stalemate)' : '')).join(', ') || 'None')],
+    ['Sites held', sd => esc(SITE_KEYS.filter(k => S.sites[k] && S.sites[k].holder === sd).map(k => SITES[k].name + (S.sites[k].contestBy ? ' (contested by ' + SIDES[S.sites[k].contestBy].name + ' until ' + hhmm(S.sites[k].contestUntil) + ')' : S.sites[k].contested ? ' (stalemate)' : '')).join(', ') || 'None')],
     ['Fireteams signed in', sd => String(liveTeams(S, sd).length)]
   ];
   const h = '<thead><tr><th>Asset</th><th><span class="chip B">Blue Force</span></th><th><span class="chip R">Red Force</span></th></tr></thead><tbody>' + rows.map(([n, f]) => '<tr><td>' + esc(n) + '</td><td>' + f('B') + '</td><td>' + f('R') + '</td></tr>').join('') + '</tbody>';
@@ -4361,7 +4374,7 @@ function propItems(S){
 }
 function propSched(S){
   const items = propItems(S), rows = Object.values(S.propUses || {}).map(u => { const it = items[u.kind + ':' + u.item] || null, st = (S.propSt || {})[u.id] || {}, base = it ? (it.sent != null ? it.sent : it.at) : null;
-    return { u, it, st, prop:(S.props || {})[u.prop] || { name:'Prop' }, placeBy:base != null ? base - u.lead : null, useAt:base, recAfter:base != null ? base + u.keep : null, state:st.rec != null ? 'done' : st.placed != null ? 'out' : 'todo' }; });
+    return { u, it, st, claim:(S.propClaim || {})[u.id] || null, prop:(S.props || {})[u.prop] || { name:'Prop' }, placeBy:base != null ? base - u.lead : null, useAt:base, recAfter:base != null ? base + u.keep : null, state:st.rec != null ? 'done' : st.placed != null ? 'out' : 'todo' }; });
   rows.sort((a, b) => ((a.placeBy == null) - (b.placeBy == null)) || ((a.placeBy || 0) - (b.placeBy || 0)));
   const byProp = {}; rows.forEach(r => (byProp[r.u.prop] = byProp[r.u.prop] || []).push(r));
   Object.values(byProp).forEach(list => { const tm = list.filter(r => r.placeBy != null); for (let i = 1; i < tm.length; i++) if (tm[i].placeBy < tm[i - 1].recAfter) tm[i].clash = tm[i - 1]; });
@@ -4377,14 +4390,17 @@ function propLocate(S, text){
   const k = SITE_KEYS.find(x => SITES[x].name.toLowerCase() === lo); if (k && pts[k]) return pts[k];
   return M ? locate(M, t) : GEO.parsePoint(t);
 }
-function drawProps(layer, S, pr){
+function drawProps(layer, S, pr, opts){
+  if (app.role === 'L' && app.propNav){ const r = propSched(S).find(x => x.u.id === app.propNav), tgt = r && (r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt);
+    if (tgt){ L.marker(tgt, { icon:L.divIcon({ className:'', html:'<div class="mk-target"></div>', iconSize:[26, 26], iconAnchor:[13, 13] }), zIndexOffset:2000 }).bindTooltip(esc((r.state === 'out' ? 'Recover: ' : 'Put it here: ') + r.prop.name + (r.u.label ? ' · ' + r.u.label : '')), { permanent:true, direction:'top', className:'sitelbl', offset:[0, -14] }).addTo(layer);
+      if (app.propSelf) L.polyline([app.propSelf.pt, tgt], { color:'#ff9800', weight:4, dashArray:'8 6' }).addTo(layer); }
+    return; }
   propSched(S).forEach(r => {
-    if (r.state === 'done') return;
+    if (r.state === 'done' || (opts && opts.deployedOnly && r.state !== 'out')) return;
     const pt = r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt; if (!pt) return;
     const tip = r.prop.name + (r.u.label ? ' · ' + r.u.label : '') + (r.state === 'out' ? ' · placed ' + hhmm(r.st.placed) : r.placeBy != null ? ' · place by ' + hhmm(r.placeBy) : ' · not placed');
-    L.marker(pt, { icon:L.divIcon({ className:'', html:'<div class="mk-prop' + (r.state === 'out' ? '' : ' plan') + '"></div>', iconSize:[16, 16], iconAnchor:[8, 8] }), zIndexOffset:650 }).bindTooltip(esc(tip), { permanent:app.role === 'L' || !!pr.sitenames, direction:'right', className:'sitelbl', offset:[10, 0] }).addTo(layer);
+    L.marker(pt, { icon:L.divIcon({ className:'', html:'<div class="mk-prop' + (r.state === 'out' ? '' : ' plan') + '"></div>', iconSize:[16, 16], iconAnchor:[8, 8] }), zIndexOffset:650 }).bindTooltip(esc(tip), { permanent:app.role === 'L', direction:'right', className:'sitelbl', offset:[10, 0] }).addTo(layer);
   });
-  if (app.role === 'L' && app.propNav && app.propSelf){ const r = propSched(S).find(x => x.u.id === app.propNav); const tgt = r && (r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt); if (tgt) L.polyline([app.propSelf.pt, tgt], { color:'#ff9800', weight:3, dashArray:'6 6' }).addTo(layer); }
 }
 app.pe = { tpl:[], pkg:[] };
 function peOf(S, kind, id){ return Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id).map(u => JSON.parse(JSON.stringify(u))); }
@@ -4418,7 +4434,7 @@ function renderPropPlan(S, v){
   const lh = cat.length ? cat.map(c => '<div class="li"><div class="grow"><b>' + esc(c.name) + '</b> <span class="small muted">' + rows.filter(r => r.u.prop === c.id).length + ' use' + (rows.filter(r => r.u.prop === c.id).length === 1 ? '' : 's') + (c.note ? ' · ' + esc(c.note) : '') + '</span></div>' + where(c) + '<button type="button" data-propedit="' + esc(c.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-propdel="' + esc(c.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No props in the catalog yet.</div>';
   { const el = $('[data-proplist]', v); if (el.dataset.h !== lh && !typingIn(box)){ el.dataset.h = lh; el.innerHTML = lh; } }
   const st = r => r.state === 'done' ? '<span class="chip">Recovered ' + hhmm(r.st.rec) + '</span>' : r.state === 'out' ? '<span class="chip ok">Placed ' + hhmm(r.st.placed) + '</span>' : r.placeBy != null && S.clock.started && S.g > r.placeBy ? '<span class="chip no">Late</span>' : '<span class="chip">Not placed</span>';
-  const sh = rows.length ? '<table class="pr-tbl"><thead><tr><th>Place by</th><th>Prop</th><th>For</th><th>Where</th><th>Recover after</th><th>Status</th></tr></thead><tbody>' + rows.map(r => '<tr><td class="mono">' + (r.placeBy != null ? hhmm(r.placeBy) : 'On call') + '</td><td><b>' + esc(r.prop.name) + '</b>' + (r.u.label ? '<br>' + esc(r.u.label) : '') + (r.clash ? '<div class="pr-clash">Still out for ' + esc(r.clash.it ? r.clash.it.label : 'another use') + ' until ' + hhmm(r.clash.recAfter) + '</div>' : '') + '</td><td>' + esc(r.it ? r.it.label : '(item removed)') + (r.useAt != null ? ' · ' + hhmm(r.useAt) : '') + '</td><td>' + esc(propWhere(S, r)) + (r.u.note ? '<div class="small muted">' + esc(r.u.note) + '</div>' : '') + '</td><td class="mono">' + (r.recAfter != null ? hhmm(r.recAfter) : '—') + '</td><td>' + st(r) + (r.state !== 'todo' ? ' <button type="button" data-propreset="' + esc(r.u.id) + '" style="padding:2px 8px;font-size:12px">Clear</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '<div class="empty">No props are attached to injects or intel packages yet.</div>';
+  const sh = rows.length ? '<table class="pr-tbl"><thead><tr><th>Place by</th><th>Prop</th><th>For</th><th>Where</th><th>Recover after</th><th>Status</th></tr></thead><tbody>' + rows.map(r => '<tr><td class="mono">' + (r.placeBy != null ? hhmm(r.placeBy) : 'On call') + '</td><td><b>' + esc(r.prop.name) + '</b>' + (r.u.label ? '<br>' + esc(r.u.label) : '') + (r.clash ? '<div class="pr-clash">Still out for ' + esc(r.clash.it ? r.clash.it.label : 'another use') + ' until ' + hhmm(r.clash.recAfter) + '</div>' : '') + '</td><td>' + esc(r.it ? r.it.label : '(item removed)') + (r.useAt != null ? ' · ' + hhmm(r.useAt) : '') + '</td><td>' + esc(propWhere(S, r)) + (r.u.note ? '<div class="small muted">' + esc(r.u.note) + '</div>' : '') + '</td><td class="mono">' + (r.recAfter != null ? hhmm(r.recAfter) : '—') + '</td><td>' + st(r) + (r.claim && r.state !== 'done' ? '<div class="small">Claimed by ' + esc(r.claim.name) + '</div>' : '') + (r.st.name ? '<div class="small muted">Placed by ' + esc(r.st.name) + '</div>' : '') + (r.state !== 'todo' ? ' <button type="button" data-propreset="' + esc(r.u.id) + '" style="padding:2px 8px;font-size:12px">Clear</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '<div class="empty">No props are attached to injects or intel packages yet.</div>';
   { const el = $('[data-propsched]', v); if (el.dataset.h !== sh){ el.dataset.h = sh; el.innerHTML = sh; } }
   ['tpl', 'pkg'].forEach(k => { const el = $('[data-pe="' + k + '"]', v), ck = cat.map(c => c.id + c.name).join(); if (el && el.dataset.cat !== ck && !typingIn(el)){ el.dataset.cat = ck; peRender(k); } });
 }
@@ -4441,60 +4457,90 @@ function propNotify(S){
 }
 
 /* ---------- props and logistics view ---------- */
+function propsKey(){ return 'marala-props-' + (app.gid || 'none'); }
+function propsMe(){ try { return JSON.parse(localStorage.getItem(propsKey()) || 'null'); } catch(e){ return null; } }
+function propsSet(v){ try { if (v) localStorage.setItem(propsKey(), JSON.stringify(v)); else localStorage.removeItem(propsKey()); } catch(e){} }
 let propWatch = null;
 function propNavStop(){ if (propWatch != null && navigator.geolocation){ navigator.geolocation.clearWatch(propWatch); } propWatch = null; app.propNav = null; }
 function propNavStart(id){
   app.propNav = id;
   if (propWatch == null && navigator.geolocation) propWatch = navigator.geolocation.watchPosition(p => { app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; propNavText(); if (app.S && Date.now() - (app.propMapAt || 0) > 5000){ app.propMapAt = Date.now(); refresh(true); } }, () => toast('Location unavailable. Allow location for this site.', true), { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
-  propNavText(); refresh(true);
+  propNavText(); app.propFitFor = null; refresh(true);
+  const mp = $('[data-prmap]'); if (mp) setTimeout(() => mp.scrollIntoView({ behavior:'smooth', block:'center' }), 60);
 }
 function propBearing(a, b){ const r = Math.PI / 180, y = Math.sin((b[1] - a[1]) * r) * Math.cos(b[0] * r), x = Math.cos(a[0] * r) * Math.sin(b[0] * r) - Math.sin(a[0] * r) * Math.cos(b[0] * r) * Math.cos((b[1] - a[1]) * r); const d = (Math.atan2(y, x) / r + 360) % 360; return ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(d / 45) % 8]; }
 function propNavText(){
   const el = $('[data-prnav]'); if (!el) return; const S = app.S, r = S && app.propNav && propSched(S).find(x => x.u.id === app.propNav);
   if (!r){ el.hidden = true; return; } el.hidden = false;
   const tgt = r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt, me = app.propSelf && Date.now() - app.propSelf.t < 60000 ? app.propSelf : null;
-  el.innerHTML = '<div class="pr-nav">Going to: ' + esc(r.prop.name) + (r.u.label ? ' · ' + esc(r.u.label) : '') + '</div>' + (!tgt ? '<div class="small">No map point for this prop. Use the written location: ' + esc(r.u.loc || 'none') + '.</div>' : !me ? '<div class="small">Finding your position…</div>' : '<div class="pr-nav"><span class="mono">' + Math.round(GEO.dist(me.pt, tgt)) + ' m ' + propBearing(me.pt, tgt) + '</span> <span class="small muted">±' + me.acc + ' m</span></div>') + '<div class="row" style="justify-content:flex-start"><button type="button" data-prnavstop style="flex:0 0 auto">Stop</button></div>';
+  el.innerHTML = '<div class="pr-nav">' + (r.state === 'out' ? 'Recovering: ' : 'Placing: ') + esc(r.prop.name) + (r.u.label ? ' · ' + esc(r.u.label) : '') + '</div>' + (!tgt ? '<div class="small">No map point for this prop. Use the written location: ' + esc(r.u.loc || 'none') + '.</div>' : !me ? '<div class="small">Finding your position…</div>' : '<div class="pr-nav"><span class="mono">' + Math.round(GEO.dist(me.pt, tgt)) + ' m ' + propBearing(me.pt, tgt) + '</span> <span class="small muted">±' + me.acc + ' m</span></div>') + '<div class="small">Where: ' + esc(propWhere(S, r)) + '</div><div class="row" style="justify-content:flex-start"><button type="button" data-prnavstop style="flex:0 0 auto">Hide on map</button></div>';
 }
 function buildProps(){
   if (app.built === 'props') return; app.built = 'props';
-  const v = freshView('#vProps');
+  const v = freshView('#vProps'), me = propsMe();
+  if (!me){
+    v.innerHTML = '<div class="stack"><div class="panel stack"><h2>Props and logistics sign in</h2><p class="small muted" style="margin:0">Your name shows on tasks you claim and props you place, and the White Force can message you.</p><form class="stack" data-prjoin><label>Your name<input name="name" maxlength="40" required placeholder="Input your name"></label><div><button class="btn-side team-big" type="submit">Sign in</button></div></form></div><div class="panel stack"><h2>Already signed in before?</h2><div class="list" data-prrejoin></div></div></div>';
+    $('[data-prjoin]', v).addEventListener('submit', ev => { ev.preventDefault(); const name = ev.target.name.value.trim(); if (!name) return; const id = 'o' + uid(); propsSet({ id, name }); writeEvent('oc_join', null, { oc:id, name, props:true }); app.built = null; buildProps(); refresh(true); });
+    $('[data-prrejoin]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-prrejoinid]'); if (!b) return; propsSet({ id:b.dataset.prrejoinid, name:b.dataset.name }); app.built = null; buildProps(); refresh(true); toast('Welcome back, ' + b.dataset.name + '.'); });
+    return;
+  }
   v.innerHTML = `
   <div class="stack">
-    <div class="panel"><div class="act-head"><h2>Props and logistics</h2><span class="small muted">White Force · <b class="mono" data-clock>—</b></span></div>
+    <div class="panel"><div class="act-head"><h2 data-prname>${esc(me.name)}</h2><span class="small muted">Props and logistics \u00b7 <b class="mono" data-clock>\u2014</b></span></div>
+      <div class="row" style="justify-content:flex-start"><button type="button" data-prsignout style="flex:0 0 auto">Sign out</button></div>
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
-      <label class="chk"><input type="checkbox" data-msgsound checked> Sound when the schedule changes</label></div>
+      <label class="chk"><input type="checkbox" data-msgsound checked> Sound for messages and schedule changes</label></div>
+    <div class="panel stack" data-prannbox hidden><h2>Announcements</h2><div class="list" data-pranns></div></div>
     <div class="panel stack" data-prnav hidden></div>
     <div class="panel stack"><div class="act-head"><h2>To place</h2><span class="small muted" data-prtodon></span></div><div class="stack" data-prtodo></div></div>
     <div class="panel stack"><div class="act-head"><h2>In the field</h2><span class="small muted" data-proutn></span></div><div class="stack" data-prout></div></div>
-    <div class="panel stack"><h2>Map</h2><p class="small muted" style="margin:0">Orange diamonds are placed props; dashed diamonds are where props still need to go. Your position shows only on this phone.</p>
+    <div class="panel stack"><h2>Map</h2><p class="small muted" style="margin:0">Orange diamonds are placed props; dashed diamonds are where props still need to go. Show on map on a task shows only that spot. Find my position also shows you to the White Force and AOC for 5 minutes.</p>
       <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-prself style="flex:0 0 auto">Find my position</button><button type="button" data-prfull style="flex:0 0 auto">Full screen map</button></div>
       <div class="map-wrap" data-prmap></div><div data-prlegend></div></div>
+    <div class="panel stack"><h2>Messages with the White Force</h2><div class="chatlog" data-prchat></div><form class="row" data-prchatf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
     <div class="panel stack"><h2>Catalog</h2><div class="list" data-prcat></div></div>
     <details class="panel"><summary><b>Recovered</b> <span class="small muted" data-prdonen></span></summary><div class="list" data-prdone style="margin-top:8px"></div></details>
   </div>`;
   $('[data-prfull]', v).onclick = () => openFullMap(null);
+  $('[data-prsignout]', v).onclick = () => { if (!confirm('Sign out on this phone? The White Force keeps your name until it removes you.')) return; propsSet(null); propNavStop(); app.built = null; buildProps(); refresh(true); };
+  $('[data-prchatf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return; } await writeEvent('occhat', null, { oc:me.id, from:'oc', text:tx }); f.text.value = ''; });
   v.addEventListener('click', async ev => {
-    const pl = ev.target.closest('[data-prplace]'), rc = ev.target.closest('[data-prrec]'), nv = ev.target.closest('[data-prgo]');
+    const pl = ev.target.closest('[data-prplace]'), rc = ev.target.closest('[data-prrec]'), nv = ev.target.closest('[data-prgo]'), cl = ev.target.closest('[data-prclaim]');
     if (ev.target.closest('[data-prnavstop]')){ propNavStop(); propNavText(); refresh(true); return; }
-    if (ev.target.closest('[data-prself]')){ const b = ev.target.closest('[data-prself]'); b.disabled = true; const g = await getGPS(); b.disabled = false; if (!g){ toast('Location unavailable. Allow location for this site and try again outdoors.', true); return; } app.propSelf = { pt:g.pt, acc:g.acc, t:Date.now() }; refresh(true); return; }
-    if (nv){ propNavStart(nv.dataset.prgo); return; }
+    if (ev.target.closest('[data-prself]')){ const b = ev.target.closest('[data-prself]'); b.disabled = true; const g = await getGPS(); b.disabled = false; if (!g){ toast('Location unavailable. Allow location for this site and try again outdoors.', true); return; } app.propSelf = { pt:g.pt, acc:g.acc, t:Date.now() }; if (app.S && app.S.ocs[me.id]) writeEvent('oc_pos', null, { oc:me.id, pt:g.pt, acc:g.acc }); toast('Position found. The White Force can see it for 5 minutes.'); refresh(true); return; }
+    if (cl){ const rel = cl.dataset.release === '1'; writeEvent('prop_claim', null, { use:cl.dataset.prclaim, oc:me.id, release:rel }); toast(rel ? 'Released. Anyone on the team can claim it.' : 'Claimed. The team can see it is yours.'); return; }
+    if (nv){ if (app.propNav === nv.dataset.prgo){ propNavStop(); propNavText(); refresh(true); } else propNavStart(nv.dataset.prgo); return; }
     if (pl){ const id = pl.dataset.prplace, card = pl.closest('[data-prcard]'), note = card ? ($('[data-prnote]', card) || {}).value || '' : '', S = app.S, r = propSched(S).find(x => x.u.id === id); if (!r) return;
-      const busy = propSched(S).find(x => x.u.prop === r.u.prop && x.state === 'out' && x.u.id !== id);
-      if (!confirm('Report ' + r.prop.name + (r.u.label ? ' (' + r.u.label + ')' : '') + ' placed?' + (busy ? '\n\nThis also marks it recovered from ' + (busy.it ? busy.it.label : 'its last use') + '.' : ''))) return;
+      const busy = propSched(S).find(x => x.u.prop === r.u.prop && x.state === 'out' && x.u.id !== id), other = r.claim && r.claim.oc !== me.id ? r.claim.name : null;
+      if (!confirm('Report ' + r.prop.name + (r.u.label ? ' (' + r.u.label + ')' : '') + ' placed?' + (other ? '\n\n' + other + ' claimed this task.' : '') + (busy ? '\n\nThis also marks it recovered from ' + (busy.it ? busy.it.label : 'its last use') + '.' : ''))) return;
       pl.disabled = true; pl.textContent = 'Getting GPS…';
       const g = app.propSelf && Date.now() - app.propSelf.t < 30000 ? app.propSelf : await getGPS();
-      await writeEvent('prop_place', null, { use:id, pt:g ? g.pt : null, acc:g ? g.acc : null, note }); if (app.propNav === id) propNavStop();
+      await writeEvent('prop_place', null, { use:id, pt:g ? g.pt : null, acc:g ? g.acc : null, note, oc:me.id }); if (app.propNav === id) propNavStop();
       toast(g ? 'Placed. Sent to the White Force with your position.' : 'Placed. Sent to the White Force without GPS.'); return; }
-    if (rc){ const r = propSched(app.S).find(x => x.u.id === rc.dataset.prrec); if (!r || !confirm('Report ' + r.prop.name + ' recovered?')) return; await writeEvent('prop_recover', null, { use:r.u.id }); toast('Recovered.'); }
+    if (rc){ const r = propSched(app.S).find(x => x.u.id === rc.dataset.prrec); if (!r || !confirm('Report ' + r.prop.name + ' recovered?' + (r.claim && r.claim.oc !== me.id ? '\n\n' + r.claim.name + ' claimed this task.' : ''))) return; await writeEvent('prop_recover', null, { use:r.u.id, oc:me.id }); if (app.propNav === r.u.id) propNavStop(); toast('Recovered.'); }
   });
 }
 function renderProps(S){
-  const v = $('#vProps'); if (!$('[data-prtodo]', v)) return;
+  const v = $('#vProps'), me = propsMe();
+  if (!me){ const rj = $('[data-prrejoin]', v); if (rj){ const list = Object.values(S.ocs).filter(o => !o.removed && o.props), h = list.length ? list.map(o => '<div class="li"><div class="grow"><b>' + esc(o.name) + '</b></div><button type="button" data-prrejoinid="' + esc(o.id) + '" data-name="' + esc(o.name) + '" style="flex:0 0 auto">This is me</button></div>').join('') : '<div class="empty">No props and logistics members have signed in yet.</div>'; if (rj.dataset.h !== h){ rj.dataset.h = h; rj.innerHTML = h; } } return; }
+  const meO = S.ocs[me.id];
+  if (meO && meO.removed){ propsSet(null); toast('The White Force removed you. Sign in again if that was a mistake.', true); app.built = null; buildProps(); renderProps(S); return; }
+  if (!$('[data-prtodo]', v)) return;
+  if (meO) $('[data-prname]', v).textContent = meO.name;
+  answerOcPing(S, me);
+  { const lg = $('[data-prchat]', v), ms = (S.occhats || []).filter(m => m.oc === me.id), k = String(ms.length);
+    if (lg.dataset.k !== k){ lg.dataset.k = k; lg.innerHTML = ms.length ? ms.slice(-40).map(m => '<div class="chatmsg' + (m.from === 'oc' ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' \u00b7 ' + (m.from === 'wc' ? 'White Force' : 'You') + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages.</div>'; lg.scrollTop = lg.scrollHeight; }
+    const an = S.ocAnns || [], ab = $('[data-prannbox]', v); ab.hidden = !an.length; if (ab.dataset.k !== String(an.length)){ ab.dataset.k = String(an.length); $('[data-pranns]', v).innerHTML = an.slice().reverse().map(a => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(a.g) + '</span> ' + esc(a.text) + '</div></div>').join(''); }
+    const nIn = ms.filter(m => m.from === 'wc').length + an.length;
+    if (app.prInFor !== me.id){ app.prInFor = me.id; app.prInN = nIn; } else if (nIn > app.prInN){ app.prInN = nIn; const last = [...ms.filter(m => m.from === 'wc'), ...an].sort((a, b) => a.g - b.g).pop(); if (last) toast((an.includes(last) ? 'Announcement: ' : 'White Force: ') + last.text); } }
   const rows = propSched(S), todo = rows.filter(r => r.state === 'todo'), out = rows.filter(r => r.state === 'out'), done = rows.filter(r => r.state === 'done');
   const due = r => r.placeBy == null ? 'On call' : 'Place by ' + hhmm(r.placeBy) + (S.clock.started ? (S.g > r.placeBy ? ' · late' : ' · in ' + Math.ceil(r.placeBy - S.g) + ' min') : '');
   const cls = r => r.placeBy == null || !S.clock.started ? '' : S.g > r.placeBy ? ' late' : r.placeBy - S.g <= 10 ? ' soon' : '';
-  const card = r => '<div class="pr-card' + cls(r) + '" data-prcard><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' · ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span><b>' + esc(due(r)) + '</b></span><span>For ' + esc(r.it ? r.it.label : '?') + (r.useAt != null ? ' at ' + hhmm(r.useAt) : '') + '</span></div><div class="small">Where: ' + esc(propWhere(S, r)) + '</div>' + (r.u.note ? '<div class="small">Note: ' + esc(r.u.note) + '</div>' : '') + (r.clash ? '<div class="small pr-clash">Still out for ' + esc(r.clash.it ? r.clash.it.label : 'another use') + ' until ' + hhmm(r.clash.recAfter) + '. Recover it first.</div>' : '') + (r.prop.home ? '<div class="small muted">Stored at ' + esc(r.prop.home) + '</div>' : '') + '<input data-prnote maxlength="200" placeholder="Note (optional): where exactly, any problem">' + '<div class="pr-btns"><button type="button" data-prgo="' + esc(r.u.id) + '"' + (r.u.pt ? '' : ' disabled') + '>Navigate</button><button type="button" class="btn-side" data-prplace="' + esc(r.u.id) + '">Placed</button></div></div>';
-  const oc = r => '<div class="pr-card' + (r.recAfter != null && S.g > r.recAfter ? ' soon' : '') + '"><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' · ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span>Placed ' + hhmm(r.st.placed) + (r.st.acc ? ' · GPS ±' + r.st.acc + ' m' : '') + '</span><span>' + (r.recAfter != null ? 'Recover after ' + hhmm(r.recAfter) : 'Recover when told') + '</span></div><div class="small">For ' + esc(r.it ? r.it.label : '?') + '</div><div class="pr-btns"><button type="button" data-prgo="' + esc(r.u.id) + '"' + (r.st.pt || r.u.pt ? '' : ' disabled') + '>Navigate</button><button type="button" class="btn-side" data-prrec="' + esc(r.u.id) + '">Recovered</button></div></div>';
+  const claimH = r => r.claim ? '<div class="pr-claim ' + (r.claim.oc === me.id ? 'me">Claimed by you' : 'other">Claimed by ' + esc(r.claim.name)) + ' at ' + hhmm(r.claim.g) + '</div>' : '<div class="pr-claim">Not claimed</div>';
+  const claimB = r => r.claim && r.claim.oc === me.id ? '<button type="button" data-prclaim="' + esc(r.u.id) + '" data-release="1">Release</button>' : '<button type="button" data-prclaim="' + esc(r.u.id) + '">' + (r.claim ? 'Take over' : 'Claim') + '</button>';
+  const goB = (r, pt) => '<button type="button" data-prgo="' + esc(r.u.id) + '" aria-pressed="' + (app.propNav === r.u.id) + '"' + (pt ? '' : ' disabled') + '>' + (app.propNav === r.u.id ? 'Hide on map' : 'Show on map') + '</button>';
+  const card = r => '<div class="pr-card' + cls(r) + '" data-prcard><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' · ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span><b>' + esc(due(r)) + '</b></span><span>For ' + esc(r.it ? r.it.label : '?') + (r.useAt != null ? ' at ' + hhmm(r.useAt) : '') + '</span></div><div class="small">Where: ' + esc(propWhere(S, r)) + '</div>' + (r.u.note ? '<div class="small">Note: ' + esc(r.u.note) + '</div>' : '') + (r.clash ? '<div class="small pr-clash">Still out for ' + esc(r.clash.it ? r.clash.it.label : 'another use') + ' until ' + hhmm(r.clash.recAfter) + '. Recover it first.</div>' : '') + (r.prop.home ? '<div class="small muted">Stored at ' + esc(r.prop.home) + '</div>' : '') + claimH(r) + '<input data-prnote maxlength="200" placeholder="Note (optional): where exactly, any problem">' + '<div class="pr-btns">' + claimB(r) + goB(r, r.u.pt) + '</div><button type="button" class="btn-side team-big" data-prplace="' + esc(r.u.id) + '">Placed</button></div>';
+  const oc = r => '<div class="pr-card' + (r.recAfter != null && S.g > r.recAfter ? ' soon' : '') + '"><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' · ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span>Placed ' + hhmm(r.st.placed) + (r.st.acc ? ' · GPS ±' + r.st.acc + ' m' : '') + '</span><span>' + (r.recAfter != null ? 'Recover after ' + hhmm(r.recAfter) : 'Recover when told') + '</span></div><div class="small">For ' + esc(r.it ? r.it.label : '?') + (r.st.name ? ' \u00b7 placed by ' + esc(r.st.name) : '') + '</div>' + claimH(r) + '<div class="pr-btns">' + claimB(r) + goB(r, r.st.pt || r.u.pt) + '</div><button type="button" class="btn-side team-big" data-prrec="' + esc(r.u.id) + '">Recovered</button></div>';
   const tb = $('[data-prtodo]', v), th = todo.length ? todo.map(card).join('') : '<div class="empty">Nothing left to place.</div>';
   if (tb.dataset.h !== th && !typingIn(tb)){ tb.dataset.h = th; tb.innerHTML = th; }
   $('[data-prtodon]', v).textContent = todo.length ? todo.length + ' to go' : '';
@@ -4502,7 +4548,9 @@ function renderProps(S){
   { const cat = (S.propOrder || []).map(k => S.props[k]).filter(Boolean), ch = cat.length ? cat.map(c => { const o = out.find(r => r.u.prop === c.id), nx = todo.find(r => r.u.prop === c.id); return '<div class="li"><div class="grow"><b>' + esc(c.name) + '</b><div class="small">' + (o ? 'In the field for ' + esc(o.it ? o.it.label : '?') : 'Available' + (c.home ? ' at ' + esc(c.home) : '')) + (nx ? ' · next: ' + esc(due(nx)) : '') + '</div></div></div>'; }).join('') : '<div class="empty">No props in the catalog.</div>', el = $('[data-prcat]', v); if (el.dataset.h !== ch){ el.dataset.h = ch; el.innerHTML = ch; } }
   { const dh = done.length ? done.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + esc(r.prop.name) + '</b> <span class="small muted">' + hhmm(r.st.placed) + ' to ' + hhmm(r.st.rec) + '</span><div class="small">' + esc(r.it ? r.it.label : '') + '</div></div></div>').join('') : '<div class="empty">Nothing recovered yet.</div>', el = $('[data-prdone]', v); if (el.dataset.h !== dh){ el.dataset.h = dh; el.innerHTML = dh; } $('[data-prdonen]', v).textContent = done.length ? '(' + done.length + ')' : ''; }
   wakeShow(); propNavText();
-  const real = renderMapInto($('[data-prmap]', v), S, null); $('[data-prlegend]', v).innerHTML = real ? realLegend() : legendHTML(null);
+  const mEl = $('[data-prmap]', v), real = renderMapInto(mEl, S, null); $('[data-prlegend]', v).innerHTML = real ? realLegend() : legendHTML(null);
+  if (real && mEl._lm && app.propNav && app.propFitFor !== app.propNav){ const r = rows.find(x => x.u.id === app.propNav), tgt = r && (r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt); if (tgt){ app.propFitFor = app.propNav; const me2 = app.propSelf && Date.now() - app.propSelf.t < 120000 ? app.propSelf.pt : null; if (me2 && GEO.dist(me2, tgt) < 800) mEl._lm.map.fitBounds([me2, tgt], { padding:[50, 50], maxZoom:19 }); else mEl._lm.map.setView(tgt, 19); } }
+  if (app.propNav && !rows.some(x => x.u.id === app.propNav && x.state !== 'done')){ propNavStop(); propNavText(); }
 }
 
 /* ---------- drone operator view ---------- */
@@ -4679,7 +4727,7 @@ function buildWhite(){
           <div class="pic-card pic-mapcard">
             <div class="pic-tools"><button type="button" class="btn-side" data-picping>Ping all devices</button><label class="chk"><input type="checkbox" data-picpoc> Show POCs</label><span class="small muted" data-picpocn></span><div class="fogseg" role="group" aria-label="Map view" data-fogctl><button type="button" data-fogv="" aria-pressed="true">All (no fog of war)</button><button type="button" data-fogv="B" aria-pressed="false">Blue Force view</button><button type="button" data-fogv="R" aria-pressed="false">Red Force view</button></div><button type="button" data-picfull class="pic-push">Full screen</button></div>
             <div class="pic-map" data-picmap></div>
-            <div class="pic-legend"><span><i style="background:#3d7dff"></i>Blue Force</span><span><i style="background:#ff4d42"></i>Red Force</span><span><i style="background:#e040fb"></i>POC</span><span><i class="hol"></i>Site not held</span><span class="muted">Fireteams and POCs show their last reported position.</span></div>
+            <div class="pic-legend"><span><i style="background:#3d7dff"></i>Blue Force</span><span><i style="background:#ff4d42"></i>Red Force</span><span><i style="background:#e040fb"></i>POC</span><span><i style="background:#00b8d4"></i>Props</span><span><i class="hol"></i>Site not held</span><span class="muted">Fireteams and POCs show their last reported position.</span></div>
           </div>
           <div class="pic-side">
             <div class="pic-card"><div class="pic-h"><h3>Out now</h3><span data-picoutn></span></div><div class="pic-list" data-picout></div></div>
