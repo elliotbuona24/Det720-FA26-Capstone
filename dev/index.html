@@ -259,6 +259,11 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .drone-st{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}.drone-st.ok{border-color:var(--good)}.drone-st.no{border-color:var(--warn)}.drone-st b{font-size:15px;letter-spacing:.04em}.drone-st .pri-push{margin-left:auto}
 .dr-big{display:grid;gap:10px}.dr-state{font-size:22px;font-weight:800;letter-spacing:.04em;text-align:center;padding:16px 10px;border-radius:10px;border:2px solid var(--line)}.dr-state.ok{color:var(--good);border-color:var(--good)}.dr-state.no{color:var(--warn);border-color:var(--warn)}
 .dr-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dr-btns button{font-size:16px;padding:16px 10px;min-height:58px}.dr-btns button[aria-pressed="true"]{outline:3px solid var(--focus);outline-offset:1px}
+.pe{border:1px dashed var(--line);border-radius:8px;padding:8px 10px;display:grid;gap:8px}.pe-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:6px}.pe-row:last-child{border-bottom:0}.pe-row .grow{flex:1 1 200px;min-width:0}
+.pr-card{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:6px;background:var(--panel)}.pr-card.late{border-color:var(--bad)}.pr-card.soon{border-color:var(--warn)}.pr-card .pr-what{font-size:16px;font-weight:700}.pr-card .pr-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px}
+.pr-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pr-btns button{min-height:48px;font-size:15px}.pr-nav{font-size:15px;font-weight:700}.pr-nav .mono{font-size:20px}
+.pr-tbl{width:100%;border-collapse:collapse;font-size:13px}.pr-tbl th,.pr-tbl td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}.pr-tbl th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}.pr-clash{color:var(--bad);font-weight:600}
+.mk-prop{width:14px;height:14px;transform:rotate(45deg);border:2px solid #fff;background:#ff9800;box-shadow:0 0 0 1px #000}.mk-prop.plan{background:transparent;border:2px dashed #ff9800;box-shadow:none}
 .dr-req{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px}.dr-req textarea{width:100%;min-height:64px;font-size:16px;box-sizing:border-box}.dr-req .q{font-size:16px;font-weight:600}
 .team-big{font-size:18px;padding:14px;width:100%}
 label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
@@ -411,7 +416,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label class="chk"><input type="checkbox" id="adEStarter"> Keep the sample intel packages as fixed packages (older games only)</label>
         <p class="small muted" style="margin:0">New role PINs (leave blank to keep the current PIN)</p>
         <div class="row"><label for="adPW">White Force<input id="adPW" maxlength="12" autocomplete="off"></label><label for="adPA">AOC<input id="adPA" maxlength="12" autocomplete="off"></label><label for="adPB">Blue Force C2<input id="adPB" maxlength="12" autocomplete="off"></label><label for="adPR">Red Force C2<input id="adPR" maxlength="12" autocomplete="off"></label></div>
-        <div class="row"><label for="adPTB">Blue Force fireteam<input id="adPTB" maxlength="12" autocomplete="off"></label><label for="adPTR">Red Force fireteam<input id="adPTR" maxlength="12" autocomplete="off"></label><label for="adPOC">POC<input id="adPOC" maxlength="12" autocomplete="off"></label><label for="adPD">Drone operator<input id="adPD" maxlength="12" autocomplete="off"></label></div>
+        <div class="row"><label for="adPTB">Blue Force fireteam<input id="adPTB" maxlength="12" autocomplete="off"></label><label for="adPTR">Red Force fireteam<input id="adPTR" maxlength="12" autocomplete="off"></label><label for="adPOC">POC<input id="adPOC" maxlength="12" autocomplete="off"></label><label for="adPD">Drone operator<input id="adPD" maxlength="12" autocomplete="off"></label><label for="adPL">Props and logistics<input id="adPL" maxlength="12" autocomplete="off"></label></div>
         <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side side-W" style="flex:0 0 auto">Save changes</button><button type="button" id="adEBackup" style="flex:0 0 auto">Download backup</button><button type="button" id="adEDelete" style="flex:0 0 auto">Delete game</button><button type="button" id="adECancel" style="flex:0 0 auto">Close</button></div>
         <p class="small muted" id="adEMsg" style="margin:0"></p>
       </form>
@@ -445,6 +450,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <label for="sPinTR">Red Force fireteam PIN<input id="sPinTR" required autocomplete="off"></label>
         <label for="sPinOC">POC PIN<input id="sPinOC" required autocomplete="off"></label>
         <label for="sPinD">Drone operator PIN<input id="sPinD" required autocomplete="off"></label>
+        <label for="sPinL">Props and logistics PIN<input id="sPinL" required autocomplete="off"></label>
         <label for="sStart">Board clock starts at<input id="sStart" value="0600" maxlength="5" inputmode="numeric" required></label>
         <label for="sLen">Game length (minutes)<input id="sLen" type="number" min="30" max="300" step="5" value="120" required></label>
       </div>
@@ -471,6 +477,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
   <section id="vTeam" hidden></section>
   <section id="vOC" class="team-view side-W" hidden></section>
   <section id="vDrone" class="team-view side-W" hidden></section>
+  <section id="vProps" class="team-view side-W" hidden></section>
 </div>
 
 <style id="leaflet-css">
@@ -1419,6 +1426,9 @@ function uavEvery(S, side){ return powered(S, 'fuel', side) ? UAV_EVERY_FUEL : U
 function dugIn(S, k){ const s = S.sites[k]; return !!s && !!s.holder && s.since != null && S.g - s.since >= DUG_IN - 1e-9; }
 function contendCost(S, k){ return dugIn(S, k) ? CONTEND_DUG : CONTEND_ESC; }
 function droneEvery(S, side){ const a = S.sites.airstrip; return a.holder === side && !a.contested ? DRONE_EVERY_AIR : DRONE_EVERY; }
+function propOk(pt){ return Array.isArray(pt) && pt.length === 2 && pt.every(Number.isFinite); }
+function propLive(S, u){ const st = (S.propSt || {})[u.id]; return !!(st && st.placed != null && st.rec == null); }
+function propHold(S, kind, id){ return Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id && !propLive(S, u)).map(u => ((S.props || {})[u.prop] || {}).name + (u.label ? ' (' + u.label + ')' : '')); }
 const PRI_DEFAULT = 'Continue to execute planned mission objectives in accordance with commander’s intent.';
 const DRONE_DOWN_TXT = 'Drone in routine maintenance. Not ready for tasking.';
 function droneReady(S, side){ const l = S.droneLast[side]; return l == null || S.g - l >= droneEvery(S, side) - 1e-9; }
@@ -1503,7 +1513,7 @@ function newState(){
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
     sites, office:{B:false,R:false}, access:{B:true,R:true},
-    uses:{ show:{B:1,R:1}, strike:{B:1,R:1}, cstrike:{B:CACHE_STRIKES,R:CACHE_STRIKES} }, jamLast:{B:null,R:null}, droneLast:{B:null,R:null}, aocPri:{B:null,R:null}, droneDown:false, droneAt:null, usedCodes:{}, siteTimer:{}, blasts:{}, aidTick:{B:-1,R:-1},
+    uses:{ show:{B:1,R:1}, strike:{B:1,R:1}, cstrike:{B:CACHE_STRIKES,R:CACHE_STRIKES} }, jamLast:{B:null,R:null}, droneLast:{B:null,R:null}, aocPri:{B:null,R:null}, droneDown:false, props:{}, propOrder:[], propUses:{}, propSt:{}, droneAt:null, usedCodes:{}, siteTimer:{}, blasts:{}, aidTick:{B:-1,R:-1},
     cacheDone:null, crisisCallAt:-999, war:false, warAt:null, raised:false, tickIdx:0,
     clock:{ started:false, running:false, anchorReal:0, anchorG:START_G },
     endex:false, reveal:false, jam:{B:null,R:null},
@@ -1762,6 +1772,7 @@ function apply(S, e, cfg){
     case 'injq_del': { if (!S.injq) break; const ix = S.injq.findIndex(q => q.qid === p.qid && q.sent == null); if (ix >= 0){ S.injq.splice(ix, 1); S.ver++; } break; }
     case 'injq_send': {
       const q = (S.injq || []).find(x => x.qid === p.qid); if (!q || q.sent != null) break;
+      { const hold = propHold(S, 'tpl', q.tid); if (hold.length && !p.ovr){ pushLog(S, 'Inject not sent (' + q.label + '): waiting on props: ' + hold.join(', '), null, e, 'rejected'); break; } if (hold.length) pushLog(S, 'Props override: ' + q.label + ' sent before ' + hold.join(', ') + ' was reported placed', null, e); }
       const text = fillT(p.text ? String(p.text).slice(0, 700) : q.text);
       q.sent = S.g; q.sentText = text; S.ver++;
       pushFeed(S, q.to, text, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label });
@@ -1911,6 +1922,7 @@ function apply(S, e, cfg){
       const AP = allProblems(S), i = AP.findIndex(x => x.id === p.pid), P = AP[i];
       if (!P) break;
       if (!S.clock.started || S.endex){ pushLog(S, 'Intel package ' + (i + 1) + ' not sent: the game is not running', null, e, 'rejected'); break; }
+      { const hold = propHold(S, 'pkg', P.id); if (hold.length && !p.ovr){ pushLog(S, 'Intel package ' + (i + 1) + ' not sent: waiting on props: ' + hold.join(', '), null, e, 'rejected'); break; } if (hold.length && !S.intelOut[P.id]) pushLog(S, 'Props override: intel package ' + (i + 1) + ' sent before ' + hold.join(', ') + ' was reported placed', null, e); }
       const to = (p.to === 'B' || p.to === 'R' ? [p.to] : ['B','R']).filter(sd => !intelOpen(S, P.id, sd));
       if (!to.length){ pushLog(S, 'Intel package ' + (i + 1) + ' already sent', null, e, 'rejected'); break; }
       const due = Math.min(END_G, S.g + P.win);
@@ -2122,7 +2134,43 @@ function apply(S, e, cfg){
       const ix = S.tpls.findIndex(x => x.id === id), ph = String(t.phase || (ix >= 0 && S.tpls[ix].phase) || '').trim().slice(0, 20); if (ph) tp.phase = ph; if (ix >= 0) S.tpls[ix] = tp; else S.tpls.push(tp); S.ver++;
       pushLog(S, 'Inject template ' + (ix >= 0 ? 'updated' : 'saved') + ': ' + label, null, e);
       break; }
-    case 'tpl_del': { if (!S.tpls) break; const ix = S.tpls.findIndex(x => x.id === p.id); if (ix < 0) break; const t = S.tpls.splice(ix, 1)[0]; S.ver++; pushLog(S, 'Inject template deleted: ' + t.label, null, e); break; }
+    case 'tpl_del': { Object.values(S.propUses || {}).forEach(u => { if (u.kind === 'tpl' && u.item === p.id) delete S.propUses[u.id]; }); if (!S.tpls) break; const ix = S.tpls.findIndex(x => x.id === p.id); if (ix < 0) break; const t = S.tpls.splice(ix, 1)[0]; S.ver++; pushLog(S, 'Inject template deleted: ' + t.label, null, e); break; }
+    case 'prop_save': {
+      const x = p.prop || {}, id = String(x.id || ''), name = String(x.name || '').trim().slice(0, 60);
+      if (!/^pr[\w-]{3,40}$/.test(id) || !name) break;
+      if (!S.props) S.props = {}; if (!S.propOrder) S.propOrder = [];
+      const was = !!S.props[id]; S.props[id] = { id, name, home:String(x.home || '').trim().slice(0, 80), note:String(x.note || '').trim().slice(0, 200) };
+      if (!S.propOrder.includes(id)) S.propOrder.push(id); S.ver++;
+      pushLog(S, 'Prop ' + (was ? 'updated' : 'added to the catalog') + ': ' + name, null, e);
+      break; }
+    case 'prop_del': {
+      const x = (S.props || {})[p.id]; if (!x) break;
+      delete S.props[p.id]; S.propOrder = (S.propOrder || []).filter(k => k !== p.id);
+      Object.values(S.propUses || {}).forEach(u => { if (u.prop === p.id) delete S.propUses[u.id]; }); S.ver++;
+      pushLog(S, 'Prop removed from the catalog: ' + x.name, null, e);
+      break; }
+    case 'prop_uses': {
+      const kind = p.kind === 'pkg' || p.kind === 'tpl' ? p.kind : null, item = String(p.item || '').slice(0, 60); if (!kind || !item) break;
+      if (!S.propUses) S.propUses = {};
+      const keepIds = new Set(), num = (v, lo, hi, d) => Number.isFinite(+v) && v !== '' && v != null ? Math.max(lo, Math.min(hi, Math.round(+v))) : d;
+      (Array.isArray(p.uses) ? p.uses : []).slice(0, 12).forEach(x => { if (!x || !/^u[\w-]{3,40}$/.test(String(x.id || '')) || !(S.props || {})[x.prop]) return; keepIds.add(x.id);
+        S.propUses[x.id] = { id:x.id, kind, item, prop:x.prop, label:String(x.label || '').trim().slice(0, 80), loc:String(x.loc || '').trim().slice(0, 80), pt:propOk(x.pt) ? x.pt : null, note:String(x.note || '').trim().slice(0, 200), lead:num(x.lead, 0, 120, 10), keep:num(x.keep, 0, 240, 20) }; });
+      Object.values(S.propUses).forEach(u => { if (u.kind === kind && u.item === item && !keepIds.has(u.id)) delete S.propUses[u.id]; });
+      S.ver++; pushLog(S, 'Props set for ' + (kind === 'pkg' ? 'an intel package' : 'an inject') + ': ' + keepIds.size, null, e);
+      break; }
+    case 'prop_place': {
+      const u = (S.propUses || {})[p.use]; if (!u) break; if (!S.propSt) S.propSt = {};
+      const nm = ((S.props || {})[u.prop] || {}).name || 'Prop';
+      Object.values(S.propUses).forEach(o => { const so = S.propSt[o.id]; if (o.id !== u.id && o.prop === u.prop && so && so.placed != null && so.rec == null){ so.rec = S.g; so.auto = true; } });
+      S.propSt[u.id] = { placed:S.g, pt:propOk(p.pt) ? p.pt : null, acc:Number.isFinite(p.acc) ? Math.round(p.acc) : null, note:String(p.note || '').trim().slice(0, 200), by:e.by, rec:null, ts:e.ts };
+      S.ver++; pushLog(S, 'Prop placed: ' + nm + (u.label ? ' (' + u.label + ')' : '') + (p.note ? '. Note: ' + String(p.note).slice(0, 200) : ''), null, e);
+      break; }
+    case 'prop_recover': {
+      const u = (S.propUses || {})[p.use], st = u && (S.propSt || {})[u.id]; if (!st || st.placed == null || st.rec != null) break;
+      st.rec = S.g; st.recNote = String(p.note || '').trim().slice(0, 200); S.ver++;
+      pushLog(S, 'Prop recovered: ' + (((S.props || {})[u.prop] || {}).name || 'Prop') + (u.label ? ' (' + u.label + ')' : ''), null, e);
+      break; }
+    case 'prop_reset': { const u = (S.propUses || {})[p.use]; if (!u || !(S.propSt || {})[u.id]) break; delete S.propSt[u.id]; S.ver++; pushLog(S, 'Prop status cleared: ' + (((S.props || {})[u.prop] || {}).name || 'Prop'), null, e); break; }
     case 'aoc_pri': {
       const to = p.to === 'B' || p.to === 'R' ? [p.to] : p.to === 'both' ? ['B', 'R'] : null; if (!to) break;
       const items = p.reset ? [] : (Array.isArray(p.items) ? p.items : []).map(x => String(x || '').trim().slice(0, 200)).filter(Boolean).slice(0, 3);
@@ -2349,7 +2397,7 @@ const LS = { get(k){ try { return sessionStorage.getItem(k); } catch(e){ return 
 
 const pref = { get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : v; } catch(e){ return d; } }, set(k, v){ try { localStorage.setItem(k, v); } catch(e){} } };
 let wakeLock = null;
-function wakeWanted(){ return !!app.role && (app.role === 'OC' || app.role === 'D' || app.role[0] === 'T') && pref.get('marala-wake', '1') === '1'; }
+function wakeWanted(){ return !!app.role && (app.role === 'OC' || app.role === 'D' || app.role === 'L' || app.role[0] === 'T') && pref.get('marala-wake', '1') === '1'; }
 async function wakeSync(){
   const ok = 'wakeLock' in navigator;
   try {
@@ -2406,6 +2454,7 @@ function msgIncoming(S){
   if (r === 'W') return (S.occhats || []).filter(m => m.from === 'oc').length + (S.aocChat || []).filter(m => m.from === 'A').length;
   if (r === 'A') return (S.aocChat || []).filter(m => m.from === 'W').length;
   if (r === 'D') return S.requests.filter(x => x.kind === 'drone').length;
+  if (r === 'L') return Object.keys(S.propUses || {}).length;
   if (r === 'B' || r === 'R') return (S.tchats || []).filter(m => m.side === r && m.from === 'team').length + S.liaison.filter(m => m.side !== r).length;
   if (r === 'TB' || r === 'TR'){ const me = teamGet(r[1]); return me ? (S.tchats || []).filter(m => m.side === r[1] && m.team === me.id && m.from !== 'team').length : null; }
   if (r === 'OC'){ const me = ocGet(); return me ? (S.occhats || []).filter(m => m.oc === me.id && m.from === 'wc').length + (S.ocAnns || []).length + (S.ocReqs || []).filter(x => x.oc === me.id && x.reply).length : null; }
@@ -2593,8 +2642,8 @@ function toast(msg, bad){
 
 /* ---------- routing ---------- */
 function freshView(sel){ const old = $(sel); $$('.lmap', old).forEach(el => { if (el._lm){ try { el._lm.map.remove(); } catch(e){} el._lm = null; } }); const v = old.cloneNode(false); old.replaceWith(v); return v; }
-function show(id){ ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone') closeFullMap(); }
-function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'D' ? 'Drone operator' : r === 'W' ? 'White Force' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
+function show(id){ ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone' && id !== '#vProps') closeFullMap(); if (id !== '#vProps') propNavStop(); }
+function roleLabel(r){ return r === 'OC' ? 'POC' : r === 'D' ? 'Drone operator' : r === 'L' ? 'Props and logistics' : r === 'W' ? 'White Force' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
   if (!app.role && saved && app.cfg) app.role = saved;
@@ -2605,13 +2654,14 @@ function route(){
   if (!app.cfg){ app.role = null; renderGate(); return; }
   if (!app.role){ renderGate(); return; }
   $('#switchRole').hidden = false;
-  $('#roleBadge').innerHTML = '<span class="badge side-' + (app.role === 'P' || app.role === 'OC' || app.role === 'D' ? 'W' : app.role[0] === 'T' ? app.role[1] : app.role) + '">' + esc(roleLabel(app.role)) + '</span>';
+  $('#roleBadge').innerHTML = '<span class="badge side-' + (app.role === 'P' || app.role === 'OC' || app.role === 'D' || app.role === 'L' ? 'W' : app.role[0] === 'T' ? app.role[1] : app.role) + '">' + esc(roleLabel(app.role)) + '</span>';
   if (app.role !== 'W'){ document.title = BASE_TITLE; chimeN = null; }
   setTimeout(wakeSync, 0);
   if (app.role === 'W' || app.role === 'A'){ show('#vWhite'); buildWhite(); aocMode(app.role === 'A'); }
   else if (app.role === 'P'){ show('#vPublic'); buildPublic(); }
   else if (app.role === 'OC'){ show('#vOC'); buildOC(); }
   else if (app.role === 'D'){ show('#vDrone'); buildDrone(); }
+  else if (app.role === 'L'){ show('#vProps'); buildProps(); }
   else if (app.role[0] === 'T'){ show('#vTeam'); buildTeam(app.role[1]); }
   else { show('#vWing'); buildWing(app.role); }
   refresh(true);
@@ -2643,7 +2693,7 @@ function renderGate(){
   $('#gateAdmin').hidden = !app.cfg || !!app.multi; $('#adminErr').hidden = true; $('#adminInput').value = '';
   const roles = $('#gateRoles');
   if (!app.cfg){
-    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Sample game with recorded moves. PINs: White Force 0000, AOC 9999, Blue Force 1111, Red Force 2222, drone operator 7777. A new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
+    roles.innerHTML = app.mode === 'local' ? '<div class="panel"><h2>Try it first</h2><p class="muted small" style="margin:0">Sample game with recorded moves. PINs: White Force 0000, AOC 9999, Blue Force 1111, Red Force 2222, drone operator 7777, props and logistics 8888. A new game replaces it.</p><div class="row" style="justify-content:flex-start"><button type="button" id="loadSample" style="flex:0 0 auto">Load a sample game</button><label for="gateImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)">Load a backup file<input id="gateImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>' : '';
     const gi = $('#gateImport'); if (gi) gi.onchange = () => importBackup(gi.files[0]);
     const ls = $('#loadSample'); if (ls) ls.onclick = loadSample;
     return;
@@ -2657,15 +2707,16 @@ function renderGate(){
     ['TB', 'Blue Force fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
     ['TR', 'Red Force fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
     ['OC', 'POC', 'Phone screen for POCs and the mayor: check 9-lines, send calls, site arrivals and messages to the White Force.'],
-    ['D', 'Drone operator', 'Phone screen for the drone operator: answer drone flight requests, set drone readiness and see the full map.']
+    ['D', 'Drone operator', 'Phone screen for the drone operator: answer drone flight requests, set drone readiness and see the full map.'],
+    ['L', 'Props and logistics', 'Phone screen for the props and logistics team: the prop schedule, where each prop goes, and placed and recovered reports.']
   ];
-  roles.innerHTML = cards.map(([k, t, d]) => '<button type="button" class="role side-' + (k === 'P' || k === 'OC' || k === 'D' ? 'W' : k[0] === 'T' ? k[1] : k) + '" data-role="' + k + '"><b>' + esc(t) + '</b><p>' + esc(d) + '</p></button>').join('');
+  roles.innerHTML = cards.map(([k, t, d]) => '<button type="button" class="role side-' + (k === 'P' || k === 'OC' || k === 'D' || k === 'L' ? 'W' : k[0] === 'T' ? k[1] : k) + '" data-role="' + k + '"><b>' + esc(t) + '</b><p>' + esc(d) + '</p></button>').join('');
   $$('.role', roles).forEach(b => b.onclick = () => pickRole(b.dataset.role));
 }
 let pendingRole = null;
 function pickRole(r){
   if (r === 'P'){ setRole('P'); return; }
-  pendingRole = r; $('#pinForm').hidden = false; $('#pinForm').className = 'panel side-' + (r === 'OC' || r === 'D' ? 'W' : r[0] === 'T' ? r[1] : r); $('#pinTitle').textContent = 'PIN for the ' + roleLabel(r) + ' view'; $('#pinErr').hidden = true; $('#pinInput').value = ''; $('#pinInput').focus();
+  pendingRole = r; $('#pinForm').hidden = false; $('#pinForm').className = 'panel side-' + (r === 'OC' || r === 'D' || r === 'L' ? 'W' : r[0] === 'T' ? r[1] : r); $('#pinTitle').textContent = 'PIN for the ' + roleLabel(r) + ' view'; $('#pinErr').hidden = true; $('#pinInput').value = ''; $('#pinInput').focus();
 }
 function setRole(r){ app.role = r; LS.set('marala-role-' + (app.gid || 'none'), r); $('#pinForm').hidden = true; route(); }
 $('#pinForm').addEventListener('submit', ev => {
@@ -2673,7 +2724,7 @@ $('#pinForm').addEventListener('submit', ev => {
   const r = pendingRole; if (!r || !app.cfg) return;
   const want = app.cfg.pins[r] || (r[0] === 'T' ? app.cfg.pins[r[1]] : null);
   const ok = !!want && secret(app.cfg.salt, $('#pinInput').value) === want;
-  if (!ok){ $('#pinErr').hidden = false; $('#pinErr').textContent = r === 'OC' && !want ? 'This game was set up before the POC screen existed. Set up a new game to use it.' : r === 'D' && !want ? 'This game has no drone operator PIN yet. The exercises officers add one on the admin page under Edit game.' : r === 'A' && !want ? 'This game has no AOC PIN yet. The exercises officers add one on the admin page under Edit game.' : 'That PIN is not right.'; return; }
+  if (!ok){ $('#pinErr').hidden = false; $('#pinErr').textContent = r === 'OC' && !want ? 'This game was set up before the POC screen existed. Set up a new game to use it.' : r === 'L' && !want ? 'This game has no props and logistics PIN yet. The exercises officers add one on the admin page under Edit game.' : r === 'D' && !want ? 'This game has no drone operator PIN yet. The exercises officers add one on the admin page under Edit game.' : r === 'A' && !want ? 'This game has no AOC PIN yet. The exercises officers add one on the admin page under Edit game.' : 'That PIN is not right.'; return; }
   setRole(r);
 });
 $('#pinCancel').onclick = () => { $('#pinForm').hidden = true; pendingRole = null; };
@@ -2707,12 +2758,12 @@ $('#setupForm').addEventListener('submit', async ev => {
   { const fl = $('#sMapFile').files[0]; if (fl){ try { const mf = await readMapFile(fl); mapEv = { id:'map' + uid(), ts:Date.now(), type:'map_config', side:null, by:'W', p:mf.p }; } catch(e){ $('#setupErr').hidden = false; $('#setupErr').textContent = e.message; return; } } }
   const salt = Math.random().toString(36).slice(2, 10);
   const val = id => $(id).value.trim();
-  const pins = { W:val('#sPinW'), A:val('#sPinA'), B:val('#sPinB'), R:val('#sPinR'), TB:val('#sPinTB'), TR:val('#sPinTR'), OC:val('#sPinOC'), D:val('#sPinD') };
-  if (new Set(Object.values(pins)).size < 8){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use eight different PINs so each view stays separate.'; return; }
+  const pins = { W:val('#sPinW'), A:val('#sPinA'), B:val('#sPinB'), R:val('#sPinR'), TB:val('#sPinTB'), TR:val('#sPinTR'), OC:val('#sPinOC'), D:val('#sPinD'), L:val('#sPinL') };
+  if (new Set(Object.values(pins)).size < 9){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use nine different PINs so each view stays separate.'; return; }
   const startG = parseHHMM(val('#sStart')), lengthMin = Math.round(+val('#sLen'));
   if (startG == null || !(lengthMin >= 30 && lengthMin <= 300)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter the start as 24-hour time like 0830, and a length from 30 to 300 minutes.'; return; }
   const cfg = { name:val('#sName') || 'Game', salt, createdAt:Date.now(), startG, lengthMin,
-    pins:{ W:secret(salt, pins.W), A:secret(salt, pins.A), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR), OC:secret(salt, pins.OC), D:secret(salt, pins.D) },
+    pins:{ W:secret(salt, pins.W), A:secret(salt, pins.A), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR), OC:secret(salt, pins.OC), D:secret(salt, pins.D), L:secret(salt, pins.L) },
     codes:{ harbor:codeList(salt, 'Harbor'), fuel:codeList(salt, 'Fuel'), radar:codeList(salt, 'Radar'), airstrip:codeList(salt, 'Airstrip'), town:{ cap:words(val('#cTown')).map(w => secret(salt, w)) } } };
   if (app.multi){
     const gpin = $('#sGamePin').value;
@@ -2807,7 +2858,7 @@ $('#adFile').addEventListener('submit', ev => {
 function adminEdit(g){
   ad.editing = g; const f = $('#adEdit'); f.hidden = false; $('#adEMsg').textContent = '';
   $('#adEditTitle').textContent = 'Edit ' + (g.name || 'game'); $('#adEName').value = g.name || ''; $('#adEPin').value = g.pin || ''; $('#adEListed').checked = g.listed !== false; $('#adEStarter').checked = !(g.cfg && g.cfg.blank); $('#adEStarter').closest('label').hidden = !!(g.cfg && g.cfg.blank);
-  ['#adPW', '#adPA', '#adPB', '#adPR', '#adPTB', '#adPTR', '#adPOC', '#adPD'].forEach(s => $(s).value = '');
+  ['#adPW', '#adPA', '#adPB', '#adPR', '#adPTB', '#adPTR', '#adPOC', '#adPD', '#adPL'].forEach(s => $(s).value = '');
   f.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 $('#adECancel').onclick = () => { $('#adEdit').hidden = true; ad.editing = null; };
@@ -2817,7 +2868,7 @@ $('#adEdit').addEventListener('submit', async ev => {
   const name = $('#adEName').value.trim() || 'Game', pin = normPin($('#adEPin').value), listed = $('#adEListed').checked, blank = !$('#adEStarter').checked;
   if (!pin){ msg('Enter a game PIN.'); return; }
   const cfg = JSON.parse(JSON.stringify(g.cfg)); cfg.name = name; cfg.blank = blank;
-  const np = { W:'#adPW', A:'#adPA', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC', D:'#adPD' };
+  const np = { W:'#adPW', A:'#adPA', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC', D:'#adPD', L:'#adPL' };
   const given = Object.entries(np).map(([k, s]) => [k, $(s).value.trim()]).filter(([, v]) => v);
   if (new Set(given.map(([, v]) => v)).size < given.length){ msg('Each new role PIN must be different.'); return; }
   given.forEach(([k, v]) => cfg.pins[k] = secret(cfg.salt, v));
@@ -2868,7 +2919,7 @@ $('#adLGo').onclick = async () => {
 /* ---------- sample (local only) ---------- */
 function loadSample(){
   const salt = 'sample01';
-  app.cfg = { name:'Sample game', salt, sample:true, pins:{ W:secret(salt, '0000'), A:secret(salt, '9999'), B:secret(salt, '1111'), R:secret(salt, '2222'), D:secret(salt, '7777') },
+  app.cfg = { name:'Sample game', salt, sample:true, pins:{ W:secret(salt, '0000'), A:secret(salt, '9999'), B:secret(salt, '1111'), R:secret(salt, '2222'), D:secret(salt, '7777'), L:secret(salt, '8888') },
     codes:{ harbor:secret(salt, 'ANCHOR'), fuel:secret(salt, 'BARREL'), radar:secret(salt, 'ECHO'), airstrip:secret(salt, 'RUNWAY'), town:secret(salt, 'MAYOR') } };
   app.gid = 'sample';
   const t0 = Date.now() - 46 * 60000; let n = 0;
@@ -3168,12 +3219,12 @@ function lmapEnsure(el, M){
     const map = L.map(el, { preferCanvas:true, zoomControl:true, attributionControl:true, zoomSnap:0.25 });
     map.createPane('contour-pane'); map.getPane('contour-pane').style.zIndex = 250; map.getPane('contour-pane').classList.add('contour-pane');
     const contours = new ContourLayer('', { pane:'contour-pane', tileSize:512, zoomOffset:-1, maxZoom:20, maxNativeZoom:18, minZoom:12, updateWhenIdle:true, keepBuffer:3, attribution:'Contours: USGS 3DEP' });
-    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gBound:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup(), wc:L.layerGroup(), wp:L.layerGroup(), wpB:L.layerGroup(), wpR:L.layerGroup(), wpq:L.layerGroup() }, key:null };
+    st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gBound:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup(), wc:L.layerGroup(), wp:L.layerGroup(), wpB:L.layerGroup(), wpR:L.layerGroup(), wpq:L.layerGroup(), props:L.layerGroup() }, key:null };
     applyGridPref(st);
     const tog = L.control({ position:'topright' });
     tog.onAdd = () => {
       const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref();
-      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => (app.role === 'W' || app.role === 'A' || app.role === 'OC' || app.role === 'D') ? k !== 'wp' : !['wpB', 'wpR', 'wpq'].includes(k)).map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
+      d.innerHTML = '<button type="button" class="gt-btn" data-gtbtn>Layers ▾</button><div class="gt-list" hidden><label style="display:grid;gap:2px">Base map<select data-gtbase>' + Object.entries(BASEMAPS).map(([k, b]) => '<option value="' + k + '"' + (pr.base === k ? ' selected' : '') + '>' + b.name + '</option>').join('') + '</select></label>' + MAP_LAYERS.filter(([k]) => k !== 'props' || ['W', 'A', 'D', 'L'].includes(app.role)).filter(([k]) => (app.role === 'W' || app.role === 'A' || app.role === 'OC' || app.role === 'D' || app.role === 'L') ? k !== 'wp' : !['wpB', 'wpR', 'wpq'].includes(k)).map(([k, n, c]) => '<label><input type="checkbox" data-gt="' + k + '"' + (pr[k] ? ' checked' : '') + '> <span style="color:' + c + '">▬</span> ' + n + '</label>').join('') + '</div>';
       L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
       d.querySelector('[data-gtbtn]').onclick = () => { const l = d.querySelector('.gt-list'); l.hidden = !l.hidden; if (!l.hidden) l.style.maxHeight = Math.max(120, map.getSize().y - 70) + 'px'; };
       d.addEventListener('change', ev => { if (ev.target.matches('[data-gtbase]')){ const np = gridPref(); np.base = ev.target.value; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gtbase]').forEach(x => x.value = np.base); $$('.lmap').forEach(x => { if (x._lm) applyGridPref(x._lm); }); return; } const k = ev.target.dataset.gt; if (!k) return; const np = gridPref(); np[k] = ev.target.checked; try { localStorage.setItem('marala-gridpref', JSON.stringify(np)); } catch(e){} $$('.gridtog [data-gt="' + k + '"]').forEach(x => x.checked = ev.target.checked); $$('.lmap').forEach(x => { if (!x._lm) return; applyGridPref(x._lm); drawFine(x._lm); if (x._lm.args && app.S) drawDyn(x._lm, app.S, x._lm.args[0], x._lm.args[1]); }); });
@@ -3207,8 +3258,8 @@ function lmapEnsure(el, M){
   drawFine(st);
   return st;
 }
-const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['bounds', 'Play area boundary', '#ffffff'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White Force location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'Blue Force waypoints', '#5b8cff'], ['wpR', 'Red Force waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8']];
-const LAYER_DEFAULTS = { base:'sat', play:true, bounds:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true, wpB:true, wpR:true, wpq:true };
+const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['bounds', 'Play area boundary', '#ffffff'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White Force location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'Blue Force waypoints', '#5b8cff'], ['wpR', 'Red Force waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8'], ['props', 'Props', '#ff9800']];
+const LAYER_DEFAULTS = { base:'sat', play:true, bounds:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true, wpB:true, wpR:true, wpq:true, props:true };
 function gridPref(){ try { return Object.assign({}, LAYER_DEFAULTS, JSON.parse(localStorage.getItem('marala-gridpref') || '{}')); } catch(e){ return Object.assign({}, LAYER_DEFAULTS); } }
 function applyGridPref(st){
   const pr = gridPref();
@@ -3279,6 +3330,7 @@ const SIDE_HEX = { B:'#3d7dff', R:'#ff4d42' };
 const PIN_LIFE = 5 * 60000;
 function mapPins(S){
   const now = Date.now(), out = [];
+  if (app.role === 'L' && app.propSelf && now - app.propSelf.t < PIN_LIFE) out.push({ pt:app.propSelf.pt, acc:app.propSelf.acc, t:app.propSelf.t, label:'You · ' + new Date(app.propSelf.t).toTimeString().slice(0, 5) });
   if (app.role === 'OC' && app.ocSelf && now - app.ocSelf.t < PIN_LIFE) out.push({ pt:app.ocSelf.pt, acc:app.ocSelf.acc, t:app.ocSelf.t, label:'You · ' + new Date(app.ocSelf.t).toTimeString().slice(0, 5) });
   if ((app.role === 'W' || app.role === 'A') && S.ocPos) Object.entries(S.ocPos).forEach(([id, x]) => { const o = S.ocs[id]; if (!o || o.removed || now - x.ts >= PIN_LIFE || (app.ocPinHide && app.ocPinHide.has(id + ':' + x.ts))) return; out.push({ pt:x.pt, acc:x.acc, t:x.ts, label:'POC ' + o.name + ' · ' + ocWhere(S, o) + ' · ' + new Date(x.ts).toTimeString().slice(0, 5) }); });
   return out;
@@ -3342,6 +3394,7 @@ function drawDyn(st, S, side, opts){
       m.bindTooltip(esc(teamLabel(t) + ' · ' + (f.ping ? 'pinged ' : '') + age + 'm' + (t.status ? ' · ' + t.status : '')), { permanent:!!pr.names, direction:'right', className:'teamlbl', offset:[14, 0] }).addTo(LS.teams);
     });
   });
+  if (!side && ['W', 'A', 'D', 'L'].includes(app.role) && LS.props) drawProps(LS.props, S, pr);
   const ph = side ? uavPhase(S, side) : '';
   if (ph){
     const u = S.uav[side], o = OTHER[side], fade = ph === 'fade', op = fade ? Math.max(.35, 1 - (S.g - u.g - 1) / 5) : 1;
@@ -3375,7 +3428,7 @@ function openFullMap(side){
   if (!(mapCfg(S) || (app.role === 'W' && app.previewMap)) || !window.L){ toast('The real map isn’t set up yet. The White Force sets it under Map setup.', true); return; }
   if ($('#mapfs')) return;
   const ov = document.createElement('div'); ov.id = 'mapfs'; ov.className = 'mapfs';
-  ov.innerHTML = '<div class="bar"><b>' + esc(side ? SIDES[side].name + (ctl ? ' view: what their C2 sees' : ' picture of Marala') : app.role === 'A' ? 'AOC map (no fog of war)' : app.role === 'D' ? 'Drone operator map (no fog of war)' : 'White Force map (no fog of war)') + '</b><span class="small muted">Tap anywhere for its grid: <span class="mono" data-lastclick>—</span></span><button type="button" data-closefs>Close map</button></div><div class="lmap" data-fsmap></div>';
+  ov.innerHTML = '<div class="bar"><b>' + esc(side ? SIDES[side].name + (ctl ? ' view: what their C2 sees' : ' picture of Marala') : app.role === 'A' ? 'AOC map (no fog of war)' : app.role === 'D' ? 'Drone operator map (no fog of war)' : app.role === 'L' ? 'Props map (no fog of war)' : 'White Force map (no fog of war)') + '</b><span class="small muted">Tap anywhere for its grid: <span class="mono" data-lastclick>—</span></span><button type="button" data-closefs>Close map</button></div><div class="lmap" data-fsmap></div>';
   document.body.appendChild(ov);
   app.fsSide = side; app.fsEl = $('[data-fsmap]', ov);
   $('[data-closefs]', ov).onclick = closeFullMap;
@@ -3787,7 +3840,7 @@ function teamTick(S, side, now){
   }
 }
 function uavNotify(S){
-  const r = app.role; if (!r || r === 'W' || r === 'A' || r === 'P' || r === 'OC' || r === 'D') return;
+  const r = app.role; if (!r || r === 'W' || r === 'A' || r === 'P' || r === 'OC' || r === 'D' || r === 'L') return;
   const sd = r[0] === 'T' ? r[1] : r, u = S.uav[sd], sp = S.spotted[sd];
   if (app.uavRole !== r){ app.uavRole = r; app.uavSeen = u ? u.id : null; app.spotSeen = sp ? sp.id : null; return; }
   const buzz = () => { try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} };
@@ -4226,15 +4279,15 @@ function renderPlan(S, v){
   const showSent = $('[data-plansent]', v).checked, lvlNow = levelIndex(S.esc), rows = [];
   const toChip = to => picTo(to === 'public' ? 'public' : to);
   (S.injq || []).forEach(q => { const sent = q.sent != null; rows.push({ key:'q' + q.qid, t:q.at != null ? START_G + q.at : q.lvl != null ? 10000 + q.lvl : 20000, when:q.at != null ? hhmm(START_G + q.at) : q.lvl != null ? 'At ' + LEVELS[q.lvl].name : 'Unset', tag:'Inject', done:sent, title:q.label, to:q.to,
-    stat:sent ? '<span class="chip ok">Sent ' + hhmm(q.sent) + '</span>' : q.lvl != null && lvlNow >= q.lvl ? '<span class="chip wait">Trigger reached</span>' : '<span class="chip">Queued</span>',
+    stat:(sent ? '<span class="chip ok">Sent ' + hhmm(q.sent) + '</span>' : q.lvl != null && lvlNow >= q.lvl ? '<span class="chip wait">Trigger reached</span>' : '<span class="chip">Queued</span>') + (sent ? '' : propChip(S, 'tpl', q.tid)),
     body:'<div style="white-space:pre-wrap">' + esc(sent ? q.sentText : fillT(q.text)) + '</div><div class="small muted">From: ' + esc(hqFrom(q.from)) + '</div>' + (q.note ? '<div class="small muted">White Force note: ' + esc(q.note) + '</div>' : '') }); });
   const queued = new Set((S.injq || []).map(q => q.tid).filter(Boolean));
   allTemplates(S).filter(t => !queued.has(t.id) && (t.at != null || t.lvl != null)).forEach(t => rows.push({ key:'t' + t.id, t:t.at != null ? START_G + t.at : 10000 + t.lvl, when:t.at != null ? hhmm(START_G + t.at) : 'At ' + LEVELS[t.lvl].name, tag:'Inject', done:false, title:t.label, to:t.to,
-    stat:'<span class="chip">Template, not queued</span>', body:'<div style="white-space:pre-wrap">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">White Force note: ' + esc(t.note) + '</div>' : '') }));
+    stat:'<span class="chip">Template, not queued</span>' + propChip(S, 'tpl', t.id), body:'<div style="white-space:pre-wrap">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">White Force note: ' + esc(t.note) + '</div>' : '') }));
   allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), sent = !!(oB || oR), tr = intelTruth(P);
     const st = sent ? ['B', 'R'].map(sd => { const o = sd === 'B' ? oB : oR; return o ? SIDES[sd].name + (o.done ? ' closed' : ' due ' + hhmm(o.due)) : ''; }).filter(Boolean).join(' \u00b7 ') : '';
     rows.push({ key:'p' + P.id, t:START_G + P.at, when:hhmm(START_G + P.at), tag:'Intel ' + (i + 1), done:sent, title:fillT(P.title), to:oB && oR ? 'both' : oB ? 'B' : oR ? 'R' : null,
-      stat:sent ? '<span class="chip ' + ((oB && !oB.done) || (oR && !oR.done) ? 'wait' : 'ok') + '">' + esc(st) + '</span>' : '<span class="chip">Not deployed</span>',
+      stat:sent ? '<span class="chip ' + ((oB && !oB.done) || (oR && !oR.done) ? 'wait' : 'ok') + '">' + esc(st) + '</span>' : '<span class="chip">Not deployed</span>' + propChip(S, 'pkg', P.id),
       body:'<div><b>Question:</b> ' + esc(fillT(P.q)) + '</div><div>' + (P.opts || []).map((o, j) => '<div class="opt' + (tr.as.includes(j) ? ' ok' : '') + '">' + String.fromCharCode(65 + j) + '. ' + esc(fillT(o)) + (tr.as.includes(j) ? ' \u2713 correct' : '') + '</div>').join('') + '</div>' +
         P.items.map(it => '<div class="ip-it' + (tr.fs.includes(it.k) ? ' f' : '') + '"><b>' + esc(it.k) + '. ' + esc(it.disc || '') + '</b> <span class="small muted">' + esc([it.rating, fillT(it.dtg || ''), it.src].filter(Boolean).join(' \u00b7 ')) + '</span>' + (tr.fs.includes(it.k) ? ' <span class="chip no">False or misleading</span>' : '') + '<div>' + esc(fillT(it.text)) + '</div></div>').join('') +
         '<div class="small muted">Answer window ' + (P.win || 15) + ' min' + (P.wp ? ' \u00b7 Waypoint: ' + esc(P.wp.label) : '') + (P.blast ? ' \u00b7 Explosion at ' + esc(P.blast.grid) : '') + '</div>' }); });
@@ -4298,6 +4351,159 @@ document.addEventListener('click', ev => {
   if (app.role !== 'D' && !confirm(down ? 'Set the drone to not ready for tasking? The forces see routine maintenance and cannot request flights.' : 'Set the drone to ready for tasking?')) return;
   writeEvent('drone_status', null, { down }); toast(down ? 'Drone set to not ready for tasking.' : 'Drone set to ready for tasking.');
 });
+
+/* ---------- props ---------- */
+function propItems(S){
+  const out = {};
+  (S.tpls || []).forEach(t => { const sent = (S.injq || []).filter(q => q.tid === t.id && q.sent != null).map(q => q.sent); out['tpl:' + t.id] = { kind:'tpl', id:t.id, label:t.label, at:t.at != null ? START_G + t.at : null, lvl:t.lvl, sent:sent.length ? Math.min(...sent) : null }; });
+  allProblems(S).forEach((P, i) => { const o = S.intelOut[P.id] || {}, gs = ['B', 'R'].map(sd => o[sd] && o[sd].g).filter(x => x != null); out['pkg:' + P.id] = { kind:'pkg', id:P.id, label:'Intel ' + (i + 1) + ': ' + fillT(P.title), at:P.at != null ? START_G + P.at : null, lvl:null, sent:gs.length ? Math.min(...gs) : null }; });
+  return out;
+}
+function propSched(S){
+  const items = propItems(S), rows = Object.values(S.propUses || {}).map(u => { const it = items[u.kind + ':' + u.item] || null, st = (S.propSt || {})[u.id] || {}, base = it ? (it.sent != null ? it.sent : it.at) : null;
+    return { u, it, st, prop:(S.props || {})[u.prop] || { name:'Prop' }, placeBy:base != null ? base - u.lead : null, useAt:base, recAfter:base != null ? base + u.keep : null, state:st.rec != null ? 'done' : st.placed != null ? 'out' : 'todo' }; });
+  rows.sort((a, b) => ((a.placeBy == null) - (b.placeBy == null)) || ((a.placeBy || 0) - (b.placeBy || 0)));
+  const byProp = {}; rows.forEach(r => (byProp[r.u.prop] = byProp[r.u.prop] || []).push(r));
+  Object.values(byProp).forEach(list => { const tm = list.filter(r => r.placeBy != null); for (let i = 1; i < tm.length; i++) if (tm[i].placeBy < tm[i - 1].recAfter) tm[i].clash = tm[i - 1]; });
+  return rows;
+}
+function propChip(S, kind, id){ const all = Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id); if (!all.length) return ''; const n = all.filter(u => propLive(S, u)).length; return n === all.length ? '<span class="chip ok">Props ready</span>' : '<span class="chip wait">Props ' + n + ' of ' + all.length + ' placed</span>'; }
+function propLockHTML(S, kind, id, normal, ovrAttrs){ const hold = propHold(S, kind, id); if (!hold.length) return normal; return '<span class="chip wait" style="flex:0 0 auto" title="' + esc('Waiting on: ' + hold.join(', ')) + '">Waiting on ' + hold.length + ' prop' + (hold.length === 1 ? '' : 's') + '</span><button type="button" ' + ovrAttrs + ' style="flex:0 0 auto">Override</button>'; }
+function propWhere(S, r){ const M = mapCfg(S), pt = r.u.pt, sq = pt && squareOf(M, pt); return (r.u.loc || (pt ? fmtPt(pt) : 'No location')) + (sq && r.u.loc ? ' · Square ' + sq : ''); }
+function propLocate(S, text){
+  const t = String(text || '').trim(); if (!t) return null; const M = mapCfg(S), pts = Object.assign({}, (M && M.sites) || {}, S.sitePts || {}), lo = t.toLowerCase();
+  const named = { 'marala town':'town', 'town':'town', 'blue force hq':'lzB', 'red force hq':'lzR' };
+  if (named[lo] && pts[named[lo]]) return pts[named[lo]];
+  const k = SITE_KEYS.find(x => SITES[x].name.toLowerCase() === lo); if (k && pts[k]) return pts[k];
+  return M ? locate(M, t) : GEO.parsePoint(t);
+}
+function drawProps(layer, S, pr){
+  propSched(S).forEach(r => {
+    if (r.state === 'done') return;
+    const pt = r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt; if (!pt) return;
+    const tip = r.prop.name + (r.u.label ? ' · ' + r.u.label : '') + (r.state === 'out' ? ' · placed ' + hhmm(r.st.placed) : r.placeBy != null ? ' · place by ' + hhmm(r.placeBy) : ' · not placed');
+    L.marker(pt, { icon:L.divIcon({ className:'', html:'<div class="mk-prop' + (r.state === 'out' ? '' : ' plan') + '"></div>', iconSize:[16, 16], iconAnchor:[8, 8] }), zIndexOffset:650 }).bindTooltip(esc(tip), { permanent:app.role === 'L' || !!pr.sitenames, direction:'right', className:'sitelbl', offset:[10, 0] }).addTo(layer);
+  });
+  if (app.role === 'L' && app.propNav && app.propSelf){ const r = propSched(S).find(x => x.u.id === app.propNav); const tgt = r && (r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt); if (tgt) L.polyline([app.propSelf.pt, tgt], { color:'#ff9800', weight:3, dashArray:'6 6' }).addTo(layer); }
+}
+app.pe = { tpl:[], pkg:[] };
+function peOf(S, kind, id){ return Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id).map(u => JSON.parse(JSON.stringify(u))); }
+function peSet(key, list){ app.pe[key] = list || []; app.peEdit = app.peEdit || {}; app.peEdit[key] = null; peRender(key); }
+async function peSave(kind, id){ await writeEvent('prop_uses', null, { kind, item:id, uses:app.pe[kind].map(u => ({ id:u.id, prop:u.prop, label:u.label, loc:u.loc, pt:u.pt, note:u.note, lead:u.lead, keep:u.keep })) }); }
+function peRender(key){
+  const box = $('[data-pe="' + key + '"]'); if (!box) return; const S = app.S || { props:{} }, list = app.pe[key], cat = (S.propOrder || []).map(k => S.props[k]).filter(Boolean), ed = (app.peEdit || {})[key];
+  const cur = ed != null ? list[ed] : null;
+  box.innerHTML = (list.length ? list.map((u, i) => '<div class="pe-row"><div class="grow"><b>' + esc(((S.props || {})[u.prop] || { name:'(removed prop)' }).name) + '</b>' + (u.label ? ' · ' + esc(u.label) : '') + '<div class="small muted">' + esc(u.loc || (u.pt ? fmtPt(u.pt) : 'No location')) + ' · place ' + u.lead + ' min before · recover ' + u.keep + ' min after' + (u.note ? ' · ' + esc(u.note) : '') + '</div></div><button type="button" data-peedit="' + key + ':' + i + '" style="flex:0 0 auto">Edit</button><button type="button" data-perm="' + key + ':' + i + '" style="flex:0 0 auto">Remove</button></div>').join('') : '<div class="small muted">No props. Add one if this needs anything placed in the field.</div>') +
+    (cat.length ? '<div class="stack" data-peform="' + key + '"><div class="row" style="align-items:end"><label>Prop<select data-pf="prop">' + cat.map(c => '<option value="' + esc(c.id) + '"' + (cur && cur.prop === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>').join('') + '</select></label><label>What it is here<input data-pf="label" maxlength="80" value="' + esc(cur ? cur.label : '') + '" placeholder="Example: IED under the culvert"></label></div>' +
+      '<div class="row" style="align-items:end"><label>Where<input data-pf="loc" maxlength="80" value="' + esc(cur ? cur.loc || (cur.pt ? fmtPt(cur.pt) : '') : '') + '" placeholder="Grid, MGRS, lat/long or site name"></label><button type="button" data-petap="' + key + '" style="flex:0 0 auto">Use last map tap</button></div>' +
+      '<div class="row" style="align-items:end"><label style="flex:0 0 150px">Place (min before)<input data-pf="lead" type="number" min="0" max="120" value="' + (cur ? cur.lead : 10) + '"></label><label style="flex:0 0 150px">Recover (min after)<input data-pf="keep" type="number" min="0" max="240" value="' + (cur ? cur.keep : 20) + '"></label><label>Note for the props team<input data-pf="note" maxlength="200" value="' + esc(cur ? cur.note : '') + '"></label></div>' +
+      '<div class="row" style="justify-content:flex-start"><button type="button" data-peadd="' + key + '" style="flex:0 0 auto">' + (cur ? 'Update prop' : 'Add prop') + '</button>' + (cur ? '<button type="button" data-pecancel="' + key + '" style="flex:0 0 auto">Cancel</button>' : '') + '<span class="small muted">Saved with the ' + (key === 'tpl' ? 'template' : 'package') + '.</span></div></div>' : '<div class="small muted">Add props to the catalog under Props first.</div>');
+}
+document.addEventListener('click', ev => {
+  const g = (sel) => { const b = ev.target.closest(sel); return b ? b : null; };
+  let b;
+  if ((b = g('[data-peadd]'))){ const key = b.dataset.peadd, f = b.closest('[data-peform]'), val = k => $('[data-pf="' + k + '"]', f).value.trim(), loc = val('loc'), pt = loc ? propLocate(app.S, loc) : null;
+    if (loc && !pt){ toast('That location could not be read. Use a grid, MGRS, lat/long or a site name.', true); return; }
+    const ed = (app.peEdit || {})[key], u = { id:ed != null ? app.pe[key][ed].id : 'u' + uid(), prop:val('prop'), label:val('label'), loc, pt, note:val('note'), lead:Math.max(0, Math.round(+val('lead') || 0)), keep:Math.max(0, Math.round(+val('keep') || 0)) };
+    if (ed != null) app.pe[key][ed] = u; else app.pe[key].push(u); app.peEdit[key] = null; peRender(key); return; }
+  if ((b = g('[data-perm]'))){ const [key, i] = b.dataset.perm.split(':'); app.pe[key].splice(+i, 1); app.peEdit[key] = null; peRender(key); return; }
+  if ((b = g('[data-peedit]'))){ const [key, i] = b.dataset.peedit.split(':'); app.peEdit = app.peEdit || {}; app.peEdit[key] = +i; peRender(key); return; }
+  if ((b = g('[data-pecancel]'))){ app.peEdit[b.dataset.pecancel] = null; peRender(b.dataset.pecancel); return; }
+  if ((b = g('[data-petap]'))){ if (!app.lastClick){ toast('Tap a map first.', true); return; } $('[data-pf="loc"]', b.closest('[data-peform]')).value = fmtPt(app.lastClick); }
+});
+function renderPropPlan(S, v){
+  const box = $('[data-propplan]', v); if (!box || box.hasAttribute('data-off')) return;
+  const rows = propSched(S), cat = (S.propOrder || []).map(k => S.props[k]).filter(Boolean);
+  const where = c => { const out = rows.find(r => r.u.prop === c.id && r.state === 'out'); return out ? '<span class="chip wait">In the field: ' + esc(out.u.label || out.it && out.it.label || '') + ' since ' + hhmm(out.st.placed) + '</span>' : '<span class="chip ok">Available' + (c.home ? ' at ' + esc(c.home) : '') + '</span>'; };
+  const lh = cat.length ? cat.map(c => '<div class="li"><div class="grow"><b>' + esc(c.name) + '</b> <span class="small muted">' + rows.filter(r => r.u.prop === c.id).length + ' use' + (rows.filter(r => r.u.prop === c.id).length === 1 ? '' : 's') + (c.note ? ' · ' + esc(c.note) : '') + '</span></div>' + where(c) + '<button type="button" data-propedit="' + esc(c.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-propdel="' + esc(c.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No props in the catalog yet.</div>';
+  { const el = $('[data-proplist]', v); if (el.dataset.h !== lh && !typingIn(box)){ el.dataset.h = lh; el.innerHTML = lh; } }
+  const st = r => r.state === 'done' ? '<span class="chip">Recovered ' + hhmm(r.st.rec) + '</span>' : r.state === 'out' ? '<span class="chip ok">Placed ' + hhmm(r.st.placed) + '</span>' : r.placeBy != null && S.clock.started && S.g > r.placeBy ? '<span class="chip no">Late</span>' : '<span class="chip">Not placed</span>';
+  const sh = rows.length ? '<table class="pr-tbl"><thead><tr><th>Place by</th><th>Prop</th><th>For</th><th>Where</th><th>Recover after</th><th>Status</th></tr></thead><tbody>' + rows.map(r => '<tr><td class="mono">' + (r.placeBy != null ? hhmm(r.placeBy) : 'On call') + '</td><td><b>' + esc(r.prop.name) + '</b>' + (r.u.label ? '<br>' + esc(r.u.label) : '') + (r.clash ? '<div class="pr-clash">Still out for ' + esc(r.clash.it ? r.clash.it.label : 'another use') + ' until ' + hhmm(r.clash.recAfter) + '</div>' : '') + '</td><td>' + esc(r.it ? r.it.label : '(item removed)') + (r.useAt != null ? ' · ' + hhmm(r.useAt) : '') + '</td><td>' + esc(propWhere(S, r)) + (r.u.note ? '<div class="small muted">' + esc(r.u.note) + '</div>' : '') + '</td><td class="mono">' + (r.recAfter != null ? hhmm(r.recAfter) : '—') + '</td><td>' + st(r) + (r.state !== 'todo' ? ' <button type="button" data-propreset="' + esc(r.u.id) + '" style="padding:2px 8px;font-size:12px">Clear</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '<div class="empty">No props are attached to injects or intel packages yet.</div>';
+  { const el = $('[data-propsched]', v); if (el.dataset.h !== sh){ el.dataset.h = sh; el.innerHTML = sh; } }
+  ['tpl', 'pkg'].forEach(k => { const el = $('[data-pe="' + k + '"]', v), ck = cat.map(c => c.id + c.name).join(); if (el && el.dataset.cat !== ck && !typingIn(el)){ el.dataset.cat = ck; peRender(k); } });
+}
+function propWire(v){
+  const f = $('[data-propf]', v); if (!f) return;
+  const clear = () => { f.reset(); f.dataset.id = ''; $('[data-propsave]', f).textContent = 'Add to catalog'; };
+  f.addEventListener('submit', ev => { ev.preventDefault(); const name = f.name.value.trim(); if (!name) return; const id = f.dataset.id || ('pr' + uid()); writeEvent('prop_save', null, { prop:{ id, name, home:f.home.value.trim(), note:f.note.value.trim() } }); toast(f.dataset.id ? 'Prop updated.' : 'Prop added to the catalog.'); clear(); });
+  $('[data-propclear]', v).onclick = clear;
+  v.addEventListener('click', ev => {
+    const e = ev.target.closest('[data-propedit]'), d = ev.target.closest('[data-propdel]'), r = ev.target.closest('[data-propreset]'), S = app.S;
+    if (e){ const c = S.props[e.dataset.propedit]; if (!c) return; f.dataset.id = c.id; f.name.value = c.name; f.home.value = c.home || ''; f.note.value = c.note || ''; $('[data-propsave]', f).textContent = 'Save prop'; f.name.focus(); }
+    if (d){ const c = S.props[d.dataset.propdel]; if (c && confirm('Delete "' + c.name + '" from the catalog? It is removed from every inject and package that uses it.')) writeEvent('prop_del', null, { id:c.id }); }
+    if (r && confirm('Clear the placed or recovered report for this prop?')) writeEvent('prop_reset', null, { use:r.dataset.propreset });
+  });
+}
+function propNotify(S){
+  const evs = Object.values(S.propSt || {}), n = evs.length + evs.filter(x => x.rec != null).length;
+  if (app.propNFor === app.gid && n > app.propN){ const last = Object.entries(S.propSt || {}).sort((a, b) => Math.max(b[1].placed, b[1].rec || 0) - Math.max(a[1].placed, a[1].rec || 0))[0]; if (last){ const u = (S.propUses || {})[last[0]], nm = u && ((S.props || {})[u.prop] || {}).name; if (nm) toast((last[1].rec != null ? 'Prop recovered: ' : 'Prop placed: ') + nm + (u.label ? ' (' + u.label + ')' : '')); } }
+  app.propNFor = app.gid; app.propN = n;
+}
+
+/* ---------- props and logistics view ---------- */
+let propWatch = null;
+function propNavStop(){ if (propWatch != null && navigator.geolocation){ navigator.geolocation.clearWatch(propWatch); } propWatch = null; app.propNav = null; }
+function propNavStart(id){
+  app.propNav = id;
+  if (propWatch == null && navigator.geolocation) propWatch = navigator.geolocation.watchPosition(p => { app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; propNavText(); if (app.S && Date.now() - (app.propMapAt || 0) > 5000){ app.propMapAt = Date.now(); refresh(true); } }, () => toast('Location unavailable. Allow location for this site.', true), { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
+  propNavText(); refresh(true);
+}
+function propBearing(a, b){ const r = Math.PI / 180, y = Math.sin((b[1] - a[1]) * r) * Math.cos(b[0] * r), x = Math.cos(a[0] * r) * Math.sin(b[0] * r) - Math.sin(a[0] * r) * Math.cos(b[0] * r) * Math.cos((b[1] - a[1]) * r); const d = (Math.atan2(y, x) / r + 360) % 360; return ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(d / 45) % 8]; }
+function propNavText(){
+  const el = $('[data-prnav]'); if (!el) return; const S = app.S, r = S && app.propNav && propSched(S).find(x => x.u.id === app.propNav);
+  if (!r){ el.hidden = true; return; } el.hidden = false;
+  const tgt = r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt, me = app.propSelf && Date.now() - app.propSelf.t < 60000 ? app.propSelf : null;
+  el.innerHTML = '<div class="pr-nav">Going to: ' + esc(r.prop.name) + (r.u.label ? ' · ' + esc(r.u.label) : '') + '</div>' + (!tgt ? '<div class="small">No map point for this prop. Use the written location: ' + esc(r.u.loc || 'none') + '.</div>' : !me ? '<div class="small">Finding your position…</div>' : '<div class="pr-nav"><span class="mono">' + Math.round(GEO.dist(me.pt, tgt)) + ' m ' + propBearing(me.pt, tgt) + '</span> <span class="small muted">±' + me.acc + ' m</span></div>') + '<div class="row" style="justify-content:flex-start"><button type="button" data-prnavstop style="flex:0 0 auto">Stop</button></div>';
+}
+function buildProps(){
+  if (app.built === 'props') return; app.built = 'props';
+  const v = freshView('#vProps');
+  v.innerHTML = `
+  <div class="stack">
+    <div class="panel"><div class="act-head"><h2>Props and logistics</h2><span class="small muted">White Force · <b class="mono" data-clock>—</b></span></div>
+      <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
+      <label class="chk"><input type="checkbox" data-msgsound checked> Sound when the schedule changes</label></div>
+    <div class="panel stack" data-prnav hidden></div>
+    <div class="panel stack"><div class="act-head"><h2>To place</h2><span class="small muted" data-prtodon></span></div><div class="stack" data-prtodo></div></div>
+    <div class="panel stack"><div class="act-head"><h2>In the field</h2><span class="small muted" data-proutn></span></div><div class="stack" data-prout></div></div>
+    <div class="panel stack"><h2>Map</h2><p class="small muted" style="margin:0">Orange diamonds are placed props; dashed diamonds are where props still need to go. Your position shows only on this phone.</p>
+      <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-prself style="flex:0 0 auto">Find my position</button><button type="button" data-prfull style="flex:0 0 auto">Full screen map</button></div>
+      <div class="map-wrap" data-prmap></div><div data-prlegend></div></div>
+    <div class="panel stack"><h2>Catalog</h2><div class="list" data-prcat></div></div>
+    <details class="panel"><summary><b>Recovered</b> <span class="small muted" data-prdonen></span></summary><div class="list" data-prdone style="margin-top:8px"></div></details>
+  </div>`;
+  $('[data-prfull]', v).onclick = () => openFullMap(null);
+  v.addEventListener('click', async ev => {
+    const pl = ev.target.closest('[data-prplace]'), rc = ev.target.closest('[data-prrec]'), nv = ev.target.closest('[data-prgo]');
+    if (ev.target.closest('[data-prnavstop]')){ propNavStop(); propNavText(); refresh(true); return; }
+    if (ev.target.closest('[data-prself]')){ const b = ev.target.closest('[data-prself]'); b.disabled = true; const g = await getGPS(); b.disabled = false; if (!g){ toast('Location unavailable. Allow location for this site and try again outdoors.', true); return; } app.propSelf = { pt:g.pt, acc:g.acc, t:Date.now() }; refresh(true); return; }
+    if (nv){ propNavStart(nv.dataset.prgo); return; }
+    if (pl){ const id = pl.dataset.prplace, card = pl.closest('[data-prcard]'), note = card ? ($('[data-prnote]', card) || {}).value || '' : '', S = app.S, r = propSched(S).find(x => x.u.id === id); if (!r) return;
+      const busy = propSched(S).find(x => x.u.prop === r.u.prop && x.state === 'out' && x.u.id !== id);
+      if (!confirm('Report ' + r.prop.name + (r.u.label ? ' (' + r.u.label + ')' : '') + ' placed?' + (busy ? '\n\nThis also marks it recovered from ' + (busy.it ? busy.it.label : 'its last use') + '.' : ''))) return;
+      pl.disabled = true; pl.textContent = 'Getting GPS…';
+      const g = app.propSelf && Date.now() - app.propSelf.t < 30000 ? app.propSelf : await getGPS();
+      await writeEvent('prop_place', null, { use:id, pt:g ? g.pt : null, acc:g ? g.acc : null, note }); if (app.propNav === id) propNavStop();
+      toast(g ? 'Placed. Sent to the White Force with your position.' : 'Placed. Sent to the White Force without GPS.'); return; }
+    if (rc){ const r = propSched(app.S).find(x => x.u.id === rc.dataset.prrec); if (!r || !confirm('Report ' + r.prop.name + ' recovered?')) return; await writeEvent('prop_recover', null, { use:r.u.id }); toast('Recovered.'); }
+  });
+}
+function renderProps(S){
+  const v = $('#vProps'); if (!$('[data-prtodo]', v)) return;
+  const rows = propSched(S), todo = rows.filter(r => r.state === 'todo'), out = rows.filter(r => r.state === 'out'), done = rows.filter(r => r.state === 'done');
+  const due = r => r.placeBy == null ? 'On call' : 'Place by ' + hhmm(r.placeBy) + (S.clock.started ? (S.g > r.placeBy ? ' · late' : ' · in ' + Math.ceil(r.placeBy - S.g) + ' min') : '');
+  const cls = r => r.placeBy == null || !S.clock.started ? '' : S.g > r.placeBy ? ' late' : r.placeBy - S.g <= 10 ? ' soon' : '';
+  const card = r => '<div class="pr-card' + cls(r) + '" data-prcard><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' · ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span><b>' + esc(due(r)) + '</b></span><span>For ' + esc(r.it ? r.it.label : '?') + (r.useAt != null ? ' at ' + hhmm(r.useAt) : '') + '</span></div><div class="small">Where: ' + esc(propWhere(S, r)) + '</div>' + (r.u.note ? '<div class="small">Note: ' + esc(r.u.note) + '</div>' : '') + (r.clash ? '<div class="small pr-clash">Still out for ' + esc(r.clash.it ? r.clash.it.label : 'another use') + ' until ' + hhmm(r.clash.recAfter) + '. Recover it first.</div>' : '') + (r.prop.home ? '<div class="small muted">Stored at ' + esc(r.prop.home) + '</div>' : '') + '<input data-prnote maxlength="200" placeholder="Note (optional): where exactly, any problem">' + '<div class="pr-btns"><button type="button" data-prgo="' + esc(r.u.id) + '"' + (r.u.pt ? '' : ' disabled') + '>Navigate</button><button type="button" class="btn-side" data-prplace="' + esc(r.u.id) + '">Placed</button></div></div>';
+  const oc = r => '<div class="pr-card' + (r.recAfter != null && S.g > r.recAfter ? ' soon' : '') + '"><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' · ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span>Placed ' + hhmm(r.st.placed) + (r.st.acc ? ' · GPS ±' + r.st.acc + ' m' : '') + '</span><span>' + (r.recAfter != null ? 'Recover after ' + hhmm(r.recAfter) : 'Recover when told') + '</span></div><div class="small">For ' + esc(r.it ? r.it.label : '?') + '</div><div class="pr-btns"><button type="button" data-prgo="' + esc(r.u.id) + '"' + (r.st.pt || r.u.pt ? '' : ' disabled') + '>Navigate</button><button type="button" class="btn-side" data-prrec="' + esc(r.u.id) + '">Recovered</button></div></div>';
+  const tb = $('[data-prtodo]', v), th = todo.length ? todo.map(card).join('') : '<div class="empty">Nothing left to place.</div>';
+  if (tb.dataset.h !== th && !typingIn(tb)){ tb.dataset.h = th; tb.innerHTML = th; }
+  $('[data-prtodon]', v).textContent = todo.length ? todo.length + ' to go' : '';
+  { const ob = $('[data-prout]', v), oh = out.length ? out.map(oc).join('') : '<div class="empty">No props in the field.</div>'; if (ob.dataset.h !== oh){ ob.dataset.h = oh; ob.innerHTML = oh; } $('[data-proutn]', v).textContent = out.length ? out.length + ' out' : ''; }
+  { const cat = (S.propOrder || []).map(k => S.props[k]).filter(Boolean), ch = cat.length ? cat.map(c => { const o = out.find(r => r.u.prop === c.id), nx = todo.find(r => r.u.prop === c.id); return '<div class="li"><div class="grow"><b>' + esc(c.name) + '</b><div class="small">' + (o ? 'In the field for ' + esc(o.it ? o.it.label : '?') : 'Available' + (c.home ? ' at ' + esc(c.home) : '')) + (nx ? ' · next: ' + esc(due(nx)) : '') + '</div></div></div>'; }).join('') : '<div class="empty">No props in the catalog.</div>', el = $('[data-prcat]', v); if (el.dataset.h !== ch){ el.dataset.h = ch; el.innerHTML = ch; } }
+  { const dh = done.length ? done.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + esc(r.prop.name) + '</b> <span class="small muted">' + hhmm(r.st.placed) + ' to ' + hhmm(r.st.rec) + '</span><div class="small">' + esc(r.it ? r.it.label : '') + '</div></div></div>').join('') : '<div class="empty">Nothing recovered yet.</div>', el = $('[data-prdone]', v); if (el.dataset.h !== dh){ el.dataset.h = dh; el.innerHTML = dh; } $('[data-prdonen]', v).textContent = done.length ? '(' + done.length + ')' : ''; }
+  wakeShow(); propNavText();
+  const real = renderMapInto($('[data-prmap]', v), S, null); $('[data-prlegend]', v).innerHTML = real ? realLegend() : legendHTML(null);
+}
 
 /* ---------- drone operator view ---------- */
 function buildDrone(){
@@ -4600,6 +4806,7 @@ function buildWhite(){
           </fieldset>
           <div class="stack" data-ipbpieces></div>
           <div class="row" style="align-items:end" data-ipbaddrow><label>Add another piece of intel<select data-ipbadd><option value="">Choose the kind of intel…</option>${IPB_KINDS.map(d => '<option>' + d + '</option>').join('')}</select></label></div>
+          <div class="stack"><b class="small">Props for this package</b><div class="pe" data-pe="pkg"></div></div>
           <label>White Force note (why the false pieces are false; only you see it)<input data-ipb="note" maxlength="300" placeholder="Example: The photo is two days older than the attack."></label>
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-ipbsave style="flex:0 0 auto">Save package</button><span class="small muted" data-ipbmsg></span></div>
           <h3 class="small muted" style="margin:6px 0 0">Packages built here</h3><div class="list" data-ipblist></div>
@@ -4613,9 +4820,16 @@ function buildWhite(){
           <div class="row"><label for="tplLabel">Name<input id="tplLabel" name="label" maxlength="60" required placeholder="Example: IED tip (Blue Force)"></label><label for="tplTo" style="flex:0 0 160px">To<select id="tplTo" name="to"><option value="both">Both wings</option><option value="B">Blue Force only</option><option value="R">Red Force only</option><option value="public">Public screen</option></select></label><label for="tplFrom" style="flex:0 0 200px">From<input id="tplFrom" name="from" maxlength="30" value="AOC"></label></div>
           <label for="tplText">Message<textarea id="tplText" name="text" maxlength="700" required placeholder="Example: Locals saw men burying something on your supply road. Check it before your next move."></textarea></label>
           <div class="row"><label for="tplAt" style="flex:0 0 200px">Planned time (minutes after STARTEX)<input id="tplAt" name="at" type="number" min="0" max="300" placeholder="Optional"></label><label for="tplLvl" style="flex:0 0 220px">Or send at escalation level<select id="tplLvl" name="lvl"><option value="">No level</option><option value="1">Tension or higher</option><option value="2">Crisis or higher</option><option value="3">Brink or higher</option></select></label><label for="tplNote">White Force note (only the White Force sees it)<input id="tplNote" name="note" maxlength="500" placeholder="Optional: what the POCs need to set up"></label></div>
+          <div class="stack"><b class="small">Props for this inject</b><div class="pe" data-pe="tpl"></div></div>
           <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto" data-tplsave>Save template</button><button type="button" data-tplclear style="flex:0 0 auto">Clear</button><span class="small muted" data-tplmode></span></div>
         </form>
         <h3 class="small muted" style="margin:6px 0 0">Templates in this game</h3><div class="list" data-tpllist></div>
+      </div>
+      <div class="panel span2 stack" data-sec="create" data-aoc-off data-propplan><h2>Props</h2>
+        <p class="small muted" style="margin:0">The catalog lists every physical prop once. Injects and intel packages pick props from it in their builders. The schedule below is built from inject and package times; moving an inject moves its prop times. An item with props cannot be sent until every prop is reported placed, unless you override.</p>
+        <form class="row" data-propf style="align-items:end"><label>Prop name<input name="name" maxlength="60" required placeholder="Example: Aid supply box 1"></label><label>Stored at<input name="home" maxlength="80" placeholder="Example: Logistics tent"></label><label>Note<input name="note" maxlength="200" placeholder="Optional"></label><button type="submit" class="btn-side" style="flex:0 0 auto" data-propsave>Add to catalog</button><button type="button" data-propclear style="flex:0 0 auto">Clear</button></form>
+        <div class="list" data-proplist></div>
+        <h3 class="small muted" style="margin:6px 0 0">Prop schedule</h3><div class="asb-wrap" data-propsched></div>
       </div>
       <div class="panel span2 stack" data-sec="create" data-aoc-off><h2>Creation files</h2>
         <p class="small muted" style="margin:0">Download every intel package and inject template built in this game as one file, including photos and map points. Send the file to the exercises officers, who upload it into the game where it will be used. Uploading adds to a game; it never deletes anything.</p>
@@ -4650,11 +4864,11 @@ function buildWhite(){
     if (k === 'resume') writeEvent('clock_resume', null, {});
     if (k === 'reveal') writeEvent('reveal', null, { on:!(app.S && app.S.reveal) });
   });
-  { const tf = $('[data-tplf]', v), tplClear = () => { tf.reset(); tf.dataset.id = ''; tf.dataset.phase = ''; $('[data-tplmode]', v).textContent = ''; };
+  { const tf = $('[data-tplf]', v), tplClear = () => { tf.reset(); tf.dataset.id = ''; tf.dataset.phase = ''; $('[data-tplmode]', v).textContent = ''; peSet('tpl', []); };
     tf.addEventListener('submit', async ev => { ev.preventDefault(); const fd = new FormData(tf), at = String(fd.get('at') || '').trim(), lvl = String(fd.get('lvl') || '');
       const tpl = { id:tf.dataset.id || ('t' + uid()), label:String(fd.get('label') || '').trim(), to:fd.get('to'), from:hqFrom(fd.get('from')), text:String(fd.get('text') || '').trim(), at:at === '' ? null : +at, lvl:lvl === '' ? null : +lvl, note:String(fd.get('note') || '').trim(), phase:tf.dataset.phase || '' };
       if (!tpl.label || !tpl.text){ toast('Add a name and a message.', true); return; }
-      await writeEvent('tpl_save', null, { tpl }); toast(tf.dataset.id ? 'Template updated.' : 'Template saved. It is under Send a message.'); tplClear(); });
+      await writeEvent('tpl_save', null, { tpl }); await peSave('tpl', tpl.id); toast(tf.dataset.id ? 'Template updated.' : 'Template saved. It is under Send a message.'); tplClear(); });
     $('[data-tplclear]', v).onclick = tplClear;
     $('[data-tplload]', v).onclick = () => { const i = $('[data-tplsrc]', v).value, t = TEMPLATES[+i]; if (i === '' || !t) { tplClear(); return; } tplClear(); tf.dataset.phase = t.phase || ''; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; $('[data-tplmode]', v).textContent = 'New template from the sample. Edit it, then save.'; };
     $('[data-tplall]', v).onclick = async () => { const have = new Set((app.S.tpls || []).map(t => t.id)), todo = TEMPLATES.map((t, i) => Object.assign({ id:'tsample-' + i }, t)).filter(t => !have.has(t.id));
@@ -4662,7 +4876,7 @@ function buildWhite(){
       if (!confirm('Add ' + todo.length + ' sample template' + (todo.length === 1 ? '' : 's') + ' to this game? Each can be edited or deleted afterward.')) return;
       for (const tpl of todo) await writeEvent('tpl_save', null, { tpl }); toast('Added ' + todo.length + ' template' + (todo.length === 1 ? '' : 's') + '.'); };
     $('[data-tpllist]', v).addEventListener('click', ev => { const e = ev.target.closest('[data-tpledit]'), d = ev.target.closest('[data-tpldel]'), S = app.S;
-      if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
+      if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; peSet('tpl', peOf(S, 'tpl', t.id)); $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
       if (d){ const t = (S.tpls || []).find(x => x.id === d.dataset.tpldel); if (t && confirm('Delete the template "' + t.label + '"?')) writeEvent('tpl_del', null, { id:t.id }); } });
     $('[data-crexport]', v).onclick = crExport;
     $('#crImport', v).onchange = () => { const fl = Array.from($('#crImport', v).files); $('#crImport', v).value = ''; if (fl.length) crImport(fl); };
@@ -4675,7 +4889,7 @@ function buildWhite(){
   $('[data-injq]', v).addEventListener('click', ev => {
     const s = ev.target.closest('[data-injqsend]'), d = ev.target.closest('[data-injqdel]'), u = ev.target.closest('[data-injquse]'); if (!s && !d && !u) return; ev.preventDefault();
     const q = (app.S.injq || []).find(x => x.qid === (s || d || u).dataset[s ? 'injqsend' : d ? 'injqdel' : 'injquse']); if (!q) return;
-    if (s){ if (!app.S.clock.started && !confirm('The game clock has not started. Send this inject anyway?')) return; writeEvent('injq_send', null, { qid:q.qid }); toast('Sent: ' + q.label + '.'); }
+    if (s){ const ovr = s.dataset.ovr === '1'; if (ovr && !confirm('Send "' + q.label + '" before its props are reported placed?\n\nWaiting on: ' + propHold(app.S, 'tpl', q.tid).join(', '))) return; if (!app.S.clock.started && !confirm('The game clock has not started. Send this inject anyway?')) return; writeEvent('injq_send', null, ovr ? { qid:q.qid, ovr:true } : { qid:q.qid }); toast('Sent: ' + q.label + '.'); }
     if (d && confirm('Remove "' + q.label + '" from the queue? The template stays.')) writeEvent('injq_del', null, { qid:q.qid });
     if (u){ useTpl(q); writeEvent('injq_del', null, { qid:q.qid }); toast('Moved to the message box. Edit it, then press Send.'); }
   });
@@ -4683,6 +4897,7 @@ function buildWhite(){
   { const pc = $('[data-picpoc]', v); pc.checked = pref.get('marala-picpoc', '1') === '1'; pc.onchange = () => { pref.set('marala-picpoc', pc.checked ? '1' : '0'); refresh(true); }; }
   $('[data-picfull]', v).onclick = () => openFullMap(fogSide(app.S));
   $('[data-planfull]', v).onclick = () => openFullMap(null);
+  propWire(v); peSet('tpl', []); peSet('pkg', []);
   $('[data-plansent]', v).onchange = () => refresh(true);
   $('[data-prif]', v).addEventListener('submit', ev => { ev.preventDefault(); if (app.role !== 'A') return;
     const f = ev.currentTarget, items = ['p1', 'p2', 'p3'].map(k => f.elements[k].value.trim()).filter(Boolean), to = f.elements.to.value, nm = ({ both:'both forces', B:'Blue Force', R:'Red Force' })[to];
@@ -4853,7 +5068,7 @@ function buildWhite(){
     if (a === 'guessok') writeEvent('guess_ack', null, { id });
     if (a === 'resolve'){ const box = $('#ans-' + id); writeEvent('resolve', null, { req:id, result:b.dataset.r, text:box ? box.value : '' }); }
     if (a === 'void') writeEvent('void', null, { target:id });
-    if (a === 'ipdeploy'){ writeEvent('intel_deploy', null, { pid:id, to:b.dataset.to }); toast('Intel package sent.'); }
+    if (a === 'ipdeploy'){ const ovr = b.dataset.ovr === '1'; if (ovr && !confirm('Deploy this package to both forces before its props are reported placed?\n\nWaiting on: ' + propHold(app.S, 'pkg', id).join(', '))) return; writeEvent('intel_deploy', null, ovr ? { pid:id, to:b.dataset.to, ovr:true } : { pid:id, to:b.dataset.to }); toast('Intel package sent.'); }
     if (a === 'ipclose'){ if (confirm('Close this intel package now and score it?')) writeEvent('intel_close', null, { pid:id }); }
     if (a === 'site') { const sel = $('#site-' + id); writeEvent('site_set', null, { site:id, holder:sel.value || null }); }
     if (a === 'contest') writeEvent('site_contested', null, { site:id, on:b.dataset.on === '1' });
@@ -4926,6 +5141,7 @@ function ipbWpPrev(){
 }
 function ipbFill(P){
   const f = ipbForm();
+  if (!P || !P.keepWp) peSet('pkg', P && app.S ? peOf(app.S, 'pkg', ipb.sentEdit || ipb.id || P.id) : []);
   if (!P || !P.keepWp){ ipbWpSet(P && P.wp); ipb.wps = P && Array.isArray(P.wps) ? JSON.parse(JSON.stringify(P.wps)) : []; ipbWpList(); }
   $('[data-ipb="title"]', f).value = P ? fillT(P.title) : ''; $('[data-ipb="q"]', f).value = P ? fillT(P.q) : '';
   $('[data-ipb="at"]', f).value = P && P.at != null ? P.at : 60; $('[data-ipb="win"]', f).value = P && P.win ? P.win : 15;
@@ -5022,35 +5238,37 @@ async function ipbSnap(pc){
 function ipbExport(){ crExport(); }
 function crExport(){
   const S = app.S; if (!S) return;
-  const cs = S.customOrder.map(id => S.custom[id]).filter(Boolean), tp = S.tpls || [];
-  if (!cs.length && !tp.length){ toast('Nothing to download yet. Build an intel package or an inject template first.', true); return; }
+  const cs = S.customOrder.map(id => S.custom[id]).filter(Boolean), tp = S.tpls || [], props = (S.propOrder || []).map(k => S.props[k]).filter(Boolean), propUses = Object.values(S.propUses || {});
+  if (!cs.length && !tp.length && !props.length){ toast('Nothing to download yet. Build an intel package or an inject template first.', true); return; }
   const images = {}; cs.forEach(c => c.items.forEach(it => { if (it.img && S.images[it.img]) images[it.img] = S.images[it.img]; }));
-  const blob = new Blob([JSON.stringify({ app:'marala-intel', version:2, saved:Date.now(), from:app.cfg && app.cfg.name || '', packages:cs, images, injects:tp })], { type:'application/json' });
+  const blob = new Blob([JSON.stringify({ app:'marala-intel', version:2, saved:Date.now(), from:app.cfg && app.cfg.name || '', packages:cs, images, injects:tp, props, propUses })], { type:'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'marala-creations-' + new Date().toISOString().slice(0, 10) + '.json';
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
-  toast('Downloaded ' + cs.length + ' package' + (cs.length === 1 ? '' : 's') + ' and ' + tp.length + ' inject template' + (tp.length === 1 ? '' : 's') + '.');
+  toast('Downloaded ' + cs.length + ' package' + (cs.length === 1 ? '' : 's') + ', ' + tp.length + ' inject template' + (tp.length === 1 ? '' : 's') + ' and ' + props.length + ' prop' + (props.length === 1 ? '' : 's') + '.');
 }
 function ipbImport(file){ crImport(file); }
 async function crRead(files){
-  const out = { packages:[], images:{}, injects:[], sources:[], bad:[], dupes:0 }, pIx = new Map(), tIx = new Map();
+  const out = { packages:[], images:{}, injects:[], props:{}, propUses:{}, sources:[], bad:[], dupes:0 }, pIx = new Map(), tIx = new Map();
   for (const f of files){
     let d = null; try { d = JSON.parse(await f.text()); } catch(e){}
-    if (!d || d.app !== 'marala-intel' || (!Array.isArray(d.packages) && !Array.isArray(d.injects))){ out.bad.push(f.name); continue; }
+    if (!d || d.app !== 'marala-intel' || (!Array.isArray(d.packages) && !Array.isArray(d.injects) && !Array.isArray(d.props))){ out.bad.push(f.name); continue; }
+    (Array.isArray(d.props) ? d.props : []).forEach(x => { if (x && x.id && x.name) out.props[x.id] = x; });
+    (Array.isArray(d.propUses) ? d.propUses : []).forEach(x => { if (x && x.id && x.prop && x.item) out.propUses[x.id] = x; });
     const pk = (d.packages || []).filter(validPkg), tp = (d.injects || []).filter(t => t && t.label && t.text);
     pk.forEach(P => { if (pIx.has(P.id)){ out.packages[pIx.get(P.id)] = P; out.dupes++; } else { pIx.set(P.id, out.packages.length); out.packages.push(P); } });
     tp.forEach(t => { const k = t.id || t.label + '|' + t.text; if (tIx.has(k)){ out.injects[tIx.get(k)] = t; out.dupes++; } else { tIx.set(k, out.injects.length); out.injects.push(t); } });
     Object.assign(out.images, d.images || {});
-    out.sources.push({ name:f.name, from:d.from || '', p:pk.length, t:tp.length });
+    out.sources.push({ name:f.name, from:d.from || '', p:pk.length, t:tp.length, r:(Array.isArray(d.props) ? d.props.length : 0) });
   }
   return out;
 }
-function crSummary(d){ return d.sources.map(x => '\u2022 ' + x.name + (x.from ? ' (' + x.from + ')' : '') + ': ' + x.p + ' package' + (x.p === 1 ? '' : 's') + ', ' + x.t + ' template' + (x.t === 1 ? '' : 's')).join('\n') + (d.dupes ? '\n' + d.dupes + ' item' + (d.dupes === 1 ? ' appears' : 's appear') + ' in more than one file; the last file\u2019s version is kept.' : '') + (d.bad.length ? '\nSkipped (not a creation file): ' + d.bad.join(', ') : ''); }
+function crSummary(d){ return d.sources.map(x => '\u2022 ' + x.name + (x.from ? ' (' + x.from + ')' : '') + ': ' + x.p + ' package' + (x.p === 1 ? '' : 's') + ', ' + x.t + ' template' + (x.t === 1 ? '' : 's') + (x.r ? ', ' + x.r + ' prop' + (x.r === 1 ? '' : 's') : '')).join('\n') + (d.dupes ? '\n' + d.dupes + ' item' + (d.dupes === 1 ? ' appears' : 's appear') + ' in more than one file; the last file\u2019s version is kept.' : '') + (d.bad.length ? '\nSkipped (not a creation file): ' + d.bad.join(', ') : ''); }
 async function crCombine(files){
   const d = await crRead(files);
-  if (!d.packages.length && !d.injects.length){ toast('No packages or inject templates found in those files.', true); return; }
+  if (!d.packages.length && !d.injects.length && !Object.keys(d.props).length){ toast('No packages, inject templates or props found in those files.', true); return; }
   if (!confirm('Combine these files into one?\n\n' + crSummary(d) + '\n\nResult: ' + d.packages.length + ' packages and ' + d.injects.length + ' inject templates. This game is not changed.')) return;
   const imgs = {}; d.packages.forEach(P => P.items.forEach(it => { if (it.img && d.images[it.img]) imgs[it.img] = d.images[it.img]; }));
-  const blob = new Blob([JSON.stringify({ app:'marala-intel', version:2, saved:Date.now(), from:'Combined: ' + d.sources.map(x => x.name).join(', '), packages:d.packages, images:imgs, injects:d.injects })], { type:'application/json' });
+  const blob = new Blob([JSON.stringify({ app:'marala-intel', version:2, saved:Date.now(), from:'Combined: ' + d.sources.map(x => x.name).join(', '), packages:d.packages, images:imgs, injects:d.injects, props:Object.values(d.props), propUses:Object.values(d.propUses) })], { type:'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'marala-creations-combined-' + new Date().toISOString().slice(0, 10) + '.json';
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   toast('Combined file downloaded: ' + d.packages.length + ' packages, ' + d.injects.length + ' templates.');
@@ -5059,7 +5277,8 @@ async function crImport(files){
   files = Array.isArray(files) ? files : [files];
   const d = await crRead(files);
   const S = app.S, pk = d.packages, tp = d.injects;
-  if (!pk.length && !tp.length){ toast(d.bad.length ? 'That file isn\u2019t a creation file from this board.' : 'No packages or inject templates found in that file.', true); return; }
+  const pr = Object.values(d.props), pu = Object.values(d.propUses);
+  if (!pk.length && !tp.length && !pr.length){ toast(d.bad.length ? 'That file isn\u2019t a creation file from this board.' : 'No packages, inject templates or props found in that file.', true); return; }
   if (!confirm('Add to this game?\n\n' + crSummary(d) + '\n\nTotal: ' + pk.length + ' package' + (pk.length === 1 ? '' : 's') + ' and ' + tp.length + ' inject template' + (tp.length === 1 ? '' : 's') + '. Items already in the game that haven\u2019t been sent are updated.')) return;
   let n = 0, m = 0;
   try {
@@ -5067,11 +5286,14 @@ async function crImport(files){
     for (const P of pk){
       const pkg = JSON.parse(JSON.stringify(P));
       for (const it of pkg.items){ if (it.img && d.images[it.img] && !done.has(it.img) && !(S.images[it.img])){ await writeEvent('intel_image', null, { id:it.img, data:d.images[it.img] }); done.add(it.img); } }
-      if (S.intelOut[pkg.id]){ const tr = intelTruth(P), nid = 'c' + uid(); pkg.id = nid; pkg.a = intelKey(nid, 'a', tr.ak); pkg.f = intelKey(nid, 'f', tr.f); }
+      if (S.intelOut[pkg.id]){ const tr = intelTruth(P), nid = 'c' + uid(); pu.forEach(u => { if (u.kind === 'pkg' && u.item === pkg.id) u.item = nid; }); pkg.id = nid; pkg.a = intelKey(nid, 'a', tr.ak); pkg.f = intelKey(nid, 'f', tr.f); }
       if (pkg.replaces && (S.intelOut[pkg.replaces] || S.blank || !PROBLEMS.some(x => x.id === pkg.replaces))) pkg.replaces = null;
       await writeEvent('intel_custom', null, { pkg }); n++;
     }
     for (const t of tp){ const tpl = Object.assign({}, t); if (!/^t[\w-]{3,40}$/.test(tpl.id || '')) tpl.id = 't' + uid(); await writeEvent('tpl_save', null, { tpl }); m++; }
+    for (const x of pr) await writeEvent('prop_save', null, { prop:x });
+    const groups = {}; pu.forEach(u => { const k = u.kind + '|' + u.item; (groups[k] = groups[k] || []).push(u); });
+    for (const k of Object.keys(groups)){ const [kind, item] = k.split('|'); await writeEvent('prop_uses', null, { kind, item, uses:groups[k] }); }
     toast('Added ' + n + ' package' + (n === 1 ? '' : 's') + ' and ' + m + ' inject template' + (m === 1 ? '' : 's') + '.');
   } catch(e){ toast('Upload stopped after ' + n + ' package' + (n === 1 ? '' : 's') + ' and ' + m + ' template' + (m === 1 ? '' : 's') + '. Check the connection and try again.', true); }
 }
@@ -5154,14 +5376,14 @@ async function ipbSave(){
       const pid = ipb.sentEdit;
       if (!confirm('Update this package on the wings’ screens? They will be told it changed.')) { $('[data-ipbsave]', f).disabled = false; return; }
       await writeEvent('intel_edit', null, { pid, pkg:{ title, q, opts, items, note:val('[data-ipb="note"]'), a:intelKey(pid, 'a', ak), f:intelKey(pid, 'f', bad.join('')) } });
-      $('[data-ipbmsg]', f).textContent = 'Updated.'; toast('Intel package updated on the wings’ screens.');
+      await peSave('pkg', pid); $('[data-ipbmsg]', f).textContent = 'Updated.'; toast('Intel package updated on the wings’ screens.');
       $('[data-ipbsave]', f).disabled = false; return;
     }
     const pkg = { id, custom:true, replaces:ipb.replaces || null, at:Math.max(0, Math.round(+val('[data-ipb="at"]') || 0)), win:Math.max(3, Math.round(+val('[data-ipb="win"]') || 15)), title, q, opts, items, note:val('[data-ipb="note"]'),
       wp, wps:ipb.wps.slice(0, 11),
       blast:val('[data-ipb="bgrid"]') ? { grid:val('[data-ipb="bgrid"]').toUpperCase(), truth:$('[data-ipb="btruth"]', f).value, cas:$('[data-ipb="bcas"]', f).checked } : null,
       a:intelKey(id, 'a', ak), f:intelKey(id, 'f', bad.join('')) };
-    await writeEvent('intel_custom', null, { pkg });
+    await writeEvent('intel_custom', null, { pkg }); await peSave('pkg', id);
     ipb.id = id; ipbSetMode();
     $('[data-ipbmsg]', f).textContent = 'Saved.';
     toast('Intel package saved. It is in the Intel packages list, ready to deploy.');
@@ -5264,11 +5486,11 @@ function renderWhite(S, now){
   $('[data-wliaison]', v).innerHTML = liaisonHTML(S, null);
   $('[data-woffers]', v).innerHTML = offersHTML(S, null);
   const lvlNow = levelIndex(S.esc), TP = allTemplates(S), tkey = START_G + '|' + lvlNow + '|' + (S.injq || []).map(q => q.tid).join() + '|' + JSON.stringify(TP.map(t => [t.id, t.label, t.at, t.lvl, t.to, t.text, t.from, t.note, t.phase]));
-  { const showSent = !!($('[data-injqsent]', v) || {}).checked, Q = (S.injq || []).slice().sort((a, b) => ((a.sent != null) - (b.sent != null)) || ((a.at != null ? a.at : a.lvl != null ? 1000 + a.lvl : 2000) - (b.at != null ? b.at : b.lvl != null ? 1000 + b.lvl : 2000))), k2 = JSON.stringify(Q.map(q => [q.qid, q.sent, q.label])) + showSent + START_G + lvlNow;
+  { const showSent = !!($('[data-injqsent]', v) || {}).checked, Q = (S.injq || []).slice().sort((a, b) => ((a.sent != null) - (b.sent != null)) || ((a.at != null ? a.at : a.lvl != null ? 1000 + a.lvl : 2000) - (b.at != null ? b.at : b.lvl != null ? 1000 + b.lvl : 2000))), k2 = JSON.stringify(Q.map(q => [q.qid, q.sent, q.label, propHold(S, 'tpl', q.tid).length])) + showSent + START_G + lvlNow;
     if (app.injqKey !== k2){ app.injqKey = k2; const box = $('[data-injq]', v), open = new Set($$('details[open]', box).map(x => x.dataset.q)), vis = Q.filter(q => showSent || q.sent == null), waiting = Q.filter(q => q.sent == null).length;
       $('[data-injqn]', v).textContent = waiting + ' waiting' + (Q.length - waiting ? ' · ' + (Q.length - waiting) + ' sent' : '');
       box.innerHTML = vis.length ? vis.map(q => { const due = q.at != null ? hhmm(START_G + q.at) : q.lvl != null ? LEVELS[q.lvl].name : '\u2014', hot = q.sent == null && ((q.at != null && S.clock.started && S.g >= START_G + q.at) || (q.lvl != null && lvlNow >= q.lvl));
-        return '<details class="li cmp' + (hot ? ' hot' : '') + '" data-q="' + q.qid + '"' + (open.has(q.qid) ? ' open' : '') + '><summary><span class="tm">' + due + '</span><span class="chip ' + (q.to === 'both' || q.to === 'public' ? '' : q.to) + '" style="flex:0 0 auto">' + ({ both:'Both', B:'Blue Force', R:'Red Force', public:'Public' })[q.to] + '</span><span class="ttl"><b>' + esc(q.label) + '</b></span>' + (q.sent != null ? '<span class="chip ok" style="flex:0 0 auto">Sent ' + hhmm(q.sent) + '</span>' : '<button type="button" class="btn-side" data-injqsend="' + q.qid + '" style="flex:0 0 auto">Send</button>') + '</summary>' +
+        return '<details class="li cmp' + (hot ? ' hot' : '') + '" data-q="' + q.qid + '"' + (open.has(q.qid) ? ' open' : '') + '><summary><span class="tm">' + due + '</span><span class="chip ' + (q.to === 'both' || q.to === 'public' ? '' : q.to) + '" style="flex:0 0 auto">' + ({ both:'Both', B:'Blue Force', R:'Red Force', public:'Public' })[q.to] + '</span><span class="ttl"><b>' + esc(q.label) + '</b></span>' + (q.sent != null ? '<span class="chip ok" style="flex:0 0 auto">Sent ' + hhmm(q.sent) + '</span>' : propLockHTML(S, 'tpl', q.tid, '<button type="button" class="btn-side" data-injqsend="' + q.qid + '" style="flex:0 0 auto">Send</button>', 'data-injqsend="' + q.qid + '" data-ovr="1"')) + '</summary>' +
           '<div class="small" style="white-space:pre-wrap">' + esc(q.sent != null ? q.sentText : fillT(q.text)) + '</div><div class="small muted">From: ' + esc(q.from) + '</div>' + (q.note ? '<div class="small muted">Note: ' + esc(q.note) + '</div>' : '') + (q.sent == null ? '<div class="row" style="justify-content:flex-start;margin-top:6px"><button type="button" data-injquse="' + q.qid + '" style="flex:0 0 auto">Edit before sending</button><button type="button" data-injqdel="' + q.qid + '" style="flex:0 0 auto">Remove from queue</button></div>' : '') + '</details>'; }).join('') : '<div class="empty">' + (Q.length ? 'Every queued inject has been sent.' : 'The queue is empty. Queue templates below, or use Queue all timed templates.') + '</div>'; } }
   if (app.tplKey !== tkey){ app.tplKey = tkey; const qd = new Set((S.injq || []).map(q => q.tid)); $('[data-tpln]', v).textContent = '(' + TP.length + ')'; $('[data-templates]', v).innerHTML = TP.length ? TP.map((t, i) => [t, i]).sort((x, y) => ((x[0].at != null ? x[0].at : x[0].lvl != null ? 1000 + x[0].lvl : 2000) - (y[0].at != null ? y[0].at : y[0].lvl != null ? 1000 + y[0].lvl : 2000)) || x[1] - y[1]).map(([t, i]) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<div class="li cmp' + (ok ? ' hot' : '') + '"><span class="tm">' + (t.at != null ? hhmm(START_G + t.at) : t.lvl != null ? LEVELS[t.lvl].name : 'Any') + '</span><span class="chip ' + (t.to === 'both' || t.to === 'public' ? '' : t.to) + '" style="flex:0 0 auto">' + ({ both:'Both', B:'Blue Force', R:'Red Force', public:'Public' })[t.to] + '</span><span class="ttl">' + esc(t.label) + '</span><button type="button" data-tpl="' + i + '" style="flex:0 0 auto">Use</button><button type="button" data-tplq="' + i + '" style="flex:0 0 auto">' + (qd.has(t.id) ? 'Queue again' : 'Queue') + '</button></div>'; }).join('') : '<div class="empty">No inject templates in this game. Build them in Intel and inject creation.</div>';
     const tl = $('[data-tpllist]', v); if (tl){ const own = S.tpls || []; tl.innerHTML = own.length ? own.map(t => '<div class="li"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">' + ({ both:'Both wings', B:'Blue Force', R:'Red Force', public:'Public screen' })[t.to] + (t.at != null ? ' · ' + hhmm(START_G + t.at) : t.lvl != null ? ' · ' + LEVELS[t.lvl].name + ' or higher' : '') + '</span><div class="small">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">Note: ' + esc(t.note) + '</div>' : '') + '</div><button type="button" data-tpledit="' + esc(t.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-tpldel="' + esc(t.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No templates built in this game yet.</div>'; } }
@@ -5322,7 +5544,9 @@ function renderWhite(S, now){
     const tr = intelTruth(P), oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R');
     const st = s => { const o = s === 'B' ? oB : oR, m = S.intel[s][P.id]; return '<span class="chip ' + s + '" style="flex:0 0 auto">' + SIDES[s].name + ': ' + (!o ? 'Not sent' : o.done ? (m ? '+' + (m.pts || 0) : 'no answer') : m ? 'locked ' + hhmm(m.g) : 'working, due ' + hhmm(o.due)) + '</span>'; };
     let btns = '';
-    if (!oB && !oR) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="B"' + (running ? '' : ' disabled') + '>Blue Force only</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="R"' + (running ? '' : ' disabled') + '>Red Force only</button>';
+    const held = propHold(S, 'pkg', P.id).length && !oB && !oR;
+    if (held) btns = propLockHTML(S, 'pkg', P.id, '', 'data-act="ipdeploy" data-id="' + P.id + '" data-to="both" data-ovr="1"');
+    else if (!oB && !oR) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="B"' + (running ? '' : ' disabled') + '>Blue Force only</button><button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="R"' + (running ? '' : ' disabled') + '>Red Force only</button>';
     else if (!oB || !oR) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>';
     if ((oB && !oB.done) || (oR && !oR.done)) btns += '<button type="button" data-act="ipclose" data-id="' + P.id + '">Close now</button>';
     btns += '<button type="button" data-ipview="' + P.id + '">View / edit</button>';
@@ -5336,6 +5560,8 @@ function renderWhite(S, now){
   if (app.multi){ const ng = $('[data-newgame]', v), rs = $('[data-restore]', v); if (ng) ng.hidden = true; if (rs) rs.hidden = true; }
   renderPic(S, v);
   if (app.role === 'A'){ renderWF(S, v); renderPlan(S, v); }
+  if (app.role === 'W') renderPropPlan(S, v);
+  propNotify(S);
   $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' · ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' · Saved on this computer' : ' · Shared');
 }
 
@@ -5354,6 +5580,7 @@ function refresh(force){
     else if (app.role === 'P') renderPublic(S);
     else if (app.role === 'OC') renderOC(S);
     else if (app.role === 'D') renderDrone(S);
+    else if (app.role === 'L') renderProps(S);
     else if (app.role[0] === 'T') renderTeam(S, app.role[1]);
     else renderWing(S, app.role, now);
     if (app.fsEl && app.fsEl._lm && mapCfg(S)) drawDyn(app.fsEl._lm, S, app.fsSide);
