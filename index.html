@@ -1854,7 +1854,7 @@ function apply(S, e, cfg){
     case 'act_aid':
       pushLog(S, nm + ' aid refused: aid packages are delivered by fireteams and confirmed by POCs', side, e, 'rejected'); break;
     case 'act_statement': {
-      const pkg = p.pkg ? allProblems(S).find(x => x.id === p.pkg) : null, inc = pkg ? null : S.incidents.find(i => i.id === p.incident);
+      const pkg = p.pkg ? allProblems(S).find(x => x.id === p.pkg && x.stmt) : null, inc = pkg ? null : S.incidents.find(i => i.id === p.incident);
       const key = side + ':' + (pkg ? 'pkg:' + pkg.id : p.incident), blame = p.blame === 'other' ? 'other' : 'militia';
       if ((!inc && !pkg) || S.statements[key] || (pkg && !intelOpen(S, pkg.id, side))){ pushLog(S, nm + ' statement refused', side, e, 'rejected'); break; }
       S.statements[key] = blame;
@@ -4170,8 +4170,8 @@ function renderWing(S, side, now){
     const st = c.verdict ? (c.verdict === 'confirm' ? '<span class="chip ok">Confirmed +1</span>' : '<span class="chip no">Not confirmed</span>') : '<span class="chip wait">Checking</span>';
     return '<div class="li"><div class="grow"><b>' + esc(c.kind === 'site' ? (SITES[c.site] ? SITES[c.site].name : 'Site') + ' flag' : c.kind === 'team' ? 'Team' : 'Activity') + '</b> <span class="mono">' + esc(c.grid || '') + '</span> <span class="muted small">Seen ' + esc(c.seen) + ' · ' + age + ' min ago' + (age > 15 ? ' · Old' : '') + '</span>' + (c.note ? '<div class="small muted">' + esc(c.note) + '</div>' : '') + '</div>' + st + '</div>';
   }).join('') : '<div class="empty">No reports yet. Intel posts them from the Reports tab; each confirmed report is worth 1 point.</div>';
-  const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id]), pkgs = allProblems(S).map((P, i) => [P, i]).filter(([P]) => intelOpen(S, P.id, side) && !S.statements[side + ':pkg:' + P.id]);
-  { const n = incs.length + pkgs.filter(([P]) => P.opts.some(o => stmtParty(fillT(o)))).length, bd = $('[data-stmtbadge]', v); if (bd){ bd.hidden = !n || S.endex; bd.textContent = n === 1 ? 'Public statement expected' : n + ' public statements expected'; } }
+  const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id]), pkgs = allProblems(S).map((P, i) => [P, i]).filter(([P]) => P.stmt && intelOpen(S, P.id, side) && !S.statements[side + ':pkg:' + P.id]);
+  { const n = incs.length + pkgs.length, bd = $('[data-stmtbadge]', v); if (bd){ bd.hidden = !n || S.endex; bd.textContent = n === 1 ? 'Public statement expected' : n + ' public statements expected'; } }
   keepSelect($('[name="inc"]', v), incs.length || pkgs.length ? (incs.length ? '<optgroup label="Explosions">' + incs.map(i => '<option value="' + i.id + '">' + esc(i.grid) + ' explosion, ' + hhmm(i.g) + '</option>').join('') + '</optgroup>' : '') + (pkgs.length ? '<optgroup label="Intel packages">' + pkgs.map(([P, i]) => '<option value="pkg:' + P.id + '">Intel ' + (i + 1) + ': ' + esc(fillT(P.title)) + '</option>').join('') + '</optgroup>' : '') : '<option value="">Nothing to make a statement about yet</option>');
   const claims = S.claims.filter(c => c.side === side);
   $('[data-claims]', v).innerHTML = claims.slice(-4).reverse().map(c => '<div class="li"><span class="grow">' + esc(c.site === 'town' ? 'Marala Town' : SITES[c.site].name) + ' · ' + hhmm(c.g) + ' <span class="small muted">' + esc(c.note) + '</span></span><span class="chip ' + (c.status === 'accepted' ? 'ok' : c.status === 'contest' ? 'wait' : 'no') + '">' + (c.status === 'accepted' ? 'Confirmed' : c.status === 'contest' ? 'Contention' : 'Refused') + '</span></div>').join('');
@@ -4317,7 +4317,7 @@ function renderPlan(S, v){
       stat:sent ? '<span class="chip ' + ((oB && !oB.done) || (oR && !oR.done) ? 'wait' : 'ok') + '">' + esc(st) + '</span>' : '<span class="chip">Not deployed</span>' + propChip(S, 'pkg', P.id),
       body:'<div><b>Question:</b> ' + esc(fillT(P.q)) + '</div><div>' + (P.opts || []).map((o, j) => '<div class="opt' + (tr.as.includes(j) ? ' ok' : '') + '">' + String.fromCharCode(65 + j) + '. ' + esc(fillT(o)) + (tr.as.includes(j) ? ' \u2713 correct' : '') + '</div>').join('') + '</div>' +
         P.items.map(it => '<div class="ip-it' + (tr.fs.includes(it.k) ? ' f' : '') + '"><b>' + esc(it.k) + '. ' + esc(it.disc || '') + '</b> <span class="small muted">' + esc([it.rating, fillT(it.dtg || ''), it.src].filter(Boolean).join(' \u00b7 ')) + '</span>' + (tr.fs.includes(it.k) ? ' <span class="chip no">False or misleading</span>' : '') + '<div>' + esc(fillT(it.text)) + '</div></div>').join('') +
-        '<div class="small muted">Answer window ' + (P.win || 15) + ' min' + (P.wp ? ' \u00b7 Waypoint: ' + esc(P.wp.label) : '') + (P.blast ? ' \u00b7 Explosion at ' + esc(P.blast.grid) : '') + '</div>' }); });
+        '<div class="small muted">Answer window ' + (P.win || 15) + ' min' + (P.stmt ? ' \u00b7 Public statement expected' : '') + (P.wp ? ' \u00b7 Waypoint: ' + esc(P.wp.label) : '') + (P.blast ? ' \u00b7 Explosion at ' + esc(P.blast.grid) : '') + '</div>' }); });
   rows.sort((a, b) => a.t - b.t);
   const vis = rows.filter(r => showSent || !r.done), open = new Set($$('details[open]', $('[data-planlist]', v)).map(x => x.dataset.k));
   $('[data-plann]', v).textContent = rows.filter(r => !r.done).length + ' upcoming' + (rows.some(r => r.done) ? ' \u00b7 ' + rows.filter(r => r.done).length + ' out' : '');
@@ -4859,6 +4859,7 @@ function buildWhite(){
           <div class="row"><label>Title<input data-ipb="title" maxlength="80" placeholder="Example: The coast road ambush"></label><label style="flex:0 0 110px">Intended time (T+ min)<input data-ipb="at" type="number" min="0" max="300" value="60"></label><label style="flex:0 0 110px">Window (min)<input data-ipb="win" type="number" min="3" max="60" value="15"></label></div>
           <label>Question<input data-ipb="q" maxlength="200" placeholder="Example: Who set the ambush on the coast road?"></label>
           <div class="row" style="align-items:end"><label>Explosion with this package (optional): grid<input data-ipb="bgrid" maxlength="24" placeholder="Example: C3"></label><label style="flex:0 0 170px">Really caused by<select data-ipb="btruth"><option value="militia">The militia</option><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label class="chk" style="flex:0 0 auto"><input type="checkbox" data-ipb="bcas"> Casualties</label></div>
+          <label class="chk"><input type="checkbox" data-ipb="stmt"> Public statement expected <span class="small muted">(each force that gets this package names who did it; graded by the correct answer when it names the militia, Blue Force or Red Force, otherwise the White Force rules it)</span></label>
           <fieldset class="ipb-piece stack" data-ipbwp><legend>Map points with this package (optional)</legend>
             <p class="small muted" style="margin:0" data-ipbwpnote>Deployed to each wing that receives the package, at the moment it is deployed.</p>
             <div class="row" style="align-items:end"><label>Start from a waypoint<select data-ipbwpfrom></select></label></div>
@@ -5216,7 +5217,7 @@ function ipbFill(P){
   $('[data-ipb="title"]', f).value = P ? fillT(P.title) : ''; $('[data-ipb="q"]', f).value = P ? fillT(P.q) : '';
   $('[data-ipb="at"]', f).value = P && P.at != null ? P.at : 60; $('[data-ipb="win"]', f).value = P && P.win ? P.win : 15;
   $('[data-ipb="note"]', f).value = P && P.note || '';
-  $('[data-ipb="bgrid"]', f).value = P && P.blast ? P.blast.grid : ''; $('[data-ipb="btruth"]', f).value = P && P.blast ? P.blast.truth : 'militia'; $('[data-ipb="bcas"]', f).checked = !!(P && P.blast && P.blast.cas);
+  $('[data-ipb="bgrid"]', f).value = P && P.blast ? P.blast.grid : ''; $('[data-ipb="btruth"]', f).value = P && P.blast ? P.blast.truth : 'militia'; $('[data-ipb="bcas"]', f).checked = !!(P && P.blast && P.blast.cas); $('[data-ipb="stmt"]', f).checked = !!(P && P.stmt);
   const tr = P && P.a ? intelTruth(P) : { a:-1, f:'', fs:[] };
   ipbOpts(P ? P.opts.map(o => fillT(o || '')) : ['', '', '', ''], P ? (P.aIdx != null ? [P.aIdx] : tr.as || []) : []);
   const bad = P ? (P.fKeys || tr.fs || []) : [];
@@ -5451,6 +5452,7 @@ async function ipbSave(){
     }
     const pkg = { id, custom:true, replaces:ipb.replaces || null, at:Math.max(0, Math.round(+val('[data-ipb="at"]') || 0)), win:Math.max(3, Math.round(+val('[data-ipb="win"]') || 15)), title, q, opts, items, note:val('[data-ipb="note"]'),
       wp, wps:ipb.wps.slice(0, 11),
+      stmt:$('[data-ipb="stmt"]', f).checked,
       blast:val('[data-ipb="bgrid"]') ? { grid:val('[data-ipb="bgrid"]').toUpperCase(), truth:$('[data-ipb="btruth"]', f).value, cas:$('[data-ipb="bcas"]', f).checked } : null,
       a:intelKey(id, 'a', ak), f:intelKey(id, 'f', bad.join('')) };
     await writeEvent('intel_custom', null, { pkg }); await peSave('pkg', id);
