@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="theme-color" content="#fafaf7">
 <script>
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyB4qzKxVXGawFgukEFqRHhMcvC5lyw0q5I",
@@ -50,13 +51,14 @@ const RECOVERY_CODE_HASH = "3nonh9lo9n";
   --good:#4fb97c; --warn:#e2bd47; --bad:#ee6d62; --focus:#6c9ff0; color-scheme:dark;
 }
 *{box-sizing:border-box}
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}button,[role="button"],[role="tab"],a.btn{touch-action:manipulation;-webkit-user-select:none;user-select:none}button:active:not(:disabled){filter:brightness(.9)}@media (pointer:coarse){input,select,textarea{font-size:16px}}
 html,body{background:var(--bg);color:var(--ink)}
 body{font-family:var(--body);font-size:14px;line-height:1.45;padding-inline:16px;padding-block:14px 40px}
 h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.02em;margin:0;text-wrap:balance}
 h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:7px 11px;font-weight:500}
-button:hover:not(:disabled){border-color:var(--muted)}
+@media (hover:hover) and (pointer:fine){button:hover:not(:disabled){border-color:var(--muted)}}
 button:disabled{opacity:.45;cursor:not-allowed}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 input,select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 9px;min-width:0;width:100%}
@@ -371,7 +373,7 @@ fieldset.ip-set legend{font-size:12px;color:var(--muted);padding:0 4px}
 .cost .esc-up{color:var(--bad)}.cost .esc-down{color:var(--good)}
 .act details summary{cursor:pointer;font-size:13px;font-weight:500}
 .btn-side{background:var(--side);border-color:var(--side);color:#fff}
-.btn-side:hover:not(:disabled){filter:brightness(1.08)}
+@media (hover:hover) and (pointer:fine){.btn-side:hover:not(:disabled){filter:brightness(1.08)}}
 :root[data-theme="dark"] .btn-side{color:#0e1316}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-side{color:#0e1316}}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
