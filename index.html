@@ -350,6 +350,7 @@ body.ip-fs{overflow:hidden}
 .ip-badge.pir{color:var(--ink);border-color:var(--muted)}
 .tl-mk.rh{background:#7d5cff;width:12px;height:12px;border-radius:2px;transform:translate(-6px,0) rotate(45deg)}
 @media (max-width:1000px){.cmd-cols{grid-template-columns:minmax(0,1fr)}}
+.mk-mt{font-size:24px;line-height:26px;width:26px;text-align:center;color:#ff3b30;text-shadow:0 0 3px #000,0 0 2px #000;opacity:.65}.mk-mt.fx{opacity:1;font-weight:700}
 .mapkey{margin-top:6px}.mapkey summary{cursor:pointer;font-weight:700;font-size:14px}
 .mapkey-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px 18px;margin-top:8px;font-size:14px}
 .mapkey-g h4{grid-column:1/-1;margin:8px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -1531,7 +1532,11 @@ const RHYTHM = [
   { at:85, kind:'cub', n:3, label:'Commander’s update brief 3', what:'The new commander updates the AOC: the plan for the last 30 minutes and anything you need.' },
   { at:110, kind:'cub', n:4, label:'Final SITREP', what:'Final situation report: sites held, PIRs answered, casualties and incidents, open issues.' }
 ];
-const CUB_EARLY = 5, CUB_LATE = 5, FIX_MIN = 10;
+const CUB_EARLY = 5, CUB_LATE = 5, FIX_MIN = 10, MT_PTS = 3, MT_HN = 2, MT_CIV = 10;
+function mtNow(S){ return (S.mtgts || []).filter(t => !t.done && S.g >= t.g - 1e-9 && S.g < t.until - 1e-9); }
+function mtFor(S, side){ return mtNow(S).filter(t => t.to === 'both' || t.to === side); }
+function mtFixed(S, t, side){ const f = t.fix && t.fix[side]; return f != null && S.g - f <= FIX_MIN + 1e-9; }
+function mtClean(m){ if (!m || typeof m !== 'object') return null; const pt = Array.isArray(m.pt) && m.pt.length === 2 && m.pt.every(Number.isFinite) ? m.pt : null; const label = String(m.label || '').trim().slice(0, 60); if (!pt || !label) return null; return { label, pt, life:Math.max(5, Math.min(120, Math.round(Number(m.life) || 25))), grid:String(m.grid || '').slice(0, 12) }; }
 const AOC_RES = { isr:2, sup:2 };
 const AOC_GRANT = { uav:'isr', drone:'isr', aid:'sup', casevac:'sup', show:'sup', cstrike:'sup' };
 const AOC_WANT = { uav:'Retask the UAV now', drone:'Release a drone flight now', aid:'Resupply: next aid package now', casevac:'CASEVAC for an IED casualty', show:'Another show of force', cstrike:'Another cache strike', other:'Something else' };
@@ -1553,7 +1558,7 @@ function intentOf(S, side){ return (S.intent && S.intent[side]) || INTENT_DEFAUL
 function pirsOf(S, side){ return (S.pirs && S.pirs[side]) || PIR_DEFAULT[side]; }
 function aocResOf(S, side){ if (!S.aocRes) S.aocRes = { B:Object.assign({}, AOC_RES), R:Object.assign({}, AOC_RES) }; return S.aocRes[side]; }
 function strikeAuth(S, side){ return S.strikeAuth && S.strikeAuth[side] === 'aoc' ? 'aoc' : 'jfacc'; }
-const HOLD_CAPS = { uav:'UAV launches', drone:'Drone flights', jam:'Datalink jamming', show:'Show of force', contend:'Starting contention', cstrike:'Cache strikes' };
+const HOLD_CAPS = { uav:'UAV launches', drone:'Drone flights', jam:'Datalink jamming', show:'Show of force', contend:'Starting contention', cstrike:'Cache and militia strikes' };
 function held(S, side, cap){ return !!(S.held && S.held[side] && S.held[side][cap]); }
 function heldRefuse(S, side, cap, label, nm, e){ if (!held(S, side, cap)) return false; pushLog(S, nm + ' ' + label.charAt(0).toLowerCase() + label.slice(1) + ' refused: withheld by the AOC', side, e, 'rejected'); pushFeed(S, side, label + ' refused: the AOC has withheld it. Ask the AOC from the AOC tab if you need it back.', 'alert'); return true; }
 function roeNow(S, side){ const r = S.roe && S.roe[side]; return r && r.level !== 'standard' && (r.until == null || S.g < r.until - 1e-9) ? r : null; }
@@ -1874,7 +1879,7 @@ function apply(S, e, cfg){
       break; }
     case 'conduct': addHN(S, side, p.good ? 5 : -5); pushLog(S, nm + (p.good ? ' good conduct with locals (diplomatic points +5)' : ' poor conduct with locals (diplomatic points −5)'), side, e); break;
     case 'ied': S.pts[side].ied += 2; if (p.result === 'real') addHN(S, side, 5);
-      pushLog(S, nm + (p.result === 'real' ? ' cleared a real IED (+2 points, diplomatic points +5)' : ' called a hoax correctly (+2 points)') + (p.grid ? ' at ' + p.grid : ''), side, e);
+      pushLog(S, nm + (p.result === 'real' ? ' cleared a real IED (+2 points, diplomatic points +5)' : ' handled a reported device correctly (+2 points)') + (p.grid ? ' at ' + p.grid : ''), side, e);
       if (p.result === 'real') pushFeed(S, side, 'IED' + (p.grid ? ' at ' + p.grid : '') + ' cleared after your 9-line. The locals noticed.', 'good');
       break;
     case 'cache': clearCache(S, side, 'cleared', e); break;
@@ -1911,6 +1916,7 @@ function apply(S, e, cfg){
     case 'contact': {
       const c = { id:e.id, side, kind:p.kind, site:p.site || null, grid:(p.grid || '').toUpperCase(), seen:p.seen || hhmm(S.g), seenG:S.g, note:p.note || '', salute:p.salute || null, verdict:null, g:S.g };
       c.sg = seenAt(c); S.contacts.push(c);
+      if (side && c.grid) mtFor(S, side).forEach(t => { if (t.grid && c.grid.replace(/\s+/g, '').toUpperCase().indexOf(t.grid.toUpperCase()) === 0 && !mtFixed(S, t, side)){ t.fix[side] = S.g; pushFeed(S, side, 'Your report fixed the militia target "' + t.label + '" at ' + t.grid + '. Strike it within ' + FIX_MIN + ' minutes or fix it again.', 'alert', { label:'Reports' }); } });
       pushLog(S, nm + ' reported ' + (p.kind === 'site' ? 'an enemy flag at ' + (SITES[p.site] ? SITES[p.site].name : '?') : p.kind === 'team' ? 'an enemy team at ' + (p.grid || '?') : 'activity at ' + (p.grid || '?')), side, e);
       if (!side || S.endex) break;
       if (p.kind === 'site' && S.sites[c.site] && S.sites[c.site].holder === OTHER[side]) settleReport(S, c, S.contacts.some(o => o !== c && o.side === side && o.kind === 'site' && o.site === c.site && o.verdict === 'confirm' && S.g - o.g <= MATCH_DUP) ? 'duplicate' : 'confirm', SITES[c.site].name + ' is held by ' + SIDES[OTHER[side]].name);
@@ -1923,7 +1929,7 @@ function apply(S, e, cfg){
       break; }
     case 'injq_add': {
       if (!S.injq) S.injq = [];
-      (Array.isArray(p.items) ? p.items : []).forEach(it => { if (!it || typeof it.qid !== 'string' || S.injq.some(q => q.qid === it.qid) || !it.tpl || !it.tpl.text) return; const t = it.tpl; S.injq.push({ qid:it.qid, tid:String(t.id || ''), label:String(t.label || 'Inject').slice(0, 60), to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), text:String(t.text).slice(0, 900), note:String(t.note || '').slice(0, 700), oc:String(t.oc || '').slice(0, 700), at:Number.isFinite(t.at) ? t.at : null, lvl:Number.isInteger(t.lvl) ? t.lvl : null, sent:null }); });
+      (Array.isArray(p.items) ? p.items : []).forEach(it => { if (!it || typeof it.qid !== 'string' || S.injq.some(q => q.qid === it.qid) || !it.tpl || !it.tpl.text) return; const t = it.tpl; S.injq.push({ qid:it.qid, tid:String(t.id || ''), label:String(t.label || 'Inject').slice(0, 60), to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), text:String(t.text).slice(0, 900), note:String(t.note || '').slice(0, 700), oc:String(t.oc || '').slice(0, 700), mt:mtClean(t.mt), at:Number.isFinite(t.at) ? t.at : null, lvl:Number.isInteger(t.lvl) ? t.lvl : null, sent:null }); });
       S.ver++; break; }
     case 'injq_del': { if (!S.injq) break; const ix = S.injq.findIndex(q => q.qid === p.qid && q.sent == null); if (ix >= 0){ S.injq.splice(ix, 1); S.ver++; } break; }
     case 'injq_send': {
@@ -1931,6 +1937,7 @@ function apply(S, e, cfg){
       { const hold = propHold(S, 'tpl', q.tid); if (hold.length && !p.ovr){ pushLog(S, 'Inject not sent (' + q.label + '): waiting on props: ' + hold.join(', '), null, e, 'rejected'); break; } if (hold.length) pushLog(S, 'Props override: ' + q.label + ' sent before ' + hold.join(', ') + ' was reported placed', null, e); }
       const text = fillT(p.text ? String(p.text).slice(0, 900) : q.text);
       q.sent = S.g; q.sentText = text; S.ver++;
+      if (q.mt){ if (!S.mtgts) S.mtgts = []; S.mtgts.push({ id:'mt-' + q.qid, label:q.mt.label, pt:q.mt.pt, grid:q.mt.grid, to:q.to === 'public' ? 'both' : q.to, g:S.g, until:Math.min(END_G, S.g + q.mt.life), fix:{}, done:null }); }
       if (q.oc) S.ocAnns.push({ id:'oc-' + e.id, text:q.label + ': ' + fillT(q.oc), g:S.g, side:q.to === 'B' || q.to === 'R' ? q.to : null, inj:true });
       pushFeed(S, q.to, text, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label });
       pushLog(S, 'Inject sent (' + q.label + ') to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[q.to] + ': ' + text, null, e);
@@ -2052,15 +2059,18 @@ function apply(S, e, cfg){
       if (!r.checked){ S.ver++; pushLog(S, 'POC ' + o.name + ': ' + r.teams[o.team].name + ' is inside ' + r.text, o.side, e); break; }
       showRule(S, r, o.team, p.left ? 'left' : 'stayed', 'POC ' + o.name);
       break; }
-    case 'act_strike': { const key = p.target === 'cache' ? 'cstrike' : 'strike', lbl = p.target === 'cache' ? 'Cache strike' : 'Strike on ' + SIDES[OTHER[side]].name;
+    case 'act_strike': { const mil = p.target === 'militia', key = p.target === 'cache' || mil ? 'cstrike' : 'strike', lbl = mil ? 'Militia strike' : p.target === 'cache' ? 'Cache strike' : 'Strike on ' + SIDES[OTHER[side]].name;
+      const mt = mil ? (S.mtgts || []).find(t => t.id === p.mt) : null;
+      if (mil && (!mt || mt.done || S.g >= mt.until || !(mt.to === 'both' || mt.to === side))){ pushLog(S, nm + ' militia strike refused: no such target now', side, e, 'rejected'); pushFeed(S, side, 'Militia strike refused: that target is gone or already destroyed. Your strike is not used.', 'alert'); break; }
+      if (mil && !mtFixed(S, mt, side)){ pushLog(S, nm + ' militia strike refused: target not fixed in the last ' + FIX_MIN + ' minutes', side, e, 'rejected'); pushFeed(S, side, 'Militia strike refused: "' + mt.label + '" is not fixed. Fix it with your UAV or a drone flight, then strike within ' + FIX_MIN + ' minutes. Your strike is not used.', 'alert'); break; }
       if (roeRefuse(S, side, key, lbl, nm, e) || (key === 'cstrike' && heldRefuse(S, side, 'cstrike', lbl, nm, e))) break;
       const fix = key === 'strike' ? strikeFix(S, side) : null;
       if (!useUp(S, side, key, e, lbl)) break;
       const n9 = p.nine ? S.nines.find(x => x.id === p.nine && x.side === side && x.status === 'ok') : null; if (n9) n9.used = e.id;
       const nom = key === 'strike' && strikeAuth(S, side) === 'aoc';
-      S.requests.push({ id:e.id, side, kind:'strike', key, target:p.target, text:p.grid || '', status:nom ? 'nom' : 'open', g:S.g, nineBy:n9 ? n9.by + ', from ' + n9.name : null, fix:String(p.fix || '').trim().slice(0, 80) || (fix ? fix.text : '') || (key === 'strike' ? 'None in the last ' + FIX_MIN + ' minutes' : 'Not stated'), civ:['none', 'possible', 'yes'].includes(p.civ) ? p.civ : 'unknown' });
+      S.requests.push({ id:e.id, side, kind:'strike', key, target:p.target, mt:mt ? mt.id : null, mtLabel:mt ? mt.label : null, text:mt ? (mt.grid || p.grid || '') : p.grid || '', status:nom ? 'nom' : 'open', g:S.g, nineBy:n9 ? n9.by + ', from ' + n9.name : null, fix:String(p.fix || '').trim().slice(0, 80) || (fix ? fix.text : '') || (mt && mt.fix[side] != null ? 'Fixed at ' + hhmm(mt.fix[side]) : '') || (key === 'strike' ? 'None in the last ' + FIX_MIN + ' minutes' : 'Not stated'), civ:['none', 'possible', 'yes'].includes(p.civ) ? p.civ : 'unknown' });
       if (nom) pushFeed(S, side, 'Strike authority is withheld by the AOC: your strike nomination went to the AOC for approval.', 'hq', { label:'AOC' });
-      pushLog(S, nm + (nom ? ' nominated a strike on ' : ' asked for a strike on ') + (p.target === 'cache' ? 'the militia cache' : SIDES[OTHER[side]].name) + ' at ' + (p.grid || '?') + (fix ? ' (fix: ' + fix.text + ')' : '') + (nom ? ', sent to the AOC' : ''), side, e); break; }
+      pushLog(S, nm + (nom ? ' nominated a strike on ' : ' asked for a strike on ') + (mt ? 'the militia target ' + mt.label : p.target === 'cache' ? 'the militia cache' : SIDES[OTHER[side]].name) + ' at ' + (p.grid || '?') + (fix ? ' (fix: ' + fix.text + ')' : '') + (nom ? ', sent to the AOC' : ''), side, e); break; }
     case 'resolve': {
       const r = S.requests.find(x => x.id === p.req); if (!r || r.status !== 'open') break;
       r.status = 'done'; r.result = p.result; r.answer = p.text || '';
@@ -2076,6 +2086,7 @@ function apply(S, e, cfg){
         } else { r.answer = 'Declined.' + (p.text ? ' ' + String(p.text).slice(0, 140) : ''); pushFeed(S, r.side, 'Waypoint request declined: ' + r.label + '.', 'alert', { label:'Waypoint' }); pushLog(S, rn + ' waypoint request declined: ' + r.label, r.side, e); }
         S.ver++;
       } else if (r.kind === 'stmt'){ const ok = p.result === 'true'; r.answer = ok ? 'Ruled true.' : 'Ruled false.'; const P = r.pkg ? allProblems(S).find(x => x.id === r.pkg) : null, I = r.inc ? S.incidents.find(x => x.id === r.inc) : null; stmtApply(S, r.side, ok, P ? '"' + fillT(P.title) + '"' : I ? 'the ' + I.grid + ' explosion' : 'an intel package', e); pushFeed(S, r.side, 'White Force ruling on your public statement (' + r.text + '): ' + (ok ? 'True: escalation \u22125, diplomatic points +5.' : 'False: escalation +10, diplomatic points \u221210.'), ok ? 'good' : 'alert'); }
+      else if (r.kind === 'drone' && p.fix && (S.mtgts || []).some(t => t.id === p.fix && !t.done)){ const t = S.mtgts.find(x => x.id === p.fix); t.fix[r.side] = S.g; pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.') + ' The drone fixed the militia target "' + t.label + '". Strike it within ' + FIX_MIN + ' minutes or fix it again.', 'hq'); r.by = e.by; pushLog(S, rn + ' drone flight answered and fixed the militia target ' + t.label, r.side, e); }
       else if (r.kind === 'drone'){ pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.'), 'hq'); r.by = e.by; pushLog(S, rn + ' drone flight answered' + (e.by === 'D' ? ' by the drone operator' : ''), r.side, e); }
       else if (r.kind === 'show'){
         if (r.teams) Object.values(r.teams).forEach(t => { if (t.st === 'inside') t.st = p.result === 'defied' ? 'stayed' : 'left'; });
@@ -2084,7 +2095,13 @@ function apply(S, e, cfg){
         else { pushFeed(S, r.side, 'The other wing left ' + r.text + '.', 'good'); pushLog(S, SIDES[OTHER[r.side]].name + ' left after the show of force', OTHER[r.side], e); }
       } else if (r.kind === 'strike'){
         if (p.result === 'hit'){
-          if (r.target === 'cache') clearCache(S, r.side, 'destroyed by strike', e);
+          if (r.target === 'militia'){ const t = (S.mtgts || []).find(x => x.id === r.mt);
+            if (!t || t.done){ pushFeed(S, r.side, 'Strike flown, but the militia target was already destroyed.', 'alert'); pushLog(S, rn + ' militia strike: target already destroyed', r.side, e); }
+            else { t.done = { side:r.side, g:S.g }; S.pts[r.side].cache += MT_PTS; const civ = r.civ === 'yes'; addHN(S, r.side, civ ? -MT_CIV : MT_HN);
+              pushFeed(S, r.side, 'Militia target "' + t.label + '" destroyed. +' + MT_PTS + ' points' + (civ ? ', but civilians were near it: diplomatic points −' + MT_CIV + '.' : ', diplomatic points +' + MT_HN + '.') + ' Send the AOC a damage assessment.', civ ? 'alert' : 'good');
+              if (t.to === 'both') pushFeed(S, OTHER[r.side], 'The militia target "' + t.label + '" has been destroyed by the other force.', 'hq');
+              pushLog(S, rn + ' destroyed the militia target ' + t.label + ' (+' + MT_PTS + ' points, diplomatic points ' + (civ ? '−' + MT_CIV + ', civilians near the target' : '+' + MT_HN) + ')', r.side, e); } }
+          else if (r.target === 'cache') clearCache(S, r.side, 'destroyed by strike', e);
           else { raise(S, r.side, ESC.strikewing); addHN(S, r.side, -20); pushFeed(S, 'both', 'Air strike on foreign forces at ' + r.text + '.', 'alert'); pushLog(S, rn + ' struck ' + SIDES[OTHER[r.side]].name + ' (escalation +40, diplomatic points −20)', r.side, e); }
         } else { pushFeed(S, r.side, 'No strike: the 9-line was not correct. Your strike is used up.', 'alert'); pushLog(S, rn + ' strike refused (9-line not correct)', r.side, e); }
         if (p.result === 'hit') pushFeed(S, r.side, 'Strike at ' + (r.text || '?') + ' complete. Send the AOC a damage assessment from the AOC tab.', 'hq', { label:'AOC' });
@@ -2252,6 +2269,7 @@ function apply(S, e, cfg){
       const spots = liveTeams(S, o).filter(t => t.last && t.status !== 'Left the game').map(t => ({ id:t.id, name:t.name, num:t.num || null, pt:t.last.gps || t.last.rep, at:t.last.g })).filter(x => x.pt);
       raise(S, side, UAV_ESC);
       S.uav[side] = { id:e.id, g:S.g, spots };
+      mtFor(S, side).forEach(t => { t.fix[side] = S.g; pushFeed(S, side, 'UAV fixed the militia target "' + t.label + '"' + (t.grid ? ' at ' + t.grid : '') + '. Strike it within ' + FIX_MIN + ' minutes or fix it again.', 'alert', { label:'UAV' }); });
       S.pings.push({ id:e.id, ts:e.ts, g:S.g, to:o, team:null, uav:side });
       S.uavs.push({ side, g:S.g, n:spots.length });
       pushFeed(S, side, 'UAV overhead: we have enemy fireteam locations now. They show on the map for 1 minute, then as last seen for 5 minutes.', 'alert', { team:true });
@@ -2304,7 +2322,7 @@ function apply(S, e, cfg){
       const t = p.tpl || {}, id = String(t.id || '').slice(0, 40), text = String(t.text || '').trim().slice(0, 900), label = String(t.label || '').trim().slice(0, 60);
       if (!/^t[\w-]{3,40}$/.test(id) || !text || !label){ pushLog(S, 'Inject template refused: incomplete', null, e, 'rejected'); break; }
       if (!S.tpls) S.tpls = [];
-      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 700) }; { const oc = String(t.oc || '').trim().slice(0, 700); if (oc) tp.oc = oc; }
+      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 700) }; { const oc = String(t.oc || '').trim().slice(0, 700); if (oc) tp.oc = oc; const mt = mtClean(t.mt); if (mt) tp.mt = mt; }
       const ix = S.tpls.findIndex(x => x.id === id), ph = String(t.phase || (ix >= 0 && S.tpls[ix].phase) || '').trim().slice(0, 20); if (ph) tp.phase = ph; if (ix >= 0) S.tpls[ix] = tp; else S.tpls.push(tp); S.ver++;
       pushLog(S, 'Inject template ' + (ix >= 0 ? 'updated' : 'saved') + ': ' + label, null, e);
       break; }
@@ -3387,7 +3405,7 @@ function legendHTML(side){
     '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
 }
 function scoreTable(S, sides){
-  const rows = [['hold', 'Site captures and time held'], ['sites', 'Sites held (+5 each at ENDEX)'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['iedhit', 'IED casualties'], ['cache', 'Militia cache'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White Force adjustments']];
+  const rows = [['hold', 'Site captures and time held'], ['sites', 'Sites held (+5 each at ENDEX)'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['iedhit', 'IED casualties'], ['cache', 'Militia cache and targets'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White Force adjustments']];
   const sc = {}; sides.forEach(s => sc[s] = score(S, s));
   let h = '<table class="score"><thead><tr><th>Points</th>' + sides.map(s => '<th><span class="chip ' + s + '">' + SIDES[s].name + '</span></th>').join('') + '</tr></thead><tbody>';
   rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if ((k === 'adj' || k === 'iedhit') && sides.every(s => !sc[s][k])) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
@@ -3670,6 +3688,7 @@ function drawDyn(st, S, side, opts){
     tip(L.circleMarker(pts.town, { radius:11, color:'#ffffff', weight:2, fillColor:'#888', fillOpacity:.75 }), txt).addTo(LS.sites);
   }
   S.requests.filter(r => r.kind === 'show' && r.center && r.closed > S.g && r.g <= S.g).forEach(r => { L.circle(r.center, { radius:r.radius, color:'#ff8f00', weight:3, dashArray:'8 6', fillColor:'#ff8f00', fillOpacity:.15 }).bindTooltip('Show of force by ' + SIDES[r.side].name + ': ' + esc(r.text) + '. Closed to ' + SIDES[OTHER[r.side]].name + ' until ' + hhmm(r.closed) + (S.g < r.until ? '; leave by ' + hhmm(r.until) : '')).addTo(LS.sites); });
+  (S.mtgts || []).filter(t => !t.done && S.g >= t.g && S.g < t.until && (!side || S.reveal || t.to === 'both' || t.to === side)).forEach(t => { const fx = side ? mtFixed(S, t, side) : Object.keys(t.fix || {}).length; L.marker(t.pt, { icon:L.divIcon({ className:'', html:'<div class="mk-mt' + (fx ? ' fx' : '') + '">⌖</div>', iconSize:[26, 26], iconAnchor:[13, 13] }) }).bindTooltip(esc('Militia target: ' + t.label + (fx ? ' (fixed)' : ' (reported, not fixed)') + ' - until ' + hhmm(t.until))).addTo(LS.blasts); });
   S.incidents.forEach(inc => { const pt = locate(M, inc.grid); if (pt) L.marker(pt, { icon:L.divIcon({ className:'', html:'<div class="mk-x">✸</div>', iconSize:[24, 24], iconAnchor:[12, 12] }) }).bindTooltip('Explosion ' + hhmm(inc.g)).addTo(LS.blasts); });
   S.contacts.filter(c => (!side || S.reveal || c.side === side) && c.kind !== 'site').forEach(c => {
     const age = Math.max(0, Math.floor(S.g - c.seenG));
@@ -4222,7 +4241,7 @@ function buildWing(side){
               <form data-f="jam"><button type="submit">Jam datalink</button></form>
               <div class="act-head"><b>Strike</b><span class="cost"><span data-left="strike"></span> - Needs a correct 9-line</span></div>
               <p class="small muted" style="margin:0">Find, fix, finish, assess. Say what fixed the target (your latest UAV pass or SALUTE report fills in on its own) and whether civilians are near it. After a hit, send the AOC a damage assessment from the AOC tab.</p>
-              <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="40" placeholder="Example: C4-6" required></label></div>
+              <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skM-${side}" data-skmt hidden>Militia target<select id="skM-${side}" name="mt"></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="40" placeholder="Example: C4-6" required></label></div>
               <div class="row"><label for="skF-${side}">Fixed by<input id="skF-${side}" name="fix" maxlength="80" data-skfix placeholder="Filled in from your latest UAV pass or SALUTE report"></label><label for="skC-${side}">Civilians near the target<select id="skC-${side}" name="civ"><option value="none">None seen</option><option value="possible">Possible</option><option value="yes">Yes</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="nine" required style="width:auto"> A team has sent the strike 9-line</label><div><button type="submit">Ask for strike</button></div></form>
               <div class="list" data-nines></div>
             </div></details>
@@ -4321,7 +4340,8 @@ function buildWing(side){
   $('[data-shtap]', v).onclick = () => { if (!app.lastClick){ toast('No map tap recorded. Tap the map first.', true); return; } $('[data-f="show"] [name="sq"]', v).value = fmtPt(app.lastClick); };
   { const shF = $('[data-f="show"]', v), shSync = () => { const sq = shF.elements.site.value === 'sq'; $('[data-shsq]', shF).hidden = !sq; shF.elements.sq.required = sq; }; shF.elements.site.addEventListener('change', shSync); shF.addEventListener('reset', () => setTimeout(shSync)); shSync(); }
   on('jam', () => { if (!confirm('Jam the enemy datalink? Escalation goes up by 5.')) return false; return writeEvent('act_jam', side, {}); });
-  on('strike', fd => { const sf = $('form[data-f="strike"]', v), nine = sf.dataset.nine || null; delete sf.dataset.nine; return writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase(), nine, fix:String(fd.get('fix') || '').trim(), civ:fd.get('civ') }); });
+  { const sf = $('form[data-f="strike"]', v), sync = () => { const m = sf.elements.target.value === 'militia'; $('[data-skmt]', sf).hidden = !m; sf.elements.grid.required = !m; }; sf.elements.target.addEventListener('change', sync); sf.addEventListener('reset', () => setTimeout(sync)); sync(); }
+  on('strike', fd => { const sf = $('form[data-f="strike"]', v), nine = sf.dataset.nine || null; delete sf.dataset.nine; if (fd.get('target') === 'militia'){ const t = (app.S.mtgts || []).find(x => x.id === fd.get('mt')); if (!t){ toast('Pick a militia target.', true); return false; } if (!mtFixed(app.S, t, side)){ toast('That target is not fixed. Fix it with your UAV or a drone flight first.', true); return false; } return writeEvent('act_strike', side, { target:'militia', mt:t.id, grid:t.grid, nine, fix:String(fd.get('fix') || '').trim(), civ:fd.get('civ') }); } return writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase(), nine, fix:String(fd.get('fix') || '').trim(), civ:fd.get('civ') }); });
   on('cub', fd => { const n = Number(fd.get('n')), text = String(fd.get('text') || '').trim(); if (!n){ toast('No update brief is open right now.', true); return false; } if (!text){ toast('Write your update first.', true); return false; } return writeEvent('cub', side, { n, text }); });
   on('aocreq', fd => { const want = String(fd.get('want') || 'other'), text = String(fd.get('text') || '').trim(); if (want === 'other' && !text){ toast('Say what you need.', true); return false; } return writeEvent('aoc_req', side, { want, text }); });
   v.addEventListener('submit', ev => { const f = ev.target.closest('[data-bda]'); if (!f) return; ev.preventDefault(); writeEvent('bda', side, { req:f.dataset.bda, result:f.elements.result.value, text:f.elements.text.value.trim() }); toast('Damage assessment sent to the AOC.'); });
@@ -4443,7 +4463,7 @@ function mapKeyHTML(staff){
   const team = (c, dash, op) => '<svg width="30" height="22" viewBox="0 2 32 23" style="opacity:' + (op || 1) + '"><rect x="2" y="4" width="28" height="19" fill="' + c + '" fill-opacity=".55" stroke="' + c + '" stroke-width="2"' + (dash ? ' stroke-dasharray="3 2"' : '') + '/><path d="M2 4L30 23M30 4L2 23" stroke="#fff" stroke-width="1.2"/><text x="16" y="17" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" stroke="#000" stroke-width="2.5" paint-order="stroke">2</text></svg>';
   let h = '<details class="mapkey"><summary>Full map key</summary><div class="mapkey-g">';
   h += '<h4>Sites and places</h4>' + row(ring('#3d7dff', '', '#3d7dff'), 'Site held by Blue Force') + row(ring('#ff4d42', '', '#ff4d42'), 'Site held by Red Force') + row(ring('#ffffff', '', '#888'), 'Site not held, or Marala Town (grey)') + row(ring('#97a3ad', '4 3'), 'Dashed ring: holder reported or last seen, not confirmed') + row(ring('#ff9b3d', '5 4'), 'Orange dashed circle: contention or stalemate') + row(ring('#3d7dff', '2 5'), 'Dotted circle: a force declared the site (until the time shown)') + row(ring('#3d7dff', '', '#3d7dff').replace('r="9"', 'r="6"'), 'Small filled circle: a force HQ');
-  h += '<h4>Forces</h4>' + row(team('#3d7dff'), 'Blue Force fireteam (number is the team)') + row(team('#ff4d42'), 'Red Force fireteam') + row(team('#ff4d42', true), 'Dashed: last seen by UAV') + row(team('#3d7dff', false, .45), 'Faded: position is old') + row('<span class="mk-tri" style="display:inline-block;border-bottom-color:#ff4d42"></span>', 'Triangle: reported sighting (minutes ago in the label)') + row('<span class="mk-x">✸</span>', 'Explosion') + row('<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ff8f00" fill-opacity=".18" stroke="#ff8f00" stroke-width="2.5" stroke-dasharray="5 4"/></svg>', 'Orange dashed area: closed by a show of force') + row('<svg width="22" height="22" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15.5" fill="#0b1a10" stroke="#7cff6b" stroke-width="2"/><path d="M17 6c-5.7 0-9.8 4-9.8 9.4 0 5.8 5.2 12.2 9.8 13.3 4.6-1.1 9.8-7.5 9.8-13.3 0-5.4-4.1-9.4-9.8-9.4z" fill="#7cff6b"/></svg>', 'White Force location');
+  h += '<h4>Forces</h4>' + row(team('#3d7dff'), 'Blue Force fireteam (number is the team)') + row(team('#ff4d42'), 'Red Force fireteam') + row(team('#ff4d42', true), 'Dashed: last seen by UAV') + row(team('#3d7dff', false, .45), 'Faded: position is old') + row('<span class="mk-tri" style="display:inline-block;border-bottom-color:#ff4d42"></span>', 'Triangle: reported sighting (minutes ago in the label)') + row('<span class="mk-x">✸</span>', 'Explosion') + row('<span class="mk-mt fx" style="display:inline-block">⌖</span>', 'Militia target (faint until your UAV or drone fixes it)') + row('<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ff8f00" fill-opacity=".18" stroke="#ff8f00" stroke-width="2.5" stroke-dasharray="5 4"/></svg>', 'Orange dashed area: closed by a show of force') + row('<svg width="22" height="22" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15.5" fill="#0b1a10" stroke="#7cff6b" stroke-width="2"/><path d="M17 6c-5.7 0-9.8 4-9.8 9.4 0 5.8 5.2 12.2 9.8 13.3 4.6-1.1 9.8-7.5 9.8-13.3 0-5.4-4.1-9.4-9.8-9.4z" fill="#7cff6b"/></svg>', 'White Force location');
   if (staff) h += row('<svg width="20" height="20"><circle cx="10" cy="10" r="7" fill="#e040fb" stroke="#fff" stroke-width="2.5"/></svg>', 'POC (last position)') + row('<svg width="20" height="20"><circle cx="10" cy="10" r="7" fill="#00b8d4" stroke="#fff" stroke-width="2.5"/></svg>', 'Props and logistics member') + row('<span class="mk-prop" style="display:inline-block"></span>', 'Prop placed') + row('<span class="mk-prop plan" style="display:inline-block"></span>', 'Prop planned, not placed yet');
   h += '<h4>Grids</h4>' + row('<span style="color:#b38f00;font-weight:700">▬</span>', 'Play grid (squares A1 to G8)') + row('<span style="color:#1f9cc4;font-weight:700">▬</span>', 'MGRS grid (100 m lines)');
   h += '<h4>Waypoints and markers</h4>' + Object.keys(WP_SYMS).map(k => row(wpSvg(k, 22), esc(WP_SYMS[k]))).join('');
@@ -4906,12 +4926,16 @@ function renderAocPane(S, side, v){
   $('[data-authst]', v).textContent = 'Strikes on ' + SIDES[OTHER[side]].name + ': ' + (strikeAuth(S, side) === 'jfacc' ? 'your JFACC decides' : 'need AOC approval');
   { const ks = S.requests.filter(r => r.side === side && r.kind === 'strike'), box = $('[data-strikes]', v), key = ks.map(r => r.id + r.status + (r.result || '') + (r.bda ? 'b' : '')).join();
     if (box.dataset.k !== key && !typingIn(box)){ box.dataset.k = key;
-      box.innerHTML = ks.length ? ks.slice().reverse().map(r => { const tgt = r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[side]].name;
+      box.innerHTML = ks.length ? ks.slice().reverse().map(r => { const tgt = r.target === 'militia' ? 'Militia target ' + (r.mtLabel || '') : r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[side]].name;
         const st = r.status === 'nom' ? '<span class="chip wait">With the AOC</span>' : r.status === 'open' ? '<span class="chip wait">With the White Force</span>' : r.result === 'hit' ? '<span class="chip ok">Strike complete</span>' : r.result === 'denied' ? '<span class="chip no">Denied by the AOC</span>' : '<span class="chip no">No strike</span>';
         return '<div class="li" style="flex-wrap:wrap"><div class="grow"><b>' + esc(tgt) + '</b> at <span class="mono">' + esc(r.text || '?') + '</span> <span class="small muted">' + hhmm(r.g) + '</span><div class="small muted">Fixed by: ' + esc(r.fix || 'Not stated') + ' | Civilians: ' + esc(r.civ || 'unknown') + '</div>' + (r.aoc && r.aoc.text ? '<div class="small">AOC: ' + esc(r.aoc.text) + '</div>' : '') + (r.bda ? '<div class="small">Assessment sent: ' + esc(r.bda.result) + (r.bda.text ? ', ' + esc(r.bda.text) : '') + '</div>' : '') + '</div>' + st +
           (r.result === 'hit' && !r.bda ? '<form class="row" data-bda="' + r.id + '" style="flex:1 1 100%;align-items:end"><label>Damage assessment<select name="result"><option value="destroyed">Target destroyed</option><option value="damaged">Target damaged</option><option value="missed">Missed</option><option value="unknown">Unknown</option></select></label><label>What your team saw<input name="text" maxlength="300"></label><button type="submit" class="btn-side" style="flex:0 0 auto">Send assessment</button></form>' : '') + '</div>'; }).join('') : '<div class="empty">No strikes yet.</div>'; } }
   { const h = cmdHTML(S, side), e = $('[data-cmdintent]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
   { const r = roeNow(S, side), off = Object.keys(HOLD_CAPS).filter(k => held(S, side, k)), h = (r ? '<div class="roe-bar' + (r.level === 'pause' ? ' pause' : '') + '"><b>' + (r.level === 'pause' ? 'OPERATIONAL PAUSE' : 'ROE RESTRICTIVE') + '</b> until ' + hhmm(r.until) + '. ' + (r.level === 'pause' ? 'Every fireteam halts in place. No contention, show of force, jamming, strikes, UAV or drone flights.' : 'No contention, show of force, jamming or strike on ' + esc(SIDES[OTHER[side]].name) + '. Keep 50 m from them and use the liaison channel.') + (r.why ? ' ' + esc(r.why) : '') + '</div>' : '') + (off.length ? '<div class="roe-bar"><b>WITHHELD BY THE AOC:</b> ' + esc(off.map(k => HOLD_CAPS[k]).join(', ')) + '. Ask the AOC from the AOC tab if you need it back.</div>' : ''), e = $('[data-roebanner]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
+  { const sf = $('form[data-f="strike"]', v); if (sf){ const ts = mtFor(S, side), tsel = sf.elements.target, has = !!$('option[value="militia"]', tsel);
+      if (ts.length && !has) tsel.insertAdjacentHTML('afterbegin', '<option value="militia">Militia target</option>'); if (!ts.length && has){ $('option[value="militia"]', tsel).remove(); tsel.dispatchEvent(new Event('change')); }
+      keepSelect(sf.elements.mt, ts.length ? ts.map(t => '<option value="' + t.id + '">' + esc(t.label) + (t.grid ? ' (' + esc(t.grid) + ')' : '') + (mtFixed(S, t, side) ? ' - fixed ' + hhmm(t.fix[side]) : ' - not fixed') + '</option>').join('') : '<option value="">No militia targets</option>');
+      if (tsel.value === 'militia' && !typingIn(sf)){ const t = ts.find(x => x.id === sf.elements.mt.value); if (t && mtFixed(S, t, side)) sf.elements.fix.value = (S.uav[side] && S.uav[side].g === t.fix[side] ? 'UAV pass at ' : 'Drone flight at ') + hhmm(t.fix[side]); } } }
   { const fx = $('[data-skfix]', v), fix = strikeFix(S, side); if (fx && !typingIn(fx.closest('form')) && !fx.value && fix) fx.value = fix.text; }
 }
 function priHTML(r, canAck, who){
@@ -4938,7 +4962,8 @@ function assetRows(S){
     ['Datalink', sd => jammed(S, sd) ? asbSt('no', 'Jammed until ' + hhmm(S.jam[sd])) : asbSt('ok', 'Up')],
     ['Show of force', sd => S.uses.show[sd] ? asbSt('ok', '1 left') : asbSt('no', 'Used')],
     ['Strike on the other force', sd => S.uses.strike[sd] ? asbSt('ok', 'Available') : asbSt('no', 'Used')],
-    ['Cache strikes', sd => S.uses.cstrike[sd] ? asbSt('ok', S.uses.cstrike[sd] + ' left') : asbSt('no', 'None left')],
+    ['Cache and militia strikes', sd => S.uses.cstrike[sd] ? asbSt('ok', S.uses.cstrike[sd] + ' left') : asbSt('no', 'None left')],
+    ['Militia targets', sd => { const ts = mtFor(S, sd); return ts.length ? ts.map(t => esc(t.label) + (mtFixed(S, t, sd) ? ' ' + asbSt('ok', 'fixed') : ' ' + asbSt('wait', 'not fixed'))).join('<br>') : 'None reported'; }],
     ['Town office', sd => !S.access[sd] ? asbSt('no', 'Closed by the mayor') : S.office[sd] ? asbSt('ok', 'Open') : asbSt('', 'Not open')],
     ['Aid package', sd => esc(aidText(S, sd, true))],
     ['Sites held', sd => esc(SITE_KEYS.filter(k => S.sites[k] && S.sites[k].holder === sd).map(k => SITES[k].name + (S.sites[k].contestBy ? ' (contested by ' + SIDES[S.sites[k].contestBy].name + ' until ' + hhmm(S.sites[k].contestUntil) + ')' : S.sites[k].contested ? ' (stalemate)' : '')).join(', ') || 'None')],
@@ -5182,7 +5207,7 @@ function buildDrone(){
     const b = ev.target.closest('[data-dranswer]'); if (!b) return;
     const id = b.dataset.dranswer, box = $('#dra-' + id), tx = box ? box.value.trim() : '';
     if (!tx){ toast('Type the answer first.', true); if (box) box.focus(); return; }
-    b.disabled = true; writeEvent('resolve', null, { req:id, result:'answer', text:tx }); app.drDraft && delete app.drDraft[id]; toast('Answer sent to the force.');
+    const fs = $('#drf-' + id), fix = fs ? fs.value : ''; b.disabled = true; writeEvent('resolve', null, Object.assign({ req:id, result:'answer', text:tx }, fix ? { fix } : {})); app.drDraft && delete app.drDraft[id]; toast(fix ? 'Answer sent. The militia target is fixed for that force.' : 'Answer sent to the force.');
   });
   v.addEventListener('input', ev => { const t = ev.target.closest('[data-drdraft]'); if (!t) return; app.drDraft = app.drDraft || {}; app.drDraft[t.dataset.drdraft] = t.value; });
   app.drSeen = null;
@@ -5195,9 +5220,9 @@ function renderDrone(S){
   $('[data-drnote]', v).textContent = (S.droneAt != null ? 'Set at ' + hhmm(S.droneAt) + '. ' : '') + (down ? 'The forces see “Routine maintenance. Not ready for tasking.” and cannot request a flight.' : 'The forces can request a flight. Set Not ready while the drone is flying or down.') + ' Next flight allowed: Blue Force ' + (droneReady(S, 'B') ? 'now' : hhmm(Math.ceil(S.droneLast.B + droneEvery(S, 'B')))) + ' - Red Force ' + (droneReady(S, 'R') ? 'now' : hhmm(Math.ceil(S.droneLast.R + droneEvery(S, 'R')))) + '.';
   const open = S.requests.filter(r => r.kind === 'drone' && r.status === 'open'), done = S.requests.filter(r => r.kind === 'drone' && r.status !== 'open').slice(-10).reverse();
   $('[data-drn]', v).textContent = open.length ? open.length + ' waiting' : 'None waiting';
-  const box = $('[data-drreqs]', v), k = open.map(r => r.id).join();
+  const box = $('[data-drreqs]', v), k = open.map(r => r.id).join() + '|' + mtNow(S).map(t => t.id).join();
   if (box.dataset.k !== k && !typingIn(box)){ box.dataset.k = k; const dr = app.drDraft || {};
-    box.innerHTML = open.length ? open.map(r => '<div class="dr-req side-' + r.side + '"><div class="act-head"><span class="badge side-' + r.side + '">' + SIDES[r.side].name + '</span><span class="small muted">Requested ' + hhmm(r.g) + ' | ' + picAgo(S.g - r.g) + '</span></div><div class="q">' + esc(r.text || '(no question)') + '</div><label>Answer<textarea id="dra-' + r.id + '" data-drdraft="' + r.id + '" maxlength="200" placeholder="What the drone sees">' + esc(dr[r.id] || '') + '</textarea></label><button type="button" class="btn-side team-big" data-dranswer="' + r.id + '">Send answer to ' + SIDES[r.side].name + '</button></div>').join('') : '<div class="empty">No drone requests waiting.</div>'; }
+    box.innerHTML = open.length ? open.map(r => '<div class="dr-req side-' + r.side + '"><div class="act-head"><span class="badge side-' + r.side + '">' + SIDES[r.side].name + '</span><span class="small muted">Requested ' + hhmm(r.g) + ' | ' + picAgo(S.g - r.g) + '</span></div><div class="q">' + esc(r.text || '(no question)') + '</div><label>Answer<textarea id="dra-' + r.id + '" data-drdraft="' + r.id + '" maxlength="200" placeholder="What the drone sees">' + esc(dr[r.id] || '') + '</textarea></label>' + (mtFor(S, r.side).length ? '<label>This flight fixes a militia target (only if the drone can see it)<select id="drf-' + r.id + '"><option value="">No</option>' + mtFor(S, r.side).map(t => '<option value="' + t.id + '">' + esc(t.label) + (t.grid ? ' (' + esc(t.grid) + ')' : '') + '</option>').join('') + '</select></label>' : '') + '<button type="button" class="btn-side team-big" data-dranswer="' + r.id + '">Send answer to ' + SIDES[r.side].name + '</button></div>').join('') : '<div class="empty">No drone requests waiting.</div>'; }
   const dh = done.length ? done.map(r => '<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <span class="small muted">' + hhmm(r.g) + '</span><div><b>' + esc(r.text) + '</b></div><div class="small">' + esc(r.answer || '') + '</div></div></div>').join('') : '<div class="empty">Nothing answered yet.</div>';
   { const el = $('[data-drdone]', v); if (el.dataset.h !== dh){ el.dataset.h = dh; el.innerHTML = dh; } }
   const ids = open.map(r => r.id); if (app.drSeen && ids.some(id => !app.drSeen.includes(id))){ const r = open.find(x => !app.drSeen.includes(x.id)); toast('New drone request from ' + SIDES[r.side].name + ': ' + r.text); }
@@ -5225,7 +5250,7 @@ function wfWaiting(S){
   S.contacts.filter(c => c.auto && !c.ack && S.g - c.g <= 10).forEach(c => add('Reports', c.side, c.g, 'Auto-scored report to agree', c.grid || ''));
   (S.guessAlerts || []).filter(a => !a.ack).forEach(a => add('Alerts', a.side, a.g, 'Repeated wrong code words', a.where || ''));
   (S.oobs || []).filter(o => !o.back && !o.ack).forEach(o => add('Alerts', o.side, o.g, 'Outside the play area', o.name + ', about ' + o.m + ' m out'));
-  S.requests.filter(r => r.status === 'open').forEach(r => add('Requests', r.side, r.g, kindName[r.kind] || 'Request', r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + (r.text || '?') : r.text || ''));
+  S.requests.filter(r => r.status === 'open').forEach(r => add('Requests', r.side, r.g, kindName[r.kind] || 'Request', r.kind === 'strike' ? (r.target === 'militia' ? 'Militia target ' + (r.mtLabel || '') : r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + (r.text || '?') : r.text || ''));
   S.nines.filter(n => n.status === 'open').forEach(n => add('9-lines', n.side, n.g, 'Strike 9-line from ' + n.name, nineText(n)));
   S.ocReqs.filter(r => r.status === 'open').forEach(r => { const o = S.ocs[r.oc]; add('POC calls', r.side || null, r.g, 'From POC ' + (o ? o.name : ''), ocReqText(S, r)); });
   return out.sort((x, y) => x.g - y.g);
@@ -6212,7 +6237,7 @@ function renderWhite(S, now){
     if (r.kind === 'wp') ctl = '<button type="button" class="btn-side" data-act="resolve" data-id="' + r.id + '" data-r="add">Add to ' + SIDES[r.side].name + ' map</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="queue">Add to waypoint queue</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="decline">Decline</button>';
     if (r.kind === 'show') ctl = showStatus(S, r) + '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="complied">' + SIDES[OTHER[r.side]].name + ' left</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="defied">Stayed - +10 to them</button>';
     if (r.kind === 'strike') ctl = (r.nineBy ? '<span class="chip ok">9-line checked by ' + esc(r.nineBy) + '</span>' : '') + '<button type="button" data-act="resolve" data-id="' + r.id + '" data-r="hit">9-line correct: strike</button><button type="button" data-act="resolve" data-id="' + r.id + '" data-r="invalid">9-line wrong</button>';
-    q.push('<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + kindName[r.kind] + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(r.kind === 'strike' ? (r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + r.text : r.text) + '</div></div><div class="row" style="flex:1 1 260px">' + ctl + '</div></div>');
+    q.push('<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + kindName[r.kind] + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(r.kind === 'strike' ? (r.target === 'militia' ? 'Militia target ' + (r.mtLabel || '') : r.target === 'cache' ? 'Militia cache' : SIDES[OTHER[r.side]].name) + ' at ' + r.text : r.text) + '</div></div><div class="row" style="flex:1 1 260px">' + ctl + '</div></div>');
   });
   { const ne = $('[data-wnesc]', v); if (ne) ne.textContent = '| Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ')'; }
   const occUn = renderOCChatWhite(S, v), aocUn = renderAocChat(S, v);
