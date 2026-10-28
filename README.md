@@ -1,4 +1,4 @@
-# Det720 FA26 Capstone
+# Det720 FA26 Capstone Guide
 
 Live game board for the Marala Island capstone (BLUFOR vs. REDFOR).
 
