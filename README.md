@@ -16,7 +16,7 @@ Live game board for the Marala Island capstone (BLUFOR vs. REDFOR).
 ## Updating the board
 
 1. **Add file → Upload files** in the `dev` folder, drag in the new `index.html`, **Commit changes**. Test it on the dev board.
-2. When it works, upload the same file to the top folder and commit.
+2. When it works, upload the same file to the main top folder and commit. 
 3. Live in about a minute. Check **Actions** for the green check, then hard-refresh (Ctrl+Shift+R).
 
 ## After-action report
