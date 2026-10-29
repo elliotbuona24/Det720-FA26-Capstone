@@ -1541,7 +1541,7 @@ function mtFixed(S, t, side){ const f = t.fix && t.fix[side]; return f != null &
 function mtClean(m){ if (!m || typeof m !== 'object') return null; const pt = Array.isArray(m.pt) && m.pt.length === 2 && m.pt.every(Number.isFinite) ? m.pt : null; const label = String(m.label || '').trim().slice(0, 60); if (!pt || !label) return null; return { label, pt, life:Math.max(5, Math.min(120, Math.round(Number(m.life) || 25))), grid:String(m.grid || '').slice(0, 12) }; }
 const AOC_RES = { isr:2, sup:2 };
 const AOC_GRANT = { uav:'isr', drone:'isr', aid:'sup', casevac:'sup', show:'sup', cstrike:'sup' };
-const AOC_WANT = { uav:'Retask the UAV now', drone:'Release a drone flight now', aid:'Resupply: next aid package now', casevac:'CASEVAC for an IED casualty', show:'Another show of force', cstrike:'Another cache strike', other:'Something else' };
+const AOC_WANT = { uav:'Retask the UAV now', drone:'Release a drone flight now', aid:'Resupply: next aid package now', casevac:'CASEVAC for an IED casualty', show:'Another show of force', cstrike:'Another cache or militia strike', other:'Something else', reply:'Approve with a written answer only' };
 const ROE_NAMES = { standard:'Standard', restrictive:'Restrictive', pause:'Operational pause' };
 function rhythmAt(x){ return START_G + x.at; }
 function cubOf(n){ return RHYTHM.find(x => x.kind === 'cub' && x.n === n) || null; }
@@ -1939,7 +1939,7 @@ function apply(S, e, cfg){
       { const hold = propHold(S, 'tpl', q.tid); if (hold.length && !p.ovr){ pushLog(S, 'Inject not sent (' + q.label + '): waiting on props: ' + hold.join(', '), null, e, 'rejected'); break; } if (hold.length) pushLog(S, 'Props override: ' + q.label + ' sent before ' + hold.join(', ') + ' was reported placed', null, e); }
       const text = fillT(p.text ? String(p.text).slice(0, 900) : q.text);
       q.sent = S.g; q.sentText = text; S.ver++;
-      if (q.mt){ if (!S.mtgts) S.mtgts = []; S.mtgts.push({ id:'mt-' + q.qid, label:q.mt.label, pt:q.mt.pt, grid:q.mt.grid, to:q.to === 'public' ? 'both' : q.to, g:S.g, until:Math.min(END_G, S.g + q.mt.life), fix:{}, done:null }); }
+      if (q.mt){ if (!S.mtgts) S.mtgts = []; S.mtgts.push({ id:'mt-' + q.qid, label:q.mt.label, pt:q.mt.pt, grid:q.mt.grid, scene:String(q.mt.scene || (String(q.oc || '').match(/"([^"]{10,400})"/) || [])[1] || '').slice(0, 400), to:q.to === 'public' ? 'both' : q.to, g:S.g, until:Math.min(END_G, S.g + q.mt.life), fix:{}, done:null }); }
       if (q.oc) S.ocAnns.push({ id:'oc-' + e.id, text:q.label + ': ' + fillT(q.oc), g:S.g, side:q.to === 'B' || q.to === 'R' ? q.to : null, inj:true });
       pushFeed(S, q.to, text, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label });
       pushLog(S, 'Inject sent (' + q.label + ') to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[q.to] + ': ' + text, null, e);
@@ -2421,7 +2421,7 @@ function apply(S, e, cfg){
       break; }
     case 'aoc_req': {
       if (!side || S.endex) break;
-      const want = AOC_WANT[p.want] ? p.want : 'other', tx = String(p.text || '').trim().slice(0, 300);
+      const want = AOC_WANT[p.want] && p.want !== 'reply' ? p.want : 'other', tx = String(p.text || '').trim().slice(0, 300);
       if (want === 'other' && !tx) break;
       if (!S.aocReqs) S.aocReqs = [];
       S.aocReqs.push({ id:e.id, side, want, text:tx, g:S.g, status:'open' }); S.ver++;
@@ -2434,6 +2434,9 @@ function apply(S, e, cfg){
       if (p.deny){ if (!r) break; r.status = 'no'; r.answer = 'Declined.' + (tx ? ' ' + tx : ''); r.resG = S.g; S.ver++;
         pushFeed(S, sd, 'The AOC declined your request (' + AOC_WANT[r.want] + ').' + (tx ? ' ' + tx : ''), 'alert', { label:'AOC' });
         pushLog(S, 'AOC declined ' + SIDES[sd].name + ': ' + AOC_WANT[r.want], sd, e); break; }
+      if (p.kind === 'reply'){ if (!r || !tx) break; r.status = 'ok'; r.answer = tx; r.resG = S.g; S.ver++;
+        pushFeed(S, sd, 'AOC answered your request (' + AOC_WANT[r.want] + '): ' + tx, 'good', { label:'AOC' });
+        pushLog(S, 'AOC answered ' + SIDES[sd].name + ' (' + AOC_WANT[r.want] + '): ' + tx, sd, e); break; }
       const k = p.kind, pool = AOC_GRANT[k]; if (!pool) break;
       const res = aocResOf(S, sd);
       if (res[pool] < 1){ pushLog(S, 'AOC ' + (pool === 'isr' ? 'ISR retask' : 'support') + ' for ' + SIDES[sd].name + ' refused: none left', sd, e, 'rejected'); break; }
@@ -2443,7 +2446,7 @@ function apply(S, e, cfg){
       else if (k === 'aid'){ const a = aidOf(S, sd); if (!a.on || a.due != null || a.next == null) bad = 'no aid package is waiting'; else { a.next = Math.min(a.next, S.g); ok = 'Resupply approved. Your next aid package is ready now.'; } }
       else if (k === 'casevac'){ const h = (S.hits || []).filter(x => x.side === sd && !x.cas && S.g - x.g <= 20 + 1e-9).pop(); if (!h) bad = 'no IED casualty in the last 20 minutes'; else { h.cas = true; S.pts[sd].iedhit = (S.pts[sd].iedhit || 0) + Math.floor(IED_HIT / 2); ok = 'CASEVAC approved for your IED casualty. ' + Math.floor(IED_HIT / 2) + ' of the ' + IED_HIT + ' casualty points restored.'; } }
       else if (k === 'show'){ S.uses.show[sd] += 1; ok = 'One more show of force released to you.'; }
-      else if (k === 'cstrike'){ S.uses.cstrike[sd] += 1; ok = 'One more cache strike released to you.'; }
+      else if (k === 'cstrike'){ S.uses.cstrike[sd] += 1; ok = 'One more cache or militia strike released to you.'; }
       if (bad){ pushLog(S, 'AOC ' + AOC_WANT[k].toLowerCase() + ' for ' + SIDES[sd].name + ' not applied: ' + bad, sd, e, 'rejected'); break; }
       res[pool] -= 1;
       if (r){ r.status = 'ok'; r.answer = ok + (tx ? ' ' + tx : ''); r.resG = S.g; }
@@ -3843,6 +3846,7 @@ function buildOC(){
       <label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
       <div class="ip-status" data-ocwarn hidden style="color:var(--bad);font-weight:600"></div></div>
     <div class="panel stack" data-ocshowbox hidden><h2>Show of force on your team's wing</h2><p class="small muted" style="margin:0">Report whether your team left the area. The board also checks GPS at the deadline; your report settles it if the phone does not answer.</p><div class="list" data-ocshows></div></div>
+    <div class="panel stack" data-ocscenebox hidden><div class="act-head"><h2>Militia targets for your team</h2><span class="small muted" data-ocscenegps></span></div><p class="small muted" style="margin:0">When your team reaches the square, read the scene aloud so it can send a SALUTE. This phone alerts you when you get within about 60 m.</p><div class="list" data-ocscenes></div></div>
     <div class="panel stack" data-ocannbox hidden><h2>Announcements</h2><div class="list" data-ocanns></div></div>
     <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
     <div class="panel stack"><h2>Calls for the White Force</h2><p class="small muted" style="margin:0">Calls take effect only after White Force approval.</p>
@@ -3908,6 +3912,7 @@ function renderOC(S){
       return '<div class="li"><div class="grow"><b>' + esc(r.text) + '</b> <span class="small muted">by ' + SIDES[r.side].name + ' at ' + hhmm(r.g) + '</span><div class="small">Leave by ' + hhmm(r.until) + ' - Closed until ' + hhmm(r.closed) + ' - ' + (st === 'left' ? 'Your team: left' : st === 'stayed' ? 'Your team: stayed' : st === 'inside' ? 'Your team was found inside' : 'Your team was not found inside') + '</div></div>' +
         (r.status === 'open' && st !== 'left' && st !== 'stayed' ? '<div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocshow="' + r.id + '" data-left="1">Team left</button><button type="button" data-ocshow="' + r.id + '" data-left="0">Team stayed</button></div>' : '') + '</div>'; }).join('');
     const sl = $('[data-ocshows]', v); if (sl.dataset.k !== html){ sl.dataset.k = html; sl.innerHTML = html; } }
+  ocScenes(S, v, o);
   { const lg = $('[data-occlog]', v), ms = S.occhats.filter(m => m.oc === me.id), k = String(ms.length);
     if (lg.dataset.k !== k){ lg.dataset.k = k; lg.innerHTML = ms.length ? ms.slice(-40).map(m => '<div class="chatmsg' + (m.from === 'oc' ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' | ' + (m.from === 'wc' ? 'White Force' : esc(o ? o.name : 'You')) + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages.</div>'; lg.scrollTop = lg.scrollHeight; }
     const an = S.ocAnns.filter(a => !a.side || !o || a.side === o.side), ab = $('[data-ocannbox]', v); ab.hidden = !an.length; if (ab.dataset.k !== String(an.length)){ ab.dataset.k = String(an.length); $('[data-ocanns]', v).innerHTML = an.slice().reverse().map(a => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(a.g) + '</span> ' + esc(a.text) + '</div></div>').join(''); }
@@ -3943,6 +3948,21 @@ function ocLocBtns(S, o){
   const x = S.ocPos && S.ocPos[o.id], pg = (S.ocPings || []).filter(p => p.oc === o.id).pop(), fresh = x && Date.now() - x.ts < PIN_LIFE && !(app.ocPinHide && app.ocPinHide.has(o.id + ':' + x.ts));
   const waiting = pg && (!x || x.ping !== pg.id) && Date.now() - pg.ts < 120000;
   return (fresh ? '<button type="button" data-ocpinhide="' + o.id + ':' + x.ts + '" style="flex:0 0 auto">Remove marker</button>' : '') + '<button type="button" data-oclocate="' + o.id + '" style="flex:0 0 auto"' + (waiting ? ' disabled' : '') + '>' + (waiting ? 'Locating…' : 'Locate') + '</button>';
+}
+function ocScenes(S, v, o){
+  const box = $('[data-ocscenebox]', v); if (!box) return;
+  const list = o && o.side ? mtFor(S, o.side).filter(t => t.scene) : [];
+  box.hidden = !list.length;
+  if (list.length && !app.ocWatch && navigator.geolocation){ try { app.ocWatch = navigator.geolocation.watchPosition(p => { app.ocHere = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.S && app.role === 'OC' && $('#vOC [data-ocscenebox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); else { try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; } }, () => { app.ocHere = null; }, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){} }
+  if (!list.length && app.ocWatch != null){ try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; }
+  const here = app.ocHere && Date.now() - app.ocHere.t < 120000 ? app.ocHere : null;
+  $('[data-ocscenegps]', v).textContent = here ? 'GPS ±' + here.acc + ' m' : 'No GPS fix yet';
+  if (!app.ocNear) app.ocNear = {};
+  const html = list.map(t => { const d = here && t.pt ? distM(here.pt, t.pt) : null, near = d != null && d <= 60 + Math.min(here.acc, 40);
+    if (near && !app.ocNear[t.id]){ app.ocNear[t.id] = true; toast('Your team is at the ' + t.label + '. Read the scene to the team.'); try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch(e){} }
+    return '<div class="li' + (near ? ' warnrow' : '') + '" style="' + (near ? 'border-left:4px solid var(--warn,#c98500);padding-left:8px' : '') + '"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">Square ' + esc(t.grid || '?') + ' - gone at ' + hhmm(t.until) + (d != null ? ' - about ' + d + ' m from you' : '') + '</span>' +
+      (near ? '<div style="font-size:17px;margin-top:6px"><b>Read aloud:</b> “' + esc(t.scene) + '”</div>' : '<details><summary class="small">What to read when your team gets there</summary><div style="margin-top:4px">“' + esc(t.scene) + '”</div></details>') + '</div></div>'; }).join('');
+  const el = $('[data-ocscenes]', v); if (el.dataset.h !== html){ el.dataset.h = html; el.innerHTML = html; }
 }
 function renderOCChatWhite(S, v){
   const live = Object.values(S.ocs).filter(o => !o.removed), id = app.occOpen;
@@ -4257,7 +4277,7 @@ function buildWing(side){
           <div class="act"><div class="act-head"><b>Battle rhythm</b><span class="cost">AOC schedule</span></div><div data-rhythm></div></div>
           <div class="act"><div class="act-head"><b>Ask the AOC for support</b><span class="cost" data-aocres></span></div>
             <p class="small muted" style="margin:0">The AOC can retask ISR, resupply you, approve a CASEVAC, or release another show of force or cache strike. It holds a limited amount for your force, so say why.</p>
-            <form class="stack" data-f="aocreq"><div class="row"><label for="aqW-${side}">What you need<select id="aqW-${side}" name="want">${Object.keys(AOC_WANT).map(k => '<option value="' + k + '">' + AOC_WANT[k] + '</option>').join('')}</select></label></div><label for="aqT-${side}">Why (the AOC reads this)<input id="aqT-${side}" name="text" maxlength="300" placeholder="Example: Team 2 hit an IED at C5 and we lost our drone window."></label><div><button class="btn-side" type="submit">Send to the AOC</button></div></form>
+            <form class="stack" data-f="aocreq"><div class="row"><label for="aqW-${side}">What you need<select id="aqW-${side}" name="want">${Object.keys(AOC_WANT).filter(k => k !== 'reply').map(k => '<option value="' + k + '">' + AOC_WANT[k] + '</option>').join('')}</select></label></div><label for="aqT-${side}">Why (the AOC reads this)<input id="aqT-${side}" name="text" maxlength="300" placeholder="Example: Team 2 hit an IED at C5 and we lost our drone window."></label><div><button class="btn-side" type="submit">Send to the AOC</button></div></form>
             <div class="list" data-aocreqs></div></div>
           <div class="act"><div class="act-head"><b>Strikes and damage assessment</b><span class="cost" data-authst></span></div><div class="list" data-strikes></div></div>
           <div class="act"><div class="act-head"><b>Commander's intent and PIRs</b><span class="cost">From the AOC</span></div><div data-cmdintent></div></div>
@@ -4847,7 +4867,7 @@ function cmdWaitHTML(S, s){
   const o = SIDES[OTHER[s]].name, out = [];
   (S.cubs || []).filter(c => c.side === s && c.status === 'sent').forEach(c => out.push({ g:c.hist[c.hist.length - 1].g, h:'<div class="cmd-item"><span class="k">' + esc(cubOf(c.n).label) + (c.late ? ' (late)' : '') + '</span>' + cubText(c) + '<div class="row"><label>Note to ' + SIDES[s].name + ' (needed to deny or ask for more)<input data-cmdnote maxlength="500"></label></div><div class="row"><button type="button" class="btn-side" data-cmdcub="' + c.id + '" data-v="approve" style="flex:0 0 auto">Approve</button><button type="button" data-cmdcub="' + c.id + '" data-v="more" style="flex:0 0 auto">Ask for more info</button><button type="button" data-cmdcub="' + c.id + '" data-v="deny" style="flex:0 0 auto">Deny</button></div></div>' }));
   (S.aocReqs || []).filter(r => r.side === s && r.status === 'open').forEach(r => out.push({ g:r.g, h:'<div class="cmd-item"><span class="k">Request ' + hhmm(r.g) + '</span><b>' + esc(AOC_WANT[r.want]) + '</b>' + (r.text ? '<span>' + esc(r.text) + '</span>' : '') +
-    '<div class="row"><label>Grant as<select data-cmdkind>' + Object.keys(AOC_GRANT).map(k => '<option value="' + k + '"' + (k === r.want ? ' selected' : '') + '>' + AOC_WANT[k] + '</option>').join('') + '</select></label><label>Note<input data-cmdnote maxlength="300"></label><button type="button" class="btn-side" data-cmdreq="' + r.id + '" data-ok="1" style="flex:0 0 auto">Grant</button><button type="button" data-cmdreq="' + r.id + '" data-ok="0" style="flex:0 0 auto">Decline</button></div></div>' }));
+    '<div class="row"><label>Grant as<select data-cmdkind>' + Object.keys(AOC_GRANT).concat('reply').map(k => '<option value="' + k + '"' + (k === r.want || (k === 'reply' && !AOC_GRANT[r.want]) ? ' selected' : '') + '>' + (k === 'reply' ? 'Written answer only (no resource used)' : AOC_WANT[k]) + '</option>').join('') + '</select></label><label>Note<input data-cmdnote maxlength="300"></label><button type="button" class="btn-side" data-cmdreq="' + r.id + '" data-ok="1" style="flex:0 0 auto">Grant</button><button type="button" data-cmdreq="' + r.id + '" data-ok="0" style="flex:0 0 auto">Decline</button></div></div>' }));
   S.requests.filter(r => r.side === s && r.kind === 'strike' && r.status === 'nom').forEach(r => out.push({ g:r.g, h:'<div class="cmd-item"><span class="k">Strike nomination ' + hhmm(r.g) + '</span><b>Strike on ' + esc(o) + ' at ' + esc(r.text || '?') + '</b><span>Fixed by: ' + esc(r.fix || 'Not stated') + ' | Civilians near the target: ' + esc(r.civ || 'unknown') + ' | 9-line: ' + (r.nineBy ? 'checked by ' + esc(r.nineBy) : 'not yet checked') + '</span><span class="small muted">Approving sends it to the White Force to rule on the 9-line. A strike on ' + esc(o) + ' adds +' + ESC.strikewing + ' escalation and costs diplomatic points.</span>' +
     '<div class="row"><label>Note<input data-cmdnote maxlength="300"></label><button type="button" class="btn-side" data-cmdnom="' + r.id + '" data-ok="1" style="flex:0 0 auto">Approve</button><button type="button" data-cmdnom="' + r.id + '" data-ok="0" style="flex:0 0 auto">Deny</button></div></div>' }));
   S.requests.filter(r => r.side === s && r.kind === 'strike' && r.bda && S.g - r.bda.g <= 15).forEach(r => out.push({ info:true, g:r.bda.g, h:'<div class="cmd-item"><span class="k">Damage assessment ' + hhmm(r.bda.g) + '</span><b>Strike at ' + esc(r.text || '?') + ': ' + esc(r.bda.result) + '</b>' + (r.bda.text ? '<span>' + esc(r.bda.text) + '</span>' : '') + '</div>' }));
@@ -4883,7 +4903,7 @@ function wireCmd(v){
     if (app.role !== 'A') return;
     const col = ev.target.closest('[data-cmdside]'), s = col ? col.dataset.cmdside : null;
     let b = ev.target.closest('[data-cmdreq]');
-    if (b){ const it = b.closest('.cmd-item'), ok = b.dataset.ok === '1'; if (ok) writeEvent('aoc_grant', null, { side:s, req:b.dataset.cmdreq, kind:$('[data-cmdkind]', it).value, text:note(b) }); else writeEvent('aoc_grant', null, { side:s, req:b.dataset.cmdreq, deny:true, text:note(b) }); toast(ok ? 'Granted.' : 'Declined.'); return; }
+    if (b){ const it = b.closest('.cmd-item'), ok = b.dataset.ok === '1'; if (ok){ const kd = $('[data-cmdkind]', it).value; if (kd === 'reply' && !note(b)){ toast('Type the answer in Note first.'); return; } writeEvent('aoc_grant', null, { side:s, req:b.dataset.cmdreq, kind:kd, text:note(b) }); } else writeEvent('aoc_grant', null, { side:s, req:b.dataset.cmdreq, deny:true, text:note(b) }); toast(ok ? 'Granted.' : 'Declined.'); return; }
     b = ev.target.closest('[data-cmdnom]');
     if (b){ const ok = b.dataset.ok === '1'; if (ok && !confirm('Approve this strike on ' + SIDES[OTHER[s]].name + '? It adds +' + ESC.strikewing + ' escalation if the White Force rules the 9-line correct.')) return; writeEvent('aoc_nom', null, { req:b.dataset.cmdnom, ok, text:note(b) }); toast(ok ? 'Strike approved. The White Force rules on the 9-line.' : 'Strike denied. Their strike is not used.'); return; }
     b = ev.target.closest('[data-cmdcub]');
@@ -5206,6 +5226,10 @@ function buildDrone(){
   </div>`;
   $('[data-drfull]', v).onclick = () => openFullMap(null);
   v.addEventListener('click', ev => {
+    const m = ev.target.closest('[data-drmt]');
+    if (m){ const [rid, tid] = m.dataset.drmt.split('|'), t = (app.S && app.S.mtgts || []).find(x => x.id === tid), ta = $('#dra-' + rid), fs = $('#drf-' + rid);
+      if (t && ta){ ta.value = ('Square ' + (t.grid || '') + ': ' + t.scene).slice(0, 200); if (!app.drDraft) app.drDraft = {}; app.drDraft[rid] = ta.value; }
+      if (t && fs) fs.value = t.id; return; }
     const b = ev.target.closest('[data-dranswer]'); if (!b) return;
     const id = b.dataset.dranswer, box = $('#dra-' + id), tx = box ? box.value.trim() : '';
     if (!tx){ toast('Type the answer first.', true); if (box) box.focus(); return; }
@@ -5224,7 +5248,7 @@ function renderDrone(S){
   $('[data-drn]', v).textContent = open.length ? open.length + ' waiting' : 'None waiting';
   const box = $('[data-drreqs]', v), k = open.map(r => r.id).join() + '|' + mtNow(S).map(t => t.id).join();
   if (box.dataset.k !== k && !typingIn(box)){ box.dataset.k = k; const dr = app.drDraft || {};
-    box.innerHTML = open.length ? open.map(r => '<div class="dr-req side-' + r.side + '"><div class="act-head"><span class="badge side-' + r.side + '">' + SIDES[r.side].name + '</span><span class="small muted">Requested ' + hhmm(r.g) + ' | ' + picAgo(S.g - r.g) + '</span></div><div class="q">' + esc(r.text || '(no question)') + '</div><label>Answer<textarea id="dra-' + r.id + '" data-drdraft="' + r.id + '" maxlength="200" placeholder="What the drone sees">' + esc(dr[r.id] || '') + '</textarea></label>' + (mtFor(S, r.side).length ? '<label>This flight fixes a militia target (only if the drone can see it)<select id="drf-' + r.id + '"><option value="">No</option>' + mtFor(S, r.side).map(t => '<option value="' + t.id + '">' + esc(t.label) + (t.grid ? ' (' + esc(t.grid) + ')' : '') + '</option>').join('') + '</select></label>' : '') + '<button type="button" class="btn-side team-big" data-dranswer="' + r.id + '">Send answer to ' + SIDES[r.side].name + '</button></div>').join('') : '<div class="empty">No drone requests waiting.</div>'; }
+    box.innerHTML = open.length ? open.map(r => '<div class="dr-req side-' + r.side + '"><div class="act-head"><span class="badge side-' + r.side + '">' + SIDES[r.side].name + '</span><span class="small muted">Requested ' + hhmm(r.g) + ' | ' + picAgo(S.g - r.g) + '</span></div><div class="q">' + esc(r.text || '(no question)') + '</div><label>Answer<textarea id="dra-' + r.id + '" data-drdraft="' + r.id + '" maxlength="200" placeholder="What the drone sees">' + esc(dr[r.id] || '') + '</textarea></label>' + (mtFor(S, r.side).length ? '<label>This flight fixes a militia target (only if the drone can see it)<select id="drf-' + r.id + '"><option value="">No</option>' + mtFor(S, r.side).map(t => '<option value="' + t.id + '">' + esc(t.label) + (t.grid ? ' (' + esc(t.grid) + ')' : '') + '</option>').join('') + '</select></label>' + mtFor(S, r.side).filter(t => t.scene).map(t => '<button type="button" data-drmt="' + r.id + '|' + t.id + '">Fill in the ' + esc(t.label) + ' answer (' + esc(t.grid || '') + ')</button>').join('') + '<div class="small muted">Use it only if the question covers that square.</div>' : '') + '<button type="button" class="btn-side team-big" data-dranswer="' + r.id + '">Send answer to ' + SIDES[r.side].name + '</button></div>').join('') : '<div class="empty">No drone requests waiting.</div>'; }
   const dh = done.length ? done.map(r => '<div class="li"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <span class="small muted">' + hhmm(r.g) + '</span><div><b>' + esc(r.text) + '</b></div><div class="small">' + esc(r.answer || '') + '</div></div></div>').join('') : '<div class="empty">Nothing answered yet.</div>';
   { const el = $('[data-drdone]', v); if (el.dataset.h !== dh){ el.dataset.h = dh; el.innerHTML = dh; } }
   const ids = open.map(r => r.id); if (app.drSeen && ids.some(id => !app.drSeen.includes(id))){ const r = open.find(x => !app.drSeen.includes(x.id)); toast('New drone request from ' + SIDES[r.side].name + ': ' + r.text); }
