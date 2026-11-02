@@ -70,7 +70,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
 .row>*{flex:1 1 140px}
 .stack{display:grid;gap:10px}
-.app{max-width:1500px;margin-inline:auto;display:grid;gap:14px}.wnav{position:sticky;top:0;z-index:1100;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-bottom:1.5px solid var(--line);padding:8px 2px;box-shadow:0 6px 8px -8px rgba(0,0,0,.35)}.wnav-stat{display:flex;gap:8px;align-items:baseline;font-size:14px;white-space:nowrap}.wnav-stat b{font-size:18px}.wnav-tabs{display:flex;gap:6px;flex-wrap:wrap}.wnav-tabs button{padding:5px 11px;font-size:13.5px}.wnav-tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}.wnav .cnt{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center}.wing-grid.filtered{grid-template-columns:minmax(0,1fr)}.wing-grid.filtered .feedcol{grid-column:auto}.wing-grid.filtered .feedcol .feed{max-height:none}.wnav .cnt[hidden]{display:none}.chatlog{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;padding:6px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg)}.chatmsg{max-width:85%;align-self:flex-start;border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--panel)}.chatmsg.me{align-self:flex-end;border-color:var(--ink)}.white-grid.filtered{grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr))}.white-grid.filtered .span2{grid-column:auto}[data-sec][data-off]{display:none!important}
+.app{max-width:1500px;margin-inline:auto;display:grid;gap:14px}.wnav{position:sticky;top:0;z-index:1100;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-bottom:1.5px solid var(--line);padding:8px 2px;box-shadow:0 6px 8px -8px rgba(0,0,0,.35)}.wnav-stat{display:flex;gap:8px;align-items:baseline;font-size:14px;white-space:nowrap}.wnav-stat b{font-size:18px}.wnav-tabs{display:flex;gap:6px;flex-wrap:wrap}.wnav-tabs button{padding:5px 11px;font-size:13.5px}.wnav-tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}.wnav .cnt{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center}.wing-grid.filtered{grid-template-columns:minmax(0,1fr)}.wing-grid.filtered .feedcol{grid-column:auto}.wing-grid.filtered .feedcol .feed{max-height:none}.wnav .cnt[hidden]{display:none}.chatlog{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;padding:6px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg)}.chatmsg{max-width:85%;align-self:flex-start;border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--panel)}.chatmsg.me{align-self:flex-end;border-color:var(--ink)}.white-grid.filtered{grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr))}.white-grid.filtered .span2{grid-column:auto}[data-sec][data-off]{display:none!important}[data-ps][data-off]{display:none!important}#vTeam,#vOC{min-width:0}.ptabs{margin:-4px 0 10px;padding:6px 2px;min-width:0;max-width:100%;box-sizing:border-box;contain:inline-size}.ptabs .wnav-tabs{flex:1 1 auto;min-width:0;max-width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.ptabs .wnav-tabs::-webkit-scrollbar{display:none}.ptabs .wnav-tabs button{flex:0 0 auto;padding:9px 13px;font-size:15px;white-space:nowrap}
 .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
 .brand{display:flex;align-items:baseline;gap:10px}
 .brand h1{font-size:22px;text-transform:uppercase;letter-spacing:.06em}
@@ -218,7 +218,7 @@ svg.map{width:100%;min-width:420px;height:auto;display:block}
 .ip-items li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline;border-left:3px solid var(--line);padding:2px 0 2px 8px}
 .ip-items li b{font-family:var(--mono);font-size:13px}
 .ip-img{display:block;max-width:min(100%,420px);max-height:260px;object-fit:contain;border-radius:6px;border:1px solid var(--line);margin:4px 0 6px;cursor:zoom-in;background:#000}
-.ip-done:not(.ip-open) .ip-items,.ip-done:not(.ip-open) .ip-q,.ip-done:not(.ip-open) form{display:none}
+.ip-done:not(.ip-open) .ip-items,.ip-done:not(.ip-open) .ip-q,.ip-done:not(.ip-open) form,.ip-locked:not(.ip-open) .ip-items,.ip-locked:not(.ip-open) .ip-q,.ip-locked:not(.ip-open) form{display:none}
 .ip-credit{display:block;font-size:11px;color:var(--muted);margin:-2px 0 6px}
 .ipb-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;width:100%}.ipb-results button{padding:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#000;height:84px}.ipb-results img{width:100%;height:100%;object-fit:cover;display:block}
 .ipb-src{display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:8px;width:100%}
@@ -2711,6 +2711,27 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&am
 const uid = () => Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
 const LS = { get(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }, set(k, v){ try { sessionStorage.setItem(k, v); } catch(e){} }, del(k){ try { sessionStorage.removeItem(k); } catch(e){} } };
 
+function ptabs(v, key, tabs, def, onSet){
+  const nav = document.createElement('nav'); nav.className = 'wnav ptabs'; nav.setAttribute('aria-label', 'Sections');
+  nav.innerHTML = '<div class="wnav-tabs" role="tablist">' + tabs.map(([k, n]) => '<button type="button" role="tab" data-ptab="' + k + '">' + n + '<span class="cnt" data-pcnt="' + k + '" hidden></span></button>').join('') + '</div>';
+  v.prepend(nav);
+  const set = (k, scroll) => {
+    if (!tabs.some(t => t[0] === k)) k = def;
+    $$('[data-ptab]', nav).forEach(b => b.setAttribute('aria-selected', b.dataset.ptab === k ? 'true' : 'false'));
+    $$('[data-ps]', v).forEach(el => { if (k === 'all' || el.dataset.ps.split(' ').includes(k)) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
+    v.dataset.ptab = k; pref.set(key, k); if (onSet) onSet(k);
+    setTimeout(() => $$('.lmap', v).forEach(x => { if (x._lm) x._lm.map.invalidateSize(); }), 60);
+    if (scroll) window.scrollTo({ top:0, behavior:'smooth' });
+    ptabsBadge(v);
+  };
+  nav.addEventListener('click', ev => { const b = ev.target.closest('[data-ptab]'); if (b) set(b.dataset.ptab, true); });
+  set(pref.get(key, def), false);
+}
+function ptabsBadge(v, counts){
+  if (!v) return; if (counts) v._pc = counts; const c = v._pc || {}, cur = v.dataset.ptab; if (!v._ps) v._ps = {};
+  Object.keys(c).forEach(k => { if (v._ps[k] == null || cur === k || cur === 'all') v._ps[k] = c[k]; });
+  $$('[data-pcnt]', v).forEach(el => { const k = el.dataset.pcnt, n = Math.max(0, (c[k] || 0) - (v._ps[k] || 0)); el.hidden = !n; el.textContent = n; });
+}
 const pref = { get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : v; } catch(e){ return d; } }, set(k, v){ try { localStorage.setItem(k, v); } catch(e){} } };
 let wakeLock = null;
 function wakeWanted(){ return !!app.role && (app.role === 'OC' || app.role === 'D' || app.role === 'L' || app.role[0] === 'T') && pref.get('marala-wake', '1') === '1'; }
@@ -3856,31 +3877,32 @@ function buildOC(){
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
       <div class="ip-status" data-ocwarn hidden style="color:var(--bad);font-weight:600"></div></div>
-    <div class="panel stack" data-ocshowbox hidden><h2>Show of force on your team's wing</h2><p class="small muted" style="margin:0">Report whether your team left the area. The board also checks GPS at the deadline; your report settles it if the phone does not answer.</p><div class="list" data-ocshows></div></div>
-    <div class="panel stack" data-ocscenebox hidden><div class="act-head"><h2>Militia targets for your team</h2><span class="small muted" data-ocscenegps></span></div><p class="small muted" style="margin:0">When your team reaches the square, read the scene aloud so it can send a SALUTE. This phone alerts you when you get within about 60 m.</p><div class="list" data-ocscenes></div></div>
-    <div class="panel stack" data-ocannbox hidden><h2>Announcements</h2><div class="list" data-ocanns></div></div>
-    <div class="panel stack"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
-    <div class="panel stack"><h2>Calls for the White Force</h2><p class="small muted" style="margin:0">Calls take effect only after White Force approval.</p>
+    <div class="panel stack" data-ps="now" data-ocshowbox hidden><h2>Show of force on your team's wing</h2><p class="small muted" style="margin:0">Report whether your team left the area. The board also checks GPS at the deadline; your report settles it if the phone does not answer.</p><div class="list" data-ocshows></div></div>
+    <div class="panel stack" data-ps="now" data-ocscenebox hidden><div class="act-head"><h2>Militia targets for your team</h2><span class="small muted" data-ocscenegps></span></div><p class="small muted" style="margin:0">When your team reaches the square, read the scene aloud so it can send a SALUTE. This phone alerts you when you get within about 60 m.</p><div class="list" data-ocscenes></div></div>
+    <div class="panel stack" data-ps="now" data-ocannbox hidden><h2>Announcements</h2><div class="list" data-ocanns></div></div>
+    <div class="panel stack" data-ps="now"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
+    <div class="panel stack" data-ps="calls"><h2>Calls for the White Force</h2><p class="small muted" style="margin:0">Calls take effect only after White Force approval.</p>
       <div class="row"><label>Wing<select data-ocside><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
       <div class="evgrid">${Object.entries(OC_CALLS).map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div></div>
-    <div class="panel stack"><h2>Stalemate</h2>
+    <div class="panel stack" data-ps="calls"><h2>Stalemate</h2>
       <p class="small muted" style="margin:0">Both wings at the same neutral site before either team has started the activity. Not used during contention.</p>
       <div class="row"><label>Site<select data-ocstalesite data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
       <button type="button" class="btn-side" data-ocstalesend>Report stalemate</button></div>
-    <div class="panel stack"><h2>At a site</h2>
+    <div class="panel stack" data-ps="calls"><h2>At a site</h2>
       <div class="row"><label>Site<select data-ocsite data-siteopts data-town="Marala Town">${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}<option value="town">Marala Town</option></select></label><label>Who is there<select data-ocwho><option value="B">Blue Force</option><option value="R">Red Force</option><option value="both">Both wings</option></select></label></div>
       <label>Note (optional)<input data-ocsitenote maxlength="120" placeholder="Example: Starting the cipher now"></label>
       <button type="button" class="btn-side" data-ocsitesend>Tell the White Force</button></div>
-    <div class="panel stack"><h2>Messages with the White Force</h2><div class="chatlog" data-occlog></div><form class="row" data-occf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
-    <div class="panel stack"><h2>Your requests</h2><div class="list" data-ocmine></div></div>
-    <div class="panel stack"><div class="act-head"><h2>My position</h2><span class="small muted">Shown only on this phone - fades after 5 minutes</span></div>
+    <div class="panel stack" data-ps="msg"><h2>Messages with the White Force</h2><div class="chatlog" data-occlog></div><form class="row" data-occf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
+    <div class="panel stack" data-ps="calls msg"><h2>Your requests</h2><div class="list" data-ocmine></div></div>
+    <div class="panel stack" data-ps="map"><div class="act-head"><h2>My position</h2><span class="small muted">Shown only on this phone - fades after 5 minutes</span></div>
       <div class="small" data-ocselftxt>Tap Find my position to place a marker on your map and read your coordinates.</div>
       <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-ocself style="flex:0 0 auto">Find my position</button><button type="button" data-ocselfclr style="flex:0 0 auto" hidden>Remove marker</button></div></div>
-    <details class="panel" data-ocmapbox><summary><b>Map</b> <span class="small muted">(same view as the White Force)</span></summary>
+    <details class="panel" data-ps="map" data-ocmapbox><summary><b>Map</b> <span class="small muted">(same view as the White Force)</span></summary>
       <div class="stack" style="margin-top:10px"><p class="small muted" style="margin:0">No fog of war. Not for cadet viewing.</p>
       <div class="row" style="justify-content:flex-start"><button type="button" data-ocfull style="flex:0 0 auto">Full screen map</button></div>
       <div class="map-wrap" data-ocmap></div><div data-oclegend></div></div></details>
   </div>`;
+  ptabs(v, 'marala-octab', [['now', 'Now'], ['calls', 'Calls'], ['msg', 'Messages'], ['map', 'Map'], ['all', 'All']], 'now', k => { if (k === 'map'){ const d = $('[data-ocmapbox]', v); if (d) d.open = true; } });
   $('[data-ocmapbox]', v).addEventListener('toggle', () => refresh(true));
   $('[data-occf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return; } await writeEvent('occhat', null, { oc:me.id, from:'oc', text:tx }); f.text.value = ''; });
   $('[data-ocfull]', v).onclick = () => openFullMap(null);
@@ -3952,6 +3974,7 @@ function renderOC(S){
   const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
   $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + (r.reply ? '<div class="small"><b>White Force ' + hhmm(r.resG) + ':</b> ' + esc(r.reply) + '</div>' : '') + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'stale' ? (r.status === 'ok' ? 'marked' : 'not marked') : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : r.reply ? 'replied' : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
   { const reps = S.ocReqs.filter(r => r.oc === me.id && r.reply), n = reps.length; if (app.ocRepN == null || app.ocRepFor !== me.id){ app.ocRepFor = me.id; app.ocRepN = n; } else if (n > app.ocRepN){ app.ocRepN = n; toast('White Force reply: ' + reps[n - 1].reply); } }
+  ptabsBadge(v, { now:$$('[data-ocanns] .li, [data-ocshows] .li, [data-ocnines] .li, [data-ocscenes] .li', v).length, msg:$$('[data-occlog] .chatmsg:not(.me)', v).length, calls:S.ocReqs.filter(r => r.oc === me.id && r.status !== 'open').length });
 }
 function occSeenKey(id){ return 'marala-occhat-' + (app.gid || 'none') + '-' + id; }
 function occUnread(S, id){ const n = S.occhats.filter(m => m.oc === id && m.from === 'oc').length; let seen = 0; try { seen = +localStorage.getItem(occSeenKey(id)) || 0; } catch(e){} return Math.max(0, n - seen); }
@@ -4067,14 +4090,14 @@ function buildTeam(side){
   <div class="stack">
     <div class="panel"><div class="act-head"><h2>${esc(me.name)} <span data-tnumshow></span></h2><span class="small muted">${esc(SIDES[side].long)}</span></div>
       <div class="row" style="align-items:baseline;justify-content:space-between"><span><span class="k small muted">Board time</span> <b class="mono" data-clock>—</b></span><span data-tlvl></span><span class="row" style="flex:0 0 auto;gap:6px"><button type="button" data-rename style="flex:0 0 auto;padding:4px 10px;font-size:13px">Rename</button><button type="button" data-leave style="flex:0 0 auto;padding:4px 10px;font-size:13px">Leave this fireteam</button></span></div></div>
-    <div class="panel stack"><h2>Alerts</h2><div data-tuav></div><div class="list" data-talerts></div></div>
-    <div class="panel"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
-    <div class="panel stack"><div class="act-head"><h2>Messages with C2</h2><span class="small muted">One message every ${TCHAT_EVERY} minutes</span></div><div class="chatlog" data-tclog></div><form class="row" data-tcf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form><div class="small muted" data-tcnext></div></div>
-    <div class="panel stack"><div class="act-head"><h2>Map</h2><span class="small muted" data-tmapstate></span></div>
+    <div class="panel stack" data-ps="now"><h2>Alerts</h2><div data-tuav></div><div class="list" data-talerts></div></div>
+    <div class="panel" data-ps="now"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
+    <div class="panel stack" data-ps="msg"><div class="act-head"><h2>Messages with C2</h2><span class="small muted">One message every ${TCHAT_EVERY} minutes</span></div><div class="chatlog" data-tclog></div><form class="row" data-tcf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form><div class="small muted" data-tcnext></div></div>
+    <div class="panel stack" data-ps="map"><div class="act-head"><h2>Map</h2><span class="small muted" data-tmapstate></span></div>
       <p class="small muted" style="margin:0">Available for 45 seconds, once every 10 minutes. Your own position is not shown.</p>
       <button type="button" class="btn-side team-big" data-tmapbtn>Open map for 45 seconds</button>
       <div class="lmap teammap" data-tmap hidden></div>${mapKeyHTML(false)}</div>
-    <div class="panel stack"><h2>Report your position</h2>
+    <div class="panel stack" data-ps="map"><h2>Report your position</h2>
       <p class="small muted" style="margin:0">Enter your grid from the map. The phone's GPS fix is attached for your C2.</p>
       <label>Your grid from the map (MGRS or play square)<input data-grid autocomplete="off" placeholder="Example: 5892 2345, 18T TL 58927 23452 or D4"></label>
       <label>Status<select data-status><option>Moving</option><option>At objective</option><option>Holding</option><option>Halted: suspected IED</option><option>Treating a casualty</option><option>Need help</option></select></label>
@@ -4083,17 +4106,18 @@ function buildTeam(side){
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
       <div class="small muted" data-tlast></div></div>
-    <div class="panel stack"><h2>Contention request</h2>
+    <div class="panel stack" data-ps="act"><h2>Contention request</h2>
       <p class="small muted" style="margin:0">Sent to your C2. Contention starts only when your C2 approves it.</p>
       <div class="row"><label>Site<select data-ctsite data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
       <button type="button" class="btn-side team-big" data-ctsend>Request contention</button>
       <div class="list" data-ctlist></div></div>
-    <div class="panel stack"><h2>Strike 9-line</h2>
+    <div class="panel stack" data-ps="act"><h2>Strike 9-line</h2>
       <p class="small muted" style="margin:0">Read the full 9-line to your POC first. Only the target and location are sent. Your POC or the White Force must confirm it before it reaches your C2.</p>
       <div class="row"><label>Target<select data-ntarget><option value="cache">Militia weapons cache</option><option value="other">${esc(SIDES[OTHER[side]].name)} position</option></select></label><label>Location<input data-nloc maxlength="40" autocomplete="off" placeholder="Example: 5892 2345 or D4"></label></div>
       <button type="button" class="btn-side team-big" data-nsend>Send 9-line for checking</button>
       <div class="list" data-nlist></div></div>
   </div>`;
+  ptabs(v, 'marala-ttab-' + side, [['now', 'Alerts'], ['msg', 'Messages'], ['map', 'Map'], ['act', 'Requests'], ['all', 'All']], 'now');
   $('[data-send]', v).onclick = () => sendTeamPos(side, {});
   $('[data-tcf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; } const nx = tchatNext(app.S, side, me.id); if (nx != null && app.S.g < nx){ toast('Next message available at ' + hhmm(nx) + '.', true); return; } if (!confirm('Send this message to your C2? The next message is available ' + TCHAT_EVERY + ' minutes after this one.')) return; await writeEvent('tchat', side, { team:me.id, name:me.name, from:'team', text:tx }); f.text.value = ''; });
   $('[data-ctsend]', v).onclick = async () => {
@@ -4164,6 +4188,7 @@ function renderTeam(S, side){
   if (tm && !tm.hidden && tm._lm) drawDyn(tm._lm, S, side, { team:true });
   const os = S.orders.filter(o => o.side === side && (o.team === 'all' || o.team === me.id));
   $('[data-torders]', v).innerHTML = os.length ? os.slice().reverse().map(o => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(o.g) + (o.team === 'all' ? ' - All teams' : ' - To you') + '</span><div>' + esc(o.text) + '</div></div></div>').join('') : '<div class="empty">No orders yet. Your C2 sends them from the board.</div>';
+  ptabsBadge(v, { now:$$('[data-talerts] .li, [data-torders] .li', v).length, msg:$$('[data-tclog] .chatmsg:not(.me)', v).length });
 }
 
 function teamTick(S, side, now){
@@ -4551,7 +4576,7 @@ function renderIntel(S, side, v){
     const o = intelOpen(S, P.id, side), mine = S.intel[side][P.id], done = !!o.done;
     $('[data-ipdue]', card).textContent = done ? 'Closed ' + hhmm(o.due) : 'Due ' + hhmm(o.due);
     { const bh = ipBadgesHTML(S, P, side), th = done ? '' : ipTaskHTML(S, P, side), be = $('[data-ipbadges]', card), te = $('[data-iptask]', card); if (be.dataset.h !== bh){ be.dataset.h = bh; be.innerHTML = bh; be.className = bh ? 'ip-badges-wrap' : ''; } if (te.dataset.h !== th){ te.dataset.h = th; te.innerHTML = th; } }
-    card.classList.toggle('ip-done', done); $('[data-ipexp]', card).hidden = !done;
+    card.classList.toggle('ip-done', done); card.classList.toggle('ip-locked', !done && !!mine); $('[data-ipexp]', card).hidden = !done && !mine;
     const f = $('form', card), st = $('[data-ipstatus]', card);
     $$('input, button', f).forEach(el => el.disabled = !!mine || done || S.endex);
     if (done){
