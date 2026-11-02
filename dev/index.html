@@ -3576,7 +3576,18 @@ function lmapEnsure(el, M){
 const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['bounds', 'Play area boundary', '#ffffff'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['wc', 'White Force location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'Blue Force waypoints', '#5b8cff'], ['wpR', 'Red Force waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8'], ['props', 'Props', '#ff9800']];
 const LAYER_DEFAULTS = { base:'sat', play:true, bounds:true, mgrs:true, fine:true, contours:true, sites:true, sitenames:true, teams:true, names:true, reports:true, oldrep:false, uav:true, blasts:true, poi:true, wc:true, wp:true, wpB:true, wpR:true, wpq:true, props:true };
 function layerKey(){ return 'marala-layers-' + (app.role || 'none'); }
-function layerDefaults(){ const r = app.role, c2 = r === 'B' || r === 'R'; return Object.assign({}, LAYER_DEFAULTS, { play:true, bounds:true, mgrs:true, fine:true, contours:false, sites:true, sitenames:true, teams:true, names:false, reports:true, oldrep:c2, wc:c2, props:r === 'L' }); }
+const ROLE_LAYERS = {
+  T:{ fine:false, names:false, reports:false, oldrep:false, uav:false, wc:false },
+  B:{ names:true, oldrep:false, wc:false },
+  R:{ names:true, oldrep:false, wc:false },
+  OC:{ fine:false, names:false, reports:false, oldrep:false, uav:false, wpq:false },
+  D:{ fine:false, names:false, reports:false, oldrep:false, uav:false, wc:false, wp:false, wpB:false, wpR:false, wpq:false },
+  L:{ names:false, reports:false, oldrep:false, uav:false, blasts:false, wp:false, wpB:false, wpR:false, wpq:false, props:true },
+  P:{ mgrs:false, fine:false, teams:false, names:false, reports:false, oldrep:false, uav:false, wc:false, wp:false, wpB:false, wpR:false, wpq:false },
+  W:{ names:true, oldrep:false, wpq:false },
+  A:{ names:true, oldrep:false, wpq:false }
+};
+function layerDefaults(){ return Object.assign({}, LAYER_DEFAULTS, { contours:false, props:false }, ROLE_LAYERS[/^T[BR]$/.test(app.role || '') ? 'T' : app.role] || {}); }
 function gridPref(){ try { return Object.assign(layerDefaults(), JSON.parse(localStorage.getItem(layerKey()) || '{}')); } catch(e){ return layerDefaults(); } }
 function applyGridPref(st){
   const pr = gridPref();
