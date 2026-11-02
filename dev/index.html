@@ -3993,10 +3993,11 @@ function ocScenes(S, v, o){
   $('[data-ocscenegps]', v).textContent = here ? 'GPS ±' + here.acc + ' m' : 'No GPS fix yet';
   if (!app.ocNear) app.ocNear = {};
   const html = list.map(t => { const d = here && t.pt ? distM(here.pt, t.pt) : null, near = d != null && d <= 60 + Math.min(here.acc, 40);
-    if (near && !app.ocNear[t.id]){ app.ocNear[t.id] = true; toast('Your team is at the ' + t.label + '. Read the scene to the team.'); try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch(e){} }
+    if (near && !app.ocNear[t.id]){ app.ocNear[t.id] = true; app.ocJump = true; toast('Your team is at the ' + t.label + '. Read the scene to the team.'); try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch(e){} }
     return '<div class="li' + (near ? ' warnrow' : '') + '" style="' + (near ? 'border-left:4px solid var(--warn,#c98500);padding-left:8px' : '') + '"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">Square ' + esc(t.grid || '?') + ' - gone at ' + hhmm(t.until) + (d != null ? ' - about ' + d + ' m from you' : '') + '</span>' +
       (near ? '<div style="font-size:17px;margin-top:6px"><b>Read aloud:</b> “' + esc(t.scene) + '”</div>' : '<details><summary class="small">What to read when your team gets there</summary><div style="margin-top:4px">“' + esc(t.scene) + '”</div></details>') + '</div></div>'; }).join('');
   const el = $('[data-ocscenes]', v); if (el.dataset.h !== html){ el.dataset.h = html; el.innerHTML = html; }
+  if (app.ocJump){ app.ocJump = false; const tb = $('[data-ptab="now"]', v); if (tb && v.dataset.ptab !== 'now' && v.dataset.ptab !== 'all') tb.click(); setTimeout(() => { const nv = $('.ptabs', v), off = nv ? nv.getBoundingClientRect().height + 8 : 8; window.scrollTo({ top:window.scrollY + box.getBoundingClientRect().top - off, behavior:'smooth' }); }, 120); }
 }
 function renderOCChatWhite(S, v){
   const live = Object.values(S.ocs).filter(o => !o.removed), id = app.occOpen;
