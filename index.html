@@ -18,6 +18,7 @@ const FIREBASE_CONFIG = {
 const RECOVERY_CODE_HASH = "3nonh9lo9n";
 </script>
 <title>Marala Island Board</title>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('marala-theme'),l=localStorage.getItem('marala-look');if(t==='light'||t==='dark')d.dataset.theme=t;if(l==='clean'||l==='command'||l==='field')d.dataset.look=l;}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
@@ -439,6 +440,61 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 @media (prefers-reduced-motion: no-preference){.pulse{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{opacity:.55}}}
 .hidden-sm{}
 @media (max-width:560px){.hidden-sm{display:none}}
+:root[data-theme="light"]{color-scheme:light}
+.disp{position:relative}.disp>summary{list-style:none;cursor:pointer;border:1.5px solid var(--line);border-radius:8px;padding:6px 11px;background:var(--panel)}.disp>summary::-webkit-details-marker{display:none}
+.disp[open]>.disp-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:1300;display:grid;gap:8px;min-width:220px;padding:12px;background:var(--panel);border:1.5px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.disp-pop label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+:root[data-look]{--body:'IBM Plex Sans','Liberation Sans',Arial,sans-serif}
+:root[data-look] .panel{border-width:1px;box-shadow:none}
+:root[data-look] .li{border-left:3px solid var(--line)}
+:root[data-look] .wnav:not(.ptabs){background:var(--panel);margin-inline:-16px;padding-inline:16px}
+:root[data-look] .wnav-tabs button{border:0;background:transparent}
+:root[data-look] h2{font-family:var(--display);font-weight:600;font-size:16px}
+@media (max-width:560px){:root[data-look] .brand{flex-wrap:wrap;gap:2px 10px}:root[data-look] .brand h1{font-size:19px}:root[data-look] .topbar{gap:8px}}
+:root[data-look="clean"] .panel{border-radius:6px;padding:12px}
+:root[data-look="clean"] .li{border-radius:6px}
+:root[data-look="clean"] .wnav-tabs{gap:2px}
+:root[data-look="clean"] .wnav-tabs button{border-radius:4px;font-weight:500}
+:root[data-look="clean"] .wnav-tabs button:hover{background:var(--panel-2)}
+:root[data-look="clean"] .wnav-tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel)}
+:root[data-look="clean"] h2{letter-spacing:.1em}
+:root[data-look="clean"] button{border-radius:4px}
+:root[data-look="command"]{--gold:#c9a24a}
+:root[data-look="command"] body{font-size:13.5px}
+:root[data-look="command"] .app{gap:10px}
+:root[data-look="command"] .panel,:root[data-look="command"] .pic-card,:root[data-look="command"] .pic-tile,:root[data-look="command"] .stat{border-radius:2px;box-shadow:inset 0 0 0 2px var(--panel),inset 0 0 0 3px var(--line)}
+:root[data-look="command"] .panel{padding:10px 12px;gap:8px}
+:root[data-look="command"] .li{border-radius:2px;padding:6px 9px}
+:root[data-look="command"] .wnav:not(.ptabs),:root[data-look="command"] .ptabs{background:linear-gradient(#2c3236,#191d20);color:#eadfc4;border-bottom:2px solid var(--gold);box-shadow:0 3px 8px rgba(0,0,0,.35)}
+:root[data-look="command"] .wnav:not(.ptabs){padding-block:5px 0}
+:root[data-look="command"] .ptabs{margin-inline:-16px;padding-inline:12px}
+:root[data-look="command"] .wnav-stat{color:#eadfc4}
+:root[data-look="command"] .wnav-stat b{color:var(--gold);font-size:20px}
+:root[data-look="command"] .wnav-tabs{gap:0}
+:root[data-look="command"] .wnav-tabs button{color:#cfc6b0;border-radius:0;font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:14px;border-bottom:3px solid transparent;padding:6px 11px}
+:root[data-look="command"] .wnav-tabs button:hover{color:#fff}
+:root[data-look="command"] .wnav-tabs button[aria-selected="true"]{background:transparent;color:var(--gold);border-bottom-color:var(--gold)}
+:root[data-look="command"] .wnav .cnt{border-radius:2px;box-shadow:0 0 0 1px var(--gold)}
+:root[data-look="command"] h2,:root[data-look="command"] .pic-h h2{letter-spacing:.14em;font-size:15px;color:var(--aoc)}
+:root[data-look="command"] .pic-h{margin:-12px -14px 4px;padding:8px 14px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+:root[data-look="command"] button,:root[data-look="command"] .disp>summary{border-radius:2px}
+:root[data-look="field"] body{font-size:13.5px;padding-block:0}
+:root[data-look="field"] body::before,:root[data-look="field"] body::after{content:"EXERCISE  EXERCISE  EXERCISE";display:block;white-space:pre;text-align:center;font-family:var(--display);font-weight:700;letter-spacing:.3em;font-size:13px;padding:3px 0;margin-inline:-16px;color:var(--panel);background:var(--good)}
+:root[data-look="field"] body::before{margin-bottom:12px}
+:root[data-look="field"] body::after{margin-top:24px}
+:root[data-look="field"] .panel,:root[data-look="field"] .pic-card,:root[data-look="field"] .pic-tile,:root[data-look="field"] .stat{border-radius:0;border:1px solid var(--ink);box-shadow:none}
+:root[data-look="field"] .panel{padding:10px 12px;gap:8px}
+:root[data-look="field"] .li{border-radius:0;border-color:var(--line);border-left:3px solid var(--ink);padding:6px 9px}
+:root[data-look="field"] .wnav:not(.ptabs){padding-block:6px;border-bottom:2px solid var(--ink);box-shadow:none}
+:root[data-look="field"] .ptabs{border-bottom:2px solid var(--ink)}
+:root[data-look="field"] .wnav-tabs{gap:0}
+:root[data-look="field"] .wnav-tabs button{border:1px solid var(--ink);margin-left:-1px;border-radius:0;font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.04em;padding:5px 10px}
+:root[data-look="field"] .wnav-tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel)}
+:root[data-look="field"] .wnav .cnt{border-radius:0}
+:root[data-look="field"] h2,:root[data-look="field"] .pic-h h2{font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--ink)}
+:root[data-look="field"] .pic-h{margin:-12px -14px 4px;padding:6px 14px;border-bottom:1px solid var(--ink)}
+:root[data-look="field"] .feed,:root[data-look="field"] .chatmsg,:root[data-look="field"] .li .small{font-family:var(--mono);font-size:12.5px}
+:root[data-look="field"] button,:root[data-look="field"] input,:root[data-look="field"] select,:root[data-look="field"] .disp>summary{border-radius:0}
 </style>
 
 <div class="app" id="root">
@@ -448,6 +504,10 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
       <span id="roleBadge"></span>
       <button id="switchRole" type="button" hidden>Switch view</button>
       <button id="switchGame" type="button" hidden>Change game</button>
+      <details class="disp" id="dispMenu"><summary>Display</summary><div class="disp-pop">
+        <label>Theme<select id="dispTheme"><option value="">Match this device</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+        <label>Style<select id="dispLook"><option value="">Traditional</option><option value="clean">Clean (prototype)</option><option value="command">Command (prototype)</option><option value="field">Field (prototype)</option></select></label>
+        <span class="small muted">Saved on this device only.</span></div></details>
     </div>
   </div>
   <div id="connBanner" class="banner" hidden></div>
@@ -6986,5 +7046,15 @@ connect();
 </script>
 
 <script>if ('serviceWorker' in navigator && location.protocol === 'https:') window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
+<script>
+(function(){
+  const d = document.documentElement, th = document.getElementById('dispTheme'), lk = document.getElementById('dispLook'), mn = document.getElementById('dispMenu');
+  const get = k => { try { return localStorage.getItem(k) || ''; } catch (e){ return ''; } }, put = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e){} };
+  th.value = get('marala-theme'); lk.value = get('marala-look');
+  th.onchange = () => { put('marala-theme', th.value); if (th.value) d.dataset.theme = th.value; else delete d.dataset.theme; };
+  lk.onchange = () => { put('marala-look', lk.value); if (lk.value) d.dataset.look = lk.value; else delete d.dataset.look; };
+  document.addEventListener('click', e => { if (mn.open && !mn.contains(e.target)) mn.open = false; });
+})();
+</script>
 </body>
 </html>
