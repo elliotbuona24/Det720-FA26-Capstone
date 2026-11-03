@@ -1532,10 +1532,10 @@ const PIR_DEFAULT = {
   R:['Where are the First Front’s leaders, its bomb workshop and its trigger network?', 'Which reported threats to our forces and the island’s people are real, and where are they?', 'Who is stirring up the harbor, sabotaging the fuel supply or bringing supplies in by sea, and why?', 'Who is behind each attack and each false story, and who is leaking our plans?']
 };
 const RHYTHM = [
-  { at:15, kind:'cub', n:1, label:'Commander’s update brief 1', what:'Brief the AOC on every line below: progress, changes from your plan, accountability, casualties, the threat, intelligence, sustainment, risk, your next 30 minutes and your assessment.' },
-  { at:45, kind:'cub', n:2, label:'Commander’s update brief 2', what:'Brief the AOC on every line below before the change of command, including the handover to the incoming commander.' },
-  { at:60, kind:'coc', label:'Change of command', what:'Deputies take command. The new commander confirms assumption of command to the AOC by 0705.' },
-  { at:85, kind:'cub', n:3, label:'Commander’s update brief 3', what:'The new commander briefs the AOC on every line below, including the plan for the last 30 minutes.' },
+  { at:15, kind:'cub', n:1, label:'Commander’s Update Brief 1', what:'Brief the AOC on every line below: progress, changes from your plan, accountability, casualties, the threat, intelligence, sustainment, risk, your next 30 minutes and your assessment.' },
+  { at:45, kind:'cub', n:2, label:'Commander’s Update Brief 2', what:'Brief the AOC on every line below before the Change of Command, including the handover to the incoming commander.' },
+  { at:60, kind:'coc', label:'Change of Command', what:'Deputies take command. The new commander confirms assumption of command to the AOC by 0705.' },
+  { at:85, kind:'cub', n:3, label:'Commander’s Update Brief 3', what:'The new commander briefs the AOC on every line below, including the plan for the last 30 minutes.' },
   { at:110, kind:'cub', n:4, label:'Final SITREP', what:'Final situation report on every line below: positions, mission accomplishment, final accountability, casualties, PIRs, significant events and open issues.' }
 ];
 const CUB_EARLY = 5, CUB_LATE = 5, FIX_MIN = 10, MT_PTS = 3, MT_HN = 2, MT_CIV = 10;
@@ -1561,7 +1561,9 @@ function injAuto(S, q, sd){
   }
   return false;
 }
-function injRefund(S, sd, r){ if (!r || r.st !== 'miss') return; if (r.pts) S.pts[sd].adj += r.pts; if (r.hn) addHN(S, sd, r.hn); }
+const ACCT_PTS = 5;
+function injPk(q){ return q && q.done === 'acct' ? 'acct' : 'adj'; }
+function injRefund(S, sd, r, q){ if (!r || r.st !== 'miss') return; if (r.pts) S.pts[sd][injPk(q)] = (S.pts[sd][injPk(q)] || 0) + r.pts; if (r.hn) addHN(S, sd, r.hn); }
 function injPropNames(S, q){ return Object.values(S.propUses || {}).filter(u => u.kind === 'tpl' && u.item === q.tid && propLive(S, u)).map(u => ((S.props || {})[u.prop] || {}).name + (u.label ? ' (' + u.label + ')' : '')); }
 function injClose(S, q, why){
   q.closed = S.g; S.ver++;
@@ -1569,7 +1571,7 @@ function injClose(S, q, why){
   sides.forEach(sd => { if (q.res[sd]) return;
     if (q.who === 'any' && anyDone){ q.res[sd] = { st:'na', g:S.g }; return; }
     const m = q.miss || {}; q.res[sd] = { st:'miss', g:S.g, pts:m.pts || 0, hn:m.hn || 0 };
-    if (m.pts) S.pts[sd].adj -= m.pts; if (m.hn) addHN(S, sd, -m.hn);
+    if (m.pts) S.pts[sd][injPk(q)] = (S.pts[sd][injPk(q)] || 0) - m.pts; if (m.hn) addHN(S, sd, -m.hn);
     if (q.done !== 'none') pushFeed(S, sd, 'Time is up for "' + q.label + '" (due ' + hhmm(injEnd(q)) + '). It is closed and recorded as missed.' + (m.pts ? ' Points −' + m.pts + '.' : '') + (m.hn ? ' Diplomatic points −' + m.hn + '.' : ''), 'alert', { label:hqFrom(q.from), comm:'inj', title:q.label });
   });
   const pr = injPropNames(S, q);
@@ -1603,7 +1605,7 @@ const CUB_STD = [
   { k:'chg', l:'Changes from the plan', min:40, h:'Where you have departed from the plan you briefed (routes, sites, team tasks, timeline), why, and what it costs you. If nothing changed, say why the plan still holds.' },
   { k:'pers', l:'Accountability (PERSTAT)', kind:'pers', min:30, h:'Location (grid) and task of each fireteam, and where anyone unaccounted for was last seen.' },
   { k:'cas', l:'Casualties and MEDEVAC', min:12, none:true, h:'Each casualty since the last brief: team, cause (IED, militia, other), status and whether a CASEVAC is needed. Write NONE if there were none.' },
-  { k:'en', l:'Enemy and militia activity', min:30, h:'What the other wing and the militia have done, where, and what you expect them to do next.' },
+  { k:'en', l:'Enemy and militia activity', min:30, h:'What the other force and the militia have done, where, and what you expect them to do next.' },
   { k:'intel', l:'Intelligence and PIRs', min:40, h:'PIRs answered or advanced, with the evidence; reports you judge false and why.' },
   { k:'sus', l:'Sustainment and communications', min:30, h:'PACE level in use, LMR and phone status (batteries), equipment problems and anything you are short of.' },
   { k:'risk', l:'Escalation and risk', min:30, h:'Escalation and diplomatic points trend, the biggest risk to the mission and to the force, and what you are doing about it.' },
@@ -1658,6 +1660,10 @@ function cubOpen(S, side){
     return x;
   }
   return null;
+}
+function cubNext(S, side){
+  const o = cubOpen(S, side); if (o) return o;
+  return RHYTHM.find(x => x.kind === 'cub' && rhythmAt(x) <= END_G + 1e-9 && S.g < rhythmAt(x) - CUB_EARLY - 1e-9 && !(S.cubs || []).some(q => q.side === side && q.n === x.n)) || null;
 }
 function intentOf(S, side){ return (S.intent && S.intent[side]) || INTENT_DEFAULT[side]; }
 function pirsOf(S, side){ return (S.pirs && S.pirs[side]) || PIR_DEFAULT[side]; }
@@ -1774,7 +1780,7 @@ function newState(){
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   const S = {
     esc:10, escBy:{B:0,R:0}, raisedBy:{B:false,R:false}, decayed:{B:0,R:0}, hn:{B:50,R:50}, edits:{}, wcPos:null, pings:[], ocs:{}, ocReqs:[], nines:[], ctReqs:[], tchats:[], occhats:[], ocAnns:[], ocPings:[], ocPos:{}, wps:[], sitePts:{}, siteCodes:{},
-    pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0,hold:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0,hold:0} },
+    pts:{ B:{reports:0,ied:0,cache:0,adj:0,intel:0,hold:0,acct:0}, R:{reports:0,ied:0,cache:0,adj:0,intel:0,hold:0,acct:0} },
     intel:{B:{},R:{}}, intelOut:{}, intelVer:0, custom:{}, customOrder:[], images:{},
     liaison:[], offers:[], declared:{}, orders:[], teams:{B:{},R:{}}, map:null, ver:0, uav:{B:null,R:null}, spotted:{B:null,R:null}, uavs:[], jams:[],
     sites, office:{B:false,R:false}, access:{B:true,R:true},
@@ -2510,11 +2516,15 @@ function apply(S, e, cfg){
     case 'inj_done': {
       const q = (S.injq || []).find(x => x.qid === p.qid), sd = p.side; if (!q || !q.win || q.sent == null || (sd !== 'B' && sd !== 'R') || !injSides(q).includes(sd)) break;
       const st = p.st === 'exc' ? 'exc' : 'done', old = q.res[sd]; if (old && old.st === st) break;
-      injRefund(S, sd, old); q.res[sd] = { st, g:S.g, by:'wf' };
-      if (st === 'done' && q.who === 'any') injSides(q).forEach(o => { if (o !== sd){ injRefund(S, o, q.res[o]); q.res[o] = { st:'na', g:S.g }; } });
+      injRefund(S, sd, old, q); q.res[sd] = { st, g:S.g, by:'wf' };
+      if (st === 'done' && q.who === 'any') injSides(q).forEach(o => { if (o !== sd){ injRefund(S, o, q.res[o], q); q.res[o] = { st:'na', g:S.g }; } });
       S.ver++; pushLog(S, 'White Force marked ' + SIDES[sd].name + ' ' + (st === 'exc' ? 'excused from' : 'as having handled') + ' "' + q.label + '"' + (old && old.st === 'miss' ? ' (miss penalty refunded)' : ''), sd, e);
       if (q.closed == null && injSides(q).every(o => q.res[o])) injClose(S, q, 'marked by the White Force');
       break; }
+    case 'cub_draft': {
+      const x = cubOf(Number(p.n)); if (!side || !x || S.endex || !p.f || typeof p.f !== 'object') break;
+      const f = {}; Object.keys(p.f).slice(0, 30).forEach(k => { if (!/^[a-z_]{2,8}$/.test(k)) return; const v = p.f[k]; f[k] = typeof v === 'number' && Number.isFinite(v) ? v : String(v == null ? '' : v).slice(0, 600); });
+      if (!S.cubDraft) S.cubDraft = {}; S.cubDraft[side] = { n:x.n, f, g:S.g, id:e.id }; S.ver++; break; }
     case 'perstat': {
       const a = (S.accts || []).find(x => x.id === p.aid); if (!side || !a || S.endex || !(a.to === 'both' || a.to === 'public' || a.to === side)) break;
       const old = a.reps[side]; if (old && old.status !== 'returned') break;
@@ -2532,8 +2542,9 @@ function apply(S, e, cfg){
       const a = (S.accts || []).find(x => x.id === p.aid), sd = p.side, r = a && a.reps[sd]; if (!r || r.status !== 'wf') break;
       const tx = String(p.text || '').trim().slice(0, 300); if (!p.ok && !tx) break;
       r.wf = { ok:!!p.ok, text:tx, g:S.g }; r.status = p.ok ? 'aoc' : 'returned'; S.ver++;
+      if (p.ok && !r.scored && r.first <= a.due + 1e-9){ r.scored = ACCT_PTS; S.pts[sd].acct = (S.pts[sd].acct || 0) + ACCT_PTS; }
       if (!p.ok) pushFeed(S, sd, 'The AOC could not reconcile your PERSTAT: ' + tx + ' Correct it and send it again on the AOC tab.', 'alert', { label:'AOC', comm:'msg', priv:true });
-      pushLog(S, 'White Force ' + (p.ok ? 'approved the ' + SIDES[sd].name + ' PERSTAT and sent it to the AOC' : 'returned the ' + SIDES[sd].name + ' PERSTAT: ' + tx), sd, e);
+      pushLog(S, 'White Force ' + (p.ok ? 'approved the ' + SIDES[sd].name + ' PERSTAT and sent it to the AOC' + (r.scored ? ' (+' + ACCT_PTS + ', sent on time)' : ' (sent late: no points)') : 'returned the ' + SIDES[sd].name + ' PERSTAT: ' + tx), sd, e);
       break; }
     case 'perstat_aoc': {
       const a = (S.accts || []).find(x => x.id === p.aid), sd = p.side, r = a && a.reps[sd]; if (!r || r.status !== 'aoc') break;
@@ -2549,17 +2560,17 @@ function apply(S, e, cfg){
       else tx = String(p.text || [p.sit, p.pir, p.risk, p.ask].filter(Boolean).join(' ') || '').trim().slice(0, 1200);
       if (!tx) break;
       const old = S.cubs.find(c => c.side === side && c.n === x.n);
-      if (old){ if (old.status !== 'returned') break; old.hist.push({ text:tx, g:S.g, f:ff }); old.text = tx; old.f = ff; old.status = 'sent'; S.ver++; pushLog(S, nm + ' sent an updated ' + x.label.toLowerCase(), side, e); break; }
+      if (old){ if (old.status !== 'returned') break; old.hist.push({ text:tx, g:S.g, f:ff }); old.text = tx; old.f = ff; old.status = 'sent'; S.ver++; pushLog(S, nm + ' sent an updated ' + x.label, side, e); break; }
       if (S.g < rhythmAt(x) - CUB_EARLY - 1e-9){ pushLog(S, nm + ' ' + x.label + ' refused: not open until ' + hhmm(rhythmAt(x) - CUB_EARLY), side, e, 'rejected'); break; }
       const c = { id:e.id, side, n:x.n, g:S.g, due:rhythmAt(x), late:S.g > rhythmAt(x) + CUB_LATE + 1e-9, text:tx, f:ff, hist:[{ text:tx, g:S.g, f:ff }], status:'sent', replies:[] };
-      S.cubs.push(c); S.ver++;
+      S.cubs.push(c); S.ver++; if (S.cubDraft && S.cubDraft[side] && S.cubDraft[side].n === x.n) delete S.cubDraft[side];
       pushLog(S, nm + ' sent ' + x.label + (c.late ? ' (late, due ' + hhmm(c.due) + ')' : ' (on time)'), side, e);
       break; }
     case 'cub_reply': {
       const c = (S.cubs || []).find(x => x.id === p.id), tx = String(p.text || '').trim().slice(0, 500), vd = ['approve', 'deny', 'more'].includes(p.verdict) ? p.verdict : 'approve';
       if (!c || c.status !== 'sent' || (vd !== 'approve' && !tx)) break;
       c.status = vd === 'approve' ? 'approved' : 'returned'; c.replies.push({ verdict:vd, text:tx, g:S.g }); c.reply = { text:tx, g:S.g, verdict:vd }; S.ver++;
-      const lb = cubOf(c.n).label.toLowerCase();
+      const lb = cubOf(c.n).label;
       pushFeed(S, c.side, vd === 'approve' ? 'AOC approved your ' + lb + '.' + (tx ? ' ' + tx : '') : vd === 'more' ? 'AOC needs more on your ' + lb + ': ' + tx + ' Update it on the AOC tab.' : 'AOC did not approve your ' + lb + ': ' + tx + ' Update it on the AOC tab.', vd === 'approve' ? 'hq' : 'alert', { label:'AOC', comm:'msg', priv:true });
       pushLog(S, 'AOC ' + (vd === 'approve' ? 'approved' : vd === 'more' ? 'asked for more on' : 'did not approve') + ' the ' + SIDES[c.side].name + ' ' + lb + (tx ? ': ' + tx : ''), c.side, e);
       break; }
@@ -2840,9 +2851,9 @@ function score(S, side){
   const v = S.pts[side], hold = v.hold || 0;
   const hn = Math.min(10, Math.floor(S.hn[side] / 10));
   const esc = -S.escBy[side];
-  const sub = hold + sites + town + v.reports + v.ied + (v.iedhit || 0) + v.cache + (v.intel || 0) + v.adj + hn + esc;
+  const sub = hold + sites + town + v.reports + v.ied + (v.iedhit || 0) + v.cache + (v.intel || 0) + (v.acct || 0) + v.adj + hn + esc;
   const war = S.war ? Math.trunc(sub / 2) - sub : 0;
-  return { hold, sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, iedhit:v.iedhit || 0, cache:v.cache, adj:v.adj, hn, esc, war, total: sub + war };
+  return { hold, sites, town, reports:v.reports, intel:v.intel || 0, ied:v.ied, iedhit:v.iedhit || 0, cache:v.cache, acct:v.acct || 0, adj:v.adj, hn, esc, war, total: sub + war };
 }
 if (typeof module !== 'undefined') module.exports = { replayCached, uavEvery, contendCost, dugIn, SITE_CAP, SITE_HOLD, SITE_END, allProblems, setWindow, fillT, CONTEST_MIN, UAV_EVERY, UAV_ESC, uavPhase, JAM_EVERY, JAM_MIN, jammed, PROBLEMS, intelKey, SIDES, OTHER, SITES, SITE_KEYS, LEVELS, ESC, levelIndex, hhmm, secret, newState, gameAt, replay, score };
 </script>
@@ -3575,10 +3586,10 @@ function legendHTML(side){
     '<span>▲ Team sighting (minutes ago)</span><span style="color:var(--e2)">✸ Explosion</span></div>';
 }
 function scoreTable(S, sides){
-  const rows = [['hold', 'Site captures and time held'], ['sites', 'Sites held (+5 each at ENDEX)'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['iedhit', 'IED casualties'], ['cache', 'Militia cache and targets'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White Force adjustments']];
+  const rows = [['hold', 'Site captures and time held'], ['sites', 'Sites held (+5 each at ENDEX)'], ['town', 'Town office'], ['reports', 'Confirmed reports'], ['intel', 'Intel packages'], ['ied', 'IEDs cleared'], ['iedhit', 'IED casualties'], ['cache', 'Militia cache and targets'], ['acct', 'Accountability (PERSTAT)'], ['hn', 'Diplomatic points ÷ 10'], ['esc', 'Escalation caused'], ['war', 'War: cut in half'], ['adj', 'White Force adjustments']];
   const sc = {}; sides.forEach(s => sc[s] = score(S, s));
   let h = '<table class="score"><thead><tr><th>Points</th>' + sides.map(s => '<th><span class="chip ' + s + '">' + SIDES[s].name + '</span></th>').join('') + '</tr></thead><tbody>';
-  rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if ((k === 'adj' || k === 'iedhit') && sides.every(s => !sc[s][k])) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
+  rows.forEach(([k, label]) => { if (k === 'war' && !S.war) return; if ((k === 'adj' || k === 'iedhit' || k === 'acct') && sides.every(s => !sc[s][k])) return; h += '<tr><td>' + label + '</td>' + sides.map(s => '<td>' + sc[s][k] + '</td>').join('') + '</tr>'; });
   h += '<tr class="total"><td>Total</td>' + sides.map(s => '<td>' + sc[s].total + '</td>').join('') + '</tr></tbody></table>';
   return h;
 }
@@ -4454,12 +4465,12 @@ function buildWing(side){
             <p class="small muted" style="margin:0" data-pswhat></p>
             <form class="stack" data-f="perstat"><input type="hidden" name="aid"><div class="stack" data-psfields></div><div><button class="btn-side" type="submit">Send PERSTAT to the AOC</button></div></form>
             <div class="list" data-pslist></div></div>
-          <div class="act" data-cubbox><div class="act-head"><b data-cubhead>Commander's update brief</b><span class="cost" data-cubdue></span></div>
+          <div class="act" data-cubbox><div class="act-head"><b data-cubhead>Commander’s Update Brief</b><span class="cost" data-cubdue></span></div>
             <p class="small muted" style="margin:0" data-cubwhat></p>
             <form class="stack" data-f="cub"><input type="hidden" name="n">
               <div class="stack" data-cubfields></div>
-              <div><button class="btn-side" type="submit">Send update to the AOC</button></div></form></div>
-          <div class="act"><div class="act-head"><b>Battle rhythm</b><span class="cost">AOC schedule</span></div><div data-rhythm></div></div>
+              <div class="row" style="justify-content:flex-start;align-items:center"><button class="btn-side" type="submit" style="flex:0 0 auto">Send to the AOC</button><button type="button" data-cubdraft style="flex:0 0 auto">Save draft</button><span class="small muted" data-cubsaved></span></div></form></div>
+          <div class="act"><div class="act-head"><b>Battle Rhythm</b><span class="cost">AOC schedule</span></div><div data-rhythm></div></div>
           <div class="act"><div class="act-head"><b>Ask the AOC for support</b><span class="cost" data-aocres></span></div>
             <p class="small muted" style="margin:0">The AOC can retask ISR, resupply you, approve a CASEVAC, or release another show of force or cache strike. It holds a limited amount for your force, so say why.</p>
             <form class="stack" data-f="aocreq"><div class="row"><label for="aqW-${side}">What you need<select id="aqW-${side}" name="want">${Object.keys(AOC_WANT).filter(k => k !== 'reply').map(k => '<option value="' + k + '">' + AOC_WANT[k] + '</option>').join('')}</select></label></div><label for="aqT-${side}">Why (the AOC reads this)<input id="aqT-${side}" name="text" maxlength="300" placeholder="Example: Team 2 hit an IED at C5 and we lost our drone window."></label><div><button class="btn-side" type="submit">Send to the AOC</button></div></form>
@@ -4549,7 +4560,12 @@ function buildWing(side){
   on('jam', () => { if (!confirm('Jam the enemy datalink? Escalation goes up by 5.')) return false; return writeEvent('act_jam', side, {}); });
   { const sf = $('form[data-f="strike"]', v), sync = () => { const m = sf.elements.target.value === 'militia'; $('[data-skmt]', sf).hidden = !m; sf.elements.grid.required = !m; }; sf.elements.target.addEventListener('change', sync); sf.addEventListener('reset', () => setTimeout(sync)); sync(); }
   on('strike', fd => { const sf = $('form[data-f="strike"]', v), nine = sf.dataset.nine || null; delete sf.dataset.nine; if (fd.get('target') === 'militia'){ const t = (app.S.mtgts || []).find(x => x.id === fd.get('mt')); if (!t){ toast('Pick a militia target.', true); return false; } if (!mtFixed(app.S, t, side)){ toast('That target is not fixed. Fix it with your UAV or a drone flight first.', true); return false; } return writeEvent('act_strike', side, { target:'militia', mt:t.id, grid:t.grid, nine, fix:String(fd.get('fix') || '').trim(), civ:fd.get('civ') }); } return writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase(), nine, fix:String(fd.get('fix') || '').trim(), civ:fd.get('civ') }); });
-  on('cub', fd => { const n = Number(fd.get('n')); if (!n || !CUB_LINES[n]){ toast('No update brief is open right now.', true); return false; } const f = {}; CUB_LINES[n].forEach(L => { f[L.k] = String(fd.get('f_' + L.k) || '').trim(); }); PERS_KEYS.forEach(([k]) => { const x = fd.get('p_' + k); if (x !== null) f['p_' + k] = x === '' ? NaN : Number(x); }); if (fd.get('rag') !== null) f.rag = fd.get('rag'); const cp = cubCompose(n, f); if (cp.err){ toast('Brief not sent: ' + cp.err + '.', true); return false; } return writeEvent('cub', side, { n, f:cp.f }); });
+  const cubCollect = (fd, n, raw) => { const f = {}; CUB_LINES[n].forEach(L => { f[L.k] = String(fd.get('f_' + L.k) || '').trim(); }); PERS_KEYS.forEach(([k]) => { const x = fd.get('p_' + k); if (x !== null) f['p_' + k] = x === '' ? (raw ? '' : NaN) : Number(x); }); if (fd.get('rag') !== null) f.rag = fd.get('rag'); return f; };
+  { const cf = $('form[data-f="cub"]', v); let tm = null;
+    const save = async quiet => { clearTimeout(tm); const n = Number(cf.elements.n.value); if (!n || !CUB_LINES[n] || cf.hidden) return; cf.dataset.mine = ''; await writeEvent('cub_draft', side, { n, f:cubCollect(new FormData(cf), n, true) }); const d = app.S && app.S.cubDraft && app.S.cubDraft[side]; if (d) cf.dataset.mine = d.id; if (!quiet) toast('Draft saved for your command post.'); };
+    cf.addEventListener('change', () => { clearTimeout(tm); tm = setTimeout(() => save(true), 800); });
+    $('[data-cubdraft]', cf).onclick = () => save(false); }
+  on('cub', fd => { const n = Number(fd.get('n')); if (!n || !CUB_LINES[n]){ toast('No Commander’s Update Brief is open right now.', true); return false; } const f = cubCollect(fd, n); const cp = cubCompose(n, f); if (cp.err){ toast('Brief not sent: ' + cp.err + '.', true); return false; } return writeEvent('cub', side, { n, f:cp.f }); });
   on('perstat', fd => { const aid = String(fd.get('aid') || ''), S = app.S, a = (S.accts || []).find(x => x.id === aid); if (!a){ toast('No PERSTAT is due right now.', true); return false; }
     const sum = {}; PERS_KEYS.forEach(([k]) => { const x = fd.get('p_' + k); sum[k] = x === '' || x == null ? NaN : Number(x); });
     if (PERS_KEYS.some(([k]) => !Number.isInteger(sum[k]))){ toast('Fill in every total.', true); return false; }
@@ -5047,7 +5063,7 @@ function cmdColHTML(s){
     '<div class="pic-card"><div class="pic-h"><h3>Retask ISR or send support</h3><span data-cmdres></span></div>' +
       '<form class="row" data-cmdgrant style="align-items:end"><label>What<select name="kind">' + Object.keys(AOC_GRANT).map(k => '<option value="' + k + '">' + AOC_WANT[k] + '</option>').join('') + '</select></label><label>Note to ' + SIDES[s].name + ' (optional)<input name="text" maxlength="300"></label><button type="submit" class="btn-side" style="flex:0 0 auto">Send</button></form>' +
       '<p class="small muted" style="margin:6px 0 0">ISR: the UAV or a drone flight is ready for them now. Support: aid package ready now, CASEVAC restores part of a recent IED casualty, or one more show of force or cache strike. Use it when a force has a real problem, not as a reward.</p></div>' +
-    '<div class="pic-card"><div class="pic-h"><h3>Update briefs</h3><span data-cmdcubn></span></div><div data-cmdcubs></div></div>' +
+    '<div class="pic-card"><div class="pic-h"><h3>Commander’s Update Briefs</h3><span data-cmdcubn></span></div><div data-cmdcubs></div></div>' +
     '<div class="pic-card"><div class="pic-h"><h3>Commander’s intent</h3><button type="button" data-cmdintedit style="flex:0 0 auto">Edit</button></div><div class="cmd-txt" data-cmdint></div>' +
       '<form class="stack" data-cmdintf hidden><textarea name="text" rows="9" maxlength="1200"></textarea><div class="row"><button type="submit" class="btn-side" style="flex:0 0 auto">Send new intent</button><button type="button" data-cmdintreset style="flex:0 0 auto">Restore standing intent</button><button type="button" data-cmdcancel style="flex:0 0 auto">Cancel</button></div></form></div>' +
     '<div class="pic-card"><div class="pic-h"><h3>PIRs</h3><button type="button" data-cmdpiredit style="flex:0 0 auto">Edit</button></div><div data-cmdpirs></div>' +
@@ -5167,15 +5183,19 @@ function wireCmd(v){
 }
 function renderAocPane(S, side, v){
   const pane = $('[data-pane="aoc"]', v); if (!pane) return;
-  const cb = cubOpen(S, side), c = cb ? (S.cubs || []).find(q => q.side === side && q.n === cb.n) : null, f = $('form[data-f="cub"]', v), canSend = cb && (!c || c.status === 'returned');
-  $('[data-cubhead]', v).textContent = cb ? cb.label : 'Commander’s update brief';
-  $('[data-cubdue]', v).textContent = cb ? (c ? cubChip(S, c, cb).replace(/<[^>]+>/g, '') : 'Due ' + hhmm(rhythmAt(cb))) : '';
-  { const nx = RHYTHM.find(x => x.kind === 'cub' && rhythmAt(x) - CUB_EARLY > S.g && !(S.cubs || []).some(q => q.side === side && q.n === x.n));
-    const last = c && c.reply ? ' AOC: ' + c.reply.text : '';
-    $('[data-cubwhat]', v).textContent = !cb ? (nx ? 'No brief is due. ' + nx.label + ' opens at ' + hhmm(rhythmAt(nx) - CUB_EARLY) + '.' : 'No more update briefs are scheduled.') : !c ? cb.what + ' On time if sent by ' + hhmm(rhythmAt(cb) + CUB_LATE) + '.' : c.status === 'sent' ? 'Sent at ' + hhmm(c.hist[c.hist.length - 1].g) + '. The AOC will approve it, deny it or ask for more. Nothing else waits on it.' : (c.reply && c.reply.verdict === 'more' ? 'The AOC needs more before it approves.' : 'The AOC did not approve it.') + last + ' Send an updated brief below.'; }
-  f.hidden = !canSend; if (cb && f.elements.n.value !== String(cb.n)) f.elements.n.value = String(cb.n);
+  const cb = cubOpen(S, side), tg = cubNext(S, side), c = tg ? (S.cubs || []).find(q => q.side === side && q.n === tg.n) : null, f = $('form[data-f="cub"]', v), canEdit = tg && (!c || c.status === 'returned'), canSend = canEdit && cb === tg;
+  $('[data-cubhead]', v).textContent = tg ? tg.label : 'Commander’s Update Brief';
+  $('[data-cubdue]', v).textContent = tg ? (c ? cubChip(S, c, tg).replace(/<[^>]+>/g, '') : 'Due ' + hhmm(rhythmAt(tg))) : '';
+  { const last = c && c.reply ? ' AOC: ' + c.reply.text : '', opens = tg ? hhmm(rhythmAt(tg) - CUB_EARLY) : '';
+    $('[data-cubwhat]', v).textContent = !tg ? 'No more Commander’s Update Briefs are scheduled.' : c && c.status === 'sent' ? 'Sent at ' + hhmm(c.hist[c.hist.length - 1].g) + '. The AOC will approve it, deny it or ask for more. Nothing else waits on it.' : c ? (c.reply && c.reply.verdict === 'more' ? 'The AOC needs more before it approves.' : 'The AOC did not approve it.') + last + ' Send an updated brief below.' : cb !== tg ? 'Start drafting now. ' + tg.what + ' The draft saves for your whole command post. It can be sent from ' + opens + ' and is on time if sent by ' + hhmm(rhythmAt(tg) + CUB_LATE) + '.' : tg.what + ' On time if sent by ' + hhmm(rhythmAt(tg) + CUB_LATE) + '.'; }
+  f.hidden = !canEdit; if (tg && f.elements.n.value !== String(tg.n)) f.elements.n.value = String(tg.n);
+  { const sb = $('button[type=submit]', f); sb.disabled = !canSend; sb.textContent = canSend ? 'Send to the AOC' : tg ? 'Opens at ' + hhmm(rhythmAt(tg) - CUB_EARLY) : 'Send to the AOC'; }
   renderPerstat(S, side, v);
-  if (canSend){ const box = $('[data-cubfields]', f), key = cb.n + '|' + (c ? c.id + c.hist.length : ''); if (box.dataset.k !== key){ box.dataset.k = key; box.innerHTML = cubFieldsHTML(cb.n, side); const pf = c && c.f; if (pf) Object.keys(pf).forEach(k => { const el = f.elements[k === 'rag' ? 'rag' : /^p_/.test(k) ? k : 'f_' + k]; if (el) el.value = pf[k]; }); } }
+  if (canEdit){ const box = $('[data-cubfields]', f), dr = S.cubDraft && S.cubDraft[side] && S.cubDraft[side].n === tg.n ? S.cubDraft[side] : null, key = tg.n + '|' + (c ? c.id + c.hist.length : '');
+    const fill = src => Object.keys(src).forEach(k => { const el = f.elements[k === 'rag' ? 'rag' : /^p_/.test(k) ? k : 'f_' + k]; if (el && el !== document.activeElement) el.value = src[k]; });
+    if (box.dataset.k !== key){ box.dataset.k = key; box.dataset.d = ''; box.innerHTML = cubFieldsHTML(tg.n, side); if (c && c.f) fill(c.f); }
+    if (dr && box.dataset.d !== dr.id && f.dataset.mine !== dr.id && !f.contains(document.activeElement)){ box.dataset.d = dr.id; fill(dr.f); }
+    $('[data-cubsaved]', f).textContent = dr ? 'Draft saved ' + hhmm(dr.g) + '.' : 'Not saved yet.'; }
   { const ce = $('[data-cnaoc]', v), nOpen = (canSend ? 1 : 0) + (psOpen(S, side) ? 1 : 0) + S.requests.filter(r => r.side === side && r.kind === 'strike' && r.result === 'hit' && !r.bda).length; if (ce){ ce.hidden = !nOpen; ce.textContent = nOpen; } }
   { const h = rhythmHTML(S, side), e = $('[data-rhythm]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
   { const r = aocResOf(S, side); $('[data-aocres]', v).textContent = 'AOC holds for you: ISR retasks ' + r.isr + ' | support ' + r.sup; }
@@ -5587,7 +5607,7 @@ function buildWhite(){
     <div data-warbar></div>
     <div class="white-grid" data-wgrid>
       <section class="cmdsec" data-sec="cmd" data-cmdsec data-aoc-only>
-        <div class="pic-card"><div class="pic-h"><h3>Battle rhythm</h3><span class="small muted">Update briefs from each JFACC, the change of command and the final SITREP</span></div><div data-cmdrhythm></div></div>
+        <div class="pic-card"><div class="pic-h"><h3>Battle Rhythm</h3><span class="small muted">Commander’s Update Briefs from each JFACC, the Change of Command and the final SITREP</span></div><div data-cmdrhythm></div></div>
         <div class="cmd-cols">${cmdColHTML('B')}${cmdColHTML('R')}</div>
       </section>
       <section class="wfsec" data-sec="wf" data-wfsec data-aoc-only>
@@ -5696,7 +5716,7 @@ function buildWhite(){
           <p class="small muted" style="margin:0">Queued injects wait here until you send them. Tap a row to read the message and the White Force note.</p>
           <div class="row" style="justify-content:flex-start"><button type="button" data-injqall style="flex:0 0 auto">Queue all timed templates</button><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-injqsent> Show sent</label></div>
           <div class="list scrolllist" data-injq></div></div>
-        <div class="panel" data-sec="msg"><div class="act-head"><h2>Response windows</h2><span class="small muted" data-injwn></span></div>
+        <div class="panel" data-sec="msg"><div class="act-head"><h2>Response Windows</h2><span class="small muted" data-injwn></span></div>
           <p class="small muted" style="margin:0">A timed inject's clock starts when it is sent, or when its last prop is reported placed. Most close on their own when a POC call or a board action shows the force responded. At the deadline the inject closes, a force that did not respond is recorded as missed (with the penalty shown) and its props are flagged for recovery. Mark a force handled or excused here at any time; a miss penalty is refunded.</p>
           <div class="list scrolllist" data-injwin></div></div>
         <div class="panel" data-sec="msg"><details data-tpldet><summary><b>Inject templates</b> <span class="small muted" data-tpln></span></summary>
