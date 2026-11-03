@@ -346,6 +346,9 @@ body.ip-fs{overflow:hidden}
 .cmd-col{display:flex;flex-direction:column;gap:14px;min-width:0}
 .cmd-col>.pic-card{border-top:4px solid var(--sc,#888)}
 .cmd-col.side-B{--sc:var(--blu)}.cmd-col.side-R{--sc:var(--red)}
+.cmd-filter .seg{display:flex}.cmd-filter .seg button{border-radius:0;margin-left:-1px;display:inline-flex;align-items:center;gap:6px}.cmd-filter .seg button:first-child{border-radius:6px 0 0 6px}.cmd-filter .seg button:last-child{border-radius:0 6px 6px 0}.cmd-filter .seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.cmd-cols.one{grid-template-columns:minmax(0,1fr)}.cmd-cols[data-only="B"]>.side-R,.cmd-cols[data-only="R"]>.side-B{display:none!important}
+.cmd-cols.one>.cmd-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));align-items:start}
 .cmd-item{padding:10px 0;border-top:1px solid var(--line);display:grid;gap:6px}
 .cmd-item .row{align-items:end}
 .cmd-item .k{font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
@@ -1588,7 +1591,9 @@ function injRefund(S, sd, r, q){ if (!r || r.st !== 'miss') return; if (r.pts) S
 function injPropNames(S, q){ return Object.values(S.propUses || {}).filter(u => u.kind === 'tpl' && u.item === q.tid && propLive(S, u)).map(u => ((S.props || {})[u.prop] || {}).name + (u.label ? ' (' + u.label + ')' : '')); }
 function injClose(S, q, why){
   q.closed = S.g; S.ver++;
-  const sides = injSides(q), anyDone = sides.some(sd => q.res[sd] && q.res[sd].st === 'done');
+  const sides = injSides(q);
+  sides.forEach(sd => { if (!q.res[sd] && q.seen && q.seen[sd] != null && !(q.seenNo && q.seenNo[sd])) q.res[sd] = { st:'done', g:S.g, auto:true }; });
+  const anyDone = sides.some(sd => q.res[sd] && q.res[sd].st === 'done');
   sides.forEach(sd => { if (q.res[sd]) return;
     if (q.who === 'any' && anyDone){ q.res[sd] = { st:'na', g:S.g }; return; }
     const m = q.miss || {}; q.res[sd] = { st:'miss', g:S.g, pts:m.pts || 0, hn:m.hn || 0 };
@@ -1610,7 +1615,7 @@ function injClock(S, g){
       pushLog(S, 'Inject clock started (props placed): ' + q.label + ', due ' + hhmm(injEnd(q)), null);
     }
     const sides = injSides(q);
-    sides.forEach(sd => { if (!q.res[sd] && injAuto(S, q, sd)){ q.res[sd] = { st:'done', g:S.g, auto:true }; S.ver++; pushLog(S, SIDES[sd].name + ' handled the inject "' + q.label + '"', sd); } });
+    sides.forEach(sd => { if (!q.res[sd] && !(q.seen && q.seen[sd] != null) && !(q.seenNo && q.seenNo[sd]) && injAuto(S, q, sd)){ if (!q.seen) q.seen = {}; q.seen[sd] = S.g; S.ver++; pushLog(S, 'Board saw a response from ' + SIDES[sd].name + ' to "' + q.label + '" (waiting for the White Force to confirm)', sd); } });
     const end = injEnd(q);
     if (sides.every(sd => q.res[sd]) || (q.who === 'any' && sides.some(sd => q.res[sd] && q.res[sd].st === 'done'))){ injClose(S, q, 'handled'); return; }
     if (g >= end - 1e-9){ const keep = S.g; S.g = end; injClose(S, q); S.g = Math.max(keep, S.g); }
@@ -2460,7 +2465,7 @@ function apply(S, e, cfg){
       const k = ['call', 'site', 'msg', 'stale'].includes(p.kind) ? p.kind : 'msg';
       const r = { id:e.id, oc:o.id, kind:k, g:S.g, status:'open', text:String(p.text || '').trim().slice(0, 300) };
       if (k === 'call'){ if (!OC_CALLS[p.call] || !(p.side === 'B' || p.side === 'R')) break; r.call = p.call; r.side = p.side; if (p.call === 'custom'){ if (!r.text) break; r.adj = adjClean(p.adj); }
-        const iq = p.inj ? (S.injq || []).find(q => q.qid === p.inj && q.win && q.sent != null && injSides(q).includes(r.side)) : null; r.inj = iq ? iq.qid : callInjFor(S, r.side, p.call); }
+        const iq = p.inj ? (S.injq || []).find(q => q.qid === p.inj && q.win && q.sent != null && injSides(q).includes(r.side)) : null; r.inj = iq ? iq.qid : null; r.injGuess = iq ? null : callInjFor(S, r.side, p.call); }
       if (k === 'site'){ r.site = SITES[p.site] || p.site === 'town' ? p.site : null; r.who = p.who === 'both' ? 'both' : 'one'; r.side = r.who === 'one' && (p.side === 'B' || p.side === 'R') ? p.side : null; }
       if (k === 'stale'){ if (!SITES[p.site]) break; r.site = p.site; }
       if (k === 'msg' && !r.text) break;
@@ -2563,6 +2568,11 @@ function apply(S, e, cfg){
       pushFeed(S, sd, 'The AOC updated your PIRs. ' + pirsOf(S, sd).map((x, i) => x ? 'PIR ' + (i + 1) + ': ' + x : '').filter(Boolean).join(' '), 'hq', { label:'AOC', comm:'msg', priv:true });
       pushLog(S, 'AOC PIRs for ' + SIDES[sd].name + (items ? ' updated' : ' returned to the standing PIRs'), sd, e);
       break; }
+    case 'inj_seen_no': {
+      const q = (S.injq || []).find(x => x.qid === p.qid), sd = p.side; if (!q || !q.seen || q.seen[sd] == null || (q.res || {})[sd]) break;
+      if (!q.seenNo) q.seenNo = {}; q.seenNo[sd] = S.g; S.ver++;
+      pushLog(S, 'White Force: ' + SIDES[sd].name + ' has not responded to "' + q.label + '" yet (board suggestion set aside)', sd, e);
+      break; }
     case 'inj_done': {
       const q = (S.injq || []).find(x => x.qid === p.qid), sd = p.side; if (!q || !q.win || q.sent == null || (sd !== 'B' && sd !== 'R') || !injSides(q).includes(sd)) break;
       const st = p.st === 'exc' ? 'exc' : 'done', old = q.res[sd]; if (old && old.st === st) break;
@@ -2601,6 +2611,7 @@ function apply(S, e, cfg){
       const tx = String(p.text || '').trim().slice(0, 300); if (!p.ok && !tx) break;
       r.wf = { ok:!!p.ok, text:tx, g:S.g }; r.status = p.ok ? 'aoc' : 'returned'; S.ver++;
       if (p.ok && !r.scored && r.first <= a.due + 1e-9){ r.scored = ACCT_PTS; S.pts[sd].acct = (S.pts[sd].acct || 0) + ACCT_PTS; }
+      if (p.ok && r.first <= a.due + 1e-9) injMark(S, a.qid, sd, e);
       if (!p.ok) pushFeed(S, sd, 'The AOC could not reconcile your PERSTAT: ' + tx + ' Correct it and send it again on the AOC tab.', 'alert', { label:'AOC', comm:'msg', priv:true });
       pushLog(S, 'White Force ' + (p.ok ? 'approved the ' + SIDES[sd].name + ' PERSTAT and sent it to the AOC' + (r.scored ? ' (+' + ACCT_PTS + ', sent on time)' : ' (sent late: no points)') : 'returned the ' + SIDES[sd].name + ' PERSTAT: ' + tx), sd, e);
       break; }
@@ -2731,13 +2742,13 @@ function apply(S, e, cfg){
       if (!OC_CALLS[p.call] || (side !== 'B' && side !== 'R')) break;
       const tx = String(p.text || '').trim().slice(0, 200); if (p.call === 'custom' && !tx) break;
       applyCall(S, e, cfg, side, p.call, p.call === 'custom' ? adjClean(p.adj) : null, tx, null);
-      const iq = p.inj || callInjFor(S, side, p.call); if (iq) injMark(S, iq, side, e);
+      if (p.inj) injMark(S, p.inj, side, e);
       break; }
     case 'oc_res': {
       const r = S.ocReqs.find(x => x.id === p.req); if (!r || r.status !== 'open') break;
       r.status = p.ok ? 'ok' : 'no'; r.resG = S.g; S.ver++;
       { const rp = String(p.reply || '').trim().slice(0, 300); if (rp){ r.reply = rp; pushLog(S, 'White Force reply to POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + rp, null, e); } }
-      if (r.kind === 'call' && p.ok){ applyCall(S, e, cfg, r.side, r.call, r.call === 'custom' ? adjClean(p.adj || r.adj) : null, r.text, r.call === 'aid' ? { at:r.g } : null); if (r.inj) injMark(S, r.inj, r.side, e); }
+      if (r.kind === 'call' && p.ok){ applyCall(S, e, cfg, r.side, r.call, r.call === 'custom' ? adjClean(p.adj || r.adj) : null, r.text, r.call === 'aid' ? { at:r.g } : null); const mk = p.inj !== undefined ? (p.inj || null) : r.inj; if (mk) injMark(S, mk, r.side, e); }
       else if (r.kind === 'stale' && p.ok){ const st = S.sites[r.site]; if (st && !st.contestBy && !st.contested) apply(S, { id:e.id, ts:e.ts, type:'site_contested', side:null, p:{ site:r.site, on:true }, by:e.by }, cfg); else pushLog(S, 'Stalemate report from POC ' + ((S.ocs[r.oc] || {}).name || '') + ' not applied: ' + (SITES[r.site] ? SITES[r.site].name : 'site') + (st && st.contestBy ? ' is under contention' : ' is already in stalemate'), null, e, 'rejected'); }
       else if (r.kind === 'stale') pushLog(S, 'Stalemate report from POC ' + ((S.ocs[r.oc] || {}).name || '') + ' declined: ' + (SITES[r.site] ? SITES[r.site].name : 'site'), null, e);
       else pushLog(S, (r.kind === 'call' ? 'Denied' : 'Acknowledged') + ' POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + ocReqText(S, r), null, e);
@@ -4116,7 +4127,8 @@ function buildOC(){
     <div class="panel stack" data-ps="now"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
     <div class="panel stack" data-ps="calls"><h2>Calls for the White Force</h2><p class="small muted" style="margin:0">Calls take effect only after White Force approval.</p>
       <div class="row"><label>Force<select data-ocside><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
-      <label>For inject<select data-ocinj><option value="">Automatic (the board matches it)</option></select></label>
+      <label>Is this the team’s response to an inject? (optional)<select data-ocinj><option value="">No, or not sure</option></select></label>
+      <p class="small muted" style="margin:-4px 0 0">If you pick one, the White Force sees it with your call and decides whether it counts.</p>
       <div class="evgrid">${Object.entries(OC_CALLS).filter(([k]) => k !== 'custom').map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div>
       <details class="oc-custom"><summary><b>Something else</b> <span class="small muted">anything the buttons above do not cover</span></summary>
         <form class="stack" data-occustom style="margin-top:6px"><label>What happened<textarea name="text" rows="2" maxlength="200" required placeholder="Example: The team gave first aid to a hurt POC and stopped the game safely."></textarea></label>
@@ -4202,7 +4214,7 @@ function renderOC(S){
   if (det && app.ocDetSeen !== det.g + det.name){ app.ocDetSeen = det.g + det.name; toast(det.name + ' was removed. Pick the fireteam you are with now.', true); try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} }
   if (o && o.side && !app.ocSideSet){ app.ocSideSet = true; $('[data-ocside]', v).value = o.side; $('[data-ocwho]', v).value = o.side; }
   { const sel = $('[data-ocinj]', v), sd = $('[data-ocside]', v).value, qs = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injSides(q).includes(sd) && !(q.res || {})[sd]);
-    if (document.activeElement !== sel) keepSelect(sel, '<option value="">Automatic (the board matches it)</option>' + qs.map(q => '<option value="' + q.qid + '">' + esc(q.label) + (injEnd(q) != null ? ' (due ' + hhmm(injEnd(q)) + ')' : '') + '</option>').join('')); }
+    if (document.activeElement !== sel) keepSelect(sel, '<option value="">No, or not sure</option>' + qs.map(q => '<option value="' + q.qid + '">' + esc(q.label) + (injEnd(q) != null ? ' (due ' + hhmm(injEnd(q)) + ')' : '') + '</option>').join('')); }
   const mine = S.nines.filter(n => n.status === 'open' && o && n.side === o.side && n.team === o.team);
   $('[data-ocnines]', v).innerHTML = !o || !o.team ? '<div class="empty">Attach yourself to a fireteam to check its 9-lines.</div>' : mine.length ? mine.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.g) + '</span><div>' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocnine="' + n.id + '" data-ok="1">Correct, send to C2</button><button type="button" data-ocnine="' + n.id + '" data-ok="0">Not right</button></div></div>').join('') : '<div class="empty">Nothing to check right now.</div>';
   { const tx = $('[data-ocselftxt]', v), clr = $('[data-ocselfclr]', v), s = app.ocSelf && Date.now() - app.ocSelf.t < PIN_LIFE ? app.ocSelf : null;
@@ -4262,12 +4274,14 @@ function renderOCWhite(S, v){
   const q = [], who = id => { const o = S.ocs[id]; return o ? esc(o.name) + ' <span class="muted">(' + esc(ocWhere(S, o)) + ')</span>' : 'POC'; };
   const ocsFor = n => Object.values(S.ocs).filter(o => !o.removed && o.side === n.side && o.team === n.team).map(o => esc(o.name)).join(', ');
   S.nines.filter(n => n.status === 'open').forEach(n => q.push('<div class="li"><div class="grow"><span class="chip ' + n.side + '">' + SIDES[n.side].name + '</span> <b>Strike 9-line</b> <span class="small muted">' + hhmm(n.g) + ' | ' + esc(n.name) + (ocsFor(n) ? ' - POC ' + ocsFor(n) : ' - No POC attached') + '</span><div class="small">' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-nineres="' + n.id + '" data-ok="1">Correct, send to C2</button><button type="button" data-nineres="' + n.id + '" data-ok="0">Deny</button></div></div>'));
+  const injPick = r => { if (r.kind !== 'call') return ''; const sd = r.side, open = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injSides(q).includes(sd) && !(q.res || {})[sd]), pre = r.inj || r.injGuess || ''; if (!open.length && !pre) return '';
+    return '<label class="small" style="margin-top:6px">Also mark this inject done for ' + SIDES[sd].name + (r.inj ? ' (the POC picked it)' : pre ? ' (the board’s best match)' : '') + '<select data-ocinjw><option value="">None</option>' + open.map(q => '<option value="' + q.qid + '"' + (q.qid === pre ? ' selected' : '') + '>' + esc(q.label) + (injEnd(q) != null ? ' (due ' + hhmm(injEnd(q)) + ')' : '') + '</option>').join('') + '</select></label>'; };
   S.ocReqs.filter(r => r.status === 'open').forEach(r => {
-    if (r.kind === 'call' && r.call === 'custom'){ const a = r.adj || {}; q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>Something else</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + ': ' + esc(r.text) + (r.inj ? ' <span class="chip">for ' + esc(((S.injq || []).find(x => x.qid === r.inj) || {}).label || 'an inject') + '</span>' : '') + '</div><div class="row" style="margin-top:6px">' + [['pts', 'Points'], ['hn', 'Diplomatic'], ['esc', 'Escalation']].map(([k, l]) => '<label class="small">' + l + '<input type="number" data-ocadj="' + k + '" min="-30" max="30" value="' + (a[k] || 0) + '"></label>').join('') + '</div><input data-ocreply="' + r.id + '" maxlength="300" autocomplete="off" placeholder="Reply (optional)" style="margin-top:6px"></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button></div></div>'); return; }
+    if (r.kind === 'call' && r.call === 'custom'){ const a = r.adj || {}; q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>Something else</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + ': ' + esc(r.text) + '' + '</div>' + injPick(r) + '<div class="row" style="margin-top:6px">' + [['pts', 'Points'], ['hn', 'Diplomatic'], ['esc', 'Escalation']].map(([k, l]) => '<label class="small">' + l + '<input type="number" data-ocadj="' + k + '" min="-30" max="30" value="' + (a[k] || 0) + '"></label>').join('') + '</div><input data-ocreply="' + r.id + '" maxlength="300" autocomplete="off" placeholder="Reply (optional)" style="margin-top:6px"></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button></div></div>'); return; }
     let ctl = r.kind === 'stale' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Mark stalemate</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Not a stalemate</button>' : r.kind === 'call' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button>' : (r.kind === 'msg' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Send reply</button>' : '') + '<button type="button" data-ocres="' + r.id + '" data-ok="1">Got it</button>';
     if (r.kind === 'site' && r.who === 'both' && SITES[r.site] && !S.sites[r.site].contested) ctl = '<button type="button" data-act="contest" data-id="' + r.site + '" data-on="1">Mark stalemate</button>' + ctl;
     const head = r.kind === 'call' ? '<span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + esc(OC_CALLS[r.call].name) + '</b> <span class="small muted">' + esc(OC_CALLS[r.call].sub) + '</span>' : r.kind === 'stale' ? '<b>Stalemate reported</b>' : r.kind === 'site' ? '<b>At a site</b>' : '<b>Message</b>';
-    q.push('<div class="li"><div class="grow">' + head + ' <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + (r.kind === 'call' ? (r.text ? ': ' + esc(r.text) : '') : ': ' + esc(r.kind === 'site' || r.kind === 'stale' ? ocReqText(S, r) : r.text)) + '</div><input data-ocreply="' + r.id + '" maxlength="300" autocomplete="off" aria-label="Reply to ' + esc((S.ocs[r.oc] || {}).name || 'POC') + '" placeholder="Reply (optional)" style="margin-top:6px"></div><div class="row" style="flex:0 0 auto">' + ctl + '</div></div>');
+    q.push('<div class="li"><div class="grow">' + head + ' <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + (r.kind === 'call' ? (r.text ? ': ' + esc(r.text) : '') : ': ' + esc(r.kind === 'site' || r.kind === 'stale' ? ocReqText(S, r) : r.text)) + '</div>' + injPick(r) + '<input data-ocreply="' + r.id + '" maxlength="300" autocomplete="off" aria-label="Reply to ' + esc((S.ocs[r.oc] || {}).name || 'POC') + '" placeholder="Reply (optional)" style="margin-top:6px"></div><div class="row" style="flex:0 0 auto">' + ctl + '</div></div>');
   });
   { const box = $('[data-ocq]', v), html = q.length ? q.join('') : '<div class="empty">Nothing from the POCs right now.</div>'; if (box.dataset.h !== html && !typingIn(box)){ box.dataset.h = html; box.innerHTML = html; } }
   const live = Object.values(S.ocs).filter(o => !o.removed);
@@ -5284,6 +5298,7 @@ function renderCmd(S, v){
   let waiting = 0;
   ['B', 'R'].forEach(s => {
     const col = $('[data-cmdside="' + s + '"]', sec), W = cmdWaitHTML(S, s), nW = W.filter(x => !x.info).length; waiting += nW;
+    { const c = $('[data-cmdfcnt="' + s + '"]', sec); if (c){ c.hidden = !nW; c.textContent = nW; } }
     $('[data-cmdwaitn]', col).textContent = nW ? nW + ' waiting' : 'Clear';
     { const e = $('[data-cmdwait]', col), h = W.length ? W.map(x => x.h).join('') : '<div class="pic-empty">Nothing is waiting on the AOC from ' + SIDES[s].name + '.</div>'; if (e.dataset.h !== h && !typingIn(e)){ e.dataset.h = h; e.innerHTML = h; } }
     { const r = roeNow(S, s); $('[data-cmdroes]', col).textContent = 'ROE ' + (r ? ROE_NAMES[r.level] + ' until ' + hhmm(r.until) : 'Standard'); }
@@ -5305,6 +5320,9 @@ function renderCmd(S, v){
 }
 function wireCmd(v){
   const sec = $('[data-cmdsec]', v); if (!sec || sec.dataset.wired) return; sec.dataset.wired = '1';
+  { const setF = k => { const cols = $('[data-cmdcols]', sec); cols.dataset.only = k === 'both' ? '' : k; cols.classList.toggle('one', k !== 'both'); $$('[data-cmdf]', sec).forEach(b => b.setAttribute('aria-pressed', b.dataset.cmdf === k ? 'true' : 'false')); pref.set('marala-cmdf', k); };
+    sec.addEventListener('click', ev => { const b = ev.target.closest('[data-cmdf]'); if (b) setF(b.dataset.cmdf); });
+    setF(pref.get('marala-cmdf', 'both')); }
   const note = b => { const it = b.closest('.cmd-item'); const n = it && $('[data-cmdnote]', it); return n ? n.value.trim() : ''; };
   sec.addEventListener('click', ev => {
     if (app.role !== 'A') return;
@@ -5813,7 +5831,8 @@ function buildWhite(){
     <div class="white-grid" data-wgrid>
       <section class="cmdsec" data-sec="cmd" data-cmdsec data-aoc-only>
         <div class="pic-card"><div class="pic-h"><h3>Battle Rhythm</h3><span class="small muted">Commander’s Update Briefs from each JFACC, the Change of Command and the final SITREP</span></div><div data-cmdrhythm></div></div>
-        <div class="cmd-cols">${cmdColHTML('B')}${cmdColHTML('R')}</div>
+        <div class="row cmd-filter"><div class="seg" role="group" aria-label="Which force">${[['both', 'Both forces'], ['B', 'Blue Force'], ['R', 'Red Force']].map(([k, n]) => '<button type="button" data-cmdf="' + k + '" aria-pressed="false">' + n + (k !== 'both' ? '<span class="cnt" data-cmdfcnt="' + k + '" hidden></span>' : '') + '</button>').join('')}</div></div>
+        <div class="cmd-cols" data-cmdcols>${cmdColHTML('B')}${cmdColHTML('R')}</div>
       </section>
       <section class="wfsec" data-sec="wf" data-wfsec data-aoc-only>
         <div class="wfcol">
@@ -5928,7 +5947,7 @@ function buildWhite(){
         <div class="panel" data-sec="send msg"><div class="act-head"><h2>Response Windows</h2><span class="small muted" data-injwn></span></div>
           <details class="small rw-help"><summary><b>How response windows work (tap to read)</b></summary>
             <p>Most injects ask a force to do something by a deadline. That deadline is the response window. Its clock starts when you send the inject, or, if the inject has props, when the last prop is reported placed.</p>
-            <p>The board watches for the response and marks the force <b>Done</b> by itself when it sees it: an approved POC call (Real IED cleared, Hit by an IED, Helped a civilian, Good or Poor conduct), a militia target destroyed, the cache cleared, a message to the AOC, or a PERSTAT. A few injects (personnel recovery, supply boxes) can only be judged on the ground; the board cannot see them, so you mark them.</p>
+            <p>Nothing closes without you. When the board sees a response (an approved POC call such as Real IED cleared or Personnel recovered, a militia target destroyed, the cache cleared, a message to the AOC, or a PERSTAT sent), it puts <b>Response seen</b> in your Queue. Press <b>Mark done</b> to close it for that force, or <b>Not yet</b> if it does not count. When you approve a POC call, you also choose which inject it answers, if any. If you never get to a response the board saw, it still counts as done at the deadline.</p>
             <p>When the deadline passes, any force with no response is marked <b>Missed</b> and loses the points shown, and the inject's props show <b>Recover now</b> on the props page.</p>
             <p>Your two buttons, for each force, before or after the deadline:</p>
             <ul><li><b>They did it</b>: the force responded. Use it when the board could not see the response, or the POC call came in late. Gives back any missed penalty.</li><li><b>Don't count it</b>: take this inject off that force's record with no penalty and no credit. Use it when it was not their fault: a prop was missing, or another inject tied them up. Gives back any missed penalty.</li></ul>
@@ -6127,7 +6146,7 @@ function buildWhite(){
     const iv = ev.target.closest('[data-ipview]');
     if (iv){ const cur = $('[data-wtab][aria-selected="true"]', v); if (cur && !['all', 'intel'].includes(cur.dataset.wtab)) $('[data-wtab="intel"]', v).click(); const f = $('[data-ipbuild]', v); $('[data-ipbsrc]', f).value = iv.dataset.ipview; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); return; }
     const nr = ev.target.closest('[data-nineres]'); if (nr){ writeEvent('nine_res', null, { nine:nr.dataset.nineres, ok:nr.dataset.ok === '1', by:'White Force' }); return; }
-    const orq = ev.target.closest('[data-ocres]'); if (orq){ const li = orq.closest('.li'), inp = li && li.querySelector('[data-ocreply]'), adj = {}; if (li) $$('[data-ocadj]', li).forEach(x => adj[x.dataset.ocadj] = +x.value || 0); writeEvent('oc_res', null, Object.assign({ req:orq.dataset.ocres, ok:orq.dataset.ok === '1', reply:inp ? inp.value.trim() : '' }, Object.keys(adj).length ? { adj } : {})); return; }
+    const orq = ev.target.closest('[data-ocres]'); if (orq){ const li = orq.closest('.li'), inp = li && li.querySelector('[data-ocreply]'), adj = {}; if (li) $$('[data-ocadj]', li).forEach(x => adj[x.dataset.ocadj] = +x.value || 0); const isel = li && li.querySelector('[data-ocinjw]'); writeEvent('oc_res', null, Object.assign({ req:orq.dataset.ocres, ok:orq.dataset.ok === '1', reply:inp ? inp.value.trim() : '' }, Object.keys(adj).length ? { adj } : {}, isel ? { inj:isel.value } : { inj:'' })); return; }
     const sv = ev.target.closest('[data-ocsave]');
     if (sv){ const id = sv.dataset.ocsave, S = app.S, o = S && S.ocs[id]; if (!o) return; const nm = $('[data-ocnamein="' + id + '"]', v).value.trim(), as = ocParse($('[data-ocassignin="' + id + '"]', v).value);
       if (nm && nm !== o.name) writeEvent('oc_edit', null, { oc:id, name:nm });
@@ -6261,6 +6280,7 @@ function buildWhite(){
     if (a === 'ack') writeEvent('report_ack', null, { contact:id });
     if (a === 'psok' || a === 'psno'){ const n = $('#psw-' + id + b.dataset.side), tx = n ? n.value.trim() : ''; if (a === 'psno' && !tx){ toast('Write what is wrong in the note first.', true); return; } writeEvent('perstat_wf', null, { aid:id, side:b.dataset.side, ok:a === 'psok', text:tx }); toast(a === 'psok' ? 'PERSTAT sent to the AOC.' : 'PERSTAT returned to ' + SIDES[b.dataset.side].name + '.'); }
     if (a === 'rsinj'){ const q = (app.S.injq || []).find(x => x.qid === id); if (!q) return; const ovr = b.dataset.ovr === '1'; if (ovr && !confirm('Send "' + q.label + '" before its props are reported placed?\n\nWaiting on: ' + propWaitText(app.S, 'tpl', q.tid) + '\n\nIts response clock will start when the props are placed.')) return; if (!app.S.clock.started && !confirm('The game clock has not started. Send this inject anyway?')) return; writeEvent('injq_send', null, ovr ? { qid:q.qid, ovr:true } : { qid:q.qid }); toast('Sent: ' + q.label + '.'); }
+    if (a === 'injseenno'){ writeEvent('inj_seen_no', null, { qid:id, side:b.dataset.side }); toast('Set aside. It will count as missed at the deadline unless you mark it.'); }
     if (a === 'injdone'){ const q = (app.S.injq || []).find(x => x.qid === id); if (q && b.dataset.st === 'exc' && !confirm('Don’t count "' + q.label + '" for ' + SIDES[b.dataset.side].name + '? No penalty and no credit; any missed penalty is given back.')) return; writeEvent('inj_done', null, { qid:id, side:b.dataset.side, st:b.dataset.st }); }
     if (a === 'oobok') writeEvent('oob_ack', null, { id });
     if (a === 'guessok') writeEvent('guess_ack', null, { id });
@@ -6713,7 +6733,8 @@ function renderWhite(S, now){
     const h = W.map(q => { const end = injEnd(q), open = q.closed == null, left = end != null ? Math.ceil(end - S.g) : null;
       const head = open ? (end == null ? '<span class="chip wait">Clock not started</span><div class="small">Starts when its props are reported placed. Waiting on: ' + esc(propWaitText(S, 'tpl', q.tid)) + '</div>' : '<span class="chip ' + (left <= 3 ? 'no' : 'wait') + '">Due ' + hhmm(end) + ' (' + Math.max(0, left) + ' min)</span>') : '<span class="chip">Closed ' + hhmm(q.closed) + '</span>';
       const sides = injSides(q).map(sd => { const r = q.res[sd], L = r ? lab[r.st] : ['wait', 'Waiting'];
-        return '<div class="row" style="align-items:center;gap:6px"><span class="chip ' + sd + '" style="flex:0 0 auto">' + SIDES[sd].name + '</span><span class="chip ' + L[0] + '" style="flex:0 0 auto">' + L[1] + (r && r.st === 'miss' && (r.pts || r.hn) ? ' (' + [r.pts ? '−' + r.pts + ' pts' : '', r.hn ? '−' + r.hn + ' diplomatic' : ''].filter(Boolean).join(', ') + ')' : '') + (r && r.auto ? ' (seen by the board)' : r && r.by === 'wf' && r.st === 'done' ? ' (you marked it)' : '') + '</span>' +
+        const sn = !r && q.seen && q.seen[sd] != null && !(q.seenNo && q.seenNo[sd]);
+        return '<div class="row" style="align-items:center;gap:6px"><span class="chip ' + sd + '" style="flex:0 0 auto">' + SIDES[sd].name + '</span><span class="chip ' + (sn ? 'ok' : L[0]) + '" style="flex:0 0 auto">' + (sn ? 'Response seen ' + hhmm(q.seen[sd]) + ', confirm it' : L[1]) + (r && r.st === 'miss' && (r.pts || r.hn) ? ' (' + [r.pts ? '−' + r.pts + ' pts' : '', r.hn ? '−' + r.hn + ' diplomatic' : ''].filter(Boolean).join(', ') + ')' : '') + (r && r.auto ? ' (seen by the board)' : r && r.by === 'wf' && r.st === 'done' ? ' (you marked it)' : '') + '</span>' +
           (!r || r.st === 'miss' ? '<button type="button" class="btn-side" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="done" style="flex:0 0 auto">They did it</button>' : '') + (!r || r.st === 'miss' ? '<button type="button" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="exc" style="flex:0 0 auto">Don’t count it</button>' : '') + '</div>'; }).join('');
       const pr = !open ? injPropNames(S, q) : [];
       return '<div class="li" style="flex-wrap:wrap"><div class="grow"><b>' + esc(q.label) + '</b> ' + head + '<div class="small muted">Done when: ' + esc(WIN_DONE[q.done] || '') + (q.who === 'any' ? '. The first force to respond closes it.' : '.') + '</div>' + sides + (pr.length ? '<div class="small"><span class="chip no">Recover props now</span> ' + esc(pr.join(', ')) + '</div>' : '') + '</div></div>'; }).join('');
@@ -6763,6 +6784,8 @@ function renderWhite(S, now){
     q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip wait">Your call</span> <b>' + esc(qq.label) + '</b> <span class="small muted">due ' + hhmm(injEnd(qq)) + ' (' + left + ' min)</span><div class="small">Nothing on the board shows this one. When you know the force did it, press the button.</div></div><div class="row" style="flex:0 0 auto">' + sides.map(sd => '<button type="button" class="btn-side" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="done">' + SIDES[sd].name + ' did it</button>').join('') + '</div></div>'); });
   (S.injq || []).filter(qq => qq.win && qq.closed != null && S.g - qq.closed <= 10 && injSides(qq).some(sd => qq.res[sd] && qq.res[sd].st === 'miss')).forEach(qq => injSides(qq).filter(sd => qq.res[sd] && qq.res[sd].st === 'miss' && !qq.res[sd].seen).forEach(sd => {
     q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip ' + sd + '">' + SIDES[sd].name + '</span> <b>Missed: ' + esc(qq.label) + '</b> <span class="small muted">closed ' + hhmm(qq.closed) + '</span><div class="small">' + (qq.res[sd].pts || qq.res[sd].hn ? 'Penalty applied: ' + [qq.res[sd].pts ? '−' + qq.res[sd].pts + ' points' : '', qq.res[sd].hn ? '−' + qq.res[sd].hn + ' diplomatic' : ''].filter(Boolean).join(', ') + '. ' : '') + 'If that is wrong, fix it now. This drops off after 10 minutes.</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="done">They did it</button><button type="button" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="exc">Don’t count it</button></div></div>'); }));
+  (S.injq || []).filter(qq => qq.win && qq.sent != null && qq.closed == null && qq.seen && qq.done !== 'acct').forEach(qq => injSides(qq).filter(sd => qq.seen[sd] != null && !(qq.res || {})[sd] && !(qq.seenNo && qq.seenNo[sd])).forEach(sd => {
+    q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip ' + sd + '">' + SIDES[sd].name + '</span> <b>Response seen: ' + esc(qq.label) + '</b> <span class="small muted">due ' + hhmm(injEnd(qq)) + '</span><div class="small">The board saw ' + esc((WIN_DONE[qq.done] || 'a response').replace(/^POC call: /, 'an approved POC call: ').toLowerCase()) + ' at ' + hhmm(qq.seen[sd]) + '. Confirm it to close the inject for ' + SIDES[sd].name + '. If you do nothing, it counts as done at the deadline.</div></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="done">Mark done</button><button type="button" data-act="injseenno" data-id="' + qq.qid + '" data-side="' + sd + '">Not yet</button></div></div>'); }));
   { const due = rsRows(S).filter(r => r.due && !r.out); if (due.length) q.push('<div class="li"><div class="grow"><span class="chip wait">To send</span> <b>' + due.length + ' item' + (due.length === 1 ? ' is' : 's are') + ' due to go out</b><div class="small">' + esc(due.slice(0, 4).map(r => r.label).join('; ')) + (due.length > 4 ? '…' : '') + '</div></div><button type="button" class="btn-side" data-gotab="send" style="flex:0 0 auto">Go to Send</button></div>'); }
   const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request', wp:'Waypoint request', stmt:'Public statement to rule on' };
   S.requests.filter(r => r.status === 'open').forEach(r => {
