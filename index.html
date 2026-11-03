@@ -5916,20 +5916,51 @@ function botStep(){
   const C = Math.cos(M.sites.lzB[0] * Math.PI / 180), step = (a, b, m) => { const dx = (b[1] - a[1]) * 111320 * C, dy = (b[0] - a[0]) * 110950, d = Math.hypot(dx, dy); if (d <= m) return [b, true]; const f = m / d; return [[a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], false]; };
   ['B', 'R'].forEach(sd => {
     const ids = [1, 2, 3, 4].map(i => 'bot-' + sd.toLowerCase() + i), names = sd === 'B' ? ['Bot Alpha 1', 'Bot Alpha 2', 'Bot Bravo 1', 'Bot Bravo 2'] : ['Bot Tiger 1', 'Bot Tiger 2', 'Bot Dragon 1', 'Bot Dragon 2'];
-    if (on['T' + sd]) ids.forEach((id, i) => {
-      const t = S.teams[sd][id], here = t && t.last && t.last.gps ? t.last.gps : (sd === 'B' ? M.sites.lzB : M.sites.lzR);
-      let tg = mem['tg' + id];
-      if (!tg || mem['at' + id] && g - mem['at' + id] > 3 + rnd() * 4){ const opts = refList(S, sd).map(([k]) => refLoc(S, k)).filter(Boolean).concat(Object.keys(M.sites).filter(k => SITES[k] || k === 'town').map(k => M.sites[k])); tg = mem['tg' + id] = opts[Math.floor(rnd() * opts.length)]; mem['at' + id] = null; }
-      const [np, arr] = step(here, tg, 40 + rnd() * 40); if (arr && !mem['at' + id]) mem['at' + id] = g;
-      W('pos', sd, { team:id, name:names[i], gps:[+(np[0] + (rnd() - .5) * 8 / 110950).toFixed(7), +(np[1] + (rnd() - .5) * 8 / 84250).toFixed(7)], acc:5 + Math.round(rnd() * 6), status:arr ? 'At objective' : 'Moving' }, 'T' + sd);
-      once('num' + id, () => W('team_num', sd, { team:id, num:String(i + 1) }, sd));
-    });
+    if (on['T' + sd]){
+      const tms = mem.tm || (mem.tm = {}), sitePt = k => (S.sitePts && S.sitePts[k]) || M.sites[k], live = k => S.sites[k] && sitePt(k);
+      const busy = (k, me) => ids.some(o => o !== me && tms[o] && tms[o].tg && tms[o].tg.k === k);
+      const dist = (a2, b2) => Math.hypot((b2[1] - a2[1]) * 111320 * C, (b2[0] - a2[0]) * 110950);
+      ids.forEach((id, i) => {
+        const t = S.teams[sd][id];
+        let st = tms[id]; if (!st) st = tms[id] = { p:(t && t.last && t.last.gps) || (sd === 'B' ? M.sites.lzB : M.sites.lzR), g, sp:55 + rnd() * 20, posG:-99 };
+        const dt = Math.max(0, Math.min(15, g - st.g)); st.g = g;
+        const defK = Object.keys(S.sites).find(k => live(k) && S.sites[k].holder === sd && S.sites[k].contestBy === OTHER[sd]);
+        if (defK && !busy(defK, id) && (!st.tg || st.tg.kind !== 'def') && rnd() < .5){ st.tg = { kind:'def', k:defK, pt:sitePt(defK), dwell:3 + rnd() * 3 }; st.arr = null; st.done = false; }
+        if (!st.tg || st.done || (st.arr != null && g >= st.arr + st.tg.dwell && !['site', 'town', 'def'].includes(st.tg.kind))){
+          const c = [];
+          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder !== sd && !busy(k, id) && (S.sites[k].holder == null || (S.esc || 0) < 30)).forEach(k => c.push({ kind:'site', k, pt:sitePt(k), dwell:9 + rnd() * 5, w:(i < 2 ? 3 : 1.5) * (S.sites[k].holder == null ? 1 : .35) }));
+          if (!S.office[sd] && S.access[sd] && !busy('town', id)) c.push({ kind:'town', k:'town', pt:M.sites.town, dwell:6 + rnd() * 4, w:i === 2 ? 3 : 1 });
+          refList(S, sd).forEach(([k]) => { const pt = refLoc(S, k); if (pt && !busy(k, id)) c.push({ kind:'ref', k, pt, dwell:3 + rnd() * 4, w:i >= 2 ? 2.5 : 1 }); });
+          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder === sd && !busy(k, id)).forEach(k => c.push({ kind:'hold', k, pt:sitePt(k), dwell:10 + rnd() * 10, w:i === 3 ? 2 : .6 }));
+          if (c.length){ c.forEach(o => { o.s = o.w * (0.6 + rnd()) / (1 + dist(st.p, o.pt) / 150); }); c.sort((x, y) => y.s - x.s); st.tg = c[0]; } else st.tg = { kind:'hold', k:'lz', pt:sd === 'B' ? M.sites.lzB : M.sites.lzR, dwell:10 };
+          st.arr = null; st.done = false; st.req = false;
+        }
+        const [np, arr] = step(st.p, st.tg.pt, st.sp * dt * (0.8 + rnd() * 0.4)); st.p = np;
+        const nowArr = arr && st.arr == null; if (nowArr) st.arr = g;
+        if (arr && st.tg.kind === 'site' && S.sites[st.tg.k] && S.sites[st.tg.k].holder === OTHER[sd] && !S.sites[st.tg.k].contestBy && !st.req){ st.req = true; W('ct_req', sd, { team:id, name:names[i], site:st.tg.k }, 'T' + sd); }
+        if (nowArr || g - st.posG >= 1.5 + rnd()){ st.posG = g;
+          W('pos', sd, { team:id, name:names[i], gps:[+(np[0] + (rnd() - .5) * 8 / 110950).toFixed(7), +(np[1] + (rnd() - .5) * 8 / 84250).toFixed(7)], acc:5 + Math.round(rnd() * 6), status:arr ? 'At objective' : 'Moving' }, 'T' + sd); }
+        once('num' + id, () => W('team_num', sd, { team:id, num:String(i + 1) }, sd));
+      });
+    }
     if (on.OC) ids.forEach((id, i) => { const oc = 'obot-' + id; once('join' + oc, () => W('oc_join', null, { oc, name:'Bot O/C ' + (i + 1) + (sd === 'B' ? ' Blue' : ' Red'), side:sd, team:id }, 'OC')); });
     if (on.OC && on['T' + sd]) (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => {
       const call = q.done === 'ied' ? 'ied_real' : q.done === 'pr' ? 'prok' : q.done === 'box' ? 'box' : q.done === 'civaid' ? 'civaid' : q.done === 'conduct' ? 'good' : null; if (!call) return;
       const k = 'call' + q.qid + sd; if (!later(k + 't', 3 + rnd() * Math.max(2, q.win - 5))) return;
       once(k, () => { if (rnd() < .2) return; W('oc_req', null, { oc:'obot-' + ids[Math.floor(rnd() * 4)], kind:'call', call, side:sd, text:'Bot team responded', ref:rnd() < .7 ? 'q:' + q.qid : 'unk' }, 'OC'); }); });
     if (on[sd]){
+      const codeFor = (k, def) => { const c = (S.siteCodes && S.siteCodes[k]) || (app.cfg && app.cfg.codes ? app.cfg.codes[k] : null); if (!c) return null; const L = typeof c === 'string' ? [c] : Array.isArray(c) ? c : (def && c.def && c.def.length ? c.def : (c.cap || [])); const f = L.filter(x => !(S.usedCodes || {})[k + ':' + x]); return (f.length ? f : L)[Math.floor(rnd() * (f.length || L.length))]; };
+      (S.ctReqs || []).filter(r => r.status === 'open' && r.side === sd).forEach(r => { if (later('ctr' + r.id, .5 + rnd() * 1.5)) once('ctrd' + r.id, () => { const e0 = S.esc || 0; W('ct_res', sd, { req:r.id, ok:rnd() < (e0 < 20 ? .7 : e0 < 40 ? .3 : 0) }, sd); }); });
+      if (on['T' + sd] && mem.tm) ids.forEach(id => { const st = mem.tm[id]; if (!st || !st.tg || st.done || st.arr == null || g < st.arr + st.tg.dwell) return; const k = st.tg.k, si = S.sites[k];
+        if (st.tg.kind === 'town'){ if (!S.office[sd] && S.access[sd]){ const cd = codeFor('town'); if (cd) W('claim', sd, { site:'town', code:cd }, sd); } st.done = true; return; }
+        if (!si){ st.done = true; return; }
+        if (st.tg.kind === 'def'){ if (si.holder === sd && si.contestBy === OTHER[sd]){ const cd = codeFor(k, true); if (cd) W('claim', sd, { site:k, code:cd }, sd); } st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:8 + rnd() * 8 }; st.arr = g; return; }
+        if (st.tg.kind !== 'site') return;
+        if (si.holder === sd){ st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:6 + rnd() * 10 }; st.arr = g; return; }
+        if (si.contested && !si.contestBy){ st.done = true; return; }
+        if (si.holder === OTHER[sd]){ if (si.contestBy !== sd){ if (g > st.arr + st.tg.dwell + 8) st.done = true; return; } if (g < (si.contestUntil || g) - (S.siteTimer[k] || 15) + 6) return; }
+        const cd = codeFor(k); if (cd) W('claim', sd, { site:k, code:cd }, sd);
+        st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:5 + rnd() * 8 }; st.arr = g; });
       const tb = liveTeams(S, sd).filter(t => t.last && t.last.gps), en = liveTeams(S, OTHER[sd]).filter(t => t.last && t.last.gps && g - t.last.g < 5);
       if (en.length && later('sal' + sd, 4 + rnd() * 5)){ mem['sal' + sd] = g + 5 + rnd() * 6; const t = en[Math.floor(rnd() * en.length)], pt = [t.last.gps[0] + (rnd() - .5) * 30 / 110950, t.last.gps[1] + (rnd() - .5) * 30 / 84250];
         W('contact', sd, { kind:'team', grid:botGrid(pt), seen:hhmm(g), note:'S: 3 people - A: moving - U: ' + SIDES[OTHER[sd]].name + ' uniforms - E: rifles', salute:{ s:'3 people', a:'moving', l:botGrid(pt), u:SIDES[OTHER[sd]].name + ' uniforms', t:hhmm(g).slice(0, 4), e:'rifles' }, ref:'none' }, sd); }
@@ -5943,6 +5974,7 @@ function botStep(){
     }
   });
   if (on.A){
+    if ((S.esc || 0) >= 45 && later('roe', 0)){ mem.roe = g + 20; W('aoc_roe', null, { to:'both', level:'restrictive', min:10, why:'Bot AOC: escalation is too high. Cool it down.' }, 'A'); }
     (S.cubs || []).filter(c => c.status === 'sent').forEach(c => { if (later('ac' + c.id + c.hist.length, 1 + rnd() * 2)) once('acd' + c.id + c.hist.length, () => W('cub_reply', null, { id:c.id, verdict:rnd() < .8 ? 'approve' : 'more', text:'Bot AOC: line 9 needs a time for each decision point.' }, 'A')); });
     (S.accts || []).forEach(a => ['B', 'R'].forEach(sd => { const r = a.reps[sd]; if (r && r.status === 'aoc' && later('aa' + a.id + sd, 1)) once('aad' + a.id + sd, () => W('perstat_aoc', null, { aid:a.id, side:sd, text:'Acknowledged.' }, 'A')); }));
     (S.aocReqs || []).filter(r => r.status === 'open').forEach(r => { if (later('ar' + r.id, 1 + rnd() * 2)) once('ard' + r.id, () => W('aoc_grant', null, { side:r.side, req:r.id, kind:'reply', text:'Bot AOC: copy.' }, 'A')); });
@@ -6213,7 +6245,7 @@ function buildWhite(){
         <p class="small muted" style="margin:0">Upload creation files adds every package and template from the files you choose to this game. Combine files into one merges several teams’ files into a single download without changing this game; use it to review everything before execution day.</p>
       </div>
       <div class="panel stack" data-sec="setup" data-aoc-off><h2>Practice bots</h2>
-        <p class="small muted" style="margin:0">For training only. Bots play the roles you tick, using simple rules: they move fireteams, post SALUTE reports, answer intel packages and injects, send briefs and PERSTATs, and approve things in the queue. They are not smart; they give every real player something to react to. They run in this browser only, so keep this tab open. Do not use them in the real game.</p>
+        <p class="small muted" style="margin:0">For training only. Bots play the roles you tick, using simple rules: fireteams walk at a real pace (about 55 to 75 m a minute) to sites, the town and inject spots, spend time at each station, then their C2 captures the site with a code word, asks for and runs contention on the other force’s sites, and sends a team back to defend. They also post SALUTE reports, answer intel packages and injects, send briefs and PERSTATs, and approve things in the queue. They are not smart; they give every real player something to react to. They run in this browser only, so keep this tab open. Do not use them in the real game.</p>
         <div class="row" style="flex-wrap:wrap;gap:6px 16px">${[['B', 'Blue Force C2'], ['R', 'Red Force C2'], ['TB', 'Blue Force fireteams'], ['TR', 'Red Force fireteams'], ['OC', 'POC O/Cs'], ['A', 'AOC'], ['W', 'White Force (sends injects and approves)']].map(([k, n]) => '<label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-botrole="' + k + '"> ' + n + '</label>').join('')}</div>
         <div class="row" style="justify-content:flex-start;align-items:center"><button type="button" class="btn-side" data-botgo style="flex:0 0 auto">Start bots</button><span class="small muted" data-botst>Bots are off.</span></div></div>
       <div class="panel" data-sec="setup" data-aoc-off><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
