@@ -2137,6 +2137,7 @@ function apply(S, e, cfg){
       pushLog(S, nm + ' fireteam hit by an IED (−' + IED_HIT + ' points)' + (p.grid ? ' at ' + p.grid : '') + (tx ? ' (' + tx + ')' : ''), side, e);
       pushFeed(S, side, 'Fireteam casualty: IED detonation' + (p.grid ? ' at ' + p.grid : '') + '. −' + IED_HIT + ' points.', 'alert');
       break; }
+    case 'bot_radio': { if (!side) break; const tx = String(p.text || '').trim().slice(0, 300); if (!tx) break; pushFeed(S, side, String(p.name || 'Team').slice(0, 40) + ' (LMR): ' + tx, 'hq', { label:'LMR (practice bot)' }); S.ver++; break; }
     case 'tchat': { if (!side || !p.team) break;
       const tx = String(p.text || '').trim().slice(0, 300); if (!tx) break;
       const t = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:String(p.name || 'Team').slice(0, 40), fixes:[] });
@@ -5906,7 +5907,13 @@ function aocMode(on){
   const cur = $('[data-wtab][aria-selected="true"]', v); if (on && cur && cur.hasAttribute('data-aoc-off')) $('[data-wtab="pic"]', v).click();
   if (!on && cur && cur.hasAttribute('data-aoc-only')) $('[data-wtab="all"]', v).click();
 }
-const BOT = { on:null, timer:null, mem:{} };
+const BOT = { on:null, timer:null, mem:{}, words:{} };
+function botWords(text){ const out = {}, cfg = app.cfg, S = app.S; if (!cfg) return out; const ws = String(text || '').split(/[\s,;]+/).map(w => w.trim().toUpperCase()).filter(Boolean);
+  const keys = Object.keys(Object.assign({}, cfg.codes || {}, (S && S.siteCodes) || {}));
+  keys.forEach(k => { const c = (S && S.siteCodes && S.siteCodes[k]) || (cfg.codes || {})[k]; if (!c) return; const cap = typeof c === 'string' ? [c] : Array.isArray(c) ? c : (c.cap || []), def = (c && c.def && c.def.length) ? c.def : cap;
+    ws.forEach(w => { const h = secret(cfg.salt, w); const o = out[k] || (out[k] = { cap:[], def:[] }); if (cap.includes(h) && !o.cap.includes(w)) o.cap.push(w); if (def.includes(h) && !o.def.includes(w)) o.def.push(w); }); });
+  return out; }
+function botWord(k, def){ const o = BOT.words[k]; const L = o ? (def ? o.def : o.cap) : []; return L.length ? L[Math.floor(Math.random() * L.length)] : ''; }
 function botGrid(pt){ return GEO.toMGRS(pt[0], pt[1], 4).split(' ').slice(2).join(' '); }
 function botStep(){
   const S = app.S, on = BOT.on; if (!S || !on || !S.clock.started || S.endex || !S.clock.running) return;
@@ -5928,16 +5935,43 @@ function botStep(){
         if (defK && !busy(defK, id) && (!st.tg || st.tg.kind !== 'def') && rnd() < .5){ st.tg = { kind:'def', k:defK, pt:sitePt(defK), dwell:3 + rnd() * 3 }; st.arr = null; st.done = false; }
         if (!st.tg || st.done || (st.arr != null && g >= st.arr + st.tg.dwell && !['site', 'town', 'def'].includes(st.tg.kind))){
           const c = [];
-          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder !== sd && !busy(k, id) && (S.sites[k].holder == null || (S.esc || 0) < 30)).forEach(k => c.push({ kind:'site', k, pt:sitePt(k), dwell:9 + rnd() * 5, w:(i < 2 ? 3 : 1.5) * (S.sites[k].holder == null ? 1 : .35) }));
-          if (!S.office[sd] && S.access[sd] && !busy('town', id)) c.push({ kind:'town', k:'town', pt:M.sites.town, dwell:6 + rnd() * 4, w:i === 2 ? 3 : 1 });
+          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder !== sd && !busy(k, id) && !(g < (mem['told' + sd + k] || -99) + 20) && (S.sites[k].holder == null || (S.esc || 0) < 30)).forEach(k => c.push({ kind:'site', k, pt:sitePt(k), dwell:9 + rnd() * 5, w:(i < 2 ? 3 : 1.5) * (S.sites[k].holder == null ? 1 : .35) }));
+          if (!S.office[sd] && S.access[sd] && !busy('town', id) && !(g < (mem['told' + sd + 'town'] || -99) + 20)) c.push({ kind:'town', k:'town', pt:M.sites.town, dwell:6 + rnd() * 4, w:i === 2 ? 3 : 1 });
           refList(S, sd).forEach(([k]) => { const pt = refLoc(S, k); if (pt && !busy(k, id)) c.push({ kind:'ref', k, pt, dwell:3 + rnd() * 4, w:i >= 2 ? 2.5 : 1 }); });
           Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder === sd && !busy(k, id)).forEach(k => c.push({ kind:'hold', k, pt:sitePt(k), dwell:10 + rnd() * 10, w:i === 3 ? 2 : .6 }));
           if (c.length){ c.forEach(o => { o.s = o.w * (0.6 + rnd()) / (1 + dist(st.p, o.pt) / 150); }); c.sort((x, y) => y.s - x.s); st.tg = c[0]; } else st.tg = { kind:'hold', k:'lz', pt:sd === 'B' ? M.sites.lzB : M.sites.lzR, dwell:10 };
           st.arr = null; st.done = false; st.req = false;
         }
+        const radio = (key, tx) => { if (mem['rd' + id + key]) return; mem['rd' + id + key] = true; W('bot_radio', sd, { team:id, name:names[i], text:tx }, 'T' + sd); };
+        const where = st.tg.kind === 'town' ? 'Marala Town' : S.sites[st.tg.k] && SITES[st.tg.k] ? SITES[st.tg.k].name : st.tg.kind === 'ref' ? refLabel(S, st.tg.k).replace(/^(Inject|Intel package)\s*/i, '') : 'our landing zone';
+        if (!st.tg.id) st.tg.id = (mem.tgc = (mem.tgc || 0) + 1); const tkey = 't' + st.tg.id;
+        if (st.lastT !== tkey){ st.lastT = tkey; st.told = false; if (st.tg.kind !== 'hold' || st.tg.k === 'lz') radio('mv' + tkey, 'Moving to ' + where + ', grid ' + botGrid(st.tg.pt) + '. ETA ' + (n => n + (n === 1 ? ' minute.' : ' minutes.'))(Math.max(1, Math.round(dist(st.p, st.tg.pt) / st.sp)))); }
         const [np, arr] = step(st.p, st.tg.pt, st.sp * dt * (0.8 + rnd() * 0.4)); st.p = np;
         const nowArr = arr && st.arr == null; if (nowArr) st.arr = g;
-        if (arr && st.tg.kind === 'site' && S.sites[st.tg.k] && S.sites[st.tg.k].holder === OTHER[sd] && !S.sites[st.tg.k].contestBy && !st.req){ st.req = true; W('ct_req', sd, { team:id, name:names[i], site:st.tg.k }, 'T' + sd); }
+        const si = S.sites[st.tg.k];
+        if (nowArr){
+          if (st.tg.kind === 'site') radio('ar' + tkey, si && si.holder === OTHER[sd] ? 'At ' + where + '. ' + SIDES[OTHER[sd]].name + ' holds it. Requesting contention.' : 'At ' + where + '. Starting the station task.');
+          else if (st.tg.kind === 'town') radio('ar' + tkey, 'At Town Hall. Weapons outside, meeting the mayor now.');
+          else if (st.tg.kind === 'def') radio('ar' + tkey, 'Back at ' + where + ' to defend it.');
+          else if (st.tg.kind === 'ref') radio('ar' + tkey, 'At the ' + where + ' spot, grid ' + botGrid(st.tg.pt) + '. ' + ['Checking the area.', 'Nothing obvious yet, searching.', 'Possible device, holding 50 m back.', 'Locals nearby, talking to them.'][Math.floor(rnd() * 4)]);
+        }
+        if (arr && st.tg.kind === 'site' && si && si.holder === OTHER[sd] && !si.contestBy && !st.req){ st.req = true; W('ct_req', sd, { team:id, name:names[i], site:st.tg.k }, 'T' + sd); }
+        if (!on[sd] && st.arr != null && !st.told && g >= st.arr + st.tg.dwell){
+          const k = st.tg.k, need = ' (No word loaded: enter the code words in Practice bots so the bot teams can report them.)';
+          mem['told' + sd + k] = g;
+          const hold = () => { st.told = true; st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:6 + rnd() * 10 }; st.arr = g; };
+          if (st.tg.kind === 'town'){ const w = botWord('town'); radio('cw' + tkey, 'The mayor gave us the town code word: ' + (w || '?') + '.' + (w ? '' : need)); st.told = true; st.done = true; }
+          else if (st.tg.kind === 'def' && si){ const w = botWord(k, true); radio('cw' + tkey, 'Defense task at ' + where + ' done. Defense code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); }
+          else if (st.tg.kind === 'site' && si){
+            if (si.holder === sd) hold();
+            else if (si.holder === OTHER[sd]){ if (si.contestBy === sd && g >= (si.contestUntil || g) - (S.siteTimer[k] || 15) + 6){ const w = botWord(k); radio('cw' + tkey, 'Task at ' + where + ' done. Capture code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); } else if (g > st.arr + st.tg.dwell + 8){ radio('gv' + tkey, 'No contention at ' + where + '. Moving on.'); st.done = true; } }
+            else { const w = botWord(k); radio('cw' + tkey, 'Station task at ' + where + ' done. Capture code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); }
+          }
+        }
+        if (!on[sd] && st.tg.kind !== 'ref'){
+          const en = liveTeams(S, OTHER[sd]).filter(o => o.last && o.last.gps && g - o.last.g < 3 && dist(np, o.last.gps) < 150);
+          if (en.length && g >= (mem['sw' + sd] || 0)){ mem['sw' + sd] = g + 4 + rnd() * 4; const o = en[0]; W('bot_radio', sd, { team:id, name:names[i], text:'Contact: ' + (2 + Math.floor(rnd() * 3)) + ' ' + SIDES[OTHER[sd]].name + ' near grid ' + botGrid(o.last.gps) + ', ' + ['moving', 'stopped', 'watching us', 'setting up'][Math.floor(rnd() * 4)] + ', rifles, seen ' + hhmm(g).slice(0, 4) + '.' }, 'T' + sd); }
+        }
         if (nowArr || g - st.posG >= 1.5 + rnd()){ st.posG = g;
           W('pos', sd, { team:id, name:names[i], gps:[+(np[0] + (rnd() - .5) * 8 / 110950).toFixed(7), +(np[1] + (rnd() - .5) * 8 / 84250).toFixed(7)], acc:5 + Math.round(rnd() * 6), status:arr ? 'At objective' : 'Moving' }, 'T' + sd); }
         once('num' + id, () => W('team_num', sd, { team:id, num:String(i + 1) }, sd));
@@ -6247,6 +6281,8 @@ function buildWhite(){
       <div class="panel stack" data-sec="setup" data-aoc-off><h2>Practice bots</h2>
         <p class="small muted" style="margin:0">For training only. Bots play the roles you tick, using simple rules: fireteams walk at a real pace (about 55 to 75 m a minute) to sites, the town and inject spots, spend time at each station, then their C2 captures the site with a code word, asks for and runs contention on the other force’s sites, and sends a team back to defend. They also post SALUTE reports, answer intel packages and injects, send briefs and PERSTATs, and approve things in the queue. They are not smart; they give every real player something to react to. They run in this browser only, so keep this tab open. Do not use them in the real game.</p>
         <div class="row" style="flex-wrap:wrap;gap:6px 16px">${[['B', 'Blue Force C2'], ['R', 'Red Force C2'], ['TB', 'Blue Force fireteams'], ['TR', 'Red Force fireteams'], ['OC', 'POC O/Cs'], ['A', 'AOC'], ['W', 'White Force (sends injects and approves)']].map(([k, n]) => '<label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-botrole="' + k + '"> ' + n + '</label>').join('')}</div>
+        <label>Code words the bot fireteams may report (optional)<input data-botwords autocomplete="off" placeholder="All of this game's code words, any order: ANCHOR, BARREL, ECHO, MAYOR"></label>
+        <p class="small muted" style="margin:0">With these, bot fireteams call their C2 over a practice LMR feed when they finish a station ("Capture code word: ANCHOR") so a real C2 can enter it. The board works out which word belongs to which site. They are kept in this tab only.</p>
         <div class="row" style="justify-content:flex-start;align-items:center"><button type="button" class="btn-side" data-botgo style="flex:0 0 auto">Start bots</button><span class="small muted" data-botst>Bots are off.</span></div></div>
       <div class="panel" data-sec="setup" data-aoc-off><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
@@ -6477,7 +6513,7 @@ function buildWhite(){
     $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
   }
   { const go = $('[data-botgo]', v), st = $('[data-botst]', v); if (go){ const sync = () => { go.textContent = BOT.on ? 'Stop bots' : 'Start bots'; st.textContent = BOT.on ? 'Bots are playing: ' + Object.keys(BOT.on).map(roleLabel).join(', ') + '. Keep this tab open.' : 'Bots are off.'; }; if (BOT.on) $$('[data-botrole]', v).forEach(c => c.checked = !!BOT.on[c.dataset.botrole]); sync();
-    go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
+    go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; { const wi = $('[data-botwords]', v); BOT.words = botWords(wi ? wi.value : ''); const n = Object.keys(BOT.words).filter(k => BOT.words[k].cap.length || BOT.words[k].def.length).length; if (wi && wi.value.trim() && !n) toast('None of those words match this game’s code words.', true); } botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-wfcall]'); if (!b) return; const k = b.dataset.wfcall, sd = b.dataset.side; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; writeEvent('wf_call', sd, { call:k }); toast(OC_CALLS[k].name + ': ' + SIDES[sd].name + '.'); });
   v.addEventListener('click', ev => { const m = ev.target.closest('[data-tlmode]'), b = !m && ev.target.closest('[data-pictl] [data-tlid]'); if (!m && !b) return; app.tlf = m ? { mode:m.dataset.tlmode, id:'' } : { mode:(app.tlf || {}).mode || 'all', id:b.dataset.tlid }; const tb = $('[data-pictl]', v); if (tb) tb.dataset.h = ''; refresh(true); });
   v.addEventListener('change', ev => { const o = ev.target.closest('[data-tlone]'); if (!o) return; app.tlf = { mode:(app.tlf || {}).mode || 'all', id:o.value }; refresh(true); });
