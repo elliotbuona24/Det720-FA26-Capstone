@@ -4369,7 +4369,8 @@ async function sendTeamPos(side, opts){
   const v = $('#vTeam'), M = mapCfg(app.S);
   const repText = opts.gpsOnly ? '' : $('[data-grid]', v).value.trim();
   const rep = repText ? locate(M, repText) : null;
-  if (repText && !rep){ toast('That grid didn’t read. Use MGRS like 5892 2345 or 18T TL 58927 23452, or a play square like D4.', true); return; }
+  if (repText){ const bad = gridBad(M, repText); if (bad){ toast(bad, true); return; } }
+  if (repText && !rep){ toast('That grid didn’t read. Use MGRS like 5892 2345 or 18T TL 58927 23452.', true); return; }
   if (!opts.silent){ $('[data-send]', v).disabled = true; $('[data-send]', v).textContent = 'Getting GPS…'; }
   const g = await getGPS();
   if (!opts.silent){ $('[data-send]', v).disabled = false; $('[data-send]', v).textContent = 'Send position'; }
@@ -4400,7 +4401,7 @@ function buildTeam(side){
       <div class="lmap teammap" data-tmap hidden></div>${mapKeyHTML(false)}</div>
     <div class="panel stack" data-ps="map"><h2>Report your position</h2>
       <p class="small muted" style="margin:0">Enter your grid from the map. The phone's GPS fix is attached for your C2.</p>
-      <label>Your grid from the map (MGRS or play square)<input data-grid autocomplete="off" placeholder="Example: 5892 2345, 18T TL 58927 23452 or D4"></label>
+      <label>Your grid from the map (MGRS)<input data-grid autocomplete="off" placeholder="Example: 5892 2345 or 18T TL 58927 23452"></label>
       <label>Status<select data-status><option>Moving</option><option>At objective</option><option>Holding</option><option>Halted: suspected IED</option><option>Treating a casualty</option><option>Need help</option></select></label>
       <button type="button" class="btn-side team-big" data-send>Send position</button>
       <label class="chk"><input type="checkbox" data-auto> Also send GPS by itself every 10 minutes</label>
@@ -4635,7 +4636,7 @@ function buildWing(side){
               <label for="ctS-${side}">Which site (for a flag)<select id="ctS-${side}" name="site" data-siteopts data-blank="1"><option value="">—</option>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
               <p class="small muted" style="margin:0" data-salnote>Enemy team: full SALUTE report required.</p>
               <div class="row" data-sal><label for="ctSz-${side}">(S) Size<input id="ctSz-${side}" name="sz" maxlength="60" placeholder="Example: 4 people"></label><label for="ctAc-${side}">(A) Activity<input id="ctAc-${side}" name="act" maxlength="120" placeholder="Example: Moving west along the tree line"></label></div>
-              <div class="row"><label for="ctG-${side}">(L) Location (play square or MGRS)<input id="ctG-${side}" name="grid" maxlength="24" placeholder="Example: D4 or 5892 2345" required></label><label for="ctUn-${side}" data-sal>(U) Uniform<input id="ctUn-${side}" name="uni" maxlength="80" placeholder="Example: Red armbands, dark jackets"></label></div>
+              <div class="row"><label for="ctG-${side}">(L) Location (MGRS)<input id="ctG-${side}" name="grid" maxlength="24" placeholder="Example: 5892 2345" required></label><label for="ctUn-${side}" data-sal>(U) Uniform<input id="ctUn-${side}" name="uni" maxlength="80" placeholder="Example: Red armbands, dark jackets"></label></div>
               <div class="row"><label for="ctT-${side}">(T) Time seen<input id="ctT-${side}" name="seen" maxlength="4" inputmode="numeric" placeholder="Example: 0842"></label><label for="ctEq-${side}" data-sal>(E) Equipment<input id="ctEq-${side}" name="eq" maxlength="80" placeholder="Example: 2 rifles, an LMR"></label></div>
               <label for="ctN-${side}" data-notesal>Notes<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: Flag on the Radar Ridge mast"></label>
               <label>Is this for an inject or intel package?<select name="ref" data-forref required><option value="">Choose one</option><option value="none">No</option><option value="unk">I don’t know</option></select></label>
@@ -4742,6 +4743,7 @@ function buildWing(side){
     const kind = fd.get('kind'); if (kind === 'site' && !fd.get('site')){ toast('Pick which site the flag is on.', true); return false; }
     const seen = String(fd.get('seen') || '').trim();
     if (seen && !/^\d{4}$/.test(seen)){ toast('Write the time seen like 0842.', true); return false; }
+    { const bad = gridBad(mapCfg(app.S), String(fd.get('grid') || '')); if (bad){ toast(bad, true); return false; } }
     let note = fd.get('note'), salute = null;
     if (kind === 'team'){
       salute = { s:String(fd.get('sz')).trim(), a:String(fd.get('act')).trim(), l:String(fd.get('grid')).trim().toUpperCase(), u:String(fd.get('uni')).trim(), t:seen, e:String(fd.get('eq')).trim() };
