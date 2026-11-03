@@ -131,7 +131,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .tl-bar b{font-family:var(--mono)}.tl-bar span{overflow:hidden;text-overflow:ellipsis}
 .tl-bar.to-B{border-color:var(--blu);background:var(--blu-soft)}.tl-bar.to-R{border-color:var(--red);background:var(--red-soft)}.tl-bar.to-both{background:linear-gradient(180deg,var(--blu-soft) 50%,var(--red-soft) 50%)}
 .tl-bar.done{opacity:.5}.tl-bar.miss{outline:2px dashed var(--bad);outline-offset:-2px}.tl-bar[data-tlid]{cursor:pointer}
-.rs-row summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.rs-row .rs-btns{display:flex;gap:6px;margin-left:auto}.rs-row.out{opacity:.75}.rw-help p,.rw-help ul{margin:6px 0}.cbf-det summary{cursor:pointer;font-weight:600}.rw-help summary{cursor:pointer}
+.rs-row summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.rs-row .rs-btns{display:flex;gap:6px;margin-left:auto}.rs-row.out{opacity:.75}.rw-help p,.rw-help ul{margin:6px 0}.oc-custom summary{cursor:pointer}.cbf-det summary{cursor:pointer;font-weight:600}.rw-help summary{cursor:pointer}
 .tl-ctl{align-items:end;margin:0 0 8px;gap:10px}.tl-ctl .seg{display:flex;gap:0}.tl-ctl .seg button{border-radius:0;margin-left:-1px}.tl-ctl .seg button:first-child{border-radius:6px 0 0 6px}.tl-ctl .seg button:last-child{border-radius:0 6px 6px 0}.tl-ctl .seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 .tl-detail{grid-column:1 / -1;margin-top:8px;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)}
 .tl-mk{position:absolute;top:8px;width:13px;height:13px;margin-left:-6.5px;transform:rotate(45deg);border:2px solid var(--panel);background:var(--ink);box-shadow:0 0 0 1px var(--ink);box-sizing:border-box}
@@ -1548,7 +1548,7 @@ function mtNow(S){ return (S.mtgts || []).filter(t => !t.done && S.g >= t.g - 1e
 function mtFor(S, side){ return mtNow(S).filter(t => t.to === 'both' || t.to === side); }
 function mtFixed(S, t, side){ const f = t.fix && t.fix[side]; return f != null && S.g - f <= FIX_MIN + 1e-9; }
 function mtClean(m){ if (!m || typeof m !== 'object') return null; const pt = Array.isArray(m.pt) && m.pt.length === 2 && m.pt.every(Number.isFinite) ? m.pt : null; const label = String(m.label || '').trim().slice(0, 60); if (!pt || !label) return null; return { label, pt, life:Math.max(5, Math.min(120, Math.round(Number(m.life) || 25))), grid:String(m.grid || '').slice(0, 12) }; }
-const WIN_DONE = { manual:'The White Force marks it', ied:'POC call: Real IED cleared or Hit by an IED', civaid:'POC call: Helped a civilian', conduct:'POC call: Good or Poor conduct', mt:'Militia target destroyed', cache:'Cache cleared or struck', aoc:'The force writes to the AOC', acct:'PERSTAT sent', none:'Not tracked (window only times the props)' };
+const WIN_DONE = { manual:'The White Force marks it', pr:'POC call: Personnel recovered (or procedure missed)', box:'POC call: Supply box delivered', ied:'POC call: Real IED cleared or Hit by an IED', civaid:'POC call: Helped a civilian', conduct:'POC call: Good or Poor conduct', mt:'Militia target destroyed', cache:'Cache cleared or struck', aoc:'The force writes to the AOC', acct:'PERSTAT sent', none:'Not tracked (window only times the props)' };
 const PERSTAT_ST = { task:'On task', move:'Moving', hq:'At HQ or the CCP', cas:'Has a casualty', unk:'Unknown' };
 function winClean(t){ const w = Math.round(Number(t && t.win)); if (!Number.isFinite(w) || w < 1) return null; const m = t.miss || {}, c = (v, hi) => Math.max(0, Math.min(hi, Math.round(+v || 0))); return { win:Math.min(120, w), who:t.who === 'any' ? 'any' : 'each', done:WIN_DONE[t.done] ? t.done : 'manual', miss:{ pts:c(m.pts, 20), hn:c(m.hn, 20) } }; }
 function injSides(q){ return q.to === 'B' || q.to === 'R' ? [q.to] : ['B', 'R']; }
@@ -1557,6 +1557,8 @@ function injAuto(S, q, sd){
   const end = injEnd(q), inW = g => g >= q.sent - 1e-9 && g <= end + 1e-9, call = ks => (S.ocReqs || []).some(r => r.kind === 'call' && r.status === 'ok' && r.side === sd && ks.includes(r.call) && inW(r.g));
   switch (q.done){
     case 'ied': return call(['ied_real', 'iedhit']);
+    case 'pr': return call(['prok', 'prpart']);
+    case 'box': return call(['box']);
     case 'civaid': return call(['civaid']);
     case 'conduct': return call(['good', 'poor']);
     case 'mt': { const t = (S.mtgts || []).find(x => x.id === 'mt-' + q.qid); return !!(t && t.done && t.done.side === sd); }
@@ -1568,6 +1570,20 @@ function injAuto(S, q, sd){
 }
 const ACCT_PTS = 5;
 function injPk(q){ return q && q.done === 'acct' ? 'acct' : 'adj'; }
+function applyCall(S, e, cfg, side, key, adj, text, extra){
+  const c = OC_CALLS[key]; if (!c) return;
+  if (c.ev === 'custom'){ const a = adj || { pts:0, hn:0, esc:0 }, why = String(text || 'POC call').slice(0, 120); [['pts', a.pts], ['hn', a.hn], ['esc', a.esc]].forEach(([f, d]) => { if (d) apply(S, { id:e.id + f, ts:e.ts, type:'adjust', side, p:{ field:f, delta:d, reason:why }, by:e.by }, cfg); }); if (!a.pts && !a.hn && !a.esc) pushLog(S, 'POC call recorded for ' + SIDES[side].name + ': ' + why, side, e); return; }
+  if (c.ev) apply(S, { id:e.id, ts:e.ts, type:c.ev, side, p:Object.assign({}, c.p, extra || {}), by:e.by }, cfg);
+  else pushLog(S, c.name + ' for ' + SIDES[side].name + (text ? ' (' + String(text).slice(0, 120) + ')' : ''), side, e);
+}
+function injMark(S, qid, sd, e){
+  const q = (S.injq || []).find(x => x.qid === qid); if (!q || !q.win || q.sent == null || !injSides(q).includes(sd)) return;
+  if (!q.res) q.res = {}; const old = q.res[sd]; if (old && (old.st === 'done' || old.st === 'exc')) return;
+  injRefund(S, sd, old, q); q.res[sd] = { st:'done', g:S.g, auto:true };
+  if (q.who === 'any') injSides(q).forEach(o => { if (o !== sd){ injRefund(S, o, q.res[o], q); q.res[o] = { st:'na', g:S.g }; } });
+  S.ver++; pushLog(S, SIDES[sd].name + ' handled the inject "' + q.label + '" (POC call)', sd, e);
+  if (q.closed == null && injSides(q).every(o => q.res[o])) injClose(S, q, 'handled');
+}
 function injRefund(S, sd, r, q){ if (!r || r.st !== 'miss') return; if (r.pts) S.pts[sd][injPk(q)] = (S.pts[sd][injPk(q)] || 0) + r.pts; if (r.hn) addHN(S, sd, r.hn); }
 function injPropNames(S, q){ return Object.values(S.propUses || {}).filter(u => u.kind === 'tpl' && u.item === q.tid && propLive(S, u)).map(u => ((S.props || {})[u.prop] || {}).name + (u.label ? ' (' + u.label + ')' : '')); }
 function injClose(S, q, why){
@@ -1766,14 +1782,26 @@ const OC_CALLS = {
   aid:{ ev:'aid_del', p:{}, name:'Aid package delivered', sub:'Delivered to the Marala Town office' },
   ied_real:{ ev:'ied', p:{ result:'real' }, name:'Real IED cleared', sub:'+2 points - Diplomatic points +5' },
   cache:{ ev:'cache', p:{}, name:'Militia cache cleared', sub:'+5 points - Diplomatic points +5' },
-  provocation:{ ev:'provocation', p:{}, name:'Aimed at or crowded the other wing', sub:'Escalation +5' },
+  provocation:{ ev:'provocation', p:{}, name:'Aimed at or crowded the other force', sub:'Escalation +5' },
   firstfire:{ ev:'firstfire', p:{}, name:'Fired first', sub:'Escalation +20 - Diplomatic points −15' },
-  returnfire:{ ev:'returnfire', p:{}, name:'Returned fire', sub:'Escalation +5' }
+  returnfire:{ ev:'returnfire', p:{}, name:'Returned fire', sub:'Escalation +5' },
+  prok:{ ev:'adjust', p:{ field:'pts', delta:3, reason:'Personnel recovery' }, name:'Personnel recovered', sub:'+3 points (authenticated, MEDEVAC 9-line, carried to the CCP)' },
+  prpart:{ ev:null, p:{}, name:'Recovered, procedure missed', sub:'No points (not authenticated or no 9-line)' },
+  box:{ ev:'adjust', p:{ field:'hn', delta:5, reason:'Aid supply box delivered' }, name:'Supply box delivered', sub:'Diplomatic points +5 (intact, to the town office)' },
+  detain:{ ev:'adjust', p:{ field:'esc', delta:10, reason:'Detained a foreign service member' }, name:'Detained a foreign service member', sub:'Escalation +10' },
+  mayorhand:{ ev:'adjust', p:{ field:'hn', delta:10, reason:'Handed a foreign service member to the mayor' }, name:'Handed a service member to the mayor', sub:'Diplomatic points +10' },
+  pace:{ ev:'adjust', p:{ field:'pts', delta:1, reason:'PACE executed' }, name:'PACE executed', sub:'+1 point (every team on the alternate channel)' },
+  field:{ ev:null, p:{}, name:'Field check or contact done', sub:'No points. The team checked a tip spot or met a contact' },
+  custom:{ ev:'custom', p:{}, name:'Something else', sub:'Described by the POC' }
 };
+const CALL_DONE = { ied:['ied_real', 'iedhit'], civaid:['civaid'], conduct:['good', 'poor'], cache:['cache'], pr:['prok', 'prpart'], box:['box'] };
+function adjClean(a){ const c = v => Math.max(-30, Math.min(30, Math.round(+v || 0))); a = a || {}; return { pts:c(a.pts), hn:c(a.hn), esc:c(a.esc) }; }
+function adjText(a){ return [a.pts ? (a.pts > 0 ? '+' : '') + a.pts + ' points' : '', a.hn ? 'diplomatic points ' + (a.hn > 0 ? '+' : '') + a.hn : '', a.esc ? 'escalation ' + (a.esc > 0 ? '+' : '') + a.esc : ''].filter(Boolean).join(', ') || 'no score change'; }
+function callInjFor(S, side, call){ const keys = Object.keys(CALL_DONE).filter(k => CALL_DONE[k].includes(call)); if (!keys.length) return null; const q = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && keys.includes(q.done) && injSides(q).includes(side) && !(q.res || {})[side]).sort((a, b) => b.sent - a.sent)[0]; return q ? q.qid : null; }
 function ocWhere(S, o){ if (!o) return ''; if (o.props) return 'Props and logistics'; if (o.mayor) return 'Mayor'; if (o.side && o.team){ const t = S.teams[o.side][o.team]; return SIDES[o.side].name + ' - ' + (t ? (t.num ? '#' + t.num + ' ' : '') + t.name : 'Fireteam'); } return 'Not attached'; }
 function nineText(n){ return (n.target === 'cache' ? 'Militia cache' : SIDES[OTHER[n.side]].name + ' position') + ' at ' + (n.loc || '?'); }
 function ocReqText(S, r){
-  if (r.kind === 'call') return OC_CALLS[r.call].name + ' for ' + SIDES[r.side].name + (r.text ? ' (' + r.text + ')' : '');
+  if (r.kind === 'call') return (r.call === 'custom' ? 'Something else (' + adjText(r.adj || {}) + ')' : OC_CALLS[r.call].name) + ' for ' + SIDES[r.side].name + (r.text ? ' (' + r.text + ')' : '') + (r.inj ? ' [inject: ' + (((S.injq || []).find(q => q.qid === r.inj) || {}).label || '?') + ']' : '');
   if (r.kind === 'stale') return 'Stalemate at ' + (SITES[r.site] ? SITES[r.site].name : 'a site') + (r.text ? ' (' + r.text + ')' : '');
   if (r.kind === 'site') return (r.who === 'both' ? 'Both wings' : r.side ? SIDES[r.side].name : 'A team') + ' at ' + (r.site === 'town' ? 'Marala Town' : SITES[r.site] ? SITES[r.site].name : 'a site') + (r.text ? ' (' + r.text + ')' : '');
   return 'Message: "' + r.text + '"';
@@ -2431,7 +2459,8 @@ function apply(S, e, cfg){
       const o = S.ocs[p.oc]; if (!o || o.removed){ pushLog(S, 'POC request refused: that POC is not signed in', null, e, 'rejected'); break; }
       const k = ['call', 'site', 'msg', 'stale'].includes(p.kind) ? p.kind : 'msg';
       const r = { id:e.id, oc:o.id, kind:k, g:S.g, status:'open', text:String(p.text || '').trim().slice(0, 300) };
-      if (k === 'call'){ if (!OC_CALLS[p.call] || !(p.side === 'B' || p.side === 'R')) break; r.call = p.call; r.side = p.side; }
+      if (k === 'call'){ if (!OC_CALLS[p.call] || !(p.side === 'B' || p.side === 'R')) break; r.call = p.call; r.side = p.side; if (p.call === 'custom'){ if (!r.text) break; r.adj = adjClean(p.adj); }
+        const iq = p.inj ? (S.injq || []).find(q => q.qid === p.inj && q.win && q.sent != null && injSides(q).includes(r.side)) : null; r.inj = iq ? iq.qid : callInjFor(S, r.side, p.call); }
       if (k === 'site'){ r.site = SITES[p.site] || p.site === 'town' ? p.site : null; r.who = p.who === 'both' ? 'both' : 'one'; r.side = r.who === 'one' && (p.side === 'B' || p.side === 'R') ? p.side : null; }
       if (k === 'stale'){ if (!SITES[p.site]) break; r.site = p.site; }
       if (k === 'msg' && !r.text) break;
@@ -2698,11 +2727,17 @@ function apply(S, e, cfg){
       S.ocAnns.push({ id:e.id, text:tx, g:S.g }); S.ver++;
       pushLog(S, 'Announcement to all POCs: ' + tx, null, e);
       break; }
+    case 'wf_call': {
+      if (!OC_CALLS[p.call] || (side !== 'B' && side !== 'R')) break;
+      const tx = String(p.text || '').trim().slice(0, 200); if (p.call === 'custom' && !tx) break;
+      applyCall(S, e, cfg, side, p.call, p.call === 'custom' ? adjClean(p.adj) : null, tx, null);
+      const iq = p.inj || callInjFor(S, side, p.call); if (iq) injMark(S, iq, side, e);
+      break; }
     case 'oc_res': {
       const r = S.ocReqs.find(x => x.id === p.req); if (!r || r.status !== 'open') break;
       r.status = p.ok ? 'ok' : 'no'; r.resG = S.g; S.ver++;
       { const rp = String(p.reply || '').trim().slice(0, 300); if (rp){ r.reply = rp; pushLog(S, 'White Force reply to POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + rp, null, e); } }
-      if (r.kind === 'call' && p.ok){ const c = OC_CALLS[r.call]; apply(S, { id:e.id, ts:e.ts, type:c.ev, side:r.side, p:Object.assign({}, c.p, r.call === 'aid' ? { at:r.g } : {}), by:e.by }, cfg); }
+      if (r.kind === 'call' && p.ok){ applyCall(S, e, cfg, r.side, r.call, r.call === 'custom' ? adjClean(p.adj || r.adj) : null, r.text, r.call === 'aid' ? { at:r.g } : null); if (r.inj) injMark(S, r.inj, r.side, e); }
       else if (r.kind === 'stale' && p.ok){ const st = S.sites[r.site]; if (st && !st.contestBy && !st.contested) apply(S, { id:e.id, ts:e.ts, type:'site_contested', side:null, p:{ site:r.site, on:true }, by:e.by }, cfg); else pushLog(S, 'Stalemate report from POC ' + ((S.ocs[r.oc] || {}).name || '') + ' not applied: ' + (SITES[r.site] ? SITES[r.site].name : 'site') + (st && st.contestBy ? ' is under contention' : ' is already in stalemate'), null, e, 'rejected'); }
       else if (r.kind === 'stale') pushLog(S, 'Stalemate report from POC ' + ((S.ocs[r.oc] || {}).name || '') + ' declined: ' + (SITES[r.site] ? SITES[r.site].name : 'site'), null, e);
       else pushLog(S, (r.kind === 'call' ? 'Denied' : 'Acknowledged') + ' POC ' + ((S.ocs[r.oc] || {}).name || '') + ': ' + ocReqText(S, r), null, e);
@@ -4080,8 +4115,14 @@ function buildOC(){
     <div class="panel stack" data-ps="now" data-ocannbox hidden><h2>Announcements</h2><div class="list" data-ocanns></div></div>
     <div class="panel stack" data-ps="now"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
     <div class="panel stack" data-ps="calls"><h2>Calls for the White Force</h2><p class="small muted" style="margin:0">Calls take effect only after White Force approval.</p>
-      <div class="row"><label>Wing<select data-ocside><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
-      <div class="evgrid">${Object.entries(OC_CALLS).map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div></div>
+      <div class="row"><label>Force<select data-ocside><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
+      <label>For inject<select data-ocinj><option value="">Automatic (the board matches it)</option></select></label>
+      <div class="evgrid">${Object.entries(OC_CALLS).filter(([k]) => k !== 'custom').map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div>
+      <details class="oc-custom"><summary><b>Something else</b> <span class="small muted">anything the buttons above do not cover</span></summary>
+        <form class="stack" data-occustom style="margin-top:6px"><label>What happened<textarea name="text" rows="2" maxlength="200" required placeholder="Example: The team gave first aid to a hurt POC and stopped the game safely."></textarea></label>
+          <div class="row"><label>Points<input name="pts" type="number" min="-30" max="30" value="0"></label><label>Diplomatic points<input name="hn" type="number" min="-30" max="30" value="0"></label><label>Escalation<input name="esc" type="number" min="-30" max="30" value="0"></label></div>
+          <p class="small muted" style="margin:0">Suggest the effect. The White Force can change it before approving. Leave all three at 0 to just report it.</p>
+          <div><button type="submit" class="btn-side">Send to the White Force</button></div></form></details></div>
     <div class="panel stack" data-ps="calls"><h2>Stalemate</h2>
       <p class="small muted" style="margin:0">Both wings at the same neutral site before either team has started the activity. Not used during contention.</p>
       <div class="row"><label>Site<select data-ocstalesite data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
@@ -4105,11 +4146,12 @@ function buildOC(){
   $('[data-occf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return; } await writeEvent('occhat', null, { oc:me.id, from:'oc', text:tx }); f.text.value = ''; });
   $('[data-ocfull]', v).onclick = () => openFullMap(null);
   const send = async (p, msg) => { if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return false; } await writeEvent('oc_req', null, Object.assign({ oc:me.id }, p)); toast(msg || 'Sent to the White Force.'); return true; };
+  $('[data-occustom]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(), sd = $('[data-ocside]', v).value, inj = $('[data-ocinj]', v).value; if (!tx) return; const adj = { pts:+f.pts.value || 0, hn:+f.hn.value || 0, esc:+f.esc.value || 0 }; if (!confirm('Send to the White Force for ' + SIDES[sd].name + ': ' + tx + ' (' + adjText(adj) + ')?')) return; if (await send(Object.assign({ kind:'call', call:'custom', side:sd, text:tx, adj }, inj ? { inj } : {}))){ f.reset(); f.closest('details').open = false; } });
   $('[data-ocassign]', v).onchange = ev => writeEvent('oc_assign', null, Object.assign({ oc:me.id }, ocParse(ev.target.value)));
   $('[data-ocsignout]', v).onclick = () => { if (!confirm('Sign out on this phone? The White Force keeps your name until it removes you.')) return; ocSet(null); app.built = null; buildOC(); refresh(true); };
   v.addEventListener('click', async ev => {
     const c = ev.target.closest('[data-occall]');
-    if (c){ const k = c.dataset.occall, sd = $('[data-ocside]', v).value; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; if (await send({ kind:'call', call:k, side:sd, text:$('[data-ocnote]', v).value })) $('[data-ocnote]', v).value = ''; return; }
+    if (c){ const k = c.dataset.occall, sd = $('[data-ocside]', v).value, inj = $('[data-ocinj]', v).value; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; if (await send(Object.assign({ kind:'call', call:k, side:sd, text:$('[data-ocnote]', v).value }, inj ? { inj } : {}))){ $('[data-ocnote]', v).value = ''; $('[data-ocinj]', v).value = ''; } return; }
     if (ev.target.closest('[data-ocself]')){
       const b = ev.target.closest('[data-ocself]'); b.disabled = true; b.textContent = 'Finding…';
       const g = await getGPS(); b.disabled = false; b.textContent = 'Find my position';
@@ -4159,6 +4201,8 @@ function renderOC(S){
   wn.hidden = !det; wn.textContent = det ? det.name + ' was removed from the game at ' + hhmm(det.g) + '. Pick the fireteam you are with now.' : '';
   if (det && app.ocDetSeen !== det.g + det.name){ app.ocDetSeen = det.g + det.name; toast(det.name + ' was removed. Pick the fireteam you are with now.', true); try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e){} }
   if (o && o.side && !app.ocSideSet){ app.ocSideSet = true; $('[data-ocside]', v).value = o.side; $('[data-ocwho]', v).value = o.side; }
+  { const sel = $('[data-ocinj]', v), sd = $('[data-ocside]', v).value, qs = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injSides(q).includes(sd) && !(q.res || {})[sd]);
+    if (document.activeElement !== sel) keepSelect(sel, '<option value="">Automatic (the board matches it)</option>' + qs.map(q => '<option value="' + q.qid + '">' + esc(q.label) + (injEnd(q) != null ? ' (due ' + hhmm(injEnd(q)) + ')' : '') + '</option>').join('')); }
   const mine = S.nines.filter(n => n.status === 'open' && o && n.side === o.side && n.team === o.team);
   $('[data-ocnines]', v).innerHTML = !o || !o.team ? '<div class="empty">Attach yourself to a fireteam to check its 9-lines.</div>' : mine.length ? mine.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.g) + '</span><div>' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocnine="' + n.id + '" data-ok="1">Correct, send to C2</button><button type="button" data-ocnine="' + n.id + '" data-ok="0">Not right</button></div></div>').join('') : '<div class="empty">Nothing to check right now.</div>';
   { const tx = $('[data-ocselftxt]', v), clr = $('[data-ocselfclr]', v), s = app.ocSelf && Date.now() - app.ocSelf.t < PIN_LIFE ? app.ocSelf : null;
@@ -4219,6 +4263,7 @@ function renderOCWhite(S, v){
   const ocsFor = n => Object.values(S.ocs).filter(o => !o.removed && o.side === n.side && o.team === n.team).map(o => esc(o.name)).join(', ');
   S.nines.filter(n => n.status === 'open').forEach(n => q.push('<div class="li"><div class="grow"><span class="chip ' + n.side + '">' + SIDES[n.side].name + '</span> <b>Strike 9-line</b> <span class="small muted">' + hhmm(n.g) + ' | ' + esc(n.name) + (ocsFor(n) ? ' - POC ' + ocsFor(n) : ' - No POC attached') + '</span><div class="small">' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-nineres="' + n.id + '" data-ok="1">Correct, send to C2</button><button type="button" data-nineres="' + n.id + '" data-ok="0">Deny</button></div></div>'));
   S.ocReqs.filter(r => r.status === 'open').forEach(r => {
+    if (r.kind === 'call' && r.call === 'custom'){ const a = r.adj || {}; q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>Something else</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + who(r.oc) + ': ' + esc(r.text) + (r.inj ? ' <span class="chip">for ' + esc(((S.injq || []).find(x => x.qid === r.inj) || {}).label || 'an inject') + '</span>' : '') + '</div><div class="row" style="margin-top:6px">' + [['pts', 'Points'], ['hn', 'Diplomatic'], ['esc', 'Escalation']].map(([k, l]) => '<label class="small">' + l + '<input type="number" data-ocadj="' + k + '" min="-30" max="30" value="' + (a[k] || 0) + '"></label>').join('') + '</div><input data-ocreply="' + r.id + '" maxlength="300" autocomplete="off" placeholder="Reply (optional)" style="margin-top:6px"></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button></div></div>'); return; }
     let ctl = r.kind === 'stale' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Mark stalemate</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Not a stalemate</button>' : r.kind === 'call' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Approve</button><button type="button" data-ocres="' + r.id + '" data-ok="0">Deny</button>' : (r.kind === 'msg' ? '<button type="button" class="btn-side" data-ocres="' + r.id + '" data-ok="1">Send reply</button>' : '') + '<button type="button" data-ocres="' + r.id + '" data-ok="1">Got it</button>';
     if (r.kind === 'site' && r.who === 'both' && SITES[r.site] && !S.sites[r.site].contested) ctl = '<button type="button" data-act="contest" data-id="' + r.site + '" data-on="1">Mark stalemate</button>' + ctl;
     const head = r.kind === 'call' ? '<span class="chip ' + r.side + '">' + SIDES[r.side].name + '</span> <b>' + esc(OC_CALLS[r.call].name) + '</b> <span class="small muted">' + esc(OC_CALLS[r.call].sub) + '</span>' : r.kind === 'stale' ? '<b>Stalemate reported</b>' : r.kind === 'site' ? '<b>At a site</b>' : '<b>Message</b>';
@@ -5740,9 +5785,10 @@ function buildWhite(){
         <button type="button" data-ev="iedhit" data-side="${s}">Hit by an IED<small>−${IED_HIT} points</small></button>
         <button type="button" data-ev="civaid" data-side="${s}">Helped a civilian<small>Diplomatic points +5</small></button>
         <button type="button" data-ev="aid_del" data-side="${s}">Aid package delivered<small>Diplomatic points +5 if on time</small></button>
-        <button type="button" data-ev="provocation" data-side="${s}">Aimed at or crowded the other wing<small>Escalation +5</small></button>
+        <button type="button" data-ev="provocation" data-side="${s}">Aimed at or crowded the other force<small>Escalation +5</small></button>
         <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>Escalation +20 - Diplomatic points −15</small></button>
         <button type="button" data-ev="returnfire" data-side="${s}">Returned fire<small>Escalation +5</small></button>
+        ${['prok', 'prpart', 'box', 'detain', 'mayorhand', 'pace', 'field'].map(k => '<button type="button" data-wfcall="' + k + '" data-side="' + s + '">' + esc(OC_CALLS[k].name) + '<small>' + esc(OC_CALLS[k].sub) + '</small></button>').join('')}
         <button type="button" data-ev="office" data-side="${s}" data-on="0">Close town office<small>Override</small></button>
       </div>
       <form class="row" data-wf="adjust" data-side="${s}"><label>Adjust<select name="field"><option value="hn">Diplomatic points</option><option value="pts">Points</option><option value="esc">Escalation (charged to them)</option></select></label><label>By<input name="delta" type="number" value="1" step="1"></label><label>Reason<input name="reason" maxlength="80"></label><button type="submit" style="flex:0 0 auto">Apply</button></form>
@@ -6081,7 +6127,7 @@ function buildWhite(){
     const iv = ev.target.closest('[data-ipview]');
     if (iv){ const cur = $('[data-wtab][aria-selected="true"]', v); if (cur && !['all', 'intel'].includes(cur.dataset.wtab)) $('[data-wtab="intel"]', v).click(); const f = $('[data-ipbuild]', v); $('[data-ipbsrc]', f).value = iv.dataset.ipview; $('[data-ipbload]', f).click(); f.open = true; f.scrollIntoView({ behavior:'smooth', block:'start' }); return; }
     const nr = ev.target.closest('[data-nineres]'); if (nr){ writeEvent('nine_res', null, { nine:nr.dataset.nineres, ok:nr.dataset.ok === '1', by:'White Force' }); return; }
-    const orq = ev.target.closest('[data-ocres]'); if (orq){ const inp = orq.closest('.li') && orq.closest('.li').querySelector('[data-ocreply]'); writeEvent('oc_res', null, { req:orq.dataset.ocres, ok:orq.dataset.ok === '1', reply:inp ? inp.value.trim() : '' }); return; }
+    const orq = ev.target.closest('[data-ocres]'); if (orq){ const li = orq.closest('.li'), inp = li && li.querySelector('[data-ocreply]'), adj = {}; if (li) $$('[data-ocadj]', li).forEach(x => adj[x.dataset.ocadj] = +x.value || 0); writeEvent('oc_res', null, Object.assign({ req:orq.dataset.ocres, ok:orq.dataset.ok === '1', reply:inp ? inp.value.trim() : '' }, Object.keys(adj).length ? { adj } : {})); return; }
     const sv = ev.target.closest('[data-ocsave]');
     if (sv){ const id = sv.dataset.ocsave, S = app.S, o = S && S.ocs[id]; if (!o) return; const nm = $('[data-ocnamein="' + id + '"]', v).value.trim(), as = ocParse($('[data-ocassignin="' + id + '"]', v).value);
       if (nm && nm !== o.name) writeEvent('oc_edit', null, { oc:id, name:nm });
@@ -6204,6 +6250,7 @@ function buildWhite(){
     $('[data-restore]', v).hidden = false;
     $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
   }
+  v.addEventListener('click', ev => { const b = ev.target.closest('[data-wfcall]'); if (!b) return; const k = b.dataset.wfcall, sd = b.dataset.side; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; writeEvent('wf_call', sd, { call:k }); toast(OC_CALLS[k].name + ': ' + SIDES[sd].name + '.'); });
   v.addEventListener('click', ev => { const m = ev.target.closest('[data-tlmode]'), b = !m && ev.target.closest('[data-pictl] [data-tlid]'); if (!m && !b) return; app.tlf = m ? { mode:m.dataset.tlmode, id:'' } : { mode:(app.tlf || {}).mode || 'all', id:b.dataset.tlid }; const tb = $('[data-pictl]', v); if (tb) tb.dataset.h = ''; refresh(true); });
   v.addEventListener('change', ev => { const o = ev.target.closest('[data-tlone]'); if (!o) return; app.tlf = { mode:(app.tlf || {}).mode || 'all', id:o.value }; refresh(true); });
   v.addEventListener('change', ev => { const t = ev.target.closest('[data-timer]'); if (t) { writeEvent('site_timer', null, { site:t.dataset.timer, min:+t.value }); toast(SITES[t.dataset.timer].name + ' contention timer: ' + t.value + ' minutes.'); } });
@@ -6713,7 +6760,7 @@ function renderWhite(S, now){
   (S.accts || []).forEach(a => ['B', 'R'].forEach(sd => { const r = a.reps[sd]; if (!r || r.status !== 'wf') return;
     q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip ' + sd + '">' + SIDES[sd].name + '</span> <b>PERSTAT to check: ' + esc(a.label) + '</b> <span class="small muted">' + hhmm(r.g) + '</span>' + psCheckHTML(S, a, sd) + '<div class="small muted">Grids within about 250 m of the GPS fix are a match; teams keep moving. Your call: approve to send it to the AOC, or return it with a note.</div></div><div class="row" style="flex:0 0 auto;align-items:end"><input id="psw-' + a.id + sd + '" placeholder="Note (needed to return it)" maxlength="300"><button type="button" class="btn-side" data-act="psok" data-id="' + a.id + '" data-side="' + sd + '">Approve, send to AOC</button><button type="button" data-act="psno" data-id="' + a.id + '" data-side="' + sd + '">Return</button></div></div>'); }));
   (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && q.done === 'manual' && injEnd(q) != null).forEach(qq => { const left = Math.max(0, Math.ceil(injEnd(qq) - S.g)), sides = injSides(qq).filter(sd => !(qq.res || {})[sd]); if (!sides.length) return;
-    q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip wait">Your call</span> <b>' + esc(qq.label) + '</b> <span class="small muted">due ' + hhmm(injEnd(qq)) + ' (' + left + ' min)</span><div class="small">The board cannot see this one. When a POC tells you the force did it, mark it.</div></div><div class="row" style="flex:0 0 auto">' + sides.map(sd => '<button type="button" class="btn-side" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="done">' + SIDES[sd].name + ' did it</button>').join('') + '</div></div>'); });
+    q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip wait">Your call</span> <b>' + esc(qq.label) + '</b> <span class="small muted">due ' + hhmm(injEnd(qq)) + ' (' + left + ' min)</span><div class="small">Nothing on the board shows this one. When you know the force did it, press the button.</div></div><div class="row" style="flex:0 0 auto">' + sides.map(sd => '<button type="button" class="btn-side" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="done">' + SIDES[sd].name + ' did it</button>').join('') + '</div></div>'); });
   (S.injq || []).filter(qq => qq.win && qq.closed != null && S.g - qq.closed <= 10 && injSides(qq).some(sd => qq.res[sd] && qq.res[sd].st === 'miss')).forEach(qq => injSides(qq).filter(sd => qq.res[sd] && qq.res[sd].st === 'miss' && !qq.res[sd].seen).forEach(sd => {
     q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip ' + sd + '">' + SIDES[sd].name + '</span> <b>Missed: ' + esc(qq.label) + '</b> <span class="small muted">closed ' + hhmm(qq.closed) + '</span><div class="small">' + (qq.res[sd].pts || qq.res[sd].hn ? 'Penalty applied: ' + [qq.res[sd].pts ? '−' + qq.res[sd].pts + ' points' : '', qq.res[sd].hn ? '−' + qq.res[sd].hn + ' diplomatic' : ''].filter(Boolean).join(', ') + '. ' : '') + 'If that is wrong, fix it now. This drops off after 10 minutes.</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="done">They did it</button><button type="button" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="exc">Don’t count it</button></div></div>'); }));
   { const due = rsRows(S).filter(r => r.due && !r.out); if (due.length) q.push('<div class="li"><div class="grow"><span class="chip wait">To send</span> <b>' + due.length + ' item' + (due.length === 1 ? ' is' : 's are') + ' due to go out</b><div class="small">' + esc(due.slice(0, 4).map(r => r.label).join('; ')) + (due.length > 4 ? '…' : '') + '</div></div><button type="button" class="btn-side" data-gotab="send" style="flex:0 0 auto">Go to Send</button></div>'); }
