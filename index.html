@@ -130,7 +130,10 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .tl-bar{position:absolute;height:24px;min-width:6px;border-radius:5px;border:1.5px solid var(--ink);background:var(--panel-2);display:flex;align-items:center;gap:6px;padding:0 6px;overflow:hidden;white-space:nowrap;font-size:12px;box-sizing:border-box}
 .tl-bar b{font-family:var(--mono)}.tl-bar span{overflow:hidden;text-overflow:ellipsis}
 .tl-bar.to-B{border-color:var(--blu);background:var(--blu-soft)}.tl-bar.to-R{border-color:var(--red);background:var(--red-soft)}.tl-bar.to-both{background:linear-gradient(180deg,var(--blu-soft) 50%,var(--red-soft) 50%)}
-.tl-bar.done{opacity:.5}
+.tl-bar.done{opacity:.5}.tl-bar.miss{outline:2px dashed var(--bad);outline-offset:-2px}.tl-bar[data-tlid]{cursor:pointer}
+.rs-row summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.rs-row .rs-btns{display:flex;gap:6px;margin-left:auto}.rs-row.out{opacity:.75}.rw-help p,.rw-help ul{margin:6px 0}.cbf-det summary{cursor:pointer;font-weight:600}.rw-help summary{cursor:pointer}
+.tl-ctl{align-items:end;margin:0 0 8px;gap:10px}.tl-ctl .seg{display:flex;gap:0}.tl-ctl .seg button{border-radius:0;margin-left:-1px}.tl-ctl .seg button:first-child{border-radius:6px 0 0 6px}.tl-ctl .seg button:last-child{border-radius:0 6px 6px 0}.tl-ctl .seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.tl-detail{grid-column:1 / -1;margin-top:8px;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)}
 .tl-mk{position:absolute;top:8px;width:13px;height:13px;margin-left:-6.5px;transform:rotate(45deg);border:2px solid var(--panel);background:var(--ink);box-shadow:0 0 0 1px var(--ink);box-sizing:border-box}
 .tl-mk.msg{border-radius:50%;transform:none}
 .tl-mk.to-B{background:var(--blu);box-shadow:0 0 0 1px var(--blu)}.tl-mk.to-R{background:var(--red);box-shadow:0 0 0 1px var(--red)}.tl-mk.to-public{background:var(--muted);box-shadow:0 0 0 1px var(--muted)}
@@ -350,8 +353,10 @@ body.ip-fs{overflow:hidden}
 .cub-f{display:grid;gap:4px;font-size:15px}
 .cub-f span{color:var(--muted);font-size:13px;font-family:var(--mono);letter-spacing:.04em}
 .cub-tx{white-space:pre-wrap;overflow-wrap:anywhere}
+.inj-card{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:6px;background:var(--panel)}.inj-card.open{border-color:var(--warn);box-shadow:inset 3px 0 0 var(--warn)}
 .cub-pers{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0;display:grid;gap:6px;min-width:0}
 .cub-pers legend{font-weight:600;padding:0 4px}
+.rag-help summary{cursor:pointer;color:var(--muted)}.rag-help div{margin:3px 0}.rag-green{color:#1e8449}.rag-amber{color:#b9770e}.rag-red{color:#c0392b}
 [data-cubfields] label{display:grid;gap:3px}
 .ip-badge.pir{color:var(--ink);border-color:var(--muted)}
 .tl-mk.rh{background:#7d5cff;width:12px;height:12px;border-radius:2px;transform:translate(-6px,0) rotate(45deg)}
@@ -1603,7 +1608,7 @@ function rhythmAt(x){ return START_G + x.at; }
 const CUB_STD = [
   { k:'prog', l:'Mission progress', min:60, h:'Sites held and contested, what each fireteam has done since the last brief, and progress toward the commander’s intent.' },
   { k:'chg', l:'Changes from the plan', min:40, h:'Where you have departed from the plan you briefed (routes, sites, team tasks, timeline), why, and what it costs you. If nothing changed, say why the plan still holds.' },
-  { k:'pers', l:'Accountability (PERSTAT)', kind:'pers', min:30, h:'Location (grid) and task of each fireteam, and where anyone unaccounted for was last seen.' },
+  { k:'pers', l:'Accountability (PERSTAT)', kind:'pers', min:30, h:'Location (grid) and task of each fireteam. If anyone is unaccounted for: who, why, and where they were last seen.' },
   { k:'cas', l:'Casualties and MEDEVAC', min:12, none:true, h:'Each casualty since the last brief: team, cause (IED, militia, other), status and whether a CASEVAC is needed. Write NONE if there were none.' },
   { k:'en', l:'Enemy and militia activity', min:30, h:'What the other force and the militia have done, where, and what you expect them to do next.' },
   { k:'intel', l:'Intelligence and PIRs', min:40, h:'PIRs answered or advanced, with the evidence; reports you judge false and why.' },
@@ -1620,7 +1625,7 @@ const CUB_LINES = {
   4:[
     { k:'prog', l:'Final positions and sites held', min:40, h:'Where each fireteam is and which sites you hold at ENDEX.' },
     { k:'msn', l:'Mission accomplishment', min:60, h:'Against the commander’s intent and your plan: what you achieved, what you did not, and why.' },
-    { k:'pers', l:'Final accountability (PERSTAT and equipment)', kind:'pers', min:30, h:'Every LMR, phone and training rifle accounted for, or what is missing and where it was last seen.' },
+    { k:'pers', l:'Final accountability (PERSTAT and equipment)', kind:'pers', min:30, h:'Every LMR, phone and training rifle accounted for, or what is missing and where it was last seen. If anyone is unaccounted for: who, why, and where they were last seen.' },
     { k:'cas', l:'Casualties for the exercise', min:12, none:true, h:'Every casualty during the exercise, cause and current status. Write NONE if there were none.' },
     { k:'intel', l:'PIRs answered', min:40, h:'Each PIR: answered, partly answered or open, with the evidence.' },
     { k:'sig', l:'Significant events and escalation', min:40, h:'The events that shaped the fight, strikes and their results, and where escalation and diplomatic points ended.' },
@@ -1628,20 +1633,35 @@ const CUB_LINES = {
     { k:'cdr', l:'Commander’s assessment', kind:'rag', min:20, h:'GREEN, AMBER or RED for the mission overall, and why.' }
   ]
 };
-const PERS_KEYS = [['asg', 'Assigned'], ['pdy', 'Present for duty'], ['cas', 'Casualties'], ['una', 'Unaccounted for']];
+const PERS_KEYS = [['acc', 'Accounted for'], ['una', 'Unaccounted for']];
 const RAG = ['GREEN', 'AMBER', 'RED'];
-function cubCompose(n, f){
-  const ls = CUB_LINES[n]; if (!ls || !f || typeof f !== 'object') return { err:'brief form missing' };
+const RAG_HELP = { GREEN:'On plan. The mission will succeed with what you have.', AMBER:'Behind plan or at risk. You can recover with your own forces or a small change.', RED:'The mission will fail without AOC help or a new plan.' };
+function persNorm(o){ o = o || {}; if (o.acc == null && o.asg != null) return { acc:(+o.pdy || 0) + (+o.cas || 0), una:+o.una || 0 }; return { acc:o.acc, una:o.una }; }
+function persOK(p){ for (const [k] of PERS_KEYS){ const x = Number(p[k]); if (!Number.isInteger(x) || x < 0 || x > 99) return 'every number is needed'; } return p.acc + p.una < 1 ? 'the force has no one in it' : ''; }
+const LINE_KINDS = { text:'Written answer', pers:'Accountability numbers + written answer', rag:'GREEN / AMBER / RED + written answer' };
+function cubLines(S, side, n){ const c = S && S.cubForms && S.cubForms[side] && S.cubForms[side][n]; return (c && c.lines) || CUB_LINES[n] || null; }
+function cubLinesClean(ls){
+  if (!Array.isArray(ls) || ls.length < 1 || ls.length > 16) return null;
+  const seen = new Set(), out = [];
+  for (const L of ls){ if (!L || typeof L !== 'object') return null; const k = String(L.k || '').toLowerCase(); if (!/^[a-z][a-z0-9]{0,7}$/.test(k) || seen.has(k) || /^p_/.test(k) || k === 'rag') return null; seen.add(k);
+    const l = String(L.l || '').trim().slice(0, 60); if (!l) return null;
+    out.push({ k, l, h:String(L.h || '').trim().slice(0, 300), min:Math.max(0, Math.min(300, Math.round(+L.min || 0))), kind:LINE_KINDS[L.kind] ? L.kind : 'text', none:!!L.none }); }
+  if (out.filter(L => L.kind === 'pers').length > 1 || out.filter(L => L.kind === 'rag').length > 1) return null;
+  return out;
+}
+function cubCompose(ls, f){
+  if (typeof ls === 'number') ls = CUB_LINES[ls];
+  if (!ls || !f || typeof f !== 'object') return { err:'brief form missing' };
   const out = {}, txt = [];
   for (let i = 0; i < ls.length; i++){
     const L = ls[i], v = String(f[L.k] == null ? '' : f[L.k]).replace(/\s+/g, ' ').trim().slice(0, 600);
     if (!(L.none && /^none\b/i.test(v)) && v.length < L.min) return { err:'line ' + (i + 1) + ' (' + L.l + ') needs at least ' + L.min + ' characters' };
     out[L.k] = v; let head = '';
     if (L.kind === 'pers'){
-      const p = {};
-      for (const [k] of PERS_KEYS){ const x = Number(f['p_' + k]); if (!Number.isInteger(x) || x < 0 || x > 99) return { err:'line ' + (i + 1) + ': every PERSTAT number is needed' }; p[k] = x; }
-      if (p.asg < 1 || p.pdy + p.cas + p.una !== p.asg) return { err:'line ' + (i + 1) + ': present + casualties + unaccounted must equal assigned' };
-      Object.keys(p).forEach(k => out['p_' + k] = p[k]);
+      const raw = {}; PERS_KEYS.forEach(([k]) => raw[k] = Number(f['p_' + k])); const p = persNorm(f.p_acc == null && f.p_asg != null ? { asg:f.p_asg, pdy:f.p_pdy, cas:f.p_cas, una:f.p_una } : raw);
+      const bad = persOK(p); if (bad) return { err:'line ' + (i + 1) + ': ' + bad };
+      if (p.una > 0 && v.length < 40) return { err:'line ' + (i + 1) + ': say who is unaccounted for and why (at least 40 characters)' };
+      PERS_KEYS.forEach(([k]) => out['p_' + k] = p[k]);
       head = PERS_KEYS.map(([k, l]) => l + ' ' + p[k]).join(', ') + '. ';
     }
     if (L.kind === 'rag'){ const r = String(f.rag || '').toUpperCase(); if (!RAG.includes(r)) return { err:'line ' + (i + 1) + ': choose GREEN, AMBER or RED' }; out.rag = r; head = r + '. '; }
@@ -1649,6 +1669,7 @@ function cubCompose(n, f){
   }
   return { f:out, text:txt.join('\n') };
 }
+const PS_RANGE = 250;
 function cubOf(n){ return RHYTHM.find(x => x.kind === 'cub' && x.n === n) || null; }
 function cubOpen(S, side){
   const cs = RHYTHM.filter(x => x.kind === 'cub' && rhythmAt(x) <= END_G + 1e-9);
@@ -2521,6 +2542,15 @@ function apply(S, e, cfg){
       S.ver++; pushLog(S, 'White Force marked ' + SIDES[sd].name + ' ' + (st === 'exc' ? 'excused from' : 'as having handled') + ' "' + q.label + '"' + (old && old.st === 'miss' ? ' (miss penalty refunded)' : ''), sd, e);
       if (q.closed == null && injSides(q).every(o => q.res[o])) injClose(S, q, 'marked by the White Force');
       break; }
+    case 'cub_form': {
+      const x = cubOf(Number(p.n)), to = p.side === 'both' ? ['B', 'R'] : p.side === 'B' || p.side === 'R' ? [p.side] : null; if (!x || !to) break;
+      const ls = p.reset ? null : cubLinesClean(p.lines); if (!p.reset && !ls){ pushLog(S, 'Brief questions refused: incomplete or invalid lines', null, e, 'rejected'); break; }
+      if (!S.cubForms) S.cubForms = { B:{}, R:{} };
+      to.forEach(sd => { const c = (S.cubs || []).find(q => q.side === sd && q.n === x.n); if (c && c.status !== 'returned'){ pushLog(S, 'Brief questions for ' + SIDES[sd].name + ' ' + x.label + ' not changed: already sent', sd, e, 'rejected'); return; }
+        if (!S.cubForms[sd]) S.cubForms[sd] = {}; if (ls) S.cubForms[sd][x.n] = { lines:ls, id:e.id, g:S.g }; else delete S.cubForms[sd][x.n]; S.ver++;
+        pushFeed(S, sd, 'The AOC ' + (ls ? 'changed the questions for ' : 'restored the standard questions for ') + x.label + '. Check your draft on the AOC tab.', 'hq', { label:'AOC', comm:'msg', priv:true });
+        pushLog(S, 'AOC ' + (ls ? 'set ' + ls.length + ' questions for ' : 'restored the standard questions for ') + SIDES[sd].name + ' ' + x.label, sd, e); });
+      break; }
     case 'cub_draft': {
       const x = cubOf(Number(p.n)); if (!side || !x || S.endex || !p.f || typeof p.f !== 'object') break;
       const f = {}; Object.keys(p.f).slice(0, 30).forEach(k => { if (!/^[a-z_]{2,8}$/.test(k)) return; const v = p.f[k]; f[k] = typeof v === 'number' && Number.isFinite(v) ? v : String(v == null ? '' : v).slice(0, 600); });
@@ -2529,14 +2559,13 @@ function apply(S, e, cfg){
       const a = (S.accts || []).find(x => x.id === p.aid); if (!side || !a || S.endex || !(a.to === 'both' || a.to === 'public' || a.to === side)) break;
       const old = a.reps[side]; if (old && old.status !== 'returned') break;
       const sum = {}; let bad = '';
-      PERS_KEYS.forEach(([k]) => { const x = Number((p.sum || {})[k]); if (!Number.isInteger(x) || x < 0 || x > 99) bad = 'every total is needed'; sum[k] = x; });
-      if (!bad && (sum.asg < 1 || sum.pdy + sum.cas + sum.una !== sum.asg)) bad = 'present + casualties + unaccounted must equal assigned';
+      Object.assign(sum, persNorm(p.sum)); PERS_KEYS.forEach(([k]) => sum[k] = Number(sum[k])); bad = persOK(sum) ? persOK(sum) : sum.una > 0 && String(p.note || '').trim().length < 15 ? 'say who is unaccounted for and why' : '';
       const teams = (Array.isArray(p.teams) ? p.teams : []).slice(0, 12).filter(t => t && S.teams[side][t.id]).map(t => ({ id:String(t.id), name:S.teams[side][t.id].name, num:S.teams[side][t.id].num || null, n:Math.max(0, Math.min(20, Math.round(+t.n || 0))), grid:String(t.grid || '').trim().slice(0, 40).toUpperCase(), st:PERSTAT_ST[t.st] ? t.st : 'unk' }));
-      if (!bad && teams.some(t => !t.grid && t.st !== 'unk')) bad = 'every fireteam needs a grid';
+      if (!bad && teams.some(t => !t.grid && t.st !== 'unk')) bad = 'every fireteam needs a grid or Unknown';
       if (bad){ pushLog(S, nm + ' PERSTAT refused: ' + bad, side, e, 'rejected'); break; }
       const rep = { id:e.id, g:S.g, first:old ? old.first : S.g, sum, teams, note:String(p.note || '').trim().slice(0, 400), status:'wf', late:S.g > a.due + 1e-9, hist:(old ? old.hist.concat([{ g:old.g, wf:old.wf }]) : []) };
       a.reps[side] = rep; S.pings.push({ id:'ps-' + e.id, ts:e.ts, g:S.g, to:side, team:null }); S.ver++;
-      pushLog(S, nm + ' sent ' + (old ? 'a corrected ' : '') + 'PERSTAT for "' + a.label + '"' + (rep.late ? ' (late, due ' + hhmm(a.due) + ')' : ' (on time)') + ': assigned ' + sum.asg + ', present ' + sum.pdy + ', casualties ' + sum.cas + ', unaccounted ' + sum.una + '. Silent position request sent to every fireteam.', side, e);
+      pushLog(S, nm + ' sent ' + (old ? 'a corrected ' : '') + 'PERSTAT for "' + a.label + '"' + (rep.late ? ' (late, due ' + hhmm(a.due) + ')' : ' (on time)') + ': accounted for ' + sum.acc + ', unaccounted for ' + sum.una + '. Silent position request sent to every fireteam.', side, e);
       break; }
     case 'perstat_wf': {
       const a = (S.accts || []).find(x => x.id === p.aid), sd = p.side, r = a && a.reps[sd]; if (!r || r.status !== 'wf') break;
@@ -2556,7 +2585,7 @@ function apply(S, e, cfg){
       const x = cubOf(Number(p.n)); if (!side || !x || S.endex) break;
       if (!S.cubs) S.cubs = [];
       let tx, ff = null;
-      if (p.f){ const cp = cubCompose(x.n, p.f); if (cp.err){ pushLog(S, nm + ' ' + x.label + ' refused: ' + cp.err, side, e, 'rejected'); break; } tx = cp.text; ff = cp.f; }
+      if (p.f){ const cp = cubCompose(cubLines(S, side, x.n), p.f); if (cp.err){ pushLog(S, nm + ' ' + x.label + ' refused: ' + cp.err, side, e, 'rejected'); break; } tx = cp.text; ff = cp.f; }
       else tx = String(p.text || [p.sit, p.pir, p.risk, p.ask].filter(Boolean).join(' ') || '').trim().slice(0, 1200);
       if (!tx) break;
       const old = S.cubs.find(c => c.side === side && c.n === x.n);
@@ -3671,6 +3700,20 @@ function squareCenter(M, label){
   if (c < 0 || c >= cols || r < 0 || r >= rows) return null;
   return [M.ne[0] - (r + 0.5) * (M.ne[0] - M.sw[0]) / rows, M.sw[1] + (c + 0.5) * (M.ne[1] - M.sw[1]) / cols];
 }
+function gridPrec(M, text){
+  const t = String(text || '').trim(); if (!t) return null;
+  if (/^[A-L]\s*\d{1,2}(\s*[-–]?\s*\d)?$/i.test(t)) return 100;
+  const d = t.toUpperCase().replace(/^\d{1,2}[C-X]/, '').replace(/^[A-HJ-NP-Z][A-HJ-NP-V]/, '').replace(/\s+|-/g, '');
+  if (/^\d{4,10}$/.test(d) && d.length % 2 === 0) return Math.pow(10, 5 - d.length / 2);
+  return 10;
+}
+function gridPoint(M, text){
+  const t = String(text || '').trim(); if (!t) return null;
+  const p = locate(M, t) || locate(M, t.replace(/-/g, ' ')); if (!p) return null;
+  const pr = gridPrec(M, t);
+  if (pr > 10 && pr < 1000 && !/^[A-L]\s*\d/i.test(t)){ const c = Math.cos(p[0] * Math.PI / 180); return { pt:[p[0] + pr / 2 / 110950, p[1] + pr / 2 / (111320 * c)], prec:pr }; }
+  return { pt:p, prec:pr };
+}
 function locate(M, text){
   const t = String(text || '').trim(); if (!t) return null;
   if (/^[A-L]\s*\d{1,2}(\s*[-–]?\s*\d)?$/i.test(t)) return squareCenter(M, t);
@@ -4389,7 +4432,7 @@ function buildWing(side){
       <div class="stat"><span class="k">Escalation you caused</span><span class="v" data-esccaused>0</span><span class="s">Each point costs 1 point at the end</span></div>
       <div class="stat"><span class="k">Points so far</span><span class="v" data-pts>0</span><span class="s">${esc(other)}'s points are hidden</span></div>
     </div>
-    <nav class="wnav" data-cnav aria-label="Wing CC sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-cnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['pic', 'Picture'], ['map', 'Map'], ['intel', 'Intel', 'data-cnint'], ['act', 'Actions'], ['aoc', 'AOC', 'data-cnaoc'], ['rep', 'Reports and claims', 'data-cnct'], ['teams', 'Fireteams', 'data-cnchat'], ['liaison', 'Liaison'], ['req', 'Requests', 'data-cnreq'], ['msg', 'Messages']].map(([k, n, c]) => '<button type="button" role="tab" data-ctab="' + k + '">' + n + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-cnav aria-label="Wing CC sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-cnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['pic', 'Picture'], ['map', 'Map'], ['intel', 'Intel', 'data-cnint'], ['inj', 'Injects', 'data-cninj'], ['act', 'Actions'], ['aoc', 'AOC', 'data-cnaoc'], ['rep', 'Reports and claims', 'data-cnct'], ['teams', 'Fireteams', 'data-cnchat'], ['liaison', 'Liaison'], ['req', 'Requests', 'data-cnreq'], ['msg', 'Messages']].map(([k, n, c]) => '<button type="button" role="tab" data-ctab="' + k + '">' + n + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div data-warbar></div>
     <div data-pri></div>
     <div data-roebanner></div>
@@ -4415,14 +4458,21 @@ function buildWing(side){
       <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Your intel packages, statements, injects and messages</span></div><div class="pic-tl" data-fptl></div></div>
     </section>
     <div class="wing-grid" data-cgrid>
-      <div class="stack" style="gap:14px;min-width:0" data-sec="map intel"><div class="panel" data-sec="map">
+      <div class="stack" style="gap:14px;min-width:0" data-sec="map intel inj"><div class="panel" data-sec="map">
         <div class="map-head"><h2>Your picture of Marala</h2><span class="small muted" data-radar></span><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
         <h2>Your reports of ${esc(other)}</h2>
         <div class="list" data-contacts></div>
       </div>
-      <div class="panel stack ip-panel" data-sec="intel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">For the Intel cell</span></div><p class="small muted" style="margin:0">Each package contains several pieces of intel; at least one is false or misleading. +2 for the correct answer. +2 for selecting every false piece and no true pieces. One submission per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted LMR and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>OSINT</dt><dd>Open-source intelligence: news, social media posts and other public information.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 050915R DEC 26 is 5 December, 0915 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="ipnav" data-ipnav></div><div class="ip-tlbox" hidden><div class="pic-tl" data-iptl></div></div><div class="stack" data-intel><div class="empty">Intel packages from the AOC arrive here during the game.</div></div></div></div>
+      <div class="panel stack ip-panel" data-sec="intel"><div class="act-head"><h2 style="margin:0">Intel packages<span data-intelcount></span></h2><span class="small muted">For the Intel cell</span></div><p class="small muted" style="margin:0">Each package contains several pieces of intel; at least one is false or misleading. +2 for the correct answer. +2 for selecting every false piece and no true pieces. One submission per package.</p><details class="ip-key"><summary>How to read the intel</summary><dl><dt>HUMINT</dt><dd>Human intelligence: what people tell you.</dd><dt>SIGINT</dt><dd>Signals intelligence: intercepted LMR and phone traffic, and direction finding, which locates a transmitter.</dd><dt>IMINT</dt><dd>Imagery intelligence: photos and video from drones, satellites and cameras.</dd><dt>GEOINT</dt><dd>Geospatial intelligence: maps, terrain, weather and tides tied to a place.</dd><dt>OSINT</dt><dd>Open-source intelligence: news, social media posts and other public information.</dd><dt>A–F</dt><dd>How reliable the source has been: A always, C fairly, E unreliable, F can't be judged yet (a new source).</dd><dt>1–6</dt><dd>How believable this report is: 1 confirmed by other sources, 3 possibly true, 6 can't be judged.</dd><dt>DTG</dt><dd>Date-time group: 050915R DEC 26 is 5 December, 0915 local (R is US Eastern time). Check how old each piece is.</dd></dl></details><div class="ipnav" data-ipnav></div><div class="ip-tlbox" hidden><div class="pic-tl" data-iptl></div></div><div class="stack" data-intel><div class="empty">Intel packages from the AOC arrive here during the game.</div></div></div>
+      <div class="panel stack" data-sec="inj"><div class="act-head"><h2 style="margin:0">Injects</h2><span class="small muted" data-cinjn></span></div>
+        <p class="small muted" style="margin:0">Every inject your force has received, newest first. An inject that needs a response shows its respond-by time. When that time passes, the inject closes: if your force did not respond, it is recorded as missed.</p>
+          <div class="act" data-psbox hidden><div class="act-head"><b data-pshead>PERSTAT</b><span class="cost" data-psdue></span></div>
+            <p class="small muted" style="margin:0" data-pswhat></p>
+            <form class="stack" data-f="perstat"><input type="hidden" name="aid"><div class="stack" data-psfields></div><div><button class="btn-side" type="submit">Send PERSTAT to the AOC</button></div></form>
+            <div class="list" data-pslist></div></div>
+        <div class="stack" data-cinj><div class="empty">Injects from the AOC arrive here during the game.</div></div></div></div>
       <div class="panel" data-sec="act aoc rep teams liaison req">
         <div class="tabs" role="tablist" data-ctabs>
           <button type="button" role="tab" aria-selected="true" data-tab="act">Commander's actions</button>
@@ -4461,10 +4511,6 @@ function buildWing(side){
             </div></details>
         </div>
         <div data-pane="aoc" class="stack" hidden>
-          <div class="act" data-psbox hidden><div class="act-head"><b data-pshead>PERSTAT</b><span class="cost" data-psdue></span></div>
-            <p class="small muted" style="margin:0" data-pswhat></p>
-            <form class="stack" data-f="perstat"><input type="hidden" name="aid"><div class="stack" data-psfields></div><div><button class="btn-side" type="submit">Send PERSTAT to the AOC</button></div></form>
-            <div class="list" data-pslist></div></div>
           <div class="act" data-cubbox><div class="act-head"><b data-cubhead>Commander’s Update Brief</b><span class="cost" data-cubdue></span></div>
             <p class="small muted" style="margin:0" data-cubwhat></p>
             <form class="stack" data-f="cub"><input type="hidden" name="n">
@@ -4560,18 +4606,20 @@ function buildWing(side){
   on('jam', () => { if (!confirm('Jam the enemy datalink? Escalation goes up by 5.')) return false; return writeEvent('act_jam', side, {}); });
   { const sf = $('form[data-f="strike"]', v), sync = () => { const m = sf.elements.target.value === 'militia'; $('[data-skmt]', sf).hidden = !m; sf.elements.grid.required = !m; }; sf.elements.target.addEventListener('change', sync); sf.addEventListener('reset', () => setTimeout(sync)); sync(); }
   on('strike', fd => { const sf = $('form[data-f="strike"]', v), nine = sf.dataset.nine || null; delete sf.dataset.nine; if (fd.get('target') === 'militia'){ const t = (app.S.mtgts || []).find(x => x.id === fd.get('mt')); if (!t){ toast('Pick a militia target.', true); return false; } if (!mtFixed(app.S, t, side)){ toast('That target is not fixed. Fix it with your UAV or a drone flight first.', true); return false; } return writeEvent('act_strike', side, { target:'militia', mt:t.id, grid:t.grid, nine, fix:String(fd.get('fix') || '').trim(), civ:fd.get('civ') }); } return writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase(), nine, fix:String(fd.get('fix') || '').trim(), civ:fd.get('civ') }); });
-  const cubCollect = (fd, n, raw) => { const f = {}; CUB_LINES[n].forEach(L => { f[L.k] = String(fd.get('f_' + L.k) || '').trim(); }); PERS_KEYS.forEach(([k]) => { const x = fd.get('p_' + k); if (x !== null) f['p_' + k] = x === '' ? (raw ? '' : NaN) : Number(x); }); if (fd.get('rag') !== null) f.rag = fd.get('rag'); return f; };
+  const cubCollect = (fd, n, raw) => { const f = {}; (cubLines(app.S, side, n) || []).forEach(L => { f[L.k] = String(fd.get('f_' + L.k) || '').trim(); }); PERS_KEYS.forEach(([k]) => { const x = fd.get('p_' + k); if (x !== null) f['p_' + k] = x === '' ? (raw ? '' : NaN) : Number(x); }); if (fd.get('rag') !== null) f.rag = fd.get('rag'); return f; };
   { const cf = $('form[data-f="cub"]', v); let tm = null;
-    const save = async quiet => { clearTimeout(tm); const n = Number(cf.elements.n.value); if (!n || !CUB_LINES[n] || cf.hidden) return; cf.dataset.mine = ''; await writeEvent('cub_draft', side, { n, f:cubCollect(new FormData(cf), n, true) }); const d = app.S && app.S.cubDraft && app.S.cubDraft[side]; if (d) cf.dataset.mine = d.id; if (!quiet) toast('Draft saved for your command post.'); };
+    const save = async quiet => { clearTimeout(tm); const n = Number(cf.elements.n.value); if (!n || !cubLines(app.S, side, n) || cf.hidden) return; cf.dataset.mine = ''; await writeEvent('cub_draft', side, { n, f:cubCollect(new FormData(cf), n, true) }); const d = app.S && app.S.cubDraft && app.S.cubDraft[side]; if (d) cf.dataset.mine = d.id; if (!quiet) toast('Draft saved for your command post.'); };
     cf.addEventListener('change', () => { clearTimeout(tm); tm = setTimeout(() => save(true), 800); });
     $('[data-cubdraft]', cf).onclick = () => save(false); }
-  on('cub', fd => { const n = Number(fd.get('n')); if (!n || !CUB_LINES[n]){ toast('No Commander’s Update Brief is open right now.', true); return false; } const f = cubCollect(fd, n); const cp = cubCompose(n, f); if (cp.err){ toast('Brief not sent: ' + cp.err + '.', true); return false; } return writeEvent('cub', side, { n, f:cp.f }); });
+  on('cub', fd => { const n = Number(fd.get('n')); if (!n || !cubLines(app.S, side, n)){ toast('No Commander’s Update Brief is open right now.', true); return false; } const f = cubCollect(fd, n); const cp = cubCompose(cubLines(app.S, side, n), f); if (cp.err){ toast('Brief not sent: ' + cp.err + '.', true); return false; } return writeEvent('cub', side, { n, f:cp.f }); });
   on('perstat', fd => { const aid = String(fd.get('aid') || ''), S = app.S, a = (S.accts || []).find(x => x.id === aid); if (!a){ toast('No PERSTAT is due right now.', true); return false; }
     const sum = {}; PERS_KEYS.forEach(([k]) => { const x = fd.get('p_' + k); sum[k] = x === '' || x == null ? NaN : Number(x); });
-    if (PERS_KEYS.some(([k]) => !Number.isInteger(sum[k]))){ toast('Fill in every total.', true); return false; }
-    if (sum.pdy + sum.cas + sum.una !== sum.asg){ toast('Present + casualties + unaccounted must equal assigned.', true); return false; }
-    const teams = liveTeams(S, side).map(t => ({ id:t.id, n:Number(fd.get('n_' + t.id) || 0), grid:String(fd.get('g_' + t.id) || '').trim(), st:String(fd.get('s_' + t.id) || 'unk') }));
+    if (PERS_KEYS.some(([k]) => !Number.isInteger(sum[k]))){ toast('Fill in both totals.', true); return false; }
+    if (sum.una > 0 && String(fd.get('note') || '').trim().length < 15){ toast('Say who is unaccounted for and why in Remarks.', true); return false; }
+    const teams = liveTeams(S, side).map(t => ({ id:t.id, name:t.name, n:Number(fd.get('n_' + t.id) || 0), grid:String(fd.get('g_' + t.id) || '').trim(), st:String(fd.get('s_' + t.id) || 'unk') }));
     if (teams.some(t => !t.grid && t.st !== 'unk')){ toast('Give a grid for every fireteam, or mark it Unknown.', true); return false; }
+    { const bad = teams.filter(t => t.grid && !gridPoint(mapCfg(S), t.grid)); if (bad.length){ toast('The board cannot read the grid for ' + bad.map(t => t.name).join(', ') + '. Use a play square (C4), a grid (59 21, 596 220 or 5964 2203) or lat/long.', true); return false; } }
+    teams.forEach(t => delete t.name);
     return writeEvent('perstat', side, { aid, sum, teams, note:String(fd.get('note') || '').trim() }); });
   on('aocreq', fd => { const want = String(fd.get('want') || 'other'), text = String(fd.get('text') || '').trim(); if (want === 'other' && !text){ toast('Say what you need.', true); return false; } return writeEvent('aoc_req', side, { want, text }); });
   v.addEventListener('submit', ev => { const f = ev.target.closest('[data-bda]'); if (!f) return; ev.preventDefault(); writeEvent('bda', side, { req:f.dataset.bda, result:f.elements.result.value, text:f.elements.text.value.trim() }); toast('Damage assessment sent to the AOC.'); });
@@ -4667,6 +4715,44 @@ function ipTaskHTML(S, P, side){
 }
 function ipMinSet(side){ try { return new Set(JSON.parse(localStorage.getItem('marala-ipmin-' + side) || '[]')); } catch(e){ return new Set(); } }
 function ipMinSave(side, set){ try { localStorage.setItem('marala-ipmin-' + side, JSON.stringify([...set])); } catch(e){} }
+const INJ_RES_TXT = { done:'done', miss:'missed', na:'not needed', exc:"doesn't count" };
+function injTip(S, q){ const end = injEnd(q); return q.label + (q.win ? ' | window ' + (q.ws != null ? hhmm(q.ws) : 'waiting for props') + ' to ' + (end != null ? hhmm(end) : '?') + ' | ' + injSides(q).map(sd => SIDES[sd].name + ': ' + (q.res && q.res[sd] ? INJ_RES_TXT[q.res[sd].st] : q.closed != null ? 'closed' : 'waiting')).join(', ') : ' | sent ' + hhmm(q.sent) + ' (no response window)'); }
+function intelTip(S, x){ return 'Intel ' + x.n + ': ' + x.title + ' | ' + hhmm(x.a) + ' to ' + hhmm(x.b) + ' | ' + ['B', 'R'].filter(sd => intelOpen(S, x.id, sd)).map(sd => { const m = S.intel[sd][x.id], o = intelOpen(S, x.id, sd); return SIDES[sd].name + ': ' + (m ? '+' + (m.pts || 0) + ' at ' + hhmm(m.g) : o.done ? 'no answer' : 'working'); }).join(', '); }
+function tlPack(list){ const rows = []; list.slice().sort((x, y) => x.a - y.a).forEach(x => { let r = rows.findIndex(end => end <= x.a); if (r < 0){ r = rows.length; rows.push(0); } rows[r] = x.b; x.row = r; }); return Math.max(1, rows.length); }
+function wfTimelineHTML(S, intel, msgs){
+  const f = app.tlf || { mode:'all', id:'' }, started = S.clock.started, g = started ? Math.min(S.g, END_G) : START_G;
+  const injAll = (S.injq || []).filter(q => q.sent != null);
+  const winB = injAll.filter(q => q.win).map(q => { const a = q.ws != null ? q.ws : q.sent, b = injEnd(q) != null ? injEnd(q) : Math.max(a + q.win, g); return { id:'q:' + q.qid, q, a, b, done:q.closed != null, to:q.to === 'public' ? 'both' : q.to, title:q.label, tip:injTip(S, q), miss:q.res && Object.values(q.res).some(r => r.st === 'miss') }; });
+  const untimed = injAll.filter(q => !q.win).map(q => ({ id:'q:' + q.qid, g:q.sent, to:q.to, label:injTip(S, q) }));
+  const intelB = intel.map(x => Object.assign({}, x, { id:'p:' + x.id, tip:intelTip(S, x) }));
+  let lo = START_G, hi = END_G, one = null;
+  if (f.id){ one = intelB.concat(winB).find(x => x.id === f.id) || untimed.find(x => x.id === f.id) || null; if (one){ const a = one.a != null ? one.a : one.g, b = one.b != null ? one.b : one.g; lo = Math.max(START_G, a - 10); hi = Math.min(END_G, Math.max(b, g) + 10); } }
+  const len = Math.max(1, hi - lo), pos = t => (Math.max(0, Math.min(len, t - lo)) / len * 100).toFixed(2) + '%', step = len > 150 ? 30 : len > 60 ? 15 : len > 30 ? 10 : 5;
+  let ax = ''; for (let t = Math.ceil(lo / step) * step; t <= hi + .01; t += step) ax += '<span class="tl-tk" style="left:' + pos(t) + '">' + hhmm(t) + '</span>';
+  const bar = (x, label) => '<div class="tl-bar to-' + x.to + (x.done ? ' done' : '') + (x.miss ? ' miss' : '') + '" data-tlid="' + esc(x.id) + '" style="left:' + pos(x.a) + ';width:calc(' + pos(x.b) + ' - ' + pos(x.a) + ');top:' + (x.row * 30 + 3) + 'px" title="' + esc(x.tip) + '">' + label + '</div>';
+  const show = k => !one && (f.mode === 'all' || f.mode === k);
+  const iB = one ? (one.id[0] === 'p' && one.a != null ? [one] : []) : show('intel') ? intelB : [], wB = one ? (one.id[0] === 'q' && one.a != null ? [one] : []) : show('inj') ? winB : [];
+  const ih = tlPack(iB) * 30, wh = tlPack(wB) * 30;
+  const mk = (list, cls) => list.map(c => '<span class="tl-mk ' + cls + ' to-' + c.to + '" style="left:' + pos(c.g) + '" title="' + esc(hhmm(c.g) + ' | ' + String(c.label).slice(0, 160)) + '"' + (c.id ? ' data-tlid="' + esc(c.id) + '"' : '') + '></span>').join('');
+  const labs = [], lanes = [];
+  if (iB.length || (!one && show('intel'))){ labs.push('<span style="height:' + (ih + 1) + 'px">Intel packages</span>'); lanes.push('<div class="tl-lane" style="height:' + ih + 'px">' + iB.map(x => bar(x, '<b>' + x.n + '</b><span>' + esc(x.title) + '</span>')).join('') + '</div>'); }
+  if (wB.length || (!one && show('inj'))){ labs.push('<span style="height:' + (wh + 1) + 'px">Inject windows</span>'); lanes.push('<div class="tl-lane" style="height:' + wh + 'px">' + wB.map(x => bar(x, '<span>' + esc(x.title) + '</span>')).join('') + '</div>'); }
+  if (!one && show('inj')){ labs.push('<span>Other injects</span>'); lanes.push('<div class="tl-lane">' + mk(untimed, 'inj') + '</div>'); }
+  if (one && one.g != null && one.a == null){ labs.push('<span>Inject</span>'); lanes.push('<div class="tl-lane">' + mk([one], 'inj') + '</div>'); }
+  if (!one && f.mode === 'all'){ labs.push('<span>Messages</span>'); lanes.push('<div class="tl-lane">' + mk(msgs, 'msg') + '</div>'); }
+  const nowL = started && g >= lo && g <= hi ? '<div class="tl-now" style="left:' + pos(g) + '"><span>' + hhmm(g) + '</span></div>' : '';
+  let h = '<div class="tl-lab"><span style="height:23px"></span>' + labs.join('') + '</div><div class="tl-track"><div class="tl-axis">' + ax + '</div>' + lanes.join('') + nowL + '</div>';
+  if (one) h += '<div class="tl-detail">' + esc(one.tip || one.label || '') + '</div>';
+  return h;
+}
+function tlCtlRender(S, v, intel){
+  const box = $('[data-tlctl]', v); if (!box) return;
+  const f = app.tlf || (app.tlf = { mode:'all', id:'' });
+  const opts = intel.map(x => ['p:' + x.id, 'Intel ' + x.n + ': ' + x.title, x.a]).concat((S.injq || []).filter(q => q.sent != null).map(q => ['q:' + q.qid, 'Inject: ' + q.label, q.sent])).sort((a, b) => a[2] - b[2]);
+  const key = f.mode + '|' + f.id + '|' + opts.map(o => o[0]).join();
+  if (box.dataset.k === key) return; box.dataset.k = key;
+  box.innerHTML = '<div class="seg" role="group" aria-label="Timeline filter">' + [['all', 'All'], ['intel', 'Intel'], ['inj', 'Injects']].map(([k, n]) => '<button type="button" data-tlmode="' + k + '" aria-pressed="' + (!f.id && f.mode === k) + '">' + n + '</button>').join('') + '</div><label class="small" style="flex:1 1 220px">Zoom to one<select data-tlone><option value="">Pick an intel package or inject</option>' + opts.map(o => '<option value="' + esc(o[0]) + '"' + (o[0] === f.id ? ' selected' : '') + '>' + esc(hhmm(o[2]) + ' ' + o[1]) + '</option>').join('') + '</select></label>';
+}
 function sideTimelineHTML(S, side, full){
   const len = Math.max(1, END_G - START_G), started = S.clock.started, g = started ? Math.min(S.g, END_G) : START_G;
   const pos = t => (Math.max(0, Math.min(len, t - START_G)) / len * 100).toFixed(2) + '%', step = len > 150 ? 30 : len > 60 ? 15 : 10;
@@ -4681,8 +4767,10 @@ function sideTimelineHTML(S, side, full){
   if (full){
     const feed = S.feed.filter(f => !f.only && (f.to === side || f.to === 'both'));
     const mk = (list, cls) => list.map(f => '<span class="tl-mk ' + cls + ' to-' + side + '" style="left:' + pos(f.g) + '" title="' + esc(hhmm(f.g) + ' | ' + String(f.text).slice(0, 140)) + '"></span>').join('');
+    const wq = (S.injq || []).filter(q => q.win && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).map(q => { const a = q.ws != null ? q.ws : q.sent, b = injEnd(q) != null ? injEnd(q) : Math.max(a + q.win, g), r = q.res && q.res[side]; return { a, b, q, r, done:q.closed != null || !!r }; }), wh = tlPack(wq) * 30;
+    lanes += '<div class="tl-lane" style="height:' + wh + 'px">' + wq.map(x => '<div class="tl-bar to-' + side + (x.done ? ' done' : '') + (x.r && x.r.st === 'miss' ? ' miss' : '') + '" style="left:' + pos(x.a) + ';width:calc(' + pos(x.b) + ' - ' + pos(x.a) + ');top:' + (x.row * 30 + 3) + 'px" title="' + esc(x.q.label + ' | respond by ' + hhmm(x.b) + (x.r ? ' | ' + INJ_ST[x.r.st][1] : x.q.closed != null ? ' | closed' : '')) + '"><span>' + esc(x.q.label) + '</span></div>').join('') + '</div>';
     lanes += '<div class="tl-lane">' + mk(feed.filter(f => f.comm === 'inj'), 'inj') + '</div><div class="tl-lane">' + mk(feed.filter(f => f.comm === 'msg' || f.label === 'AOC'), 'msg') + '</div>';
-    labs += '<span>Injects</span><span>AOC and White Force</span><span>AOC battle rhythm</span>';
+    labs += '<span style="height:' + (wh + 1) + 'px">Inject windows</span><span>Injects</span><span>AOC and White Force</span><span>AOC battle rhythm</span>';
     lanes += '<div class="tl-lane">' + RHYTHM.filter(x => rhythmAt(x) <= END_G + 1e-9).map(x => '<span class="tl-mk rh" style="left:' + pos(rhythmAt(x)) + '" title="' + esc(hhmm(rhythmAt(x)) + ' | ' + x.label) + '"></span>').join('') + '</div>';
   }
   return '<div class="tl-lab">' + labs + '</div><div class="tl-track"><div class="tl-axis">' + ax + '</div>' + lanes + nowL + '</div>';
@@ -4807,6 +4895,7 @@ function renderForcePic(S, side, v){
     if (P.stmt && !S.statements[side + ':pkg:' + P.id]){ const d = stmtDue(S, side, { pkg:P }); if (d >= S.g) due.push({ t:d, h:'<b>Public statement</b> on intel ' + pkgNum(S, P, side) }); } });
   S.incidents.forEach(i => { if (!S.statements[side + ':' + i.id]){ const d = stmtDue(S, side, { inc:i }); if (d >= S.g) due.push({ t:d, h:'<b>Public statement</b> on the ' + esc(i.grid) + ' explosion' }); } });
   { const a = aidOf(S, side); if (a.on && a.due != null) due.push({ t:a.due, h:'<b>Aid package ' + a.n + '</b> to the town office' }); }
+  (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && !(q.res || {})[side] && (q.to === 'both' || q.to === 'public' || q.to === side)).forEach(q => due.push({ t:injEnd(q), h:'<b>' + esc(q.label) + '</b> (inject)' }));
   { const cb = cubOpen(S, side); if (cb) due.push({ t:rhythmAt(cb), h:'<b>' + esc(cb.label) + '</b> to the AOC' }); RHYTHM.filter(x => x.kind === 'coc' && rhythmAt(x) >= S.g && rhythmAt(x) - S.g <= 20).forEach(x => due.push({ t:rhythmAt(x), h:'<b>' + esc(x.label) + '</b>' })); }
   SITE_KEYS.forEach(k => { const st = S.sites[k]; if (st && st.contestBy && st.contestUntil > S.g && (st.contestBy === side || st.holder === side)) due.push({ t:st.contestUntil, h:'<b>Contention</b> at ' + esc(SITES[k].name) + (st.contestBy === side ? ' (yours)' : ' (against you)') }); });
   due.sort((a, b) => a.t - b.t);
@@ -4817,9 +4906,11 @@ function renderForcePic(S, side, v){
   const openI = mine.filter(x => !x.o.done);
   let out = openI.map(({ P, o }) => { const tot = Math.max(1, o.due - o.g), pct = Math.max(0, Math.min(100, (S.g - o.g) / tot * 100)), rem = Math.max(0, Math.ceil(o.due - S.g)), lk = S.intel[side][P.id];
     return '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Intel ' + pkgNum(S, P, side) + '</span><b>' + esc(fillT(P.title)) + '</b></div><div class="pic-meta"><span>Out ' + hhmm(o.g) + '</span><span class="' + (rem <= 3 && !lk ? 'warn' : '') + '">' + (lk ? 'Locked in' : 'Due ' + hhmm(o.due) + ' | ' + rem + ' min left') + '</span></div><div class="pic-mini"><i style="width:' + pct.toFixed(1) + '%"></i></div></div>'; }).join('');
-  out += injs.map(f => '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Inject</span><b>' + esc(String(f.text).slice(0, 110)) + (String(f.text).length > 110 ? '…' : '') + '</b></div><div class="pic-meta"><span>' + hhmm(f.g) + '</span><span>' + picAgo(S.g - f.g) + '</span></div></div>').join('');
+  const myW = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && !(q.res || {})[side] && (q.to === 'both' || q.to === 'public' || q.to === side)).sort((x, y) => injEnd(x) - injEnd(y));
+  out += myW.map(q => { const end = injEnd(q), pct = Math.max(0, Math.min(100, (S.g - q.ws) / Math.max(1, q.win) * 100)), rem = Math.max(0, Math.ceil(end - S.g)); return '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Inject</span><b>' + esc(q.label) + '</b></div><div class="pic-meta"><span>Out ' + hhmm(q.ws) + '</span><span class="' + (rem <= 3 ? 'warn' : '') + '">Respond by ' + hhmm(end) + ' | ' + rem + ' min left</span></div><div class="pic-mini"><i style="width:' + pct.toFixed(1) + '%"></i></div></div>'; }).join('');
+  out += injs.filter(f => !myW.some(q => q.sent === f.g && q.label === f.title)).map(f => '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Inject</span><b>' + esc(String(f.text).slice(0, 110)) + (String(f.text).length > 110 ? '…' : '') + '</b></div><div class="pic-meta"><span>' + hhmm(f.g) + '</span><span>' + picAgo(S.g - f.g) + '</span></div></div>').join('');
   if (!out) out = '<div class="pic-empty">' + (started ? 'Nothing out right now.' : 'Nothing is out before STARTEX.') + '</div>';
-  $('[data-fpoutn]', v).textContent = openI.length + ' intel - ' + injs.length + ' recent inject' + (injs.length === 1 ? '' : 's');
+  $('[data-fpoutn]', v).textContent = openI.length + ' intel - ' + myW.length + ' inject' + (myW.length === 1 ? '' : 's') + ' to answer';
   { const e = $('[data-fpout]', v); if (e.dataset.h !== out){ e.dataset.h = out; e.innerHTML = out; } }
   const comms = feed.filter(f => f.comm || f.label === 'AOC').slice().reverse();
   const ch = comms.length ? comms.slice(0, 60).map(f => '<div class="pic-item"><div class="pic-meta"><span class="mono">' + hhmm(f.g) + '</span><span>' + esc(hqFrom(f.label)) + (f.comm === 'inj' ? ' <span class="pic-tag">Inject</span>' : '') + '</span></div><div class="pic-text">' + esc(f.text) + '</div></div>').join('') : '<div class="pic-empty">Injects and messages from the AOC and White Force appear here.</div>';
@@ -4972,30 +5063,28 @@ function renderPic(S, v){
   if (renderMapInto(mapEl, S, fv, { noPins:true, deployedOnly:true }) && mapEl._lm){ const st = mapEl._lm; if (!st.picPoc) st.picPoc = L.layerGroup().addTo(st.map); st.picPoc.clearLayers();
     if (showPoc) pocs.forEach(r => { const op = r.age < 5 ? 1 : .45; L.circleMarker(r.x.pt, { radius:8, color:'#ffffff', weight:2.5, opacity:op, fillColor:r.o.props ? '#00b8d4' : '#e040fb', fillOpacity:op }).bindTooltip(esc((r.o.props ? 'Props: ' : '') + r.o.name + (r.o.props ? '' : ' - ' + ocWhere(S, r.o)) + ' - ' + new Date(r.x.ts).toTimeString().slice(0, 5)), { permanent:r.age < 5, direction:'right', className:'teamlbl', offset:[10, 0], opacity:op }).addTo(st.picPoc); }); }
   const intel = []; allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), os = [oB, oR].filter(Boolean); if (!os.length) return;
-    intel.push({ n:i + 1, title:fillT(P.title), a:Math.min(...os.map(o => o.g)), b:Math.max(...os.map(o => o.due)), done:os.every(o => o.done), to:oB && oR ? 'both' : oB ? 'B' : 'R' }); });
+    intel.push({ id:P.id, n:i + 1, title:fillT(P.title), a:Math.min(...os.map(o => o.g)), b:Math.max(...os.map(o => o.due)), done:os.every(o => o.done), to:oB && oR ? 'both' : oB ? 'B' : 'R' }); });
   const injs = (S.injq || []).filter(q => q.sent != null).map(q => ({ g:q.sent, label:q.label, to:q.to }));
   const comms = S.feed.filter(f => f.comm).map(f => ({ g:f.g, from:hqFrom(f.label), to:f.to, text:f.text, kind:f.comm })).concat((S.ocAnns || []).map(a => ({ g:a.g, from:'White Force', to:'poc', text:a.text, kind:'msg' }))).map((c, i) => Object.assign(c, { i })).sort((x, y) => (y.g - x.g) || (y.i - x.i));
   const openI = intel.filter(x => !x.done), recent = injs.filter(q => S.g - q.g <= 20).sort((x, y) => y.g - x.g);
   const next = (S.injq || []).filter(q => q.sent == null && q.at != null).sort((x, y) => x.at - y.at)[0];
-  $('[data-picoutn]', v).textContent = openI.length + ' intel - ' + recent.length + ' recent inject' + (recent.length === 1 ? '' : 's');
+  $('[data-picoutn]', v).textContent = openI.length + ' intel - ' + (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null).length + ' inject windows open';
   let out = openI.map(x => { const tot = Math.max(1, x.b - x.a), pct = Math.max(0, Math.min(100, (S.g - x.a) / tot * 100)), rem = Math.max(0, Math.ceil(x.b - S.g));
     return '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Intel ' + x.n + '</span><b>' + esc(x.title) + '</b>' + picTo(x.to) + '</div><div class="pic-meta"><span>Out ' + hhmm(x.a) + '</span><span class="' + (rem <= 3 ? 'warn' : '') + '">Due ' + hhmm(x.b) + ' | ' + rem + ' min left</span></div><div class="pic-mini"><i style="width:' + pct.toFixed(1) + '%"></i></div></div>'; }).join('');
-  out += recent.map(q => '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Inject</span><b>' + esc(q.label) + '</b>' + picTo(q.to) + '</div><div class="pic-meta"><span>Sent ' + hhmm(q.g) + '</span><span>' + picAgo(S.g - q.g) + '</span></div></div>').join('');
+  const openW = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null).sort((x, y) => (injEnd(x) || 1e9) - (injEnd(y) || 1e9));
+  out += openW.map(q => { const end = injEnd(q); if (end == null) return '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Inject</span><b>' + esc(q.label) + '</b>' + picTo(q.to) + '</div><div class="pic-meta"><span>Sent ' + hhmm(q.sent) + '</span><span>Clock waits for props</span></div></div>';
+    const pct = Math.max(0, Math.min(100, (S.g - q.ws) / Math.max(1, q.win) * 100)), rem = Math.max(0, Math.ceil(end - S.g)), dn = injSides(q).filter(sd => q.res[sd]).map(sd => SIDES[sd].name + ' ' + (q.res[sd].st === 'done' ? 'done' : q.res[sd].st)).join(', ');
+    return '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Inject</span><b>' + esc(q.label) + '</b>' + picTo(q.to) + '</div><div class="pic-meta"><span>Out ' + hhmm(q.ws) + (dn ? ' | ' + esc(dn) : '') + '</span><span class="' + (rem <= 3 ? 'warn' : '') + '">Due ' + hhmm(end) + ' | ' + rem + ' min left</span></div><div class="pic-mini"><i style="width:' + pct.toFixed(1) + '%"></i></div></div>'; }).join('');
+  out += recent.filter(q => !(S.injq || []).some(x => x.sent === q.g && x.label === q.label && x.win)).map(q => '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Inject</span><b>' + esc(q.label) + '</b>' + picTo(q.to) + '</div><div class="pic-meta"><span>Sent ' + hhmm(q.g) + '</span><span>' + picAgo(S.g - q.g) + '</span></div></div>').join('');
   if (!out) out = '<div class="pic-empty">' + (started ? 'Nothing out right now.' : 'Nothing is out before STARTEX.') + '</div>';
   if (next) out += '<div class="pic-next">Next queued inject: <b>' + esc(next.label) + '</b> at ' + hhmm(START_G + next.at) + (started && START_G + next.at > S.g ? ' (in ' + Math.ceil(START_G + next.at - S.g) + ' min)' : '') + '</div>';
   { const ob = $('[data-picout]', v); if (ob.dataset.h !== out){ ob.dataset.h = out; ob.innerHTML = out; } }
   $('[data-piccomn]', v).textContent = comms.length + ' sent';
   const ch = comms.length ? comms.slice(0, 60).map(c => '<div class="pic-item"><div class="pic-meta"><span class="mono">' + hhmm(c.g) + '</span><span>' + esc(c.from) + ' → ' + picTo(c.to) + (c.kind === 'inj' ? ' <span class="pic-tag">Inject</span>' : '') + '</span></div><div class="pic-text">' + esc(c.text) + '</div></div>').join('') : '<div class="pic-empty">Messages and injects sent to the forces appear here.</div>';
   { const cb = $('[data-piccomms]', v); if (cb.dataset.h !== ch){ cb.dataset.h = ch; cb.innerHTML = ch; } }
-  const pos = t => (Math.max(0, Math.min(len, t - START_G)) / len * 100).toFixed(2) + '%', step = len > 150 ? 30 : len > 60 ? 15 : 10;
-  const rows = []; intel.slice().sort((x, y) => x.a - y.a).forEach(x => { let r = rows.findIndex(end => end <= x.a); if (r < 0){ r = rows.length; rows.push(0); } rows[r] = x.b; x.row = r; });
-  const ih = Math.max(1, rows.length) * 30;
-  let ax = ''; for (let t = START_G; t <= END_G + .01; t += step) ax += '<span class="tl-tk" style="left:' + pos(t) + '">' + hhmm(t) + '</span>';
-  const bars = intel.map(x => '<div class="tl-bar to-' + x.to + (x.done ? ' done' : '') + '" style="left:' + pos(x.a) + ';width:calc(' + pos(x.b) + ' - ' + pos(x.a) + ');top:' + (x.row * 30 + 3) + 'px" title="' + esc('Intel ' + x.n + ': ' + x.title + ' - ' + hhmm(x.a) + ' to ' + hhmm(x.b)) + '"><b>' + x.n + '</b><span>' + esc(x.title) + '</span></div>').join('');
-  const mk = (list, cls) => list.map(c => '<span class="tl-mk ' + cls + ' to-' + c.to + '" style="left:' + pos(c.g) + '" title="' + esc(hhmm(c.g) + ' | ' + String(c.label).slice(0, 140)) + '"></span>').join('');
-  const nowL = started ? '<div class="tl-now" style="left:' + pos(g) + '"><span>' + hhmm(g) + '</span></div>' : '';
   const msgs = comms.filter(c => c.kind === 'msg').map(c => ({ g:c.g, to:c.to, label:c.from + ': ' + c.text }));
-  const tl = '<div class="tl-lab"><span style="height:23px"></span><span style="height:' + (ih + 1) + 'px">Intel packages</span><span>Injects</span><span>Messages</span></div><div class="tl-track"><div class="tl-axis">' + ax + '</div><div class="tl-lane" style="height:' + ih + 'px">' + bars + '</div><div class="tl-lane">' + mk(injs, 'inj') + '</div><div class="tl-lane">' + mk(msgs, 'msg') + '</div>' + nowL + '</div>';
+  const tl = wfTimelineHTML(S, intel, msgs);
+  tlCtlRender(S, v, intel);
   { const tb = $('[data-pictl]', v); if (tb.dataset.h !== tl){ tb.dataset.h = tl; tb.innerHTML = tl; } }
   { const P = S.aocPri || {}, h = ['B', 'R'].map(sd => { const r = P[sd]; return '<div class="side-' + sd + '">' + priHTML(r, false, SIDES[sd].name) + '</div>'; }).join('');
     const el = $('[data-pricur]', v); if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
@@ -5054,6 +5143,28 @@ function rhythmHTML(S, side){
     const st = x.kind !== 'cub' ? (S.g >= t ? '<span class="chip ok">Done</span>' : '<span class="chip">' + hhmm(t) + '</span>') : cubChip(S, c, x);
     return '<div class="rh-row' + (open === x ? ' now' : '') + '"><span class="mono">' + hhmm(t) + '</span><span><b>' + esc(x.label) + '</b><br><span class="small muted">' + esc(x.what) + '</span>' + (c ? c.replies.map(r => '<br><span class="small"><b>AOC ' + hhmm(r.g) + ':</b> ' + (r.verdict === 'approve' ? 'Approved. ' : r.verdict === 'more' ? 'More info needed. ' : 'Not approved. ') + esc(r.text) + '</span>').join('') : '') + '</span>' + st + '</div>'; }).join('');
 }
+function cbfRowsHTML(rows){
+  return rows.map((L, i) => '<fieldset class="cub-pers" data-cbrow data-k="' + esc(L.k) + '"><legend>Line ' + (i + 1) + '</legend>' +
+    '<label>Question<input name="l" maxlength="60" value="' + esc(L.l) + '" required></label>' +
+    '<label>What to include (shown under the question)<textarea name="h" rows="2" maxlength="300">' + esc(L.h || '') + '</textarea></label>' +
+    '<div class="row" style="align-items:end"><label>Answer type<select name="kind">' + Object.keys(LINE_KINDS).map(k => '<option value="' + k + '"' + (L.kind === k || (!L.kind && k === 'text') ? ' selected' : '') + '>' + LINE_KINDS[k] + '</option>').join('') + '</select></label>' +
+    '<label style="flex:0 0 120px">Minimum characters<input name="min" type="number" min="0" max="300" value="' + (L.min || 0) + '"></label>' +
+    '<label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" name="none"' + (L.none ? ' checked' : '') + '> NONE allowed</label></div>' +
+    '<div class="row" style="justify-content:flex-start"><button type="button" data-cbfup="' + i + '" style="flex:0 0 auto"' + (i ? '' : ' disabled') + '>Move up</button><button type="button" data-cbfdel="' + i + '" style="flex:0 0 auto">Remove</button></div></fieldset>').join('') +
+    '<div class="row" style="justify-content:flex-start"><button type="button" data-cbfadd style="flex:0 0 auto">Add a question</button></div>' +
+    '<div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-cbfsave="one" style="flex:0 0 auto">Save for this force</button><button type="button" data-cbfsave="both" style="flex:0 0 auto">Save for both forces</button><button type="button" data-cbfreset style="flex:0 0 auto">Restore the standard questions</button><span class="small muted" data-cbfst></span></div>';
+}
+function cbfCollect(f){ return $$('[data-cbrow]', f).map(r => ({ k:r.dataset.k, l:r.querySelector('[name=l]').value.trim(), h:r.querySelector('[name=h]').value.trim(), kind:r.querySelector('[name=kind]').value, min:+r.querySelector('[name=min]').value || 0, none:r.querySelector('[name=none]').checked })); }
+function cbfRender(S, col, s, force, rows){
+  const sel = $('[data-cbfn]', col), f = $('[data-cbff]', col); if (!sel || !f) return;
+  const n = +sel.value, cf = S.cubForms && S.cubForms[s] && S.cubForms[s][n], c = (S.cubs || []).find(q => q.side === s && q.n === n), locked = !!(c && c.status !== 'returned');
+  const key = n + '|' + (cf ? cf.id : 'std') + '|' + (locked ? 'L' : '');
+  if (!force && f.dataset.k === key) return; if (!force && f.contains(document.activeElement)) return;
+  f.dataset.k = key;
+  if (locked){ f.innerHTML = '<div class="pic-empty">' + esc(cubOf(n).label) + ' has been sent. Its questions can no longer change.</div>'; return; }
+  f.innerHTML = cbfRowsHTML(rows || (cubLines(S, s, n) || []).map(L => Object.assign({}, L)));
+  $('[data-cbfst]', f).textContent = cf ? 'Changed by the AOC at ' + hhmm(cf.g) + '.' : 'Standard questions.';
+}
 function cmdColHTML(s){
   return '<div class="cmd-col side-' + s + '" data-cmdside="' + s + '">' +
     '<div class="pic-card"><div class="pic-h"><h3><span class="chip ' + s + '">' + SIDES[s].name + '</span> Waiting on the AOC</h3><span data-cmdwaitn></span></div><div data-cmdwait></div></div>' +
@@ -5064,6 +5175,8 @@ function cmdColHTML(s){
       '<form class="row" data-cmdgrant style="align-items:end"><label>What<select name="kind">' + Object.keys(AOC_GRANT).map(k => '<option value="' + k + '">' + AOC_WANT[k] + '</option>').join('') + '</select></label><label>Note to ' + SIDES[s].name + ' (optional)<input name="text" maxlength="300"></label><button type="submit" class="btn-side" style="flex:0 0 auto">Send</button></form>' +
       '<p class="small muted" style="margin:6px 0 0">ISR: the UAV or a drone flight is ready for them now. Support: aid package ready now, CASEVAC restores part of a recent IED casualty, or one more show of force or cache strike. Use it when a force has a real problem, not as a reward.</p></div>' +
     '<div class="pic-card"><div class="pic-h"><h3>Commander’s Update Briefs</h3><span data-cmdcubn></span></div><div data-cmdcubs></div></div>' +
+    '<div class="pic-card"><div class="pic-h"><h3>Brief questions</h3><select data-cbfn aria-label="Which brief" style="width:auto">' + RHYTHM.filter(x => x.kind === 'cub').map(x => '<option value="' + x.n + '">' + esc(x.label) + '</option>').join('') + '</select></div>' +
+      '<details class="cbf-det"><summary class="small">Edit the questions for this brief</summary><p class="small muted" style="margin:6px 0">The questions ' + SIDES[s].name + ' answers in this brief. Reword, add, remove or reorder them, then save. The force’s form changes right away; a brief that is already sent cannot be changed.</p><form class="stack" data-cbff></form></details></div>' +
     '<div class="pic-card"><div class="pic-h"><h3>Commander’s intent</h3><button type="button" data-cmdintedit style="flex:0 0 auto">Edit</button></div><div class="cmd-txt" data-cmdint></div>' +
       '<form class="stack" data-cmdintf hidden><textarea name="text" rows="9" maxlength="1200"></textarea><div class="row"><button type="submit" class="btn-side" style="flex:0 0 auto">Send new intent</button><button type="button" data-cmdintreset style="flex:0 0 auto">Restore standing intent</button><button type="button" data-cmdcancel style="flex:0 0 auto">Cancel</button></div></form></div>' +
     '<div class="pic-card"><div class="pic-h"><h3>PIRs</h3><button type="button" data-cmdpiredit style="flex:0 0 auto">Edit</button></div><div data-cmdpirs></div>' +
@@ -5080,31 +5193,32 @@ function renderPerstat(S, side, v){
   const cur = a || all[all.length - 1], r = cur.reps[side];
   $('[data-pshead]', box).textContent = cur.label;
   $('[data-psdue]', box).textContent = 'Due ' + hhmm(cur.due);
-  $('[data-pswhat]', box).textContent = a ? (r ? 'The AOC returned it: ' + ((r.wf || {}).text || '') + ' Correct it and send it again.' : 'The AOC needs your accountability now: totals for the whole force, then every fireteam’s grid, headcount and status. Get them from your teams on the LMR net. Due ' + hhmm(a.due) + '.') : r ? 'Sent at ' + hhmm(r.g) + (r.late ? ' (late).' : '.') : 'Not sent. The window closed at ' + hhmm(cur.due) + '.';
+  $('[data-pswhat]', box).textContent = a ? (r ? 'The AOC returned it: ' + ((r.wf || {}).text || '') + ' Correct it and send it again.' : 'The AOC needs your accountability now: how many are accounted for and unaccounted for (and why), then every fireteam’s grid, headcount and status. Get the grids from your teams on the LMR net. A play square (C4) or a 6-digit grid is enough. Due ' + hhmm(a.due) + '.') : r ? 'Sent at ' + hhmm(r.g) + (r.late ? ' (late).' : '.') : 'Not sent. The window closed at ' + hhmm(cur.due) + '.';
   f.hidden = !a;
   if (a){ const ts = liveTeams(S, side), key = a.id + '|' + (r ? r.id : '') + '|' + ts.map(t => t.id).join();
     const fl = $('[data-psfields]', f); if (fl.dataset.k !== key && !typingIn(fl)){ fl.dataset.k = key; f.elements.aid.value = a.id;
-      fl.innerHTML = '<fieldset class="cub-pers"><legend>Force totals</legend><div class="row">' + PERS_KEYS.map(([k, l]) => '<label for="ps' + k + '-' + side + '">' + l + '<input id="ps' + k + '-' + side + '" name="p_' + k + '" type="number" inputmode="numeric" min="0" max="99" required></label>').join('') + '</div><p class="small muted" style="margin:0">Present + casualties + unaccounted must equal assigned.</p></fieldset>' +
-        '<fieldset class="cub-pers"><legend>Fireteams</legend>' + (ts.length ? ts.map(t => '<div class="row" style="align-items:end"><b style="flex:1 1 120px">' + esc((t.num ? '#' + t.num + ' ' : '') + t.name) + '</b><label for="psn' + t.id + '" style="flex:0 0 90px">Cadets<input id="psn' + t.id + '" name="n_' + t.id + '" type="number" inputmode="numeric" min="0" max="20"></label><label for="psg' + t.id + '" style="flex:1 1 150px">Grid<input id="psg' + t.id + '" name="g_' + t.id + '" maxlength="40" autocomplete="off" placeholder="Example: 5964 2203"></label><label for="pss' + t.id + '" style="flex:1 1 140px">Status<select id="pss' + t.id + '" name="s_' + t.id + '">' + Object.keys(PERSTAT_ST).map(k => '<option value="' + k + '">' + PERSTAT_ST[k] + '</option>').join('') + '</select></label></div>').join('') : '<p class="small muted" style="margin:0">No fireteams have signed in.</p>') + '</fieldset>' +
-        '<label for="psnote-' + side + '">Remarks: anyone unaccounted for, casualties, equipment missing<textarea id="psnote-' + side + '" name="note" rows="2" maxlength="400"></textarea></label>';
-      if (r){ PERS_KEYS.forEach(([k]) => { const el = f.elements['p_' + k]; if (el) el.value = r.sum[k]; }); r.teams.forEach(t => { if (f.elements['n_' + t.id]) f.elements['n_' + t.id].value = t.n; if (f.elements['g_' + t.id]) f.elements['g_' + t.id].value = t.grid; if (f.elements['s_' + t.id]) f.elements['s_' + t.id].value = t.st; }); f.elements.note.value = r.note || ''; } } }
+      fl.innerHTML = '<fieldset class="cub-pers"><legend>Force totals</legend><div class="row">' + PERS_KEYS.map(([k, l]) => '<label for="ps' + k + '-' + side + '">' + l + '<input id="ps' + k + '-' + side + '" name="p_' + k + '" type="number" inputmode="numeric" min="0" max="99" required></label>').join('') + '</div></fieldset>' +
+        '<fieldset class="cub-pers"><legend>Fireteams</legend>' + (ts.length ? ts.map(t => '<div class="row" style="align-items:end"><b style="flex:1 1 120px">' + esc((t.num ? '#' + t.num + ' ' : '') + t.name) + '</b><label for="psn' + t.id + '" style="flex:0 0 90px">Cadets<input id="psn' + t.id + '" name="n_' + t.id + '" type="number" inputmode="numeric" min="0" max="20"></label><label for="psg' + t.id + '" style="flex:1 1 150px">Grid<input id="psg' + t.id + '" name="g_' + t.id + '" maxlength="40" autocomplete="off" placeholder="C4, 596 220 or 5964 2203"></label><label for="pss' + t.id + '" style="flex:1 1 140px">Status<select id="pss' + t.id + '" name="s_' + t.id + '">' + Object.keys(PERSTAT_ST).map(k => '<option value="' + k + '">' + PERSTAT_ST[k] + '</option>').join('') + '</select></label></div>').join('') : '<p class="small muted" style="margin:0">No fireteams have signed in.</p>') + '</fieldset>' +
+        '<label for="psnote-' + side + '">Remarks: if anyone is unaccounted for, who and why (required). Also casualties and missing equipment.<textarea id="psnote-' + side + '" name="note" rows="2" maxlength="400"></textarea></label>';
+      if (r){ const pn = persNorm(r.sum); PERS_KEYS.forEach(([k]) => { const el = f.elements['p_' + k]; if (el) el.value = pn[k]; }); r.teams.forEach(t => { if (f.elements['n_' + t.id]) f.elements['n_' + t.id].value = t.n; if (f.elements['g_' + t.id]) f.elements['g_' + t.id].value = t.grid; if (f.elements['s_' + t.id]) f.elements['s_' + t.id].value = t.st; }); f.elements.note.value = r.note || ''; } } }
   const h = all.slice().reverse().map(x => { const q = x.reps[side], st = q ? PS_STATUS[q.status] : ['no', S.g > x.due ? 'Missed' : 'Not sent'];
-    return '<div class="li"><div class="grow"><b>' + esc(x.label) + '</b> <span class="small muted">due ' + hhmm(x.due) + (q ? ', sent ' + hhmm(q.g) + (q.late ? ' (late)' : '') : '') + '</span>' + (q && q.aoc && q.aoc.text ? '<div class="small">AOC: ' + esc(q.aoc.text) + '</div>' : '') + '</div><span class="chip ' + st[0] + '">' + st[1] + '</span></div>'; }).join(''), el = $('[data-pslist]', box);
+    return '<div class="li"><div class="grow"><b>' + esc(x.label) + '</b> <span class="small muted">due ' + hhmm(x.due) + (q ? ', sent ' + hhmm(q.first != null ? q.first : q.g) + ((q.first != null ? q.first > x.due + 1e-9 : q.late) ? ' (late)' : '') : '') + '</span>' + (q && q.aoc && q.aoc.text ? '<div class="small">AOC: ' + esc(q.aoc.text) + '</div>' : '') + '</div><span class="chip ' + st[0] + '">' + st[1] + '</span></div>'; }).join(''), el = $('[data-pslist]', box);
   if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; }
 }
+function psSum(r){ const p = persNorm(r.sum); return 'Accounted for ' + p.acc + ', unaccounted for ' + p.una + (p.una ? ' <span class="chip no">' + p.una + ' unaccounted</span>' : ''); }
 function psCheckHTML(S, a, sd, noGps){
   const r = a.reps[sd], M = mapCfg(S);
-  const rows = r.teams.map(t => { const tm = S.teams[sd][t.id], L = tm && tm.last, pt = locate(M, t.grid), gps = L && L.gps, d = pt && gps ? distM(pt, gps) : null, age = L ? Math.round(S.g - L.g) : null, fresh = L && L.g >= r.g - 1e-9;
-    const ok = d != null && d <= 250, cls = d == null ? 'wait' : ok ? 'ok' : 'no';
-    return '<div class="small" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><b>' + esc((t.num ? '#' + t.num + ' ' : '') + t.name) + '</b><span>' + t.n + ' cadets, ' + esc(PERSTAT_ST[t.st]) + ', reported <span class="mono">' + esc(t.grid || 'no grid') + '</span></span>' + (noGps ? '' : '<span class="chip ' + cls + '">' + (d == null ? (gps && !pt ? 'Grid not readable' : 'No GPS fix') : d + ' m from GPS') + '</span>' + (L ? '<span class="muted">GPS ' + (fresh ? 'answered the position request' : age + ' min old') + '</span>' : '')) + '</div>'; }).join('');
+  const rows = r.teams.map(t => { const tm = S.teams[sd][t.id], L = tm && tm.last, gp = gridPoint(M, t.grid), pt = gp && gp.pt, gps = L && L.gps, d = pt && gps ? distM(pt, gps) : null, age = L ? Math.round(S.g - L.g) : null, fresh = L && L.g >= r.g - 1e-9;
+    const ok = d != null && d <= PS_RANGE + (gp.prec > 10 ? gp.prec : 0), cls = d == null ? 'wait' : ok ? 'ok' : 'no';
+    return '<div class="small" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><b>' + esc((t.num ? '#' + t.num + ' ' : '') + t.name) + '</b><span>' + t.n + ' cadets, ' + esc(PERSTAT_ST[t.st]) + ', reported <span class="mono">' + esc(t.grid || 'no grid') + '</span>' + (gp && gp.prec > 10 ? ' <span class="muted">(' + (gp.prec >= 1000 ? '1 km' : gp.prec + ' m') + ' grid)</span>' : '') + '</span>' + (noGps ? '' : '<span class="chip ' + cls + '">' + (d == null ? (gps && !pt ? 'Grid not readable' : 'No GPS fix') : d + ' m from GPS') + '</span>' + (L ? '<span class="muted">GPS ' + (fresh ? 'answered the position request' : age + ' min old') + '</span>' : '')) + '</div>'; }).join('');
   const missing = liveTeams(S, sd).filter(t => !r.teams.some(x => x.id === t.id)).map(t => t.name);
-  if (noGps) return '<div class="small">Assigned ' + r.sum.asg + ', present ' + r.sum.pdy + ', casualties ' + r.sum.cas + ', unaccounted ' + r.sum.una + '</div>' + rows + (r.note ? '<div class="small">Remarks: ' + esc(r.note) + '</div>' : '');
-  return '<div class="small">Assigned ' + r.sum.asg + ', present ' + r.sum.pdy + ', casualties ' + r.sum.cas + ', unaccounted ' + r.sum.una + (r.late ? ' <span class="chip no">late, due ' + hhmm(a.due) + '</span>' : ' <span class="chip ok">on time</span>') + '</div>' + rows + (missing.length ? '<div class="small">Not on the report: ' + esc(missing.join(', ')) + '</div>' : '') + (r.note ? '<div class="small">Remarks: ' + esc(r.note) + '</div>' : '');
+  if (noGps) return '<div class="small">' + psSum(r) + '</div>' + rows + (r.note ? '<div class="small">Remarks: ' + esc(r.note) + '</div>' : '');
+  return '<div class="small">' + psSum(r) + (r.late ? ' <span class="chip no">late, due ' + hhmm(a.due) + '</span>' : ' <span class="chip ok">on time</span>') + '</div>' + rows + (missing.length ? '<div class="small">Not on the report: ' + esc(missing.join(', ')) + '</div>' : '') + (r.note ? '<div class="small">Remarks: ' + esc(r.note) + '</div>' : '');
 }
-function cubFieldsHTML(n, side){
-  return CUB_LINES[n].map((L, i) => { const id = 'cb' + L.k + '-' + side, lab = (i + 1) + '. ' + L.l;
-    if (L.kind === 'pers') return '<fieldset class="cub-pers"><legend>' + esc(lab) + '</legend><div class="row">' + PERS_KEYS.map(([k, l]) => '<label for="' + id + k + '">' + l + '<input id="' + id + k + '" name="p_' + k + '" type="number" inputmode="numeric" min="0" max="99" required></label>').join('') + '</div><p class="small muted" style="margin:0">Present + casualties + unaccounted must equal assigned.</p><label for="' + id + '">' + esc(L.h) + '<textarea id="' + id + '" name="f_' + L.k + '" rows="3" maxlength="600" required></textarea></label></fieldset>';
-    if (L.kind === 'rag') return '<fieldset class="cub-pers"><legend>' + esc(lab) + '</legend><div class="row"><label for="' + id + 'r">Assessment<select id="' + id + 'r" name="rag" required><option value="">Choose</option>' + RAG.map(r => '<option>' + r + '</option>').join('') + '</select></label></div><label for="' + id + '">' + esc(L.h) + '<textarea id="' + id + '" name="f_' + L.k + '" rows="2" maxlength="600" required></textarea></label></fieldset>';
+function cubFieldsHTML(n, side, ls){
+  return (ls || CUB_LINES[n]).map((L, i) => { const id = 'cb' + L.k + '-' + side, lab = (i + 1) + '. ' + L.l;
+    if (L.kind === 'pers') return '<fieldset class="cub-pers"><legend>' + esc(lab) + '</legend><div class="row">' + PERS_KEYS.map(([k, l]) => '<label for="' + id + k + '">' + l + '<input id="' + id + k + '" name="p_' + k + '" type="number" inputmode="numeric" min="0" max="99" required></label>').join('') + '</div><label for="' + id + '">' + esc(L.h) + '<textarea id="' + id + '" name="f_' + L.k + '" rows="3" maxlength="600" required></textarea></label></fieldset>';
+    if (L.kind === 'rag') return '<fieldset class="cub-pers"><legend>' + esc(lab) + '</legend><div class="row"><label for="' + id + 'r">Assessment<select id="' + id + 'r" name="rag" required><option value="">Choose</option>' + RAG.map(r => '<option>' + r + '</option>').join('') + '</select></label></div><details class="small rag-help"><summary>What GREEN, AMBER and RED mean</summary>' + RAG.map(r => '<div><b class="rag-' + r.toLowerCase() + '">' + r + '</b> ' + esc(RAG_HELP[r]) + '</div>').join('') + '</details><label for="' + id + '">' + esc(L.h) + '<textarea id="' + id + '" name="f_' + L.k + '" rows="2" maxlength="600" required></textarea></label></fieldset>';
     return '<label for="' + id + '"><b>' + esc(lab) + '</b><span class="small muted">' + esc(L.h) + '</span><textarea id="' + id + '" name="f_' + L.k + '" rows="' + (L.min >= 40 ? 3 : 2) + '" maxlength="600" required></textarea></label>';
   }).join('');
 }
@@ -5135,6 +5249,7 @@ function renderCmd(S, v){
       const h = RHYTHM.filter(x => x.kind === 'cub' && rhythmAt(x) <= END_G + 1e-9).map(x => { const c = cs.find(q => q.n === x.n), t = rhythmAt(x);
         return '<div class="cmd-item"><span class="k">' + hhmm(t) + ' ' + esc(x.label) + '</span><span style="justify-self:start">' + cubChip(S, c, x) + (c ? ' <span class="small muted">' + (c.late ? 'First sent late, ' : 'First sent on time, ') + hhmm(c.g) + '</span>' : '') + '</span>' + (c ? cubText(c) : '') + '</div>'; }).join('');
       if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } $('[data-cmdcubn]', col).textContent = cs.filter(c => c.status === 'approved').length + ' approved'; }
+    cbfRender(S, col, s, false);
     { const e = $('[data-cmdint]', col), t = intentOf(S, s) + (S.intent && S.intent[s] ? '' : '\n(standing intent)'); if (e.textContent !== t) e.textContent = t; }
     { const e = $('[data-cmdpirs]', col), h = pirStatus(S, s).map(x => '<div class="pir"><b>PIR ' + x.n + '</b><span>' + esc(x.text) + '</span><span class="chip ' + (x.ok ? 'ok' : x.open ? 'wait' : '') + '">' + (x.sent ? x.ok + ' of ' + x.sent + ' answered' + (x.open ? ', ' + x.open + ' open' : '') : 'No reporting yet') + '</span></div>').join(''); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
   });
@@ -5153,6 +5268,14 @@ function wireCmd(v){
     if (b){ const it = b.closest('.cmd-item'), ok = b.dataset.ok === '1'; if (ok){ const kd = $('[data-cmdkind]', it).value; if (kd === 'reply' && !note(b)){ toast('Type the answer in Note first.'); return; } writeEvent('aoc_grant', null, { side:s, req:b.dataset.cmdreq, kind:kd, text:note(b) }); } else writeEvent('aoc_grant', null, { side:s, req:b.dataset.cmdreq, deny:true, text:note(b) }); toast(ok ? 'Granted.' : 'Declined.'); return; }
     b = ev.target.closest('[data-cmdnom]');
     if (b){ const ok = b.dataset.ok === '1'; if (ok && !confirm('Approve this strike on ' + SIDES[OTHER[s]].name + '? It adds +' + ESC.strikewing + ' escalation if the White Force rules the 9-line correct.')) return; writeEvent('aoc_nom', null, { req:b.dataset.cmdnom, ok, text:note(b) }); toast(ok ? 'Strike approved. The White Force rules on the 9-line.' : 'Strike denied. Their strike is not used.'); return; }
+    b = ev.target.closest('[data-cbfadd],[data-cbfdel],[data-cbfup],[data-cbfsave],[data-cbfreset]');
+    if (b){ const f = $('[data-cbff]', col), n = +$('[data-cbfn]', col).value, rows = cbfCollect(f);
+      if (b.matches('[data-cbfadd]')){ rows.push({ k:'q' + Date.now().toString(36).slice(-6), l:'', h:'', kind:'text', min:20, none:false }); cbfRender(app.S, col, s, true, rows); return; }
+      if (b.matches('[data-cbfdel]')){ rows.splice(+b.dataset.cbfdel, 1); cbfRender(app.S, col, s, true, rows); return; }
+      if (b.matches('[data-cbfup]')){ const i = +b.dataset.cbfup; if (i > 0){ const t = rows[i]; rows[i] = rows[i - 1]; rows[i - 1] = t; } cbfRender(app.S, col, s, true, rows); return; }
+      if (b.matches('[data-cbfreset]')){ if (!confirm('Restore the standard questions for ' + SIDES[s].name + ' ' + cubOf(n).label + '?')) return; writeEvent('cub_form', null, { side:s, n, reset:true }); f.dataset.k = ''; toast('Standard questions restored.'); return; }
+      const ls = cubLinesClean(rows); if (!ls){ toast('Each question needs wording, and there can be only one accountability line and one GREEN / AMBER / RED line.', true); return; }
+      const to = b.dataset.cbfsave === 'both' ? 'both' : s; writeEvent('cub_form', null, { side:to, n, lines:ls }); f.dataset.k = ''; toast('Questions saved for ' + (to === 'both' ? 'both forces' : SIDES[s].name) + '.'); return; }
     b = ev.target.closest('[data-cmdps]');
     if (b){ writeEvent('perstat_aoc', null, { aid:b.dataset.cmdps, side:s, text:note(b) }); toast('PERSTAT acknowledged.'); return; }
     b = ev.target.closest('[data-cmdcub]');
@@ -5172,6 +5295,7 @@ function wireCmd(v){
     b = ev.target.closest('[data-cmdpirreset]');
     if (b){ if (!confirm('Restore the standing PIRs for ' + SIDES[s].name + '?')) return; writeEvent('aoc_pir', null, { to:s, reset:true }); b.closest('form').hidden = true; return; }
   });
+  sec.addEventListener('change', ev => { const sl = ev.target.closest('[data-cbfn]'); if (!sl) return; const col = sl.closest('[data-cmdside]'); cbfRender(app.S, col, col.dataset.cmdside, true); });
   sec.addEventListener('submit', ev => {
     ev.preventDefault(); if (app.role !== 'A') return;
     const f = ev.target, col = f.closest('[data-cmdside]'), s = col ? col.dataset.cmdside : null;
@@ -5181,7 +5305,25 @@ function wireCmd(v){
     if (f.matches('[data-cmdpirf]')){ const items = [1, 2, 3, 4, 5, 6].map(i => f.elements['p' + i].value.trim()); while (items.length && !items[items.length - 1]) items.pop(); if (!items.some(Boolean)){ toast('Enter at least one PIR.', true); return; } writeEvent('aoc_pir', null, { to:s, items }); f.hidden = true; toast('PIRs sent to ' + SIDES[s].name + '.'); return; }
   });
 }
+const INJ_ST = { done:['ok', 'Done'], miss:['no', 'Missed'], na:['', 'Closed: the other force responded first'], exc:['', 'Closed'] };
+function renderForceInj(S, side, v){
+  const box = $('[data-cinj]', v); if (!box) return;
+  const qs = (S.injq || []).filter(q => q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).sort((a, b) => b.sent - a.sent);
+  let open = 0;
+  const h = qs.map(q => { const r = q.res && q.res[side], end = q.win ? injEnd(q) : null; let st, bar = '';
+    if (!q.win) st = '<span class="chip">Information</span>';
+    else if (r) st = '<span class="chip ' + INJ_ST[r.st][0] + '">' + INJ_ST[r.st][1] + '</span>';
+    else if (q.closed != null) st = '<span class="chip">Closed</span>';
+    else if (end == null) st = '<span class="chip wait">Clock starts soon</span>';
+    else { open++; const rem = Math.max(0, Math.ceil(end - S.g)), pct = Math.max(0, Math.min(100, (S.g - q.ws) / Math.max(1, q.win) * 100)); st = '<span class="chip ' + (rem <= 3 ? 'no' : 'wait') + '">Respond by ' + hhmm(end) + ' (' + rem + ' min)</span>'; bar = '<div class="pic-mini"><i style="width:' + pct.toFixed(1) + '%"></i></div>'; }
+    return '<div class="inj-card' + (q.win && !r && q.closed == null ? ' open' : '') + '"><div class="row" style="align-items:center;gap:8px"><b class="grow">' + esc(q.label) + '</b>' + st + '</div><div class="small muted">' + esc(hqFrom(q.from)) + ' - sent ' + hhmm(q.sent) + '</div>' + bar + '<div class="small" style="white-space:pre-wrap">' + esc(q.sentText || '') + '</div></div>'; }).join('');
+  if (box.dataset.h !== h){ box.dataset.h = h; box.innerHTML = h || '<div class="empty">Injects from the AOC arrive here during the game.</div>'; }
+  const n = open + (psOpen(S, side) ? 1 : 0);
+  $('[data-cinjn]', v).textContent = qs.length ? qs.length + ' received' + (open ? ', ' + open + ' waiting on you' : '') : '';
+  const ce = $('[data-cninj]', v); if (ce){ ce.hidden = !n; ce.textContent = n; }
+}
 function renderAocPane(S, side, v){
+  renderForceInj(S, side, v);
   const pane = $('[data-pane="aoc"]', v); if (!pane) return;
   const cb = cubOpen(S, side), tg = cubNext(S, side), c = tg ? (S.cubs || []).find(q => q.side === side && q.n === tg.n) : null, f = $('form[data-f="cub"]', v), canEdit = tg && (!c || c.status === 'returned'), canSend = canEdit && cb === tg;
   $('[data-cubhead]', v).textContent = tg ? tg.label : 'Commander’s Update Brief';
@@ -5191,12 +5333,12 @@ function renderAocPane(S, side, v){
   f.hidden = !canEdit; if (tg && f.elements.n.value !== String(tg.n)) f.elements.n.value = String(tg.n);
   { const sb = $('button[type=submit]', f); sb.disabled = !canSend; sb.textContent = canSend ? 'Send to the AOC' : tg ? 'Opens at ' + hhmm(rhythmAt(tg) - CUB_EARLY) : 'Send to the AOC'; }
   renderPerstat(S, side, v);
-  if (canEdit){ const box = $('[data-cubfields]', f), dr = S.cubDraft && S.cubDraft[side] && S.cubDraft[side].n === tg.n ? S.cubDraft[side] : null, key = tg.n + '|' + (c ? c.id + c.hist.length : '');
+  if (canEdit){ const box = $('[data-cubfields]', f), dr = S.cubDraft && S.cubDraft[side] && S.cubDraft[side].n === tg.n ? S.cubDraft[side] : null, key = tg.n + '|' + (c ? c.id + c.hist.length : '') + '|' + ((S.cubForms && S.cubForms[side] && S.cubForms[side][tg.n] && S.cubForms[side][tg.n].id) || '');
     const fill = src => Object.keys(src).forEach(k => { const el = f.elements[k === 'rag' ? 'rag' : /^p_/.test(k) ? k : 'f_' + k]; if (el && el !== document.activeElement) el.value = src[k]; });
-    if (box.dataset.k !== key){ box.dataset.k = key; box.dataset.d = ''; box.innerHTML = cubFieldsHTML(tg.n, side); if (c && c.f) fill(c.f); }
+    if (box.dataset.k !== key){ box.dataset.k = key; box.dataset.d = ''; box.innerHTML = cubFieldsHTML(tg.n, side, cubLines(S, side, tg.n)); if (c && c.f) fill(c.f); }
     if (dr && box.dataset.d !== dr.id && f.dataset.mine !== dr.id && !f.contains(document.activeElement)){ box.dataset.d = dr.id; fill(dr.f); }
     $('[data-cubsaved]', f).textContent = dr ? 'Draft saved ' + hhmm(dr.g) + '.' : 'Not saved yet.'; }
-  { const ce = $('[data-cnaoc]', v), nOpen = (canSend ? 1 : 0) + (psOpen(S, side) ? 1 : 0) + S.requests.filter(r => r.side === side && r.kind === 'strike' && r.result === 'hit' && !r.bda).length; if (ce){ ce.hidden = !nOpen; ce.textContent = nOpen; } }
+  { const ce = $('[data-cnaoc]', v), nOpen = (canSend ? 1 : 0) + S.requests.filter(r => r.side === side && r.kind === 'strike' && r.result === 'hit' && !r.bda).length; if (ce){ ce.hidden = !nOpen; ce.textContent = nOpen; } }
   { const h = rhythmHTML(S, side), e = $('[data-rhythm]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
   { const r = aocResOf(S, side); $('[data-aocres]', v).textContent = 'AOC holds for you: ISR retasks ' + r.isr + ' | support ' + r.sup; }
   { const rs = (S.aocReqs || []).filter(r => r.side === side).slice(-8).reverse(), h = rs.length ? rs.map(r => '<div class="li"><div class="grow"><b>' + esc(AOC_WANT[r.want]) + '</b> <span class="small muted">' + hhmm(r.g) + '</span>' + (r.text ? '<div class="small">' + esc(r.text) + '</div>' : '') + (r.answer ? '<div class="small muted">AOC: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : r.status === 'ok' ? 'ok' : 'no') + '">' + (r.status === 'open' ? 'With the AOC' : r.status === 'ok' ? 'Granted' : 'Declined') + '</span></div>').join('') : '', e = $('[data-aocreqs]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
@@ -5280,6 +5422,23 @@ function propSched(S){
   return rows;
 }
 function propChip(S, kind, id){ const all = Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id); if (!all.length) return ''; const n = all.filter(u => propLive(S, u)).length; return n === all.length ? '<span class="chip ok">Props ready</span>' : '<span class="chip wait">Props ' + n + ' of ' + all.length + ' placed</span>'; }
+function rsRows(S){
+  const rows = [], running = S.clock.started && !S.endex, now = S.g;
+  (S.injq || []).forEach(q => { const t = q.at != null ? START_G + q.at : null, out = q.sent != null; let status = '', btns = '';
+    if (out){ const end = q.win ? injEnd(q) : null; status = q.win ? (q.closed != null ? '<span class="chip">Closed ' + hhmm(q.closed) + '</span>' : end == null ? '<span class="chip wait">Sent, clock waits for props</span>' : '<span class="chip wait">Out, due ' + hhmm(end) + '</span>') : '<span class="chip ok">Sent ' + hhmm(q.sent) + '</span>'; }
+    else { const hold = propHold(S, 'tpl', q.tid); if (hold.length){ const claimed = Object.values(S.propUses || {}).some(u => u.kind === 'tpl' && u.item === q.tid && !propLive(S, u) && (S.propClaim || {})[u.id]); status = '<span class="chip wait" title="' + esc('Waiting on: ' + propWaitText(S, 'tpl', q.tid)) + '">Props not placed' + (claimed ? ' (claimed)' : ' (not claimed)') + '</span>'; btns = '<button type="button" data-act="rsinj" data-id="' + q.qid + '" data-ovr="1">Send anyway</button>'; }
+      else btns = '<button type="button" class="btn-side" data-act="rsinj" data-id="' + q.qid + '">Send</button>'; }
+    rows.push({ key:'q' + q.qid, t:t != null ? t : q.lvl != null ? 9000 + q.lvl : 9999, when:t != null ? hhmm(t) : q.lvl != null ? 'At ' + LEVELS[q.lvl].name : 'Any time', tag:q.win ? 'Inject, ' + q.win + ' min' : 'Inject', label:q.label, to:q.to, out, due:!out && (t != null ? t <= now + 1e-9 && running : q.lvl != null && levelIndex(S.esc) >= q.lvl), status, btns, body:out ? q.sentText : fillT(q.text), note:[q.note, q.oc ? 'POC brief: ' + q.oc : ''].filter(Boolean).join('\n') }); });
+  allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), need = P.only ? [P.only] : ['B', 'R'], sent = need.filter(sd => sd === 'B' ? oB : oR), out = sent.length === need.length, t = P.at != null ? START_G + P.at : null; let status = '', btns = '';
+    if (sent.length){ const os = [oB, oR].filter(Boolean); status = os.every(o => o.done) ? '<span class="chip">Closed</span>' : '<span class="chip wait">Out, due ' + hhmm(Math.max(...os.map(o => o.due))) + '</span>'; }
+    if (!out){ const held = propHold(S, 'pkg', P.id).length && !sent.length;
+      if (held) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (P.only || 'both') + '" data-ovr="1">Deploy anyway</button>', status = '<span class="chip wait" title="' + esc('Waiting on: ' + propWaitText(S, 'pkg', P.id)) + '">Props not placed</span>';
+      else if (P.only) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + P.only + '"' + (running ? '' : ' disabled') + '>Deploy to ' + SIDES[P.only].name + '</button>';
+      else if (!sent.length) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button>';
+      else btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>'; }
+    rows.push({ key:'p' + P.id, t:t != null ? t : 9999, when:t != null ? hhmm(t) : 'Any time', tag:'Intel ' + (i + 1) + (P.win ? ', ' + P.win + ' min' : ''), label:fillT(P.title), to:P.only || 'both', out, due:!out && t != null && t <= now + 1e-9 && running, status, btns, body:fillT(P.q) + (P.task ? '\n' + (P.field === 'Tip check' ? 'Field check: ' : 'Collection gap: ') + fillT(P.task) : ''), note:fillT(P.note || '') }); });
+  return rows.sort((a, b) => a.t - b.t);
+}
 function propWaitText(S, kind, id){ return Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id && !propLive(S, u)).map(u => { const c = (S.propClaim || {})[u.id]; return ((S.props || {})[u.prop] || {}).name + (u.label ? ' (' + u.label + ')' : '') + (c ? ', claimed by ' + c.name + ' at ' + hhmm(c.g) : ', not claimed by the props team'); }).join('; '); }
 function propLockHTML(S, kind, id, normal, ovrAttrs){ const hold = propHold(S, kind, id); if (!hold.length) return normal; return '<span class="chip wait" style="flex:0 0 auto" title="' + esc('Waiting on: ' + propWaitText(S, kind, id)) + '">Waiting on ' + hold.length + ' prop' + (hold.length === 1 ? '' : 's') + (Object.values(S.propUses || {}).some(u => u.kind === kind && u.item === id && !propLive(S, u) && (S.propClaim || {})[u.id]) ? ' (claimed)' : ' (not claimed)') + '</span><button type="button" ' + ovrAttrs + ' style="flex:0 0 auto">Override</button>'; }
 function propWhere(S, r){ const M = mapCfg(S), pt = r.u.pt, sq = pt && squareOf(M, pt); return (r.u.loc || (pt ? fmtPt(pt) : 'No location')) + (sq && r.u.loc ? ' - Square ' + sq : ''); }
@@ -5590,7 +5749,7 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <nav class="wnav" data-wnav aria-label="White Force sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['cmd', 'Command', 'data-cmdcnt'], ['wf', 'White Force'], ['plan', 'Upcoming'], ['all', 'All'], ['queue', 'Queue'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup']].map(([k, n, c]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup'].includes(k) ? ' data-aoc-off' : k === 'wf' || k === 'plan' || k === 'cmd' ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-wnav aria-label="White Force sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['cmd', 'Command', 'data-cmdcnt'], ['wf', 'White Force'], ['plan', 'Upcoming'], ['queue', 'Queue'], ['send', 'Send', 'data-sendcnt'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup'], ['all', 'All']].map(([k, n, c]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup', 'send'].includes(k) ? ' data-aoc-off' : k === 'wf' || k === 'plan' || k === 'cmd' ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
@@ -5665,7 +5824,7 @@ function buildWhite(){
             <div data-asbdrone></div>
             <div class="asb-wrap"><table class="asb" data-asbt></table></div></div>
         </div>
-        <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Deployed intel packages, injects and messages</span></div><div class="pic-tl" data-pictl></div></div>
+        <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Hover any bar or mark for details</span></div><div class="row tl-ctl" data-tlctl></div><div class="pic-tl" data-pictl></div></div>
       </section>
       <div class="panel" data-sec="map create">
         <div class="map-head"><h2 data-wmaptitle>White Force map</h2><div class="fogseg" role="group" aria-label="Map view" data-fogctl><button type="button" data-fogv="" aria-pressed="true">All (no fog of war)</button><button type="button" data-fogv="B" aria-pressed="false">Blue Force view</button><button type="button" data-fogv="R" aria-pressed="false">Red Force view</button></div><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><button type="button" data-fullmap>Full screen map</button></div>
@@ -5697,8 +5856,13 @@ function buildWhite(){
           <h3 class="small muted" style="margin:6px 0 0">Deployed</h3><div class="list" data-wplist></div>
         </div>
       </div>
-      <div class="stack" style="gap:14px;min-width:0" data-sec="queue msg">
-        <div class="panel" data-sec="queue" data-aoc-off><div class="act-head"><h2>POCs</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
+      <div class="stack" style="gap:14px;min-width:0" data-sec="queue msg send">
+        <div class="panel" data-sec="send" data-aoc-off><div class="act-head"><h2>Run sheet</h2><span class="small muted" data-rsn></span></div>
+          <p class="small muted" style="margin:0">Every inject and intel package in planned-time order, with its send button. Rows that are due now are highlighted. Tap a row to read it first.</p>
+          <div class="row" style="justify-content:flex-start"><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-rssent> Show what has already gone out</label><button type="button" data-injqall style="flex:0 0 auto">Add any missing timed injects</button></div>
+          <div class="list" data-rs></div></div>
+        <div class="panel" data-sec="queue" data-aoc-off><div class="act-head"><h2>Waiting on you</h2><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-chime> Sound alert</label></div><p class="small muted" style="margin:0 0 6px">Everything that needs a decision from you right now. It empties as you answer.</p><div class="list" data-queue></div></div>
+        <div class="panel" data-sec="queue" data-aoc-off><div class="act-head"><h2>POC calls and requests</h2><span class="small muted" data-occount></span></div><div class="list" data-ocq></div>
           <details data-ocroster style="margin-top:8px"><summary class="small"><b>Manage POCs</b> <span class="muted" data-ocn></span></summary><div class="list" data-ocrows style="margin-top:6px"></div></details></div>
         <div class="panel stack" data-sec="queue msg" data-aoc-off><div class="act-head"><h2>AOC</h2><span class="small muted" data-aocn></span></div>
           <div class="chatlog" data-aocchat></div>
@@ -5708,24 +5872,29 @@ function buildWhite(){
           <div class="act stack" data-occbox hidden><div class="act-head"><b data-occhead>Messages</b><button type="button" data-occclose style="flex:0 0 auto">Close</button></div><div class="chatlog" data-occwlog></div><form class="row" data-occwf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
           <form class="stack" data-ocannf style="border-top:1px dashed var(--line);padding-top:8px"><label>Announcement to all POCs<textarea name="text" rows="2" maxlength="400" required></textarea></label><div><button type="submit" style="flex:0 0 auto">Send announcement</button></div></form>
           <div class="list" data-ocannw></div></div>
-        <div class="panel" data-sec="queue" data-aoc-off><div class="act-head"><h2>Waiting on you</h2><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-chime> Sound alert</label></div><div class="list" data-queue></div></div>
-        <div class="panel" data-sec="msg"><h2>Send a message</h2>
+        <div class="panel" data-sec="msg send"><h2>Send a message</h2>
           <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">Blue Force only</option><option value="R">Red Force only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="AOC" maxlength="30"></label></div>
             <label>Message<textarea name="text" maxlength="700" required></textarea></label><div><button class="btn-side" type="submit">Send</button></div></form></div>
         <div class="panel" data-sec="msg"><div class="act-head"><h2>Inject queue</h2><span class="small muted" data-injqn></span></div>
           <p class="small muted" style="margin:0">Queued injects wait here until you send them. Tap a row to read the message and the White Force note.</p>
-          <div class="row" style="justify-content:flex-start"><button type="button" data-injqall style="flex:0 0 auto">Queue all timed templates</button><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-injqsent> Show sent</label></div>
+          <div class="row" style="justify-content:flex-start"><button type="button" data-injqall2 style="flex:0 0 auto">Queue all timed templates</button><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-injqsent> Show sent</label></div>
           <div class="list scrolllist" data-injq></div></div>
-        <div class="panel" data-sec="msg"><div class="act-head"><h2>Response Windows</h2><span class="small muted" data-injwn></span></div>
-          <p class="small muted" style="margin:0">A timed inject's clock starts when it is sent, or when its last prop is reported placed. Most close on their own when a POC call or a board action shows the force responded. At the deadline the inject closes, a force that did not respond is recorded as missed (with the penalty shown) and its props are flagged for recovery. Mark a force handled or excused here at any time; a miss penalty is refunded.</p>
+        <div class="panel" data-sec="send msg"><div class="act-head"><h2>Response Windows</h2><span class="small muted" data-injwn></span></div>
+          <details class="small rw-help"><summary><b>How response windows work (tap to read)</b></summary>
+            <p>Most injects ask a force to do something by a deadline. That deadline is the response window. Its clock starts when you send the inject, or, if the inject has props, when the last prop is reported placed.</p>
+            <p>The board watches for the response and marks the force <b>Done</b> by itself when it sees it: an approved POC call (Real IED cleared, Hit by an IED, Helped a civilian, Good or Poor conduct), a militia target destroyed, the cache cleared, a message to the AOC, or a PERSTAT. A few injects (personnel recovery, supply boxes) can only be judged on the ground; the board cannot see them, so you mark them.</p>
+            <p>When the deadline passes, any force with no response is marked <b>Missed</b> and loses the points shown, and the inject's props show <b>Recover now</b> on the props page.</p>
+            <p>Your two buttons, for each force, before or after the deadline:</p>
+            <ul><li><b>They did it</b>: the force responded. Use it when the board could not see the response, or the POC call came in late. Gives back any missed penalty.</li><li><b>Don't count it</b>: take this inject off that force's record with no penalty and no credit. Use it when it was not their fault: a prop was missing, or another inject tied them up. Gives back any missed penalty.</li></ul>
+          </details>
           <div class="list scrolllist" data-injwin></div></div>
         <div class="panel" data-sec="msg"><details data-tpldet><summary><b>Inject templates</b> <span class="small muted" data-tpln></span></summary>
           <p class="small muted" style="margin:6px 0">Use fills the message box so you can edit before sending. Queue adds the template to the inject queue. Highlighted encounter injects apply at the current escalation level.</p>
           <div class="list scrolllist" data-templates></div></details></div>
       </div>
-      <div class="stack" style="gap:14px;min-width:0" data-sec="queue intel">
-      <div class="panel" data-sec="queue" data-aoc-off><div class="act-head"><h2>Waypoint queue</h2><span class="small muted" data-wpqn></span></div><div class="list" data-wpqq></div></div>
-      <div class="panel" data-sec="queue"><h2>Points</h2><div data-score></div></div>
+      <div class="stack" style="gap:14px;min-width:0" data-sec="intel map score">
+      <div class="panel" data-sec="map" data-aoc-off><div class="act-head"><h2>Waypoint queue</h2><span class="small muted" data-wpqn></span></div><div class="list" data-wpqq></div></div>
+      <div class="panel" data-sec="score"><h2>Points</h2><div data-score></div></div>
       <div class="panel" data-sec="intel"><h2>Intel packages</h2><p class="small muted" style="margin:0">Packages are sent only when deployed. The answer window starts at deployment.</p><div class="list scrolllist" data-intelw></div>
         <h2 data-aoc-off>Explosions</h2>
         <form class="stack" data-wf="detonation" data-aoc-off><div class="row"><label>Explosion at grid<input name="grid" maxlength="8" placeholder="Example: C2" required></label><label>Really caused by<select name="truth"><option value="militia">Militia</option><option value="B">Blue Force</option><option value="R">Red Force</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="cas" style="width:auto"> Casualties</label><div><button type="submit">Tell both wings</button></div></form>
@@ -5859,6 +6028,10 @@ function buildWhite(){
   $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'), q = ev.target.closest('[data-tplq]'); const k = b ? b.dataset.tpl : q ? q.dataset.tplq : null; if (k == null) return; const t = allTemplates(app.S)[+k]; if (!t) return; if (b) useTpl(t); else { writeEvent('injq_add', null, { items:[qItem(t)] }); toast('Queued: ' + t.label + '.'); } });
   $('[data-injqall]', v).onclick = () => { const S = app.S, have = new Set((S.injq || []).map(q => q.tid)), todo = allTemplates(S).filter(t => t.at != null && !have.has(t.id)); if (!todo.length){ toast('Every timed template is already in the queue.'); return; } if (!confirm('Add ' + todo.length + ' timed template' + (todo.length === 1 ? '' : 's') + ' to the inject queue?')) return; writeEvent('injq_add', null, { items:todo.map(qItem) }); };
   $('[data-injqsent]', v).onchange = () => { app.injqKey = null; refresh(true); };
+  $('[data-rssent]', v).onchange = () => { const b = $('[data-rs]', v); if (b) b.dataset.h = ''; refresh(true); };
+  $('[data-injqall2]', v).onclick = () => $('[data-injqall]', v).click();
+  v.addEventListener('click', ev => { const g = ev.target.closest('[data-gotab]'); if (!g) return; const t = $('[data-wtab="' + g.dataset.gotab + '"]', v); if (t) t.click(); });
+  $('[data-rs]', v).addEventListener('click', ev => { if (ev.target.closest('button') && ev.target.closest('summary')) ev.preventDefault(); });
   $('[data-injq]', v).addEventListener('click', ev => {
     const s = ev.target.closest('[data-injqsend]'), d = ev.target.closest('[data-injqdel]'), u = ev.target.closest('[data-injquse]'); if (!s && !d && !u) return; ev.preventDefault();
     const q = (app.S.injq || []).find(x => x.qid === (s || d || u).dataset[s ? 'injqsend' : d ? 'injqdel' : 'injquse']); if (!q) return;
@@ -6031,6 +6204,8 @@ function buildWhite(){
     $('[data-restore]', v).hidden = false;
     $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
   }
+  v.addEventListener('click', ev => { const m = ev.target.closest('[data-tlmode]'), b = !m && ev.target.closest('[data-pictl] [data-tlid]'); if (!m && !b) return; app.tlf = m ? { mode:m.dataset.tlmode, id:'' } : { mode:(app.tlf || {}).mode || 'all', id:b.dataset.tlid }; const tb = $('[data-pictl]', v); if (tb) tb.dataset.h = ''; refresh(true); });
+  v.addEventListener('change', ev => { const o = ev.target.closest('[data-tlone]'); if (!o) return; app.tlf = { mode:(app.tlf || {}).mode || 'all', id:o.value }; refresh(true); });
   v.addEventListener('change', ev => { const t = ev.target.closest('[data-timer]'); if (t) { writeEvent('site_timer', null, { site:t.dataset.timer, min:+t.value }); toast(SITES[t.dataset.timer].name + ' contention timer: ' + t.value + ' minutes.'); } });
   v.addEventListener('click', ev => {
     const b = ev.target.closest('[data-act]'); if (!b) return;
@@ -6038,7 +6213,8 @@ function buildWhite(){
     if (a === 'verdict') writeEvent('verdict', null, { contact:id, verdict:b.dataset.v });
     if (a === 'ack') writeEvent('report_ack', null, { contact:id });
     if (a === 'psok' || a === 'psno'){ const n = $('#psw-' + id + b.dataset.side), tx = n ? n.value.trim() : ''; if (a === 'psno' && !tx){ toast('Write what is wrong in the note first.', true); return; } writeEvent('perstat_wf', null, { aid:id, side:b.dataset.side, ok:a === 'psok', text:tx }); toast(a === 'psok' ? 'PERSTAT sent to the AOC.' : 'PERSTAT returned to ' + SIDES[b.dataset.side].name + '.'); }
-    if (a === 'injdone'){ const q = (app.S.injq || []).find(x => x.qid === id); if (q && b.dataset.st === 'exc' && !confirm('Excuse ' + SIDES[b.dataset.side].name + ' from "' + q.label + '"? Any miss penalty is refunded.')) return; writeEvent('inj_done', null, { qid:id, side:b.dataset.side, st:b.dataset.st }); }
+    if (a === 'rsinj'){ const q = (app.S.injq || []).find(x => x.qid === id); if (!q) return; const ovr = b.dataset.ovr === '1'; if (ovr && !confirm('Send "' + q.label + '" before its props are reported placed?\n\nWaiting on: ' + propWaitText(app.S, 'tpl', q.tid) + '\n\nIts response clock will start when the props are placed.')) return; if (!app.S.clock.started && !confirm('The game clock has not started. Send this inject anyway?')) return; writeEvent('injq_send', null, ovr ? { qid:q.qid, ovr:true } : { qid:q.qid }); toast('Sent: ' + q.label + '.'); }
+    if (a === 'injdone'){ const q = (app.S.injq || []).find(x => x.qid === id); if (q && b.dataset.st === 'exc' && !confirm('Don’t count "' + q.label + '" for ' + SIDES[b.dataset.side].name + '? No penalty and no credit; any missed penalty is given back.')) return; writeEvent('inj_done', null, { qid:id, side:b.dataset.side, st:b.dataset.st }); }
     if (a === 'oobok') writeEvent('oob_ack', null, { id });
     if (a === 'guessok') writeEvent('guess_ack', null, { id });
     if (a === 'resolve'){ const box = $('#ans-' + id); writeEvent('resolve', null, { req:id, result:b.dataset.r, text:box ? box.value : '' }); }
@@ -6480,15 +6656,20 @@ function renderWhite(S, now){
   $('[data-wliaison]', v).innerHTML = liaisonHTML(S, null);
   $('[data-woffers]', v).innerHTML = offersHTML(S, null);
   const lvlNow = levelIndex(S.esc), TP = allTemplates(S), tkey = START_G + '|' + lvlNow + '|' + (S.injq || []).map(q => q.tid).join() + '|' + JSON.stringify(TP.map(t => [t.id, t.label, t.at, t.lvl, t.to, t.text, t.from, t.note, t.phase, t.win, t.done]));
+  { const box = $('[data-rs]', v); if (box){ const show = !!($('[data-rssent]', v) || {}).checked, rows = rsRows(S), vis = rows.filter(r => show || !r.out), open = new Set($$('details[open]', box).map(x => x.dataset.rk));
+      const h = vis.map(r => '<details class="li cmp rs-row' + (r.due && !r.out ? ' hot' : '') + (r.out ? ' out' : '') + '" data-rk="' + esc(r.key) + '"' + (open.has(r.key) ? ' open' : '') + '><summary><span class="tm">' + esc(r.when) + '</span><span class="pic-tag">' + esc(r.tag) + '</span><b class="grow">' + esc(r.label) + '</b>' + picTo(r.to) + r.status + '<span class="rs-btns">' + r.btns + '</span></summary><div class="small" style="white-space:pre-wrap">' + esc(r.body) + '</div>' + (r.note ? '<div class="small muted" style="white-space:pre-wrap">White Force note: ' + esc(r.note) + '</div>' : '') + '</details>').join('');
+      const hk = h + S.g.toFixed(0); if (box.dataset.h !== hk && !box.contains(document.activeElement)){ box.dataset.h = hk; box.innerHTML = h || '<div class="empty">' + (rows.length ? 'Everything has gone out. Tick the box above to see it.' : 'No injects or intel packages yet. Upload the creation files on the Intel and inject creation tab.') + '</div>'; }
+      const dueN = rows.filter(r => r.due && !r.out).length; $('[data-rsn]', v).textContent = rows.filter(r => !r.out).length + ' to go' + (dueN ? ', ' + dueN + ' due now' : '');
+      $$('[data-sendcnt]').forEach(el => { el.hidden = !dueN; el.textContent = dueN; }); } }
   { const box = $('[data-injwin]', v); if (box){ const W = (S.injq || []).filter(q => q.win && q.sent != null && (q.closed == null || S.g - q.closed <= 30 || injSides(q).some(sd => q.res[sd] && q.res[sd].st === 'miss'))).sort((a, b) => ((a.closed != null) - (b.closed != null)) || ((injEnd(a) || 1e9) - (injEnd(b) || 1e9)));
-    const lab = { done:['ok', 'Handled'], miss:['no', 'Missed'], na:['', 'Not needed'], exc:['', 'Excused'] };
+    const lab = { done:['ok', 'Done'], miss:['no', 'Missed'], na:['', 'Not needed: the other force did it first'], exc:['', 'Not counted'] };
     const h = W.map(q => { const end = injEnd(q), open = q.closed == null, left = end != null ? Math.ceil(end - S.g) : null;
       const head = open ? (end == null ? '<span class="chip wait">Clock not started</span><div class="small">Starts when its props are reported placed. Waiting on: ' + esc(propWaitText(S, 'tpl', q.tid)) + '</div>' : '<span class="chip ' + (left <= 3 ? 'no' : 'wait') + '">Due ' + hhmm(end) + ' (' + Math.max(0, left) + ' min)</span>') : '<span class="chip">Closed ' + hhmm(q.closed) + '</span>';
       const sides = injSides(q).map(sd => { const r = q.res[sd], L = r ? lab[r.st] : ['wait', 'Waiting'];
-        return '<div class="row" style="align-items:center;gap:6px"><span class="chip ' + sd + '" style="flex:0 0 auto">' + SIDES[sd].name + '</span><span class="chip ' + L[0] + '" style="flex:0 0 auto">' + L[1] + (r && r.st === 'miss' && (r.pts || r.hn) ? ' (' + [r.pts ? '−' + r.pts + ' pts' : '', r.hn ? '−' + r.hn + ' diplomatic' : ''].filter(Boolean).join(', ') + ')' : '') + (r && r.auto ? ', automatic' : '') + '</span>' +
-          (!r || r.st === 'miss' ? '<button type="button" class="btn-side" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="done" style="flex:0 0 auto">Handled</button>' : '') + (!r || r.st === 'miss' ? '<button type="button" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="exc" style="flex:0 0 auto">Excuse</button>' : '') + '</div>'; }).join('');
+        return '<div class="row" style="align-items:center;gap:6px"><span class="chip ' + sd + '" style="flex:0 0 auto">' + SIDES[sd].name + '</span><span class="chip ' + L[0] + '" style="flex:0 0 auto">' + L[1] + (r && r.st === 'miss' && (r.pts || r.hn) ? ' (' + [r.pts ? '−' + r.pts + ' pts' : '', r.hn ? '−' + r.hn + ' diplomatic' : ''].filter(Boolean).join(', ') + ')' : '') + (r && r.auto ? ' (seen by the board)' : r && r.by === 'wf' && r.st === 'done' ? ' (you marked it)' : '') + '</span>' +
+          (!r || r.st === 'miss' ? '<button type="button" class="btn-side" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="done" style="flex:0 0 auto">They did it</button>' : '') + (!r || r.st === 'miss' ? '<button type="button" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="exc" style="flex:0 0 auto">Don’t count it</button>' : '') + '</div>'; }).join('');
       const pr = !open ? injPropNames(S, q) : [];
-      return '<div class="li" style="flex-wrap:wrap"><div class="grow"><b>' + esc(q.label) + '</b> ' + head + '<div class="small muted">Handled when: ' + esc(WIN_DONE[q.done] || '') + (q.who === 'any' ? '. The first force to respond closes it.' : '.') + '</div>' + sides + (pr.length ? '<div class="small"><span class="chip no">Recover props now</span> ' + esc(pr.join(', ')) + '</div>' : '') + '</div></div>'; }).join('');
+      return '<div class="li" style="flex-wrap:wrap"><div class="grow"><b>' + esc(q.label) + '</b> ' + head + '<div class="small muted">Done when: ' + esc(WIN_DONE[q.done] || '') + (q.who === 'any' ? '. The first force to respond closes it.' : '.') + '</div>' + sides + (pr.length ? '<div class="small"><span class="chip no">Recover props now</span> ' + esc(pr.join(', ')) + '</div>' : '') + '</div></div>'; }).join('');
     $('[data-injwn]', v).textContent = W.filter(q => q.closed == null).length + ' open';
     if (box.dataset.h !== h){ box.dataset.h = h; box.innerHTML = h || '<div class="empty">No timed injects are running.</div>'; } } }
   { const showSent = !!($('[data-injqsent]', v) || {}).checked, Q = (S.injq || []).slice().sort((a, b) => ((a.sent != null) - (b.sent != null)) || ((a.at != null ? a.at : a.lvl != null ? 1000 + a.lvl : 2000) - (b.at != null ? b.at : b.lvl != null ? 1000 + b.lvl : 2000))), k2 = JSON.stringify(Q.map(q => [q.qid, q.sent, q.label, propHold(S, 'tpl', q.tid).length])) + showSent + START_G + lvlNow;
@@ -6531,6 +6712,11 @@ function renderWhite(S, now){
   (S.oobs || []).filter(o => !o.back && !o.ack).forEach(o => q.push('<div class="li"><div class="grow"><span class="chip ' + o.side + '">' + SIDES[o.side].name + '</span> <b>Outside the play area</b> <span class="small muted">since ' + hhmm(o.g) + '</span><div class="small">' + esc(o.name) + ', about ' + o.m + ' m beyond the boundary. Clears on its own when the team is back inside.</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-act="oobok" data-id="' + o.id + '">Seen</button></div></div>'));
   (S.accts || []).forEach(a => ['B', 'R'].forEach(sd => { const r = a.reps[sd]; if (!r || r.status !== 'wf') return;
     q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip ' + sd + '">' + SIDES[sd].name + '</span> <b>PERSTAT to check: ' + esc(a.label) + '</b> <span class="small muted">' + hhmm(r.g) + '</span>' + psCheckHTML(S, a, sd) + '<div class="small muted">Grids within about 250 m of the GPS fix are a match; teams keep moving. Your call: approve to send it to the AOC, or return it with a note.</div></div><div class="row" style="flex:0 0 auto;align-items:end"><input id="psw-' + a.id + sd + '" placeholder="Note (needed to return it)" maxlength="300"><button type="button" class="btn-side" data-act="psok" data-id="' + a.id + '" data-side="' + sd + '">Approve, send to AOC</button><button type="button" data-act="psno" data-id="' + a.id + '" data-side="' + sd + '">Return</button></div></div>'); }));
+  (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && q.done === 'manual' && injEnd(q) != null).forEach(qq => { const left = Math.max(0, Math.ceil(injEnd(qq) - S.g)), sides = injSides(qq).filter(sd => !(qq.res || {})[sd]); if (!sides.length) return;
+    q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip wait">Your call</span> <b>' + esc(qq.label) + '</b> <span class="small muted">due ' + hhmm(injEnd(qq)) + ' (' + left + ' min)</span><div class="small">The board cannot see this one. When a POC tells you the force did it, mark it.</div></div><div class="row" style="flex:0 0 auto">' + sides.map(sd => '<button type="button" class="btn-side" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="done">' + SIDES[sd].name + ' did it</button>').join('') + '</div></div>'); });
+  (S.injq || []).filter(qq => qq.win && qq.closed != null && S.g - qq.closed <= 10 && injSides(qq).some(sd => qq.res[sd] && qq.res[sd].st === 'miss')).forEach(qq => injSides(qq).filter(sd => qq.res[sd] && qq.res[sd].st === 'miss' && !qq.res[sd].seen).forEach(sd => {
+    q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip ' + sd + '">' + SIDES[sd].name + '</span> <b>Missed: ' + esc(qq.label) + '</b> <span class="small muted">closed ' + hhmm(qq.closed) + '</span><div class="small">' + (qq.res[sd].pts || qq.res[sd].hn ? 'Penalty applied: ' + [qq.res[sd].pts ? '−' + qq.res[sd].pts + ' points' : '', qq.res[sd].hn ? '−' + qq.res[sd].hn + ' diplomatic' : ''].filter(Boolean).join(', ') + '. ' : '') + 'If that is wrong, fix it now. This drops off after 10 minutes.</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="done">They did it</button><button type="button" data-act="injdone" data-id="' + qq.qid + '" data-side="' + sd + '" data-st="exc">Don’t count it</button></div></div>'); }));
+  { const due = rsRows(S).filter(r => r.due && !r.out); if (due.length) q.push('<div class="li"><div class="grow"><span class="chip wait">To send</span> <b>' + due.length + ' item' + (due.length === 1 ? ' is' : 's are') + ' due to go out</b><div class="small">' + esc(due.slice(0, 4).map(r => r.label).join('; ')) + (due.length > 4 ? '…' : '') + '</div></div><button type="button" class="btn-side" data-gotab="send" style="flex:0 0 auto">Go to Send</button></div>'); }
   const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request', wp:'Waypoint request', stmt:'Public statement to rule on' };
   S.requests.filter(r => r.status === 'open').forEach(r => {
     let ctl = '';
