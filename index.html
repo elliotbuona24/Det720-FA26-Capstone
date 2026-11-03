@@ -3178,9 +3178,9 @@ function subscribeGame(){
     app.evSig = sig; app.events = evs; refresh(true);
   }, err => setBanner('Live updates stopped (' + (err && err.code) + '). Reload the page.')));
 }
-async function writeEvent(type, side, p){
+async function writeEvent(type, side, p, by){
   if (!app.cfg) return;
-  const e = { id:uid(), ts:Date.now(), type, side:side || null, p:p || {}, by:app.role };
+  const e = { id:uid(), ts:Date.now(), type, side:side || null, p:p || {}, by:by || app.role };
   if (app.mode === 'remote'){
     try { await app.db.doc(gpath() + '/events/' + e.id).set(e); }
     catch(err){
@@ -5841,6 +5841,57 @@ function aocMode(on){
   const cur = $('[data-wtab][aria-selected="true"]', v); if (on && cur && cur.hasAttribute('data-aoc-off')) $('[data-wtab="pic"]', v).click();
   if (!on && cur && cur.hasAttribute('data-aoc-only')) $('[data-wtab="all"]', v).click();
 }
+const BOT = { on:null, timer:null, mem:{} };
+function botGrid(pt){ return GEO.toMGRS(pt[0], pt[1], 4).split(' ').slice(2).join(' '); }
+function botStep(){
+  const S = app.S, on = BOT.on; if (!S || !on || !S.clock.started || S.endex || !S.clock.running) return;
+  const M = mapCfg(S); if (!M || !M.sites) return;
+  const mem = BOT.mem, g = S.g, rnd = () => Math.random(), W = (t, sd, p, by) => writeEvent(t, sd, p, by), once = (k, fn) => { if (mem[k]) return; mem[k] = true; fn(); };
+  const later = (k, mins) => { if (mem[k] == null) mem[k] = g + mins; return g >= mem[k]; };
+  const C = Math.cos(M.sites.lzB[0] * Math.PI / 180), step = (a, b, m) => { const dx = (b[1] - a[1]) * 111320 * C, dy = (b[0] - a[0]) * 110950, d = Math.hypot(dx, dy); if (d <= m) return [b, true]; const f = m / d; return [[a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], false]; };
+  ['B', 'R'].forEach(sd => {
+    const ids = [1, 2, 3, 4].map(i => 'bot-' + sd.toLowerCase() + i), names = sd === 'B' ? ['Bot Alpha 1', 'Bot Alpha 2', 'Bot Bravo 1', 'Bot Bravo 2'] : ['Bot Tiger 1', 'Bot Tiger 2', 'Bot Dragon 1', 'Bot Dragon 2'];
+    if (on['T' + sd]) ids.forEach((id, i) => {
+      const t = S.teams[sd][id], here = t && t.last && t.last.gps ? t.last.gps : (sd === 'B' ? M.sites.lzB : M.sites.lzR);
+      let tg = mem['tg' + id];
+      if (!tg || mem['at' + id] && g - mem['at' + id] > 3 + rnd() * 4){ const opts = refList(S, sd).map(([k]) => refLoc(S, k)).filter(Boolean).concat(Object.keys(M.sites).filter(k => SITES[k] || k === 'town').map(k => M.sites[k])); tg = mem['tg' + id] = opts[Math.floor(rnd() * opts.length)]; mem['at' + id] = null; }
+      const [np, arr] = step(here, tg, 40 + rnd() * 40); if (arr && !mem['at' + id]) mem['at' + id] = g;
+      W('pos', sd, { team:id, name:names[i], gps:[+(np[0] + (rnd() - .5) * 8 / 110950).toFixed(7), +(np[1] + (rnd() - .5) * 8 / 84250).toFixed(7)], acc:5 + Math.round(rnd() * 6), status:arr ? 'At objective' : 'Moving' }, 'T' + sd);
+      once('num' + id, () => W('team_num', sd, { team:id, num:String(i + 1) }, sd));
+    });
+    if (on.OC) ids.forEach((id, i) => { const oc = 'obot-' + id; once('join' + oc, () => W('oc_join', null, { oc, name:'Bot O/C ' + (i + 1) + (sd === 'B' ? ' Blue' : ' Red'), side:sd, team:id }, 'OC')); });
+    if (on.OC && on['T' + sd]) (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => {
+      const call = q.done === 'ied' ? 'ied_real' : q.done === 'pr' ? 'prok' : q.done === 'box' ? 'box' : q.done === 'civaid' ? 'civaid' : q.done === 'conduct' ? 'good' : null; if (!call) return;
+      const k = 'call' + q.qid + sd; if (!later(k + 't', 3 + rnd() * Math.max(2, q.win - 5))) return;
+      once(k, () => { if (rnd() < .2) return; W('oc_req', null, { oc:'obot-' + ids[Math.floor(rnd() * 4)], kind:'call', call, side:sd, text:'Bot team responded', ref:rnd() < .7 ? 'q:' + q.qid : 'unk' }, 'OC'); }); });
+    if (on[sd]){
+      const tb = liveTeams(S, sd).filter(t => t.last && t.last.gps), en = liveTeams(S, OTHER[sd]).filter(t => t.last && t.last.gps && g - t.last.g < 5);
+      if (en.length && later('sal' + sd, 4 + rnd() * 5)){ mem['sal' + sd] = g + 5 + rnd() * 6; const t = en[Math.floor(rnd() * en.length)], pt = [t.last.gps[0] + (rnd() - .5) * 30 / 110950, t.last.gps[1] + (rnd() - .5) * 30 / 84250];
+        W('contact', sd, { kind:'team', grid:botGrid(pt), seen:hhmm(g), note:'S: 3 people - A: moving - U: ' + SIDES[OTHER[sd]].name + ' uniforms - E: rifles', salute:{ s:'3 people', a:'moving', l:botGrid(pt), u:SIDES[OTHER[sd]].name + ' uniforms', t:hhmm(g).slice(0, 4), e:'rifles' }, ref:'none' }, sd); }
+      const cb = cubOpen(S, sd), c = cb ? (S.cubs || []).find(x => x.side === sd && x.n === cb.n) : null;
+      if (cb && (!c || c.status === 'returned') && later('cub' + sd + cb.n + (c ? c.hist.length : ''), 1 + rnd() * 6)){ const f = {}; (cubLines(S, sd, cb.n) || []).forEach(L => { f[L.k] = L.none && rnd() < .5 ? 'NONE' : ('Bot ' + L.l.toLowerCase() + ': ' + tb.map(t => t.name + ' near ' + botGrid(t.last.gps)).join(', ') + '. On track with the plan and watching the other force.').padEnd(Math.max(L.min, 10) + 5, '.'); if (L.kind === 'pers'){ f.p_acc = tb.length * 3 || 12; f.p_una = 0; } if (L.kind === 'rag') f.rag = 'GREEN'; }); W('cub', sd, { n:cb.n, f:cubCompose(cubLines(S, sd, cb.n), f).f || f }, sd); }
+      const a = psOpen(S, sd); if (a && later('ps' + a.id + sd + ((a.reps[sd] || {}).id || ''), 2 + rnd() * 8)) W('perstat', sd, { aid:a.id, sum:{ acc:tb.length * 3 || 12, una:0 }, teams:liveTeams(S, sd).map(t => ({ id:t.id, n:3, grid:t.last && t.last.gps ? botGrid(t.last.gps) : '', st:t.last && t.last.gps ? 'task' : 'unk' })), note:'' }, sd);
+      allProblems(S).forEach(P => { const o = intelOpen(S, P.id, sd); if (!o || o.done || S.intel[sd][P.id]) return; if (!later('ia' + P.id + sd, 4 + rnd() * Math.max(2, (o.due - o.g) - 6))) return;
+        once('iad' + P.id + sd, () => { const tr = intelTruth(P), good = rnd() < .6, ak = good ? tr.ak : String(Math.floor(rnd() * P.opts.length)), fk = good ? tr.f : P.items[Math.floor(rnd() * P.items.length)].k; W('intel_answer', sd, { pid:P.id, a:intelKey(P.id, 'a', ak), f:intelKey(P.id, 'f', fk) }, sd); }); });
+      (S.injq || []).filter(q => q.win && q.done === 'aoc' && q.sent != null && q.closed == null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => { if (later('aoc' + q.qid + sd, 1 + rnd() * 4)) once('aocd' + q.qid + sd, () => W('aoc_req', sd, { want:'other', text:'Bot C2: done as ordered (' + q.label + ').', ref:'q:' + q.qid }, sd)); });
+      if (later('liai' + sd, 8 + rnd() * 10)){ mem['liai' + sd] = g + 10 + rnd() * 10; W('liaison', sd, { text:['Our teams are holding. Call before you cross the town road.', 'We see your team near our site. Keep 50 m clear.', 'Proposal: no contention for the next 15 minutes.'][Math.floor(rnd() * 3)] }, sd); }
+    }
+  });
+  if (on.A){
+    (S.cubs || []).filter(c => c.status === 'sent').forEach(c => { if (later('ac' + c.id + c.hist.length, 1 + rnd() * 2)) once('acd' + c.id + c.hist.length, () => W('cub_reply', null, { id:c.id, verdict:rnd() < .8 ? 'approve' : 'more', text:'Bot AOC: line 9 needs a time for each decision point.' }, 'A')); });
+    (S.accts || []).forEach(a => ['B', 'R'].forEach(sd => { const r = a.reps[sd]; if (r && r.status === 'aoc' && later('aa' + a.id + sd, 1)) once('aad' + a.id + sd, () => W('perstat_aoc', null, { aid:a.id, side:sd, text:'Acknowledged.' }, 'A')); }));
+    (S.aocReqs || []).filter(r => r.status === 'open').forEach(r => { if (later('ar' + r.id, 1 + rnd() * 2)) once('ard' + r.id, () => W('aoc_grant', null, { side:r.side, req:r.id, kind:'reply', text:'Bot AOC: copy.' }, 'A')); });
+  }
+  if (on.W){
+    (S.injq || []).filter(q => q.sent == null && q.at != null && START_G + q.at <= g).forEach(q => once('snd' + q.qid, () => W('injq_send', null, { qid:q.qid, ovr:true }, 'W')));
+    allProblems(S).forEach(P => { if (P.at != null && START_G + P.at <= g && !intelOpen(S, P.id, P.only || 'B') && !intelOpen(S, P.id, P.only || 'R')) once('dep' + P.id, () => W('intel_deploy', null, { pid:P.id, to:P.only || 'both', ovr:true }, 'W')); });
+    S.ocReqs.filter(r => r.status === 'open').forEach(r => { if (later('or' + r.id, 1 + rnd())) once('ord' + r.id, () => W('oc_res', null, { req:r.id, ok:true, inj:r.inj || r.injGuess || '' }, 'W')); });
+    (S.accts || []).forEach(a => ['B', 'R'].forEach(sd => { const r = a.reps[sd]; if (r && r.status === 'wf' && later('pw' + a.id + sd + r.id, 1)) once('pwd' + a.id + sd + r.id, () => W('perstat_wf', null, { aid:a.id, side:sd, ok:true, text:'' }, 'W')); }));
+    S.contacts.filter(c => !c.verdict).forEach(c => { if (later('ct' + c.id, 1)) once('ctd' + c.id, () => W('verdict', null, { contact:c.id, verdict:'confirm' }, 'W')); });
+    (S.injClaims || []).filter(c => c.status === 'open').forEach(c => { if (later('cl' + c.id, 1)) once('cld' + c.id, () => W('inj_claim_res', null, { id:c.id, ok:true }, 'W')); });
+  }
+}
+function botSet(on){ clearInterval(BOT.timer); BOT.timer = null; BOT.on = on; if (on){ BOT.timer = setInterval(() => { try { botStep(); } catch(e){ console.warn('bot', e); } }, 12000); setTimeout(() => { try { botStep(); } catch(e){} }, 500); } }
 function buildWhite(){
   if (app.built === 'white') return; app.built = 'white'; app.fogView = null;
   const v = freshView('#vWhite');
@@ -6096,6 +6147,10 @@ function buildWhite(){
         <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-crexport style="flex:0 0 auto">Download packages and injects</button><label for="crImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload creation files<input id="crImport" type="file" accept=".json,application/json" multiple style="display:none"></label><label for="crCombine" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Combine files into one<input id="crCombine" type="file" accept=".json,application/json" multiple style="display:none"></label></div>
         <p class="small muted" style="margin:0">Upload creation files adds every package and template from the files you choose to this game. Combine files into one merges several teams’ files into a single download without changing this game; use it to review everything before execution day.</p>
       </div>
+      <div class="panel stack" data-sec="setup" data-aoc-off><h2>Practice bots</h2>
+        <p class="small muted" style="margin:0">For training only. Bots play the roles you tick, using simple rules: they move fireteams, post SALUTE reports, answer intel packages and injects, send briefs and PERSTATs, and approve things in the queue. They are not smart; they give every real player something to react to. They run in this browser only, so keep this tab open. Do not use them in the real game.</p>
+        <div class="row" style="flex-wrap:wrap;gap:6px 16px">${[['B', 'Blue Force C2'], ['R', 'Red Force C2'], ['TB', 'Blue Force fireteams'], ['TR', 'Red Force fireteams'], ['OC', 'POC O/Cs'], ['A', 'AOC'], ['W', 'White Force (sends injects and approves)']].map(([k, n]) => '<label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-botrole="' + k + '"> ' + n + '</label>').join('')}</div>
+        <div class="row" style="justify-content:flex-start;align-items:center"><button type="button" class="btn-side" data-botgo style="flex:0 0 auto">Start bots</button><span class="small muted" data-botst>Bots are off.</span></div></div>
       <div class="panel" data-sec="setup" data-aoc-off><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
   </div>`;
@@ -6324,6 +6379,8 @@ function buildWhite(){
     $('[data-restore]', v).hidden = false;
     $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
   }
+  { const go = $('[data-botgo]', v), st = $('[data-botst]', v); if (go){ const sync = () => { go.textContent = BOT.on ? 'Stop bots' : 'Start bots'; st.textContent = BOT.on ? 'Bots are playing: ' + Object.keys(BOT.on).map(roleLabel).join(', ') + '. Keep this tab open.' : 'Bots are off.'; }; if (BOT.on) $$('[data-botrole]', v).forEach(c => c.checked = !!BOT.on[c.dataset.botrole]); sync();
+    go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-wfcall]'); if (!b) return; const k = b.dataset.wfcall, sd = b.dataset.side; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; writeEvent('wf_call', sd, { call:k }); toast(OC_CALLS[k].name + ': ' + SIDES[sd].name + '.'); });
   v.addEventListener('click', ev => { const m = ev.target.closest('[data-tlmode]'), b = !m && ev.target.closest('[data-pictl] [data-tlid]'); if (!m && !b) return; app.tlf = m ? { mode:m.dataset.tlmode, id:'' } : { mode:(app.tlf || {}).mode || 'all', id:b.dataset.tlid }; const tb = $('[data-pictl]', v); if (tb) tb.dataset.h = ''; refresh(true); });
   v.addEventListener('change', ev => { const o = ev.target.closest('[data-tlone]'); if (!o) return; app.tlf = { mode:(app.tlf || {}).mode || 'all', id:o.value }; refresh(true); });
