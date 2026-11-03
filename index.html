@@ -349,6 +349,10 @@ body.ip-fs{overflow:hidden}
 .cmd-res{display:flex;gap:8px;flex-wrap:wrap}
 .cub-f{display:grid;gap:4px;font-size:15px}
 .cub-f span{color:var(--muted);font-size:13px;font-family:var(--mono);letter-spacing:.04em}
+.cub-tx{white-space:pre-wrap;overflow-wrap:anywhere}
+.cub-pers{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0;display:grid;gap:6px;min-width:0}
+.cub-pers legend{font-weight:600;padding:0 4px}
+[data-cubfields] label{display:grid;gap:3px}
 .ip-badge.pir{color:var(--ink);border-color:var(--muted)}
 .tl-mk.rh{background:#7d5cff;width:12px;height:12px;border-radius:2px;transform:translate(-6px,0) rotate(45deg)}
 @media (max-width:1000px){.cmd-cols{grid-template-columns:minmax(0,1fr)}}
@@ -1528,22 +1532,121 @@ const PIR_DEFAULT = {
   R:['Where are the First Front’s leaders, its bomb workshop and its trigger network?', 'Which reported threats to our forces and the island’s people are real, and where are they?', 'Who is stirring up the harbor, sabotaging the fuel supply or bringing supplies in by sea, and why?', 'Who is behind each attack and each false story, and who is leaking our plans?']
 };
 const RHYTHM = [
-  { at:15, kind:'cub', n:1, label:'Commander’s update brief 1', what:'A short paragraph to the AOC: site status, fireteams, PIR progress, your biggest risk and anything you need.' },
-  { at:45, kind:'cub', n:2, label:'Commander’s update brief 2', what:'Update the AOC before the change of command, including what the incoming commander must know.' },
+  { at:15, kind:'cub', n:1, label:'Commander’s update brief 1', what:'Brief the AOC on every line below: progress, changes from your plan, accountability, casualties, the threat, intelligence, sustainment, risk, your next 30 minutes and your assessment.' },
+  { at:45, kind:'cub', n:2, label:'Commander’s update brief 2', what:'Brief the AOC on every line below before the change of command, including the handover to the incoming commander.' },
   { at:60, kind:'coc', label:'Change of command', what:'Deputies take command. The new commander confirms assumption of command to the AOC by 0705.' },
-  { at:85, kind:'cub', n:3, label:'Commander’s update brief 3', what:'The new commander updates the AOC: the plan for the last 30 minutes and anything you need.' },
-  { at:110, kind:'cub', n:4, label:'Final SITREP', what:'Final situation report: sites held, PIRs answered, casualties and incidents, open issues.' }
+  { at:85, kind:'cub', n:3, label:'Commander’s update brief 3', what:'The new commander briefs the AOC on every line below, including the plan for the last 30 minutes.' },
+  { at:110, kind:'cub', n:4, label:'Final SITREP', what:'Final situation report on every line below: positions, mission accomplishment, final accountability, casualties, PIRs, significant events and open issues.' }
 ];
 const CUB_EARLY = 5, CUB_LATE = 5, FIX_MIN = 10, MT_PTS = 3, MT_HN = 2, MT_CIV = 10;
 function mtNow(S){ return (S.mtgts || []).filter(t => !t.done && S.g >= t.g - 1e-9 && S.g < t.until - 1e-9); }
 function mtFor(S, side){ return mtNow(S).filter(t => t.to === 'both' || t.to === side); }
 function mtFixed(S, t, side){ const f = t.fix && t.fix[side]; return f != null && S.g - f <= FIX_MIN + 1e-9; }
 function mtClean(m){ if (!m || typeof m !== 'object') return null; const pt = Array.isArray(m.pt) && m.pt.length === 2 && m.pt.every(Number.isFinite) ? m.pt : null; const label = String(m.label || '').trim().slice(0, 60); if (!pt || !label) return null; return { label, pt, life:Math.max(5, Math.min(120, Math.round(Number(m.life) || 25))), grid:String(m.grid || '').slice(0, 12) }; }
+const WIN_DONE = { manual:'The White Force marks it', ied:'POC call: Real IED cleared or Hit by an IED', civaid:'POC call: Helped a civilian', conduct:'POC call: Good or Poor conduct', mt:'Militia target destroyed', cache:'Cache cleared or struck', aoc:'The force writes to the AOC', acct:'PERSTAT sent', none:'Not tracked (window only times the props)' };
+const PERSTAT_ST = { task:'On task', move:'Moving', hq:'At HQ or the CCP', cas:'Has a casualty', unk:'Unknown' };
+function winClean(t){ const w = Math.round(Number(t && t.win)); if (!Number.isFinite(w) || w < 1) return null; const m = t.miss || {}, c = (v, hi) => Math.max(0, Math.min(hi, Math.round(+v || 0))); return { win:Math.min(120, w), who:t.who === 'any' ? 'any' : 'each', done:WIN_DONE[t.done] ? t.done : 'manual', miss:{ pts:c(m.pts, 20), hn:c(m.hn, 20) } }; }
+function injSides(q){ return q.to === 'B' || q.to === 'R' ? [q.to] : ['B', 'R']; }
+function injEnd(q){ return q.ws != null ? q.ws + q.win : null; }
+function injAuto(S, q, sd){
+  const end = injEnd(q), inW = g => g >= q.sent - 1e-9 && g <= end + 1e-9, call = ks => (S.ocReqs || []).some(r => r.kind === 'call' && r.status === 'ok' && r.side === sd && ks.includes(r.call) && inW(r.g));
+  switch (q.done){
+    case 'ied': return call(['ied_real', 'iedhit']);
+    case 'civaid': return call(['civaid']);
+    case 'conduct': return call(['good', 'poor']);
+    case 'mt': { const t = (S.mtgts || []).find(x => x.id === 'mt-' + q.qid); return !!(t && t.done && t.done.side === sd); }
+    case 'cache': return S.cacheDone === sd;
+    case 'aoc': return (S.aocReqs || []).some(r => r.side === sd && inW(r.g));
+    case 'acct': { const a = (S.accts || []).find(x => x.qid === q.qid), r = a && a.reps[sd]; return !!(r && r.first <= end + 1e-9); }
+  }
+  return false;
+}
+function injRefund(S, sd, r){ if (!r || r.st !== 'miss') return; if (r.pts) S.pts[sd].adj += r.pts; if (r.hn) addHN(S, sd, r.hn); }
+function injPropNames(S, q){ return Object.values(S.propUses || {}).filter(u => u.kind === 'tpl' && u.item === q.tid && propLive(S, u)).map(u => ((S.props || {})[u.prop] || {}).name + (u.label ? ' (' + u.label + ')' : '')); }
+function injClose(S, q, why){
+  q.closed = S.g; S.ver++;
+  const sides = injSides(q), anyDone = sides.some(sd => q.res[sd] && q.res[sd].st === 'done');
+  sides.forEach(sd => { if (q.res[sd]) return;
+    if (q.who === 'any' && anyDone){ q.res[sd] = { st:'na', g:S.g }; return; }
+    const m = q.miss || {}; q.res[sd] = { st:'miss', g:S.g, pts:m.pts || 0, hn:m.hn || 0 };
+    if (m.pts) S.pts[sd].adj -= m.pts; if (m.hn) addHN(S, sd, -m.hn);
+    if (q.done !== 'none') pushFeed(S, sd, 'Time is up for "' + q.label + '" (due ' + hhmm(injEnd(q)) + '). It is closed and recorded as missed.' + (m.pts ? ' Points −' + m.pts + '.' : '') + (m.hn ? ' Diplomatic points −' + m.hn + '.' : ''), 'alert', { label:hqFrom(q.from), comm:'inj', title:q.label });
+  });
+  const pr = injPropNames(S, q);
+  pushLog(S, 'Inject window closed' + (why ? ' (' + why + ')' : '') + ': ' + q.label + '. ' + sides.map(sd => SIDES[sd].name + ' ' + ({ done:'handled', miss:'missed', na:'not needed', exc:'excused' })[q.res[sd].st]).join(', ') + (pr.length ? '. Recover props now: ' + pr.join(', ') : ''), null);
+}
+function injClock(S, g){
+  (S.injq || []).forEach(q => {
+    if (!q.win || q.sent == null || q.closed != null) return;
+    if (q.ws == null){
+      if (propHold(S, 'tpl', q.tid).length) return;
+      const us = Object.values(S.propUses || {}).filter(u => u.kind === 'tpl' && u.item === q.tid).map(u => ((S.propSt || {})[u.id] || {}).placed).filter(Number.isFinite);
+      q.ws = Math.max(q.sent, ...us); S.ver++;
+      const a = (S.accts || []).find(x => x.qid === q.qid); if (a) a.due = injEnd(q);
+      pushFeed(S, q.to, '"' + q.label + '": respond by ' + hhmm(injEnd(q)) + '.', q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label });
+      pushLog(S, 'Inject clock started (props placed): ' + q.label + ', due ' + hhmm(injEnd(q)), null);
+    }
+    const sides = injSides(q);
+    sides.forEach(sd => { if (!q.res[sd] && injAuto(S, q, sd)){ q.res[sd] = { st:'done', g:S.g, auto:true }; S.ver++; pushLog(S, SIDES[sd].name + ' handled the inject "' + q.label + '"', sd); } });
+    const end = injEnd(q);
+    if (sides.every(sd => q.res[sd]) || (q.who === 'any' && sides.some(sd => q.res[sd] && q.res[sd].st === 'done'))){ injClose(S, q, 'handled'); return; }
+    if (g >= end - 1e-9){ const keep = S.g; S.g = end; injClose(S, q); S.g = Math.max(keep, S.g); }
+  });
+}
 const AOC_RES = { isr:2, sup:2 };
 const AOC_GRANT = { uav:'isr', drone:'isr', aid:'sup', casevac:'sup', show:'sup', cstrike:'sup' };
 const AOC_WANT = { uav:'Retask the UAV now', drone:'Release a drone flight now', aid:'Resupply: next aid package now', casevac:'CASEVAC for an IED casualty', show:'Another show of force', cstrike:'Another cache or militia strike', other:'Something else', reply:'Approve with a written answer only' };
 const ROE_NAMES = { standard:'Standard', restrictive:'Restrictive', pause:'Operational pause' };
 function rhythmAt(x){ return START_G + x.at; }
+const CUB_STD = [
+  { k:'prog', l:'Mission progress', min:60, h:'Sites held and contested, what each fireteam has done since the last brief, and progress toward the commander’s intent.' },
+  { k:'chg', l:'Changes from the plan', min:40, h:'Where you have departed from the plan you briefed (routes, sites, team tasks, timeline), why, and what it costs you. If nothing changed, say why the plan still holds.' },
+  { k:'pers', l:'Accountability (PERSTAT)', kind:'pers', min:30, h:'Location (grid) and task of each fireteam, and where anyone unaccounted for was last seen.' },
+  { k:'cas', l:'Casualties and MEDEVAC', min:12, none:true, h:'Each casualty since the last brief: team, cause (IED, militia, other), status and whether a CASEVAC is needed. Write NONE if there were none.' },
+  { k:'en', l:'Enemy and militia activity', min:30, h:'What the other wing and the militia have done, where, and what you expect them to do next.' },
+  { k:'intel', l:'Intelligence and PIRs', min:40, h:'PIRs answered or advanced, with the evidence; reports you judge false and why.' },
+  { k:'sus', l:'Sustainment and communications', min:30, h:'PACE level in use, LMR and phone status (batteries), equipment problems and anything you are short of.' },
+  { k:'risk', l:'Escalation and risk', min:30, h:'Escalation and diplomatic points trend, the biggest risk to the mission and to the force, and what you are doing about it.' },
+  { k:'next', l:'Next 30 minutes and decision points', min:40, h:'Your plan, each fireteam’s task, and the points where you will have to decide or ask the AOC.' },
+  { k:'req', l:'Requests to the AOC', min:12, none:true, h:'Support, approvals or decisions you need, and by when. Write NONE if there are none.' },
+  { k:'cdr', l:'Commander’s assessment', kind:'rag', min:20, h:'GREEN, AMBER or RED for the mission, and why.' }
+];
+const CUB_LINES = {
+  1:CUB_STD,
+  2:CUB_STD.slice(0, 10).concat({ k:'hand', l:'Handover to the incoming commander', min:40, h:'Who takes command at 0700 and what they must know: open tasks, commitments made, risks and anything owed to the AOC.' }, CUB_STD[10]),
+  3:CUB_STD,
+  4:[
+    { k:'prog', l:'Final positions and sites held', min:40, h:'Where each fireteam is and which sites you hold at ENDEX.' },
+    { k:'msn', l:'Mission accomplishment', min:60, h:'Against the commander’s intent and your plan: what you achieved, what you did not, and why.' },
+    { k:'pers', l:'Final accountability (PERSTAT and equipment)', kind:'pers', min:30, h:'Every LMR, phone and training rifle accounted for, or what is missing and where it was last seen.' },
+    { k:'cas', l:'Casualties for the exercise', min:12, none:true, h:'Every casualty during the exercise, cause and current status. Write NONE if there were none.' },
+    { k:'intel', l:'PIRs answered', min:40, h:'Each PIR: answered, partly answered or open, with the evidence.' },
+    { k:'sig', l:'Significant events and escalation', min:40, h:'The events that shaped the fight, strikes and their results, and where escalation and diplomatic points ended.' },
+    { k:'open', l:'Open issues for the AOC', min:12, none:true, h:'Anything unresolved the AOC must act on after ENDEX. Write NONE if there is nothing.' },
+    { k:'cdr', l:'Commander’s assessment', kind:'rag', min:20, h:'GREEN, AMBER or RED for the mission overall, and why.' }
+  ]
+};
+const PERS_KEYS = [['asg', 'Assigned'], ['pdy', 'Present for duty'], ['cas', 'Casualties'], ['una', 'Unaccounted for']];
+const RAG = ['GREEN', 'AMBER', 'RED'];
+function cubCompose(n, f){
+  const ls = CUB_LINES[n]; if (!ls || !f || typeof f !== 'object') return { err:'brief form missing' };
+  const out = {}, txt = [];
+  for (let i = 0; i < ls.length; i++){
+    const L = ls[i], v = String(f[L.k] == null ? '' : f[L.k]).replace(/\s+/g, ' ').trim().slice(0, 600);
+    if (!(L.none && /^none\b/i.test(v)) && v.length < L.min) return { err:'line ' + (i + 1) + ' (' + L.l + ') needs at least ' + L.min + ' characters' };
+    out[L.k] = v; let head = '';
+    if (L.kind === 'pers'){
+      const p = {};
+      for (const [k] of PERS_KEYS){ const x = Number(f['p_' + k]); if (!Number.isInteger(x) || x < 0 || x > 99) return { err:'line ' + (i + 1) + ': every PERSTAT number is needed' }; p[k] = x; }
+      if (p.asg < 1 || p.pdy + p.cas + p.una !== p.asg) return { err:'line ' + (i + 1) + ': present + casualties + unaccounted must equal assigned' };
+      Object.keys(p).forEach(k => out['p_' + k] = p[k]);
+      head = PERS_KEYS.map(([k, l]) => l + ' ' + p[k]).join(', ') + '. ';
+    }
+    if (L.kind === 'rag'){ const r = String(f.rag || '').toUpperCase(); if (!RAG.includes(r)) return { err:'line ' + (i + 1) + ': choose GREEN, AMBER or RED' }; out.rag = r; head = r + '. '; }
+    txt.push((i + 1) + '. ' + L.l.toUpperCase() + ': ' + head + v);
+  }
+  return { f:out, text:txt.join('\n') };
+}
 function cubOf(n){ return RHYTHM.find(x => x.kind === 'cub' && x.n === n) || null; }
 function cubOpen(S, side){
   const cs = RHYTHM.filter(x => x.kind === 'cub' && rhythmAt(x) <= END_G + 1e-9);
@@ -1789,6 +1892,7 @@ function runTicks(S, g){
     intelClock(S, TICKS[S.tickIdx]);
     aidClock(S, TICKS[S.tickIdx]);
     showClock(S, TICKS[S.tickIdx]);
+    injClock(S, TICKS[S.tickIdx]);
     tick(S, TICKS[S.tickIdx]); S.tickIdx++;
     if (S.step) S.step(S, null);
     if (S.tickIdx >= TICKS.length){
@@ -1797,7 +1901,7 @@ function runTicks(S, g){
       pushLog(S, 'ENDEX', null);
     }
   }
-  if (!S.endex){ contestClock(S, g); intelClock(S, g); aidClock(S, g); showClock(S, g); }
+  if (!S.endex){ contestClock(S, g); intelClock(S, g); aidClock(S, g); showClock(S, g); injClock(S, g); }
 }
 function useUp(S, side, key, e, label){
   if (S.endex){ pushLog(S, SIDES[side].name + ' ' + label + ' refused: the game has ended', side, e, 'rejected'); return false; }
@@ -1931,7 +2035,7 @@ function apply(S, e, cfg){
       break; }
     case 'injq_add': {
       if (!S.injq) S.injq = [];
-      (Array.isArray(p.items) ? p.items : []).forEach(it => { if (!it || typeof it.qid !== 'string' || S.injq.some(q => q.qid === it.qid) || !it.tpl || !it.tpl.text) return; const t = it.tpl; S.injq.push({ qid:it.qid, tid:String(t.id || ''), label:String(t.label || 'Inject').slice(0, 60), to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), text:String(t.text).slice(0, 900), note:String(t.note || '').slice(0, 700), oc:String(t.oc || '').slice(0, 700), mt:mtClean(t.mt), at:Number.isFinite(t.at) ? t.at : null, lvl:Number.isInteger(t.lvl) ? t.lvl : null, sent:null }); });
+      (Array.isArray(p.items) ? p.items : []).forEach(it => { if (!it || typeof it.qid !== 'string' || S.injq.some(q => q.qid === it.qid) || !it.tpl || !it.tpl.text) return; const t = it.tpl; S.injq.push({ qid:it.qid, tid:String(t.id || ''), label:String(t.label || 'Inject').slice(0, 60), to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), text:String(t.text).slice(0, 900), note:String(t.note || '').slice(0, 700), oc:String(t.oc || '').slice(0, 700), mt:mtClean(t.mt), at:Number.isFinite(t.at) ? t.at : null, lvl:Number.isInteger(t.lvl) ? t.lvl : null, sent:null }); Object.assign(S.injq[S.injq.length - 1], winClean(t) || {}); });
       S.ver++; break; }
     case 'injq_del': { if (!S.injq) break; const ix = S.injq.findIndex(q => q.qid === p.qid && q.sent == null); if (ix >= 0){ S.injq.splice(ix, 1); S.ver++; } break; }
     case 'injq_send': {
@@ -1939,9 +2043,12 @@ function apply(S, e, cfg){
       { const hold = propHold(S, 'tpl', q.tid); if (hold.length && !p.ovr){ pushLog(S, 'Inject not sent (' + q.label + '): waiting on props: ' + hold.join(', '), null, e, 'rejected'); break; } if (hold.length) pushLog(S, 'Props override: ' + q.label + ' sent before ' + hold.join(', ') + ' was reported placed', null, e); }
       const text = fillT(p.text ? String(p.text).slice(0, 900) : q.text);
       q.sent = S.g; q.sentText = text; S.ver++;
+      let due = '';
+      if (q.win){ q.res = {}; q.ws = propHold(S, 'tpl', q.tid).length ? null : S.g; if (q.ws != null) due = ' Respond by ' + hhmm(injEnd(q)) + '.';
+        if (q.done === 'acct'){ if (!S.accts) S.accts = []; S.accts.push({ id:'ac-' + q.qid, qid:q.qid, label:q.label, g:S.g, due:q.ws != null ? injEnd(q) : S.g + q.win, to:q.to, reps:{} }); } }
       if (q.mt){ if (!S.mtgts) S.mtgts = []; S.mtgts.push({ id:'mt-' + q.qid, label:q.mt.label, pt:q.mt.pt, grid:q.mt.grid, scene:String(q.mt.scene || (String(q.oc || '').match(/"([^"]{10,400})"/) || [])[1] || '').slice(0, 400), to:q.to === 'public' ? 'both' : q.to, g:S.g, until:Math.min(END_G, S.g + q.mt.life), fix:{}, done:null }); }
       if (q.oc) S.ocAnns.push({ id:'oc-' + e.id, text:q.label + ': ' + fillT(q.oc), g:S.g, side:q.to === 'B' || q.to === 'R' ? q.to : null, inj:true });
-      pushFeed(S, q.to, text, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label });
+      pushFeed(S, q.to, text + due, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label });
       pushLog(S, 'Inject sent (' + q.label + ') to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[q.to] + ': ' + text, null, e);
       break; }
     case 'guess_ack': { const a = (S.guessAlerts || []).find(x => x.id === p.id); if (a){ a.ack = true; S.ver++; } break; }
@@ -2324,7 +2431,7 @@ function apply(S, e, cfg){
       const t = p.tpl || {}, id = String(t.id || '').slice(0, 40), text = String(t.text || '').trim().slice(0, 900), label = String(t.label || '').trim().slice(0, 60);
       if (!/^t[\w-]{3,40}$/.test(id) || !text || !label){ pushLog(S, 'Inject template refused: incomplete', null, e, 'rejected'); break; }
       if (!S.tpls) S.tpls = [];
-      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 700) }; { const oc = String(t.oc || '').trim().slice(0, 700); if (oc) tp.oc = oc; const mt = mtClean(t.mt); if (mt) tp.mt = mt; }
+      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 700) }; { const oc = String(t.oc || '').trim().slice(0, 700); if (oc) tp.oc = oc; const mt = mtClean(t.mt); if (mt) tp.mt = mt; const wc = winClean(t); if (wc) Object.assign(tp, wc); }
       const ix = S.tpls.findIndex(x => x.id === id), ph = String(t.phase || (ix >= 0 && S.tpls[ix].phase) || '').trim().slice(0, 20); if (ph) tp.phase = ph; if (ix >= 0) S.tpls[ix] = tp; else S.tpls.push(tp); S.ver++;
       pushLog(S, 'Inject template ' + (ix >= 0 ? 'updated' : 'saved') + ': ' + label, null, e);
       break; }
@@ -2400,14 +2507,51 @@ function apply(S, e, cfg){
       pushFeed(S, sd, 'The AOC updated your PIRs. ' + pirsOf(S, sd).map((x, i) => x ? 'PIR ' + (i + 1) + ': ' + x : '').filter(Boolean).join(' '), 'hq', { label:'AOC', comm:'msg', priv:true });
       pushLog(S, 'AOC PIRs for ' + SIDES[sd].name + (items ? ' updated' : ' returned to the standing PIRs'), sd, e);
       break; }
+    case 'inj_done': {
+      const q = (S.injq || []).find(x => x.qid === p.qid), sd = p.side; if (!q || !q.win || q.sent == null || (sd !== 'B' && sd !== 'R') || !injSides(q).includes(sd)) break;
+      const st = p.st === 'exc' ? 'exc' : 'done', old = q.res[sd]; if (old && old.st === st) break;
+      injRefund(S, sd, old); q.res[sd] = { st, g:S.g, by:'wf' };
+      if (st === 'done' && q.who === 'any') injSides(q).forEach(o => { if (o !== sd){ injRefund(S, o, q.res[o]); q.res[o] = { st:'na', g:S.g }; } });
+      S.ver++; pushLog(S, 'White Force marked ' + SIDES[sd].name + ' ' + (st === 'exc' ? 'excused from' : 'as having handled') + ' "' + q.label + '"' + (old && old.st === 'miss' ? ' (miss penalty refunded)' : ''), sd, e);
+      if (q.closed == null && injSides(q).every(o => q.res[o])) injClose(S, q, 'marked by the White Force');
+      break; }
+    case 'perstat': {
+      const a = (S.accts || []).find(x => x.id === p.aid); if (!side || !a || S.endex || !(a.to === 'both' || a.to === 'public' || a.to === side)) break;
+      const old = a.reps[side]; if (old && old.status !== 'returned') break;
+      const sum = {}; let bad = '';
+      PERS_KEYS.forEach(([k]) => { const x = Number((p.sum || {})[k]); if (!Number.isInteger(x) || x < 0 || x > 99) bad = 'every total is needed'; sum[k] = x; });
+      if (!bad && (sum.asg < 1 || sum.pdy + sum.cas + sum.una !== sum.asg)) bad = 'present + casualties + unaccounted must equal assigned';
+      const teams = (Array.isArray(p.teams) ? p.teams : []).slice(0, 12).filter(t => t && S.teams[side][t.id]).map(t => ({ id:String(t.id), name:S.teams[side][t.id].name, num:S.teams[side][t.id].num || null, n:Math.max(0, Math.min(20, Math.round(+t.n || 0))), grid:String(t.grid || '').trim().slice(0, 40).toUpperCase(), st:PERSTAT_ST[t.st] ? t.st : 'unk' }));
+      if (!bad && teams.some(t => !t.grid && t.st !== 'unk')) bad = 'every fireteam needs a grid';
+      if (bad){ pushLog(S, nm + ' PERSTAT refused: ' + bad, side, e, 'rejected'); break; }
+      const rep = { id:e.id, g:S.g, first:old ? old.first : S.g, sum, teams, note:String(p.note || '').trim().slice(0, 400), status:'wf', late:S.g > a.due + 1e-9, hist:(old ? old.hist.concat([{ g:old.g, wf:old.wf }]) : []) };
+      a.reps[side] = rep; S.pings.push({ id:'ps-' + e.id, ts:e.ts, g:S.g, to:side, team:null }); S.ver++;
+      pushLog(S, nm + ' sent ' + (old ? 'a corrected ' : '') + 'PERSTAT for "' + a.label + '"' + (rep.late ? ' (late, due ' + hhmm(a.due) + ')' : ' (on time)') + ': assigned ' + sum.asg + ', present ' + sum.pdy + ', casualties ' + sum.cas + ', unaccounted ' + sum.una + '. Silent position request sent to every fireteam.', side, e);
+      break; }
+    case 'perstat_wf': {
+      const a = (S.accts || []).find(x => x.id === p.aid), sd = p.side, r = a && a.reps[sd]; if (!r || r.status !== 'wf') break;
+      const tx = String(p.text || '').trim().slice(0, 300); if (!p.ok && !tx) break;
+      r.wf = { ok:!!p.ok, text:tx, g:S.g }; r.status = p.ok ? 'aoc' : 'returned'; S.ver++;
+      if (!p.ok) pushFeed(S, sd, 'The AOC could not reconcile your PERSTAT: ' + tx + ' Correct it and send it again on the AOC tab.', 'alert', { label:'AOC', comm:'msg', priv:true });
+      pushLog(S, 'White Force ' + (p.ok ? 'approved the ' + SIDES[sd].name + ' PERSTAT and sent it to the AOC' : 'returned the ' + SIDES[sd].name + ' PERSTAT: ' + tx), sd, e);
+      break; }
+    case 'perstat_aoc': {
+      const a = (S.accts || []).find(x => x.id === p.aid), sd = p.side, r = a && a.reps[sd]; if (!r || r.status !== 'aoc') break;
+      const tx = String(p.text || '').trim().slice(0, 300); r.aoc = { text:tx, g:S.g }; r.status = 'ack'; S.ver++;
+      pushFeed(S, sd, 'AOC acknowledged your PERSTAT.' + (tx ? ' ' + tx : ''), 'hq', { label:'AOC', comm:'msg', priv:true });
+      pushLog(S, 'AOC acknowledged the ' + SIDES[sd].name + ' PERSTAT' + (tx ? ': ' + tx : ''), sd, e);
+      break; }
     case 'cub': {
       const x = cubOf(Number(p.n)); if (!side || !x || S.endex) break;
       if (!S.cubs) S.cubs = [];
-      const tx = String(p.text || [p.sit, p.pir, p.risk, p.ask].filter(Boolean).join(' ') || '').trim().slice(0, 1200); if (!tx) break;
+      let tx, ff = null;
+      if (p.f){ const cp = cubCompose(x.n, p.f); if (cp.err){ pushLog(S, nm + ' ' + x.label + ' refused: ' + cp.err, side, e, 'rejected'); break; } tx = cp.text; ff = cp.f; }
+      else tx = String(p.text || [p.sit, p.pir, p.risk, p.ask].filter(Boolean).join(' ') || '').trim().slice(0, 1200);
+      if (!tx) break;
       const old = S.cubs.find(c => c.side === side && c.n === x.n);
-      if (old){ if (old.status !== 'returned') break; old.hist.push({ text:tx, g:S.g }); old.text = tx; old.status = 'sent'; S.ver++; pushLog(S, nm + ' sent an updated ' + x.label.toLowerCase(), side, e); break; }
+      if (old){ if (old.status !== 'returned') break; old.hist.push({ text:tx, g:S.g, f:ff }); old.text = tx; old.f = ff; old.status = 'sent'; S.ver++; pushLog(S, nm + ' sent an updated ' + x.label.toLowerCase(), side, e); break; }
       if (S.g < rhythmAt(x) - CUB_EARLY - 1e-9){ pushLog(S, nm + ' ' + x.label + ' refused: not open until ' + hhmm(rhythmAt(x) - CUB_EARLY), side, e, 'rejected'); break; }
-      const c = { id:e.id, side, n:x.n, g:S.g, due:rhythmAt(x), late:S.g > rhythmAt(x) + CUB_LATE + 1e-9, text:tx, hist:[{ text:tx, g:S.g }], status:'sent', replies:[] };
+      const c = { id:e.id, side, n:x.n, g:S.g, due:rhythmAt(x), late:S.g > rhythmAt(x) + CUB_LATE + 1e-9, text:tx, f:ff, hist:[{ text:tx, g:S.g, f:ff }], status:'sent', replies:[] };
       S.cubs.push(c); S.ver++;
       pushLog(S, nm + ' sent ' + x.label + (c.late ? ' (late, due ' + hhmm(c.due) + ')' : ' (on time)'), side, e);
       break; }
@@ -4306,10 +4450,14 @@ function buildWing(side){
             </div></details>
         </div>
         <div data-pane="aoc" class="stack" hidden>
+          <div class="act" data-psbox hidden><div class="act-head"><b data-pshead>PERSTAT</b><span class="cost" data-psdue></span></div>
+            <p class="small muted" style="margin:0" data-pswhat></p>
+            <form class="stack" data-f="perstat"><input type="hidden" name="aid"><div class="stack" data-psfields></div><div><button class="btn-side" type="submit">Send PERSTAT to the AOC</button></div></form>
+            <div class="list" data-pslist></div></div>
           <div class="act" data-cubbox><div class="act-head"><b data-cubhead>Commander's update brief</b><span class="cost" data-cubdue></span></div>
             <p class="small muted" style="margin:0" data-cubwhat></p>
             <form class="stack" data-f="cub"><input type="hidden" name="n">
-              <label for="cbT-${side}">Your update to the AOC (a paragraph is enough)<textarea id="cbT-${side}" name="text" maxlength="1200" rows="5" required placeholder="Example: We hold Radar Ridge and the Harbor; teams 1 and 3 are at the Airstrip, no casualties. PIR 2: the B6 culvert tip was a lure. Biggest risk: Red Force massing near the Fuel Depot. We need a drone flight over D3 in the next 10 minutes."></textarea></label>
+              <div class="stack" data-cubfields></div>
               <div><button class="btn-side" type="submit">Send update to the AOC</button></div></form></div>
           <div class="act"><div class="act-head"><b>Battle rhythm</b><span class="cost">AOC schedule</span></div><div data-rhythm></div></div>
           <div class="act"><div class="act-head"><b>Ask the AOC for support</b><span class="cost" data-aocres></span></div>
@@ -4401,7 +4549,14 @@ function buildWing(side){
   on('jam', () => { if (!confirm('Jam the enemy datalink? Escalation goes up by 5.')) return false; return writeEvent('act_jam', side, {}); });
   { const sf = $('form[data-f="strike"]', v), sync = () => { const m = sf.elements.target.value === 'militia'; $('[data-skmt]', sf).hidden = !m; sf.elements.grid.required = !m; }; sf.elements.target.addEventListener('change', sync); sf.addEventListener('reset', () => setTimeout(sync)); sync(); }
   on('strike', fd => { const sf = $('form[data-f="strike"]', v), nine = sf.dataset.nine || null; delete sf.dataset.nine; if (fd.get('target') === 'militia'){ const t = (app.S.mtgts || []).find(x => x.id === fd.get('mt')); if (!t){ toast('Pick a militia target.', true); return false; } if (!mtFixed(app.S, t, side)){ toast('That target is not fixed. Fix it with your UAV or a drone flight first.', true); return false; } return writeEvent('act_strike', side, { target:'militia', mt:t.id, grid:t.grid, nine, fix:String(fd.get('fix') || '').trim(), civ:fd.get('civ') }); } return writeEvent('act_strike', side, { target:fd.get('target'), grid:String(fd.get('grid')).toUpperCase(), nine, fix:String(fd.get('fix') || '').trim(), civ:fd.get('civ') }); });
-  on('cub', fd => { const n = Number(fd.get('n')), text = String(fd.get('text') || '').trim(); if (!n){ toast('No update brief is open right now.', true); return false; } if (!text){ toast('Write your update first.', true); return false; } return writeEvent('cub', side, { n, text }); });
+  on('cub', fd => { const n = Number(fd.get('n')); if (!n || !CUB_LINES[n]){ toast('No update brief is open right now.', true); return false; } const f = {}; CUB_LINES[n].forEach(L => { f[L.k] = String(fd.get('f_' + L.k) || '').trim(); }); PERS_KEYS.forEach(([k]) => { const x = fd.get('p_' + k); if (x !== null) f['p_' + k] = x === '' ? NaN : Number(x); }); if (fd.get('rag') !== null) f.rag = fd.get('rag'); const cp = cubCompose(n, f); if (cp.err){ toast('Brief not sent: ' + cp.err + '.', true); return false; } return writeEvent('cub', side, { n, f:cp.f }); });
+  on('perstat', fd => { const aid = String(fd.get('aid') || ''), S = app.S, a = (S.accts || []).find(x => x.id === aid); if (!a){ toast('No PERSTAT is due right now.', true); return false; }
+    const sum = {}; PERS_KEYS.forEach(([k]) => { const x = fd.get('p_' + k); sum[k] = x === '' || x == null ? NaN : Number(x); });
+    if (PERS_KEYS.some(([k]) => !Number.isInteger(sum[k]))){ toast('Fill in every total.', true); return false; }
+    if (sum.pdy + sum.cas + sum.una !== sum.asg){ toast('Present + casualties + unaccounted must equal assigned.', true); return false; }
+    const teams = liveTeams(S, side).map(t => ({ id:t.id, n:Number(fd.get('n_' + t.id) || 0), grid:String(fd.get('g_' + t.id) || '').trim(), st:String(fd.get('s_' + t.id) || 'unk') }));
+    if (teams.some(t => !t.grid && t.st !== 'unk')){ toast('Give a grid for every fireteam, or mark it Unknown.', true); return false; }
+    return writeEvent('perstat', side, { aid, sum, teams, note:String(fd.get('note') || '').trim() }); });
   on('aocreq', fd => { const want = String(fd.get('want') || 'other'), text = String(fd.get('text') || '').trim(); if (want === 'other' && !text){ toast('Say what you need.', true); return false; } return writeEvent('aoc_req', side, { want, text }); });
   v.addEventListener('submit', ev => { const f = ev.target.closest('[data-bda]'); if (!f) return; ev.preventDefault(); writeEvent('bda', side, { req:f.dataset.bda, result:f.elements.result.value, text:f.elements.text.value.trim() }); toast('Damage assessment sent to the AOC.'); });
   v.addEventListener('click', ev => {
@@ -4899,10 +5054,49 @@ function cmdColHTML(s){
       '<form class="stack" data-cmdpirf hidden>' + [1, 2, 3, 4, 5, 6].map(i => '<label>PIR ' + i + '<input name="p' + i + '" maxlength="200"></label>').join('') + '<div class="row"><button type="submit" class="btn-side" style="flex:0 0 auto">Send PIRs</button><button type="button" data-cmdpirreset style="flex:0 0 auto">Restore standing PIRs</button><button type="button" data-cmdcancel style="flex:0 0 auto">Cancel</button></div></form></div>' +
     '</div>';
 }
-function cubText(c){ const h = c.hist || [], r = c.replies || [], out = []; for (let i = 0; i < Math.max(h.length, r.length); i++){ if (h[i]) out.push('<div class="cub-f"><span>' + (i ? 'UPDATE ' : 'SENT ') + hhmm(h[i].g) + '</span>' + esc(h[i].text) + '</div>'); if (r[i]) out.push('<div class="cub-f"><span>AOC ' + hhmm(r[i].g) + ': ' + (r[i].verdict === 'approve' ? 'APPROVED' : r[i].verdict === 'more' ? 'MORE INFO NEEDED' : 'NOT APPROVED') + '</span>' + esc(r[i].text || '') + '</div>'); } return out.join(''); }
+function psFor(S, side){ return (S.accts || []).filter(a => a.to === 'both' || a.to === 'public' || a.to === side); }
+function psOpen(S, side){ if (S.endex) return null; const a = psFor(S, side).slice(-1)[0]; if (!a) return null; const r = a.reps[side]; return (!r || r.status === 'returned') && S.g <= a.due + 20 ? a : null; }
+const PS_STATUS = { wf:['wait', 'With the AOC'], aoc:['wait', 'With the AOC'], ack:['ok', 'Acknowledged by the AOC'], returned:['no', 'Returned by the AOC'] };
+function renderPerstat(S, side, v){
+  const box = $('[data-psbox]', v); if (!box) return;
+  const all = psFor(S, side), a = psOpen(S, side), f = $('form[data-f="perstat"]', box);
+  box.hidden = !all.length; if (!all.length) return;
+  const cur = a || all[all.length - 1], r = cur.reps[side];
+  $('[data-pshead]', box).textContent = cur.label;
+  $('[data-psdue]', box).textContent = 'Due ' + hhmm(cur.due);
+  $('[data-pswhat]', box).textContent = a ? (r ? 'The AOC returned it: ' + ((r.wf || {}).text || '') + ' Correct it and send it again.' : 'The AOC needs your accountability now: totals for the whole force, then every fireteam’s grid, headcount and status. Get them from your teams on the LMR net. Due ' + hhmm(a.due) + '.') : r ? 'Sent at ' + hhmm(r.g) + (r.late ? ' (late).' : '.') : 'Not sent. The window closed at ' + hhmm(cur.due) + '.';
+  f.hidden = !a;
+  if (a){ const ts = liveTeams(S, side), key = a.id + '|' + (r ? r.id : '') + '|' + ts.map(t => t.id).join();
+    const fl = $('[data-psfields]', f); if (fl.dataset.k !== key && !typingIn(fl)){ fl.dataset.k = key; f.elements.aid.value = a.id;
+      fl.innerHTML = '<fieldset class="cub-pers"><legend>Force totals</legend><div class="row">' + PERS_KEYS.map(([k, l]) => '<label for="ps' + k + '-' + side + '">' + l + '<input id="ps' + k + '-' + side + '" name="p_' + k + '" type="number" inputmode="numeric" min="0" max="99" required></label>').join('') + '</div><p class="small muted" style="margin:0">Present + casualties + unaccounted must equal assigned.</p></fieldset>' +
+        '<fieldset class="cub-pers"><legend>Fireteams</legend>' + (ts.length ? ts.map(t => '<div class="row" style="align-items:end"><b style="flex:1 1 120px">' + esc((t.num ? '#' + t.num + ' ' : '') + t.name) + '</b><label for="psn' + t.id + '" style="flex:0 0 90px">Cadets<input id="psn' + t.id + '" name="n_' + t.id + '" type="number" inputmode="numeric" min="0" max="20"></label><label for="psg' + t.id + '" style="flex:1 1 150px">Grid<input id="psg' + t.id + '" name="g_' + t.id + '" maxlength="40" autocomplete="off" placeholder="Example: 5964 2203"></label><label for="pss' + t.id + '" style="flex:1 1 140px">Status<select id="pss' + t.id + '" name="s_' + t.id + '">' + Object.keys(PERSTAT_ST).map(k => '<option value="' + k + '">' + PERSTAT_ST[k] + '</option>').join('') + '</select></label></div>').join('') : '<p class="small muted" style="margin:0">No fireteams have signed in.</p>') + '</fieldset>' +
+        '<label for="psnote-' + side + '">Remarks: anyone unaccounted for, casualties, equipment missing<textarea id="psnote-' + side + '" name="note" rows="2" maxlength="400"></textarea></label>';
+      if (r){ PERS_KEYS.forEach(([k]) => { const el = f.elements['p_' + k]; if (el) el.value = r.sum[k]; }); r.teams.forEach(t => { if (f.elements['n_' + t.id]) f.elements['n_' + t.id].value = t.n; if (f.elements['g_' + t.id]) f.elements['g_' + t.id].value = t.grid; if (f.elements['s_' + t.id]) f.elements['s_' + t.id].value = t.st; }); f.elements.note.value = r.note || ''; } } }
+  const h = all.slice().reverse().map(x => { const q = x.reps[side], st = q ? PS_STATUS[q.status] : ['no', S.g > x.due ? 'Missed' : 'Not sent'];
+    return '<div class="li"><div class="grow"><b>' + esc(x.label) + '</b> <span class="small muted">due ' + hhmm(x.due) + (q ? ', sent ' + hhmm(q.g) + (q.late ? ' (late)' : '') : '') + '</span>' + (q && q.aoc && q.aoc.text ? '<div class="small">AOC: ' + esc(q.aoc.text) + '</div>' : '') + '</div><span class="chip ' + st[0] + '">' + st[1] + '</span></div>'; }).join(''), el = $('[data-pslist]', box);
+  if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; }
+}
+function psCheckHTML(S, a, sd, noGps){
+  const r = a.reps[sd], M = mapCfg(S);
+  const rows = r.teams.map(t => { const tm = S.teams[sd][t.id], L = tm && tm.last, pt = locate(M, t.grid), gps = L && L.gps, d = pt && gps ? distM(pt, gps) : null, age = L ? Math.round(S.g - L.g) : null, fresh = L && L.g >= r.g - 1e-9;
+    const ok = d != null && d <= 250, cls = d == null ? 'wait' : ok ? 'ok' : 'no';
+    return '<div class="small" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><b>' + esc((t.num ? '#' + t.num + ' ' : '') + t.name) + '</b><span>' + t.n + ' cadets, ' + esc(PERSTAT_ST[t.st]) + ', reported <span class="mono">' + esc(t.grid || 'no grid') + '</span></span>' + (noGps ? '' : '<span class="chip ' + cls + '">' + (d == null ? (gps && !pt ? 'Grid not readable' : 'No GPS fix') : d + ' m from GPS') + '</span>' + (L ? '<span class="muted">GPS ' + (fresh ? 'answered the position request' : age + ' min old') + '</span>' : '')) + '</div>'; }).join('');
+  const missing = liveTeams(S, sd).filter(t => !r.teams.some(x => x.id === t.id)).map(t => t.name);
+  if (noGps) return '<div class="small">Assigned ' + r.sum.asg + ', present ' + r.sum.pdy + ', casualties ' + r.sum.cas + ', unaccounted ' + r.sum.una + '</div>' + rows + (r.note ? '<div class="small">Remarks: ' + esc(r.note) + '</div>' : '');
+  return '<div class="small">Assigned ' + r.sum.asg + ', present ' + r.sum.pdy + ', casualties ' + r.sum.cas + ', unaccounted ' + r.sum.una + (r.late ? ' <span class="chip no">late, due ' + hhmm(a.due) + '</span>' : ' <span class="chip ok">on time</span>') + '</div>' + rows + (missing.length ? '<div class="small">Not on the report: ' + esc(missing.join(', ')) + '</div>' : '') + (r.note ? '<div class="small">Remarks: ' + esc(r.note) + '</div>' : '');
+}
+function cubFieldsHTML(n, side){
+  return CUB_LINES[n].map((L, i) => { const id = 'cb' + L.k + '-' + side, lab = (i + 1) + '. ' + L.l;
+    if (L.kind === 'pers') return '<fieldset class="cub-pers"><legend>' + esc(lab) + '</legend><div class="row">' + PERS_KEYS.map(([k, l]) => '<label for="' + id + k + '">' + l + '<input id="' + id + k + '" name="p_' + k + '" type="number" inputmode="numeric" min="0" max="99" required></label>').join('') + '</div><p class="small muted" style="margin:0">Present + casualties + unaccounted must equal assigned.</p><label for="' + id + '">' + esc(L.h) + '<textarea id="' + id + '" name="f_' + L.k + '" rows="3" maxlength="600" required></textarea></label></fieldset>';
+    if (L.kind === 'rag') return '<fieldset class="cub-pers"><legend>' + esc(lab) + '</legend><div class="row"><label for="' + id + 'r">Assessment<select id="' + id + 'r" name="rag" required><option value="">Choose</option>' + RAG.map(r => '<option>' + r + '</option>').join('') + '</select></label></div><label for="' + id + '">' + esc(L.h) + '<textarea id="' + id + '" name="f_' + L.k + '" rows="2" maxlength="600" required></textarea></label></fieldset>';
+    return '<label for="' + id + '"><b>' + esc(lab) + '</b><span class="small muted">' + esc(L.h) + '</span><textarea id="' + id + '" name="f_' + L.k + '" rows="' + (L.min >= 40 ? 3 : 2) + '" maxlength="600" required></textarea></label>';
+  }).join('');
+}
+function cubText(c){ const h = c.hist || [], r = c.replies || [], out = []; for (let i = 0; i < Math.max(h.length, r.length); i++){ if (h[i]) out.push('<div class="cub-f"><span>' + (i ? 'UPDATE ' : 'SENT ') + hhmm(h[i].g) + '</span><div class="cub-tx">' + esc(h[i].text) + '</div></div>'); if (r[i]) out.push('<div class="cub-f"><span>AOC ' + hhmm(r[i].g) + ': ' + (r[i].verdict === 'approve' ? 'APPROVED' : r[i].verdict === 'more' ? 'MORE INFO NEEDED' : 'NOT APPROVED') + '</span>' + esc(r[i].text || '') + '</div>'); } return out.join(''); }
 function cmdWaitHTML(S, s){
   const o = SIDES[OTHER[s]].name, out = [];
   (S.cubs || []).filter(c => c.side === s && c.status === 'sent').forEach(c => out.push({ g:c.hist[c.hist.length - 1].g, h:'<div class="cmd-item"><span class="k">' + esc(cubOf(c.n).label) + (c.late ? ' (late)' : '') + '</span>' + cubText(c) + '<div class="row"><label>Note to ' + SIDES[s].name + ' (needed to deny or ask for more)<input data-cmdnote maxlength="500"></label></div><div class="row"><button type="button" class="btn-side" data-cmdcub="' + c.id + '" data-v="approve" style="flex:0 0 auto">Approve</button><button type="button" data-cmdcub="' + c.id + '" data-v="more" style="flex:0 0 auto">Ask for more info</button><button type="button" data-cmdcub="' + c.id + '" data-v="deny" style="flex:0 0 auto">Deny</button></div></div>' }));
+  (S.accts || []).forEach(a => { const r = a.reps[s]; if (!r || r.status !== 'aoc') return; out.push({ g:r.wf ? r.wf.g : r.g, h:'<div class="cmd-item"><span class="k">PERSTAT ' + hhmm(r.g) + (r.late ? ' (late)' : '') + '</span><b>' + esc(a.label) + '</b>' + psCheckHTML(S, a, s, true) + '<div class="row"><label>Note to ' + SIDES[s].name + '<input data-cmdnote maxlength="300"></label><button type="button" class="btn-side" data-cmdps="' + a.id + '" style="flex:0 0 auto">Acknowledge</button></div></div>' }); });
   (S.aocReqs || []).filter(r => r.side === s && r.status === 'open').forEach(r => out.push({ g:r.g, h:'<div class="cmd-item"><span class="k">Request ' + hhmm(r.g) + '</span><b>' + esc(AOC_WANT[r.want]) + '</b>' + (r.text ? '<span>' + esc(r.text) + '</span>' : '') +
     '<div class="row"><label>Grant as<select data-cmdkind>' + Object.keys(AOC_GRANT).concat('reply').map(k => '<option value="' + k + '"' + (k === r.want || (k === 'reply' && !AOC_GRANT[r.want]) ? ' selected' : '') + '>' + (k === 'reply' ? 'Written answer only (no resource used)' : AOC_WANT[k]) + '</option>').join('') + '</select></label><label>Note<input data-cmdnote maxlength="300"></label><button type="button" class="btn-side" data-cmdreq="' + r.id + '" data-ok="1" style="flex:0 0 auto">Grant</button><button type="button" data-cmdreq="' + r.id + '" data-ok="0" style="flex:0 0 auto">Decline</button></div></div>' }));
   S.requests.filter(r => r.side === s && r.kind === 'strike' && r.status === 'nom').forEach(r => out.push({ g:r.g, h:'<div class="cmd-item"><span class="k">Strike nomination ' + hhmm(r.g) + '</span><b>Strike on ' + esc(o) + ' at ' + esc(r.text || '?') + '</b><span>Fixed by: ' + esc(r.fix || 'Not stated') + ' | Civilians near the target: ' + esc(r.civ || 'unknown') + ' | 9-line: ' + (r.nineBy ? 'checked by ' + esc(r.nineBy) : 'not yet checked') + '</span><span class="small muted">Approving sends it to the White Force to rule on the 9-line. A strike on ' + esc(o) + ' adds +' + ESC.strikewing + ' escalation and costs diplomatic points.</span>' +
@@ -4943,6 +5137,8 @@ function wireCmd(v){
     if (b){ const it = b.closest('.cmd-item'), ok = b.dataset.ok === '1'; if (ok){ const kd = $('[data-cmdkind]', it).value; if (kd === 'reply' && !note(b)){ toast('Type the answer in Note first.'); return; } writeEvent('aoc_grant', null, { side:s, req:b.dataset.cmdreq, kind:kd, text:note(b) }); } else writeEvent('aoc_grant', null, { side:s, req:b.dataset.cmdreq, deny:true, text:note(b) }); toast(ok ? 'Granted.' : 'Declined.'); return; }
     b = ev.target.closest('[data-cmdnom]');
     if (b){ const ok = b.dataset.ok === '1'; if (ok && !confirm('Approve this strike on ' + SIDES[OTHER[s]].name + '? It adds +' + ESC.strikewing + ' escalation if the White Force rules the 9-line correct.')) return; writeEvent('aoc_nom', null, { req:b.dataset.cmdnom, ok, text:note(b) }); toast(ok ? 'Strike approved. The White Force rules on the 9-line.' : 'Strike denied. Their strike is not used.'); return; }
+    b = ev.target.closest('[data-cmdps]');
+    if (b){ writeEvent('perstat_aoc', null, { aid:b.dataset.cmdps, side:s, text:note(b) }); toast('PERSTAT acknowledged.'); return; }
     b = ev.target.closest('[data-cmdcub]');
     if (b){ const t = note(b), vd = b.dataset.v; if (vd !== 'approve' && !t){ toast('Write a note saying what you need first.', true); return; } writeEvent('cub_reply', null, { id:b.dataset.cmdcub, verdict:vd, text:t }); toast(vd === 'approve' ? 'Brief approved.' : 'Sent back to ' + SIDES[s].name + '.'); return; }
     b = ev.target.closest('[data-cmdcap]');
@@ -4978,7 +5174,9 @@ function renderAocPane(S, side, v){
     const last = c && c.reply ? ' AOC: ' + c.reply.text : '';
     $('[data-cubwhat]', v).textContent = !cb ? (nx ? 'No brief is due. ' + nx.label + ' opens at ' + hhmm(rhythmAt(nx) - CUB_EARLY) + '.' : 'No more update briefs are scheduled.') : !c ? cb.what + ' On time if sent by ' + hhmm(rhythmAt(cb) + CUB_LATE) + '.' : c.status === 'sent' ? 'Sent at ' + hhmm(c.hist[c.hist.length - 1].g) + '. The AOC will approve it, deny it or ask for more. Nothing else waits on it.' : (c.reply && c.reply.verdict === 'more' ? 'The AOC needs more before it approves.' : 'The AOC did not approve it.') + last + ' Send an updated brief below.'; }
   f.hidden = !canSend; if (cb && f.elements.n.value !== String(cb.n)) f.elements.n.value = String(cb.n);
-  { const ce = $('[data-cnaoc]', v), nOpen = (canSend ? 1 : 0) + S.requests.filter(r => r.side === side && r.kind === 'strike' && r.result === 'hit' && !r.bda).length; if (ce){ ce.hidden = !nOpen; ce.textContent = nOpen; } }
+  renderPerstat(S, side, v);
+  if (canSend){ const box = $('[data-cubfields]', f), key = cb.n + '|' + (c ? c.id + c.hist.length : ''); if (box.dataset.k !== key){ box.dataset.k = key; box.innerHTML = cubFieldsHTML(cb.n, side); const pf = c && c.f; if (pf) Object.keys(pf).forEach(k => { const el = f.elements[k === 'rag' ? 'rag' : /^p_/.test(k) ? k : 'f_' + k]; if (el) el.value = pf[k]; }); } }
+  { const ce = $('[data-cnaoc]', v), nOpen = (canSend ? 1 : 0) + (psOpen(S, side) ? 1 : 0) + S.requests.filter(r => r.side === side && r.kind === 'strike' && r.result === 'hit' && !r.bda).length; if (ce){ ce.hidden = !nOpen; ce.textContent = nOpen; } }
   { const h = rhythmHTML(S, side), e = $('[data-rhythm]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
   { const r = aocResOf(S, side); $('[data-aocres]', v).textContent = 'AOC holds for you: ISR retasks ' + r.isr + ' | support ' + r.sup; }
   { const rs = (S.aocReqs || []).filter(r => r.side === side).slice(-8).reverse(), h = rs.length ? rs.map(r => '<div class="li"><div class="grow"><b>' + esc(AOC_WANT[r.want]) + '</b> <span class="small muted">' + hhmm(r.g) + '</span>' + (r.text ? '<div class="small">' + esc(r.text) + '</div>' : '') + (r.answer ? '<div class="small muted">AOC: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : r.status === 'ok' ? 'ok' : 'no') + '">' + (r.status === 'open' ? 'With the AOC' : r.status === 'ok' ? 'Granted' : 'Declined') + '</span></div>').join('') : '', e = $('[data-aocreqs]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
@@ -5049,20 +5247,21 @@ document.addEventListener('click', ev => {
 /* ---------- props ---------- */
 function propItems(S){
   const out = {};
-  (S.tpls || []).forEach(t => { const sent = (S.injq || []).filter(q => q.tid === t.id && q.sent != null).map(q => q.sent); out['tpl:' + t.id] = { kind:'tpl', id:t.id, label:t.label, at:t.at != null ? START_G + t.at : null, lvl:t.lvl, sent:sent.length ? Math.min(...sent) : null }; });
+  (S.tpls || []).forEach(t => { const qs = (S.injq || []).filter(q => q.tid === t.id && q.sent != null), sent = qs.map(q => q.sent), cl = qs.filter(q => q.closed != null).map(q => q.closed); out['tpl:' + t.id] = { kind:'tpl', id:t.id, label:t.label, at:t.at != null ? START_G + t.at : null, lvl:t.lvl, sent:sent.length ? Math.min(...sent) : null, closed:cl.length ? Math.max(...cl) : null }; });
   allProblems(S).forEach((P, i) => { const o = S.intelOut[P.id] || {}, gs = ['B', 'R'].map(sd => o[sd] && o[sd].g).filter(x => x != null); out['pkg:' + P.id] = { kind:'pkg', id:P.id, label:'Intel ' + (i + 1) + ': ' + fillT(P.title), at:P.at != null ? START_G + P.at : null, lvl:null, sent:gs.length ? Math.min(...gs) : null }; });
   return out;
 }
 function propSched(S){
   const items = propItems(S), rows = Object.values(S.propUses || {}).map(u => { const it = items[u.kind + ':' + u.item] || null, st = (S.propSt || {})[u.id] || {}, base = it ? (it.sent != null ? it.sent : it.at) : null;
-    return { u, it, st, claim:(S.propClaim || {})[u.id] || null, prop:(S.props || {})[u.prop] || { name:'Prop' }, placeBy:base != null ? base - u.lead : null, useAt:base, recAfter:base != null ? base + u.keep : null, state:st.rec != null ? 'done' : st.placed != null ? 'out' : 'todo' }; });
+    return { u, it, st, claim:(S.propClaim || {})[u.id] || null, prop:(S.props || {})[u.prop] || { name:'Prop' }, placeBy:base != null ? base - u.lead : null, useAt:base, recAfter:it && it.closed != null ? Math.min(it.closed, base + u.keep) : base != null ? base + u.keep : null, recNow:!!(it && it.closed != null && st.placed != null && st.rec == null), state:st.rec != null ? 'done' : st.placed != null ? 'out' : 'todo' }; });
   rows.sort((a, b) => ((!a.it) - (!b.it)) || ((a.placeBy == null) - (b.placeBy == null)) || ((a.placeBy || 0) - (b.placeBy || 0)));
   const byProp = {}; rows.forEach(r => (byProp[r.u.prop] = byProp[r.u.prop] || []).push(r));
   Object.values(byProp).forEach(list => { const tm = list.filter(r => r.placeBy != null); for (let i = 1; i < tm.length; i++) if (tm[i].placeBy < tm[i - 1].recAfter) tm[i].clash = tm[i - 1]; });
   return rows;
 }
 function propChip(S, kind, id){ const all = Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id); if (!all.length) return ''; const n = all.filter(u => propLive(S, u)).length; return n === all.length ? '<span class="chip ok">Props ready</span>' : '<span class="chip wait">Props ' + n + ' of ' + all.length + ' placed</span>'; }
-function propLockHTML(S, kind, id, normal, ovrAttrs){ const hold = propHold(S, kind, id); if (!hold.length) return normal; return '<span class="chip wait" style="flex:0 0 auto" title="' + esc('Waiting on: ' + hold.join(', ')) + '">Waiting on ' + hold.length + ' prop' + (hold.length === 1 ? '' : 's') + '</span><button type="button" ' + ovrAttrs + ' style="flex:0 0 auto">Override</button>'; }
+function propWaitText(S, kind, id){ return Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id && !propLive(S, u)).map(u => { const c = (S.propClaim || {})[u.id]; return ((S.props || {})[u.prop] || {}).name + (u.label ? ' (' + u.label + ')' : '') + (c ? ', claimed by ' + c.name + ' at ' + hhmm(c.g) : ', not claimed by the props team'); }).join('; '); }
+function propLockHTML(S, kind, id, normal, ovrAttrs){ const hold = propHold(S, kind, id); if (!hold.length) return normal; return '<span class="chip wait" style="flex:0 0 auto" title="' + esc('Waiting on: ' + propWaitText(S, kind, id)) + '">Waiting on ' + hold.length + ' prop' + (hold.length === 1 ? '' : 's') + (Object.values(S.propUses || {}).some(u => u.kind === kind && u.item === id && !propLive(S, u) && (S.propClaim || {})[u.id]) ? ' (claimed)' : ' (not claimed)') + '</span><button type="button" ' + ovrAttrs + ' style="flex:0 0 auto">Override</button>'; }
 function propWhere(S, r){ const M = mapCfg(S), pt = r.u.pt, sq = pt && squareOf(M, pt); return (r.u.loc || (pt ? fmtPt(pt) : 'No location')) + (sq && r.u.loc ? ' - Square ' + sq : ''); }
 function propLocate(S, text){
   const t = String(text || '').trim(); if (!t) return null; const M = mapCfg(S), pts = Object.assign({}, (M && M.sites) || {}, S.sitePts || {}), lo = t.toLowerCase();
@@ -5228,7 +5427,7 @@ function renderProps(S){
   const claimB = r => r.claim && r.claim.oc === me.id ? '<button type="button" data-prclaim="' + esc(r.u.id) + '" data-release="1">Release</button>' : '<button type="button" data-prclaim="' + esc(r.u.id) + '">' + (r.claim ? 'Take over' : 'Claim') + '</button>';
   const goB = (r, pt) => '<button type="button" data-prgo="' + esc(r.u.id) + '" aria-pressed="' + (app.propNav === r.u.id) + '"' + (pt ? '' : ' disabled') + '>' + (app.propNav === r.u.id ? 'Hide on map' : 'Show on map') + '</button>';
   const card = r => '<div class="pr-card' + cls(r) + '" data-prcard><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span><b>' + esc(due(r)) + '</b></span><span>For ' + esc(r.it ? r.it.label : '?') + (r.useAt != null ? ' at ' + hhmm(r.useAt) : '') + '</span></div><div class="small">Where: ' + esc(propWhere(S, r)) + '</div>' + (r.u.note ? '<div class="small">Note: ' + esc(r.u.note) + '</div>' : '') + (r.clash ? '<div class="small pr-clash">Still out for ' + esc(r.clash.it ? r.clash.it.label : 'another use') + ' until ' + hhmm(r.clash.recAfter) + '. Recover it first.</div>' : '') + (r.prop.home ? '<div class="small muted">Stored at ' + esc(r.prop.home) + '</div>' : '') + claimH(r) + '<input data-prnote maxlength="200" placeholder="Note (optional): where exactly, any problem">' + '<div class="pr-btns">' + claimB(r) + goB(r, r.u.pt) + '</div><button type="button" class="btn-side team-big" data-prplace="' + esc(r.u.id) + '">Placed</button></div>';
-  const oc = r => '<div class="pr-card' + (r.recAfter != null && S.g > r.recAfter ? ' soon' : '') + '"><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span>Placed ' + hhmm(r.st.placed) + (r.st.acc ? ' - GPS ±' + r.st.acc + ' m' : '') + '</span><span>' + (r.recAfter != null ? 'Recover after ' + hhmm(r.recAfter) : 'Recover when told') + '</span></div><div class="small">For ' + esc(r.it ? r.it.label : '?') + (r.st.name ? ' - placed by ' + esc(r.st.name) : '') + '</div>' + claimH(r) + '<div class="pr-btns">' + claimB(r) + goB(r, r.st.pt || r.u.pt) + '</div><button type="button" class="btn-side team-big" data-prrec="' + esc(r.u.id) + '">Recovered</button></div>';
+  const oc = r => '<div class="pr-card' + (r.recAfter != null && S.g > r.recAfter ? ' soon' : '') + '"><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span>Placed ' + hhmm(r.st.placed) + (r.st.acc ? ' - GPS ±' + r.st.acc + ' m' : '') + '</span><span>' + (r.recNow ? '<b>Recover now: the inject closed at ' + hhmm(r.it.closed) + '</b>' : r.recAfter != null ? 'Recover after ' + hhmm(r.recAfter) : 'Recover when told') + '</span></div><div class="small">For ' + esc(r.it ? r.it.label : '?') + (r.st.name ? ' - placed by ' + esc(r.st.name) : '') + '</div>' + claimH(r) + '<div class="pr-btns">' + claimB(r) + goB(r, r.st.pt || r.u.pt) + '</div><button type="button" class="btn-side team-big" data-prrec="' + esc(r.u.id) + '">Recovered</button></div>';
   const tb = $('[data-prtodo]', v), th = todo.length ? todo.map(card).join('') : '<div class="empty">Nothing left to place.</div>';
   if (tb.dataset.h !== th && !typingIn(tb)){ tb.dataset.h = th; tb.innerHTML = th; }
   $('[data-prtodon]', v).textContent = todo.length ? todo.length + ' to go' : '';
@@ -5497,6 +5696,9 @@ function buildWhite(){
           <p class="small muted" style="margin:0">Queued injects wait here until you send them. Tap a row to read the message and the White Force note.</p>
           <div class="row" style="justify-content:flex-start"><button type="button" data-injqall style="flex:0 0 auto">Queue all timed templates</button><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-injqsent> Show sent</label></div>
           <div class="list scrolllist" data-injq></div></div>
+        <div class="panel" data-sec="msg"><div class="act-head"><h2>Response windows</h2><span class="small muted" data-injwn></span></div>
+          <p class="small muted" style="margin:0">A timed inject's clock starts when it is sent, or when its last prop is reported placed. Most close on their own when a POC call or a board action shows the force responded. At the deadline the inject closes, a force that did not respond is recorded as missed (with the penalty shown) and its props are flagged for recovery. Mark a force handled or excused here at any time; a miss penalty is refunded.</p>
+          <div class="list scrolllist" data-injwin></div></div>
         <div class="panel" data-sec="msg"><details data-tpldet><summary><b>Inject templates</b> <span class="small muted" data-tpln></span></summary>
           <p class="small muted" style="margin:6px 0">Use fills the message box so you can edit before sending. Queue adds the template to the inject queue. Highlighted encounter injects apply at the current escalation level.</p>
           <div class="list scrolllist" data-templates></div></details></div>
@@ -5568,6 +5770,7 @@ function buildWhite(){
           <div class="row"><label for="tplLabel">Name<input id="tplLabel" name="label" maxlength="60" required placeholder="Example: IED tip (Blue Force)"></label><label for="tplTo" style="flex:0 0 160px">To<select id="tplTo" name="to"><option value="both">Both wings</option><option value="B">Blue Force only</option><option value="R">Red Force only</option><option value="public">Public screen</option></select></label><label for="tplFrom" style="flex:0 0 200px">From<input id="tplFrom" name="from" maxlength="30" value="AOC"></label></div>
           <label for="tplText">Message<textarea id="tplText" name="text" maxlength="900" required placeholder="Example: Locals saw men burying something on your supply road. Check it before your next move."></textarea></label>
           <div class="row"><label for="tplAt" style="flex:0 0 200px">Planned time (minutes after STARTEX)<input id="tplAt" name="at" type="number" min="0" max="300" placeholder="Optional"></label><label for="tplLvl" style="flex:0 0 220px">Or send at escalation level<select id="tplLvl" name="lvl"><option value="">No level</option><option value="1">Tension or higher</option><option value="2">Crisis or higher</option><option value="3">Brink or higher</option></select></label><label for="tplNote">White Force note (only the White Force sees it)<input id="tplNote" name="note" maxlength="700" placeholder="Optional: what the POCs need to set up"></label></div>
+          <div class="row" style="align-items:end"><label for="tplWin" style="flex:0 0 150px">Response window (minutes)<input id="tplWin" name="win" type="number" min="0" max="120" placeholder="Untimed"></label><label for="tplWho" style="flex:0 0 190px">Who must respond<select id="tplWho" name="who"><option value="each">Each force it goes to</option><option value="any">First force closes it</option></select></label><label for="tplDone">Handled when<select id="tplDone" name="done">${Object.keys(WIN_DONE).map(k => '<option value="' + k + '">' + WIN_DONE[k] + '</option>').join('')}</select></label><label for="tplMp" style="flex:0 0 110px">Miss: points −<input id="tplMp" name="mpts" type="number" min="0" max="20" placeholder="0"></label><label for="tplMh" style="flex:0 0 130px">Miss: diplomatic −<input id="tplMh" name="mhn" type="number" min="0" max="20" placeholder="0"></label></div>
           <label for="tplOc">POC brief (optional): what the fireteam's POC reads to the team on arrival<textarea id="tplOc" name="oc" maxlength="700" rows="2" placeholder="Example: Three casualties near the fuel store. Casualty 1: heavy bleeding from the left thigh..."></textarea></label>
           <div class="stack"><b class="small">Props for this inject</b><div class="pe" data-pe="tpl"></div></div>
           <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto" data-tplsave>Save template</button><button type="button" data-tplclear style="flex:0 0 auto">Clear</button><span class="small muted" data-tplmode></span></div>
@@ -5613,25 +5816,26 @@ function buildWhite(){
     if (k === 'resume') writeEvent('clock_resume', null, {});
     if (k === 'reveal') writeEvent('reveal', null, { on:!(app.S && app.S.reveal) });
   });
-  { const tf = $('[data-tplf]', v), tplClear = () => { tf.reset(); tf.dataset.id = ''; tf.dataset.phase = ''; $('[data-tplmode]', v).textContent = ''; peSet('tpl', []); };
+  { const tf = $('[data-tplf]', v), tplWinSet = t => { tf.win.value = t.win || ''; tf.who.value = t.who === 'any' ? 'any' : 'each'; tf.done.value = WIN_DONE[t.done] ? t.done : 'manual'; tf.mpts.value = (t.miss && t.miss.pts) || ''; tf.mhn.value = (t.miss && t.miss.hn) || ''; }, tplClear = () => { tf.reset(); tf.dataset.id = ''; tf.dataset.phase = ''; $('[data-tplmode]', v).textContent = ''; peSet('tpl', []); };
     tf.addEventListener('submit', async ev => { ev.preventDefault(); const fd = new FormData(tf), at = String(fd.get('at') || '').trim(), lvl = String(fd.get('lvl') || '');
-      const tpl = { id:tf.dataset.id || ('t' + uid()), label:String(fd.get('label') || '').trim(), to:fd.get('to'), from:hqFrom(fd.get('from')), text:String(fd.get('text') || '').trim(), at:at === '' ? null : +at, lvl:lvl === '' ? null : +lvl, note:String(fd.get('note') || '').trim(), oc:String(fd.get('oc') || '').trim(), phase:tf.dataset.phase || '' };
+      const tpl = { id:tf.dataset.id || ('t' + uid()), label:String(fd.get('label') || '').trim(), to:fd.get('to'), from:hqFrom(fd.get('from')), text:String(fd.get('text') || '').trim(), at:at === '' ? null : +at, lvl:lvl === '' ? null : +lvl, note:String(fd.get('note') || '').trim(), oc:String(fd.get('oc') || '').trim(), phase:tf.dataset.phase || '', win:+fd.get('win') || 0, who:fd.get('who'), done:fd.get('done'), miss:{ pts:+fd.get('mpts') || 0, hn:+fd.get('mhn') || 0 } };
+      { const old = (app.S.tpls || []).find(x => x.id === tf.dataset.id); if (old && old.mt) tpl.mt = old.mt; }
       if (!tpl.label || !tpl.text){ toast('Add a name and a message.', true); return; }
       await writeEvent('tpl_save', null, { tpl }); await peSave('tpl', tpl.id); toast(tf.dataset.id ? 'Template updated.' : 'Template saved. It is under Send a message.'); tplClear(); });
     $('[data-tplclear]', v).onclick = tplClear;
-    $('[data-tplload]', v).onclick = () => { const i = $('[data-tplsrc]', v).value, t = TEMPLATES[+i]; if (i === '' || !t) { tplClear(); return; } tplClear(); tf.dataset.phase = t.phase || ''; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; if (tf.oc) tf.oc.value = t.oc || ''; $('[data-tplmode]', v).textContent = 'New template from the sample. Edit it, then save.'; };
+    $('[data-tplload]', v).onclick = () => { const i = $('[data-tplsrc]', v).value, t = TEMPLATES[+i]; if (i === '' || !t) { tplClear(); return; } tplClear(); tf.dataset.phase = t.phase || ''; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; if (tf.oc) tf.oc.value = t.oc || ''; tplWinSet(t); $('[data-tplmode]', v).textContent = 'New template from the sample. Edit it, then save.'; };
     $('[data-tplall]', v).onclick = async () => { const have = new Set((app.S.tpls || []).map(t => t.id)), todo = TEMPLATES.map((t, i) => Object.assign({ id:'tsample-' + i }, t)).filter(t => !have.has(t.id));
       if (!todo.length){ toast('All sample templates are already in this game.'); return; }
       if (!confirm('Add ' + todo.length + ' sample template' + (todo.length === 1 ? '' : 's') + ' to this game? Each can be edited or deleted afterward.')) return;
       for (const tpl of todo) await writeEvent('tpl_save', null, { tpl }); toast('Added ' + todo.length + ' template' + (todo.length === 1 ? '' : 's') + '.'); };
     $('[data-tpllist]', v).addEventListener('click', ev => { const e = ev.target.closest('[data-tpledit]'), d = ev.target.closest('[data-tpldel]'), S = app.S;
-      if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; if (tf.oc) tf.oc.value = t.oc || ''; peSet('tpl', peOf(S, 'tpl', t.id)); $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
+      if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; if (tf.oc) tf.oc.value = t.oc || ''; tplWinSet(t); peSet('tpl', peOf(S, 'tpl', t.id)); $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
       if (d){ const t = (S.tpls || []).find(x => x.id === d.dataset.tpldel); if (t && confirm('Delete the template "' + t.label + '"?')) writeEvent('tpl_del', null, { id:t.id }); } });
     $('[data-crexport]', v).onclick = crExport;
     $('#crImport', v).onchange = () => { const fl = Array.from($('#crImport', v).files); $('#crImport', v).value = ''; if (fl.length) crImport(fl); };
     $('#crCombine', v).onchange = () => { const fl = Array.from($('#crCombine', v).files); $('#crCombine', v).value = ''; if (fl.length) crCombine(fl); }; }
   const useTpl = t => { const f = $('form[data-wf="msg"]', v); f.to.value = t.to; f.label.value = hqFrom(t.from); f.text.value = fillT(t.text); f.scrollIntoView({ behavior:'smooth', block:'center' }); f.text.focus(); };
-  const qItem = t => ({ qid:'q' + uid(), tpl:{ id:t.id, label:t.label, to:t.to, from:t.from, text:t.text, note:t.note, at:t.at, lvl:t.lvl } });
+  const qItem = t => ({ qid:'q' + uid(), tpl:Object.assign({}, t) });
   $('[data-templates]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-tpl]'), q = ev.target.closest('[data-tplq]'); const k = b ? b.dataset.tpl : q ? q.dataset.tplq : null; if (k == null) return; const t = allTemplates(app.S)[+k]; if (!t) return; if (b) useTpl(t); else { writeEvent('injq_add', null, { items:[qItem(t)] }); toast('Queued: ' + t.label + '.'); } });
   $('[data-injqall]', v).onclick = () => { const S = app.S, have = new Set((S.injq || []).map(q => q.tid)), todo = allTemplates(S).filter(t => t.at != null && !have.has(t.id)); if (!todo.length){ toast('Every timed template is already in the queue.'); return; } if (!confirm('Add ' + todo.length + ' timed template' + (todo.length === 1 ? '' : 's') + ' to the inject queue?')) return; writeEvent('injq_add', null, { items:todo.map(qItem) }); };
   $('[data-injqsent]', v).onchange = () => { app.injqKey = null; refresh(true); };
@@ -5813,6 +6017,8 @@ function buildWhite(){
     const a = b.dataset.act, id = b.dataset.id;
     if (a === 'verdict') writeEvent('verdict', null, { contact:id, verdict:b.dataset.v });
     if (a === 'ack') writeEvent('report_ack', null, { contact:id });
+    if (a === 'psok' || a === 'psno'){ const n = $('#psw-' + id + b.dataset.side), tx = n ? n.value.trim() : ''; if (a === 'psno' && !tx){ toast('Write what is wrong in the note first.', true); return; } writeEvent('perstat_wf', null, { aid:id, side:b.dataset.side, ok:a === 'psok', text:tx }); toast(a === 'psok' ? 'PERSTAT sent to the AOC.' : 'PERSTAT returned to ' + SIDES[b.dataset.side].name + '.'); }
+    if (a === 'injdone'){ const q = (app.S.injq || []).find(x => x.qid === id); if (q && b.dataset.st === 'exc' && !confirm('Excuse ' + SIDES[b.dataset.side].name + ' from "' + q.label + '"? Any miss penalty is refunded.')) return; writeEvent('inj_done', null, { qid:id, side:b.dataset.side, st:b.dataset.st }); }
     if (a === 'oobok') writeEvent('oob_ack', null, { id });
     if (a === 'guessok') writeEvent('guess_ack', null, { id });
     if (a === 'resolve'){ const box = $('#ans-' + id); writeEvent('resolve', null, { req:id, result:b.dataset.r, text:box ? box.value : '' }); }
@@ -6253,7 +6459,18 @@ function renderWhite(S, now){
   $('[data-wteamsR]', v).innerHTML = teamRows(S, 'R', true);
   $('[data-wliaison]', v).innerHTML = liaisonHTML(S, null);
   $('[data-woffers]', v).innerHTML = offersHTML(S, null);
-  const lvlNow = levelIndex(S.esc), TP = allTemplates(S), tkey = START_G + '|' + lvlNow + '|' + (S.injq || []).map(q => q.tid).join() + '|' + JSON.stringify(TP.map(t => [t.id, t.label, t.at, t.lvl, t.to, t.text, t.from, t.note, t.phase]));
+  const lvlNow = levelIndex(S.esc), TP = allTemplates(S), tkey = START_G + '|' + lvlNow + '|' + (S.injq || []).map(q => q.tid).join() + '|' + JSON.stringify(TP.map(t => [t.id, t.label, t.at, t.lvl, t.to, t.text, t.from, t.note, t.phase, t.win, t.done]));
+  { const box = $('[data-injwin]', v); if (box){ const W = (S.injq || []).filter(q => q.win && q.sent != null && (q.closed == null || S.g - q.closed <= 30 || injSides(q).some(sd => q.res[sd] && q.res[sd].st === 'miss'))).sort((a, b) => ((a.closed != null) - (b.closed != null)) || ((injEnd(a) || 1e9) - (injEnd(b) || 1e9)));
+    const lab = { done:['ok', 'Handled'], miss:['no', 'Missed'], na:['', 'Not needed'], exc:['', 'Excused'] };
+    const h = W.map(q => { const end = injEnd(q), open = q.closed == null, left = end != null ? Math.ceil(end - S.g) : null;
+      const head = open ? (end == null ? '<span class="chip wait">Clock not started</span><div class="small">Starts when its props are reported placed. Waiting on: ' + esc(propWaitText(S, 'tpl', q.tid)) + '</div>' : '<span class="chip ' + (left <= 3 ? 'no' : 'wait') + '">Due ' + hhmm(end) + ' (' + Math.max(0, left) + ' min)</span>') : '<span class="chip">Closed ' + hhmm(q.closed) + '</span>';
+      const sides = injSides(q).map(sd => { const r = q.res[sd], L = r ? lab[r.st] : ['wait', 'Waiting'];
+        return '<div class="row" style="align-items:center;gap:6px"><span class="chip ' + sd + '" style="flex:0 0 auto">' + SIDES[sd].name + '</span><span class="chip ' + L[0] + '" style="flex:0 0 auto">' + L[1] + (r && r.st === 'miss' && (r.pts || r.hn) ? ' (' + [r.pts ? '−' + r.pts + ' pts' : '', r.hn ? '−' + r.hn + ' diplomatic' : ''].filter(Boolean).join(', ') + ')' : '') + (r && r.auto ? ', automatic' : '') + '</span>' +
+          (!r || r.st === 'miss' ? '<button type="button" class="btn-side" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="done" style="flex:0 0 auto">Handled</button>' : '') + (!r || r.st === 'miss' ? '<button type="button" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="exc" style="flex:0 0 auto">Excuse</button>' : '') + '</div>'; }).join('');
+      const pr = !open ? injPropNames(S, q) : [];
+      return '<div class="li" style="flex-wrap:wrap"><div class="grow"><b>' + esc(q.label) + '</b> ' + head + '<div class="small muted">Handled when: ' + esc(WIN_DONE[q.done] || '') + (q.who === 'any' ? '. The first force to respond closes it.' : '.') + '</div>' + sides + (pr.length ? '<div class="small"><span class="chip no">Recover props now</span> ' + esc(pr.join(', ')) + '</div>' : '') + '</div></div>'; }).join('');
+    $('[data-injwn]', v).textContent = W.filter(q => q.closed == null).length + ' open';
+    if (box.dataset.h !== h){ box.dataset.h = h; box.innerHTML = h || '<div class="empty">No timed injects are running.</div>'; } } }
   { const showSent = !!($('[data-injqsent]', v) || {}).checked, Q = (S.injq || []).slice().sort((a, b) => ((a.sent != null) - (b.sent != null)) || ((a.at != null ? a.at : a.lvl != null ? 1000 + a.lvl : 2000) - (b.at != null ? b.at : b.lvl != null ? 1000 + b.lvl : 2000))), k2 = JSON.stringify(Q.map(q => [q.qid, q.sent, q.label, propHold(S, 'tpl', q.tid).length])) + showSent + START_G + lvlNow;
     if (app.injqKey !== k2){ app.injqKey = k2; const box = $('[data-injq]', v), open = new Set($$('details[open]', box).map(x => x.dataset.q)), vis = Q.filter(q => showSent || q.sent == null), waiting = Q.filter(q => q.sent == null).length;
       $('[data-injqn]', v).textContent = waiting + ' waiting' + (Q.length - waiting ? ' - ' + (Q.length - waiting) + ' sent' : '');
@@ -6261,7 +6478,7 @@ function renderWhite(S, now){
         return '<details class="li cmp' + (hot ? ' hot' : '') + '" data-q="' + q.qid + '"' + (open.has(q.qid) ? ' open' : '') + '><summary><span class="tm">' + due + '</span><span class="chip ' + (q.to === 'both' || q.to === 'public' ? '' : q.to) + '" style="flex:0 0 auto">' + ({ both:'Both', B:'Blue Force', R:'Red Force', public:'Public' })[q.to] + '</span><span class="ttl"><b>' + esc(q.label) + '</b></span>' + (q.sent != null ? '<span class="chip ok" style="flex:0 0 auto">Sent ' + hhmm(q.sent) + '</span>' : propLockHTML(S, 'tpl', q.tid, '<button type="button" class="btn-side" data-injqsend="' + q.qid + '" style="flex:0 0 auto">Send</button>', 'data-injqsend="' + q.qid + '" data-ovr="1"')) + '</summary>' +
           '<div class="small" style="white-space:pre-wrap">' + esc(q.sent != null ? q.sentText : fillT(q.text)) + '</div><div class="small muted">From: ' + esc(q.from) + '</div>' + (q.note ? '<div class="small muted">Note: ' + esc(q.note) + '</div>' : '') + (q.sent == null ? '<div class="row" style="justify-content:flex-start;margin-top:6px"><button type="button" data-injquse="' + q.qid + '" style="flex:0 0 auto">Edit before sending</button><button type="button" data-injqdel="' + q.qid + '" style="flex:0 0 auto">Remove from queue</button></div>' : '') + '</details>'; }).join('') : '<div class="empty">' + (Q.length ? 'Every queued inject has been sent.' : 'The queue is empty. Queue templates below, or use Queue all timed templates.') + '</div>'; } }
   if (app.tplKey !== tkey){ app.tplKey = tkey; const qd = new Set((S.injq || []).map(q => q.tid)); $('[data-tpln]', v).textContent = '(' + TP.length + ')'; $('[data-templates]', v).innerHTML = TP.length ? TP.map((t, i) => [t, i]).sort((x, y) => ((x[0].at != null ? x[0].at : x[0].lvl != null ? 1000 + x[0].lvl : 2000) - (y[0].at != null ? y[0].at : y[0].lvl != null ? 1000 + y[0].lvl : 2000)) || x[1] - y[1]).map(([t, i]) => { const ok = t.lvl != null && lvlNow >= t.lvl; return '<div class="li cmp' + (ok ? ' hot' : '') + '"><span class="tm">' + (t.at != null ? hhmm(START_G + t.at) : t.lvl != null ? LEVELS[t.lvl].name : 'Any') + '</span><span class="chip ' + (t.to === 'both' || t.to === 'public' ? '' : t.to) + '" style="flex:0 0 auto">' + ({ both:'Both', B:'Blue Force', R:'Red Force', public:'Public' })[t.to] + '</span><span class="ttl">' + esc(t.label) + '</span><button type="button" data-tpl="' + i + '" style="flex:0 0 auto">Use</button><button type="button" data-tplq="' + i + '" style="flex:0 0 auto">' + (qd.has(t.id) ? 'Queue again' : 'Queue') + '</button></div>'; }).join('') : '<div class="empty">No inject templates in this game. Build them in Intel and inject creation.</div>';
-    const tl = $('[data-tpllist]', v); if (tl){ const own = S.tpls || []; tl.innerHTML = own.length ? own.map(t => '<div class="li"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">' + ({ both:'Both wings', B:'Blue Force', R:'Red Force', public:'Public screen' })[t.to] + (t.at != null ? ' - ' + hhmm(START_G + t.at) : t.lvl != null ? ' - ' + LEVELS[t.lvl].name + ' or higher' : '') + '</span><div class="small">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">Note: ' + esc(t.note) + '</div>' : '') + '</div><button type="button" data-tpledit="' + esc(t.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-tpldel="' + esc(t.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No templates built in this game yet.</div>'; } }
+    const tl = $('[data-tpllist]', v); if (tl){ const own = S.tpls || []; tl.innerHTML = own.length ? own.map(t => '<div class="li"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">' + ({ both:'Both wings', B:'Blue Force', R:'Red Force', public:'Public screen' })[t.to] + (t.at != null ? ' - ' + hhmm(START_G + t.at) : t.lvl != null ? ' - ' + LEVELS[t.lvl].name + ' or higher' : '') + (t.win ? ' - ' + t.win + ' min window' : ' - untimed') + '</span><div class="small">' + esc(fillT(t.text)) + '</div>' + (t.note ? '<div class="small muted">Note: ' + esc(t.note) + '</div>' : '') + '</div><button type="button" data-tpledit="' + esc(t.id) + '" style="flex:0 0 auto">Edit</button><button type="button" data-tpldel="' + esc(t.id) + '" style="flex:0 0 auto">Delete</button></div>').join('') : '<div class="empty">No templates built in this game yet.</div>'; } }
   const M0 = mapCfg(S), ms = $('[data-mapsetup]', v);
   { const mk = JSON.stringify([M0 && M0.sw, M0 && M0.ne, M0 && M0.sites, M0 && M0.pois]); if (app.mapKey !== mk && !(ms && ms.contains(document.activeElement))){ app.mapKey = mk; app.mapFilled = false; } }
   if (M0 && !app.mapFilled){ app.mapFilled = true; $('[data-mp="sw"]', ms).value = fmtPt(M0.sw); $('[data-mp="ne"]', ms).value = fmtPt(M0.ne); $('[data-mcols]', ms).value = M0.cols || 6; $('[data-mrows]', ms).value = M0.rows || 5; $('[data-mstep]', ms).value = String(M0.step || 100); MAP_POINTS.forEach(([k]) => { $('[data-mp="' + k + '"]', ms).value = M0.sites && M0.sites[k] ? fmtPt(M0.sites[k]) : ''; }); $('[data-mpois]', ms).value = (M0.pois || []).map(x => x.name + ' | ' + fmtPt(x.pt)).join('\n'); }
@@ -6292,6 +6509,8 @@ function renderWhite(S, now){
     '<div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-act="ack" data-id="' + c.id + '">' + (c.verdict === 'confirm' ? 'Confirm' : 'Agree') + '</button>' + [['confirm', 'True (+1)'], ['duplicate', 'Duplicate'], ['false', 'False']].filter(([v]) => v !== c.verdict).map(([v, l]) => '<button type="button" data-act="verdict" data-id="' + c.id + '" data-v="' + v + '">' + l + '</button>').join('') + '</div></div>'));
   (S.guessAlerts || []).filter(a => !a.ack).forEach(a => q.push('<div class="li"><div class="grow"><span class="chip ' + a.side + '">' + SIDES[a.side].name + '</span> <b>Repeated wrong code words</b> <span class="small muted">' + hhmm(a.g) + '</span><div class="small">' + GUESS_MAX + ' wrong code words for ' + esc(a.where) + ' within ' + GUESS_WIN + ' minutes. Claims there are locked for this wing until ' + hhmm(a.until) + '. Check with the POC whether the team is guessing.</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-act="guessok" data-id="' + a.id + '">Seen</button></div></div>'));
   (S.oobs || []).filter(o => !o.back && !o.ack).forEach(o => q.push('<div class="li"><div class="grow"><span class="chip ' + o.side + '">' + SIDES[o.side].name + '</span> <b>Outside the play area</b> <span class="small muted">since ' + hhmm(o.g) + '</span><div class="small">' + esc(o.name) + ', about ' + o.m + ' m beyond the boundary. Clears on its own when the team is back inside.</div></div><div class="row" style="flex:0 0 auto"><button type="button" data-act="oobok" data-id="' + o.id + '">Seen</button></div></div>'));
+  (S.accts || []).forEach(a => ['B', 'R'].forEach(sd => { const r = a.reps[sd]; if (!r || r.status !== 'wf') return;
+    q.push('<div class="li" style="flex-wrap:wrap"><div class="grow"><span class="chip ' + sd + '">' + SIDES[sd].name + '</span> <b>PERSTAT to check: ' + esc(a.label) + '</b> <span class="small muted">' + hhmm(r.g) + '</span>' + psCheckHTML(S, a, sd) + '<div class="small muted">Grids within about 250 m of the GPS fix are a match; teams keep moving. Your call: approve to send it to the AOC, or return it with a note.</div></div><div class="row" style="flex:0 0 auto;align-items:end"><input id="psw-' + a.id + sd + '" placeholder="Note (needed to return it)" maxlength="300"><button type="button" class="btn-side" data-act="psok" data-id="' + a.id + '" data-side="' + sd + '">Approve, send to AOC</button><button type="button" data-act="psno" data-id="' + a.id + '" data-side="' + sd + '">Return</button></div></div>'); }));
   const kindName = { drone:'Drone flight question', show:'Show of force', strike:'Strike request', wp:'Waypoint request', stmt:'Public statement to rule on' };
   S.requests.filter(r => r.status === 'open').forEach(r => {
     let ctl = '';
@@ -6305,7 +6524,9 @@ function renderWhite(S, now){
   { const ne = $('[data-wnesc]', v); if (ne) ne.textContent = '| Escalation ' + S.esc + ' (' + LEVELS[levelIndex(S.esc)].name + ')'; }
   const occUn = renderOCChatWhite(S, v), aocUn = renderAocChat(S, v);
   { const pend = occUn + aocUn + q.length + S.nines.filter(n => n.status === 'open').length + S.ocReqs.filter(r => r.status === 'open').length; whiteAttention(app.role === 'A' ? 0 : pend); const cb = $('[data-chime]', v); if (cb && !cb.dataset.wired){ cb.dataset.wired = '1'; cb.checked = pref.get('marala-chime', '1') === '1'; cb.onchange = () => { pref.set('marala-chime', cb.checked ? '1' : '0'); if (cb.checked){ chimeAt = 0; chime(); } }; } }
-  $('[data-queue]', v).innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force, strikes and waypoint requests land here.</div>';
+  { const qb = $('[data-queue]', v), kept = {}; $$('input[id]', qb).forEach(i => { if (i.value) kept[i.id] = i.value; }); const fo = document.activeElement && qb.contains(document.activeElement) ? document.activeElement.id : null;
+  qb.innerHTML = q.length ? q.join('') : '<div class="empty">Nothing waiting. Reports to check, drone questions, shows of force, strikes and waypoint requests land here.</div>';
+  Object.keys(kept).forEach(id => { const i = document.getElementById(id); if (i && qb.contains(i)) i.value = kept[id]; }); if (fo){ const i = document.getElementById(fo); if (i) i.focus(); } }
   $('[data-score]', v).innerHTML = scoreTable(S, ['B', 'R']);
   const running = S.clock.started && !S.endex;
   ipbRender(S, v);
