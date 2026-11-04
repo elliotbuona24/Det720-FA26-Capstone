@@ -1607,7 +1607,7 @@ const RHYTHM = [
   { at:85, kind:'cub', n:3, label:'Commander’s Update Brief 3', what:'The new commander briefs the AOC on every line below, including the plan for the last 30 minutes.' },
   { at:110, kind:'cub', n:4, label:'Final SITREP', what:'Final situation report on every line below: positions, mission accomplishment, final accountability, casualties, PIRs, significant events and open issues.' }
 ];
-const CUB_EARLY = 5, CUB_LATE = 5, FIX_MIN = 10, MT_PTS = 3, MT_HN = 2, MT_CIV = 10;
+const MT_FIX_M = 80, CUB_EARLY = 5, CUB_LATE = 5, FIX_MIN = 10, MT_PTS = 3, MT_HN = 2, MT_CIV = 10;
 function mtNow(S){ return (S.mtgts || []).filter(t => !t.done && S.g >= t.g - 1e-9 && S.g < t.until - 1e-9); }
 function mtFor(S, side){ return mtNow(S).filter(t => t.to === 'both' || t.to === side); }
 function mtFixed(S, t, side){ const f = t.fix && t.fix[side]; return f != null && S.g - f <= FIX_MIN + 1e-9; }
@@ -2159,9 +2159,10 @@ function apply(S, e, cfg){
     case 'returnfire': raise(S, side, ESC.returnfire); pushLog(S, nm + ' returned fire (escalation +5)', side, e); break;
     case 'contact': {
       const c = { id:e.id, side, kind:p.kind, site:p.site || null, grid:(p.grid || '').toUpperCase(), seen:p.seen || hhmm(S.g), seenG:S.g, note:p.note || '', salute:p.salute || null, verdict:null, g:S.g };
+      if (Array.isArray(p.pt) && p.pt.length === 2 && p.pt.every(Number.isFinite)) c.pt = [p.pt[0], p.pt[1]];
       c.sg = seenAt(c); S.contacts.push(c);
       if (p.ref) injClaimAdd(S, side, p.ref, p.kind === 'team' ? 'SALUTE report' : 'activity report', (c.grid ? c.grid + ': ' : '') + c.note, e);
-      if (side && c.grid) mtFor(S, side).forEach(t => { if (t.grid && c.grid.replace(/\s+/g, '').toUpperCase().indexOf(t.grid.toUpperCase()) === 0 && !mtFixed(S, t, side)){ t.fix[side] = S.g; pushFeed(S, side, 'Your report fixed the militia target "' + t.label + '" at ' + t.grid + '. Strike it within ' + FIX_MIN + ' minutes or fix it again.', 'alert', { label:'Reports' }); } });
+      if (side && (c.grid || c.pt)) mtFor(S, side).forEach(t => { const near = c.pt && t.pt ? distM(c.pt, t.pt) <= MT_FIX_M : !!(t.grid && c.grid.replace(/\s+/g, '').toUpperCase().indexOf(t.grid.toUpperCase()) === 0); if (near && !mtFixed(S, t, side)){ t.fix[side] = S.g; pushFeed(S, side, 'Your report fixed the militia target "' + t.label + '" at ' + t.grid + '. Strike it within ' + FIX_MIN + ' minutes or fix it again.', 'alert', { label:'Reports' }); } });
       pushLog(S, nm + ' reported ' + (p.kind === 'site' ? 'an enemy flag at ' + (SITES[p.site] ? SITES[p.site].name : '?') : p.kind === 'team' ? 'an enemy team at ' + (p.grid || '?') : 'activity at ' + (p.grid || '?')), side, e);
       if (!side || S.endex) break;
       if (p.kind === 'site' && S.sites[c.site] && S.sites[c.site].holder === OTHER[side]) settleReport(S, c, S.contacts.some(o => o !== c && o.side === side && o.kind === 'site' && o.site === c.site && o.verdict === 'confirm' && S.g - o.g <= MATCH_DUP) ? 'duplicate' : 'confirm', SITES[c.site].name + ' is held by ' + SIDES[OTHER[side]].name);
@@ -4811,7 +4812,7 @@ function buildWing(side){
       if (!salute.s || !salute.a || !salute.u || !salute.e || !salute.t){ toast('Fill in every line of the SALUTE report.', true); return false; }
       note = 'S: ' + salute.s + ' - A: ' + salute.a + ' - U: ' + salute.u + ' - E: ' + salute.e;
     }
-    const ref = String(fd.get('ref') || ''); if (!ref){ toast('Say whether this report is for an inject or intel package (or No / I don’t know).', true); return false; } const r = writeEvent('contact', side, Object.assign({ kind, site:kind === 'site' ? fd.get('site') : null, grid:String(fd.get('grid')).toUpperCase(), seen, note, salute }, ref ? { ref } : {}));
+    const ref = String(fd.get('ref') || ''); if (!ref){ toast('Say whether this report is for an inject or intel package (or No / I don’t know).', true); return false; } const cgp = fd.get('grid') ? gridPoint(mapCfg(app.S), String(fd.get('grid'))) : null, cpt = cgp && cgp.prec <= 100 ? cgp.pt : null; const r = writeEvent('contact', side, Object.assign({ kind, site:kind === 'site' ? fd.get('site') : null, grid:String(fd.get('grid')).toUpperCase(), seen, note, salute }, ref ? { ref } : {}, cpt ? { pt:[+cpt[0].toFixed(7), +cpt[1].toFixed(7)] } : {}));
     setTimeout(salSync, 0); return r;
   });
   const chatBox = $('[data-tchatbox]', v), chatOpen = tid => { app.chatTeam = tid; chatBox.hidden = !tid; $('[data-tchatlog]', v).dataset.k = ''; if (tid){ refresh(true); setTimeout(() => { chatBox.scrollIntoView({ behavior:'smooth', block:'nearest' }); $('[data-tchatf] input', v).focus({ preventScroll:true }); }, 80); } else refresh(true); };
@@ -5997,7 +5998,7 @@ function botStep(){
         st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:5 + rnd() * 8 }; st.arr = g; });
       const tb = liveTeams(S, sd).filter(t => t.last && t.last.gps), en = liveTeams(S, OTHER[sd]).filter(t => t.last && t.last.gps && g - t.last.g < 5);
       if (en.length && later('sal' + sd, 4 + rnd() * 5)){ mem['sal' + sd] = g + 5 + rnd() * 6; const t = en[Math.floor(rnd() * en.length)], pt = [t.last.gps[0] + (rnd() - .5) * 30 / 110950, t.last.gps[1] + (rnd() - .5) * 30 / 84250];
-        W('contact', sd, { kind:'team', grid:botGrid(pt), seen:hhmm(g), note:'S: 3 people - A: moving - U: ' + SIDES[OTHER[sd]].name + ' uniforms - E: rifles', salute:{ s:'3 people', a:'moving', l:botGrid(pt), u:SIDES[OTHER[sd]].name + ' uniforms', t:hhmm(g).slice(0, 4), e:'rifles' }, ref:'none' }, sd); }
+        W('contact', sd, { kind:'team', grid:botGrid(pt), pt:[+pt[0].toFixed(7), +pt[1].toFixed(7)], seen:hhmm(g), note:'S: 3 people - A: moving - U: ' + SIDES[OTHER[sd]].name + ' uniforms - E: rifles', salute:{ s:'3 people', a:'moving', l:botGrid(pt), u:SIDES[OTHER[sd]].name + ' uniforms', t:hhmm(g).slice(0, 4), e:'rifles' }, ref:'none' }, sd); }
       const cb = cubOpen(S, sd), c = cb ? (S.cubs || []).find(x => x.side === sd && x.n === cb.n) : null;
       if (cb && (!c || c.status === 'returned') && later('cub' + sd + cb.n + (c ? c.hist.length : ''), 1 + rnd() * 6)){ const f = {}; (cubLines(S, sd, cb.n) || []).forEach(L => { f[L.k] = L.none && rnd() < .5 ? 'NONE' : ('Bot ' + L.l.toLowerCase() + ': ' + tb.map(t => t.name + ' near ' + botGrid(t.last.gps)).join(', ') + '. On track with the plan and watching the other force.').padEnd(Math.max(L.min, 10) + 5, '.'); if (L.kind === 'pers'){ f.p_acc = tb.length * 3 || 12; f.p_una = 0; } if (L.kind === 'rag') f.rag = 'GREEN'; }); W('cub', sd, { n:cb.n, f:cubCompose(cubLines(S, sd, cb.n), f).f || f }, sd); }
       const a = psOpen(S, sd); if (a && later('ps' + a.id + sd + ((a.reps[sd] || {}).id || ''), 2 + rnd() * 8)) W('perstat', sd, { aid:a.id, sum:{ acc:tb.length * 3 || 12, una:0 }, teams:liveTeams(S, sd).map(t => ({ id:t.id, n:3, grid:t.last && t.last.gps ? botGrid(t.last.gps) : '', st:t.last && t.last.gps ? 'task' : 'unk' })), note:'' }, sd);

@@ -111,12 +111,12 @@
    "label": "Militia mortar team",
    "to": "B",
    "from": "Counter-battery radar (AOC)",
-   "text": "Two mortar rounds landed in the open 150 m from your Radar Ridge position. No one was hurt. Counter-battery radar puts the firing point near grid 18T TL 59681 21999 (40.81384, -77.84931), play square C3. The team is expected to fire again and move within 25 minutes. Find it and fix it with your UAV, a drone flight or a team’s SALUTE report from that square, then strike it with a correct strike 9-line within 10 minutes of the fix. It is marked on your map as a militia target.",
+   "text": "Two mortar rounds landed in the open 150 m from your Radar Ridge position. No one was hurt. Counter-battery radar puts the firing point near grid 18T TL 59681 21999 (40.81384, -77.84931). The team is expected to fire again and move within 25 minutes. Find it and fix it with your UAV, a drone flight or a team’s SALUTE or activity report within about 80 m of that grid, then strike it with a correct strike 9-line within 10 minutes of the fix. It is marked on your map as a militia target.",
    "at": 42,
    "lvl": null,
-   "note": "No props. The target is on the board: it shows faintly on the Blue Force map until fixed. A UAV launch fixes it automatically; the drone operator can fix it when answering a drone flight over C3; a Blue Force SALUTE or activity report in C3 also fixes it. Strike approved by the White Force on a correct 9-line: +3 points, diplomatic +2 (−10 if the force says civilians are near). Gone at 0707 if not struck.",
+   "note": "No props. The target is on the board: it shows faintly on the Blue Force map until fixed. A UAV launch fixes it automatically; the drone operator can fix it when answering a drone flight over that grid; a Blue Force SALUTE or activity report within about 80 m of the grid also fixes it. Strike approved by the White Force on a correct 9-line: +3 points, diplomatic +2 (−10 if the force says civilians are near). Gone at 0707 if not struck.",
    "phase": "Phase 2",
-   "oc": "Militia mortar team (C3, IP3). If your Blue Force team reaches IP3 before 0707 and the target is not destroyed, read: \"A shallow pit with a mortar base plate, fresh blast marks and three sets of footprints heading north. The crew left minutes ago.\" The team should send a SALUTE or activity report for C3; that fixes the target for its C2.",
+   "oc": "Militia mortar team (C3, IP3). If your Blue Force team reaches IP3 before 0707 and the target is not destroyed, read: \"A shallow pit with a mortar base plate, fresh blast marks and three sets of footprints heading north. The crew left minutes ago.\" The team should send a SALUTE or activity report with the grid where it is standing; that fixes the target for its C2.",
    "mt": {
     "label": "Militia mortar team",
     "pt": [
@@ -132,12 +132,12 @@
    "label": "Militia rocket launch site",
    "to": "R",
    "from": "Air defense radar (AOC)",
-   "text": "A small rocket was fired over the Fuel Depot from the east and landed in the water. No one was hurt. Air defense radar puts the launch point near grid 18T TL 59854 21940 (40.81336, -77.84723), play square E3. The crew is expected to fire again and move within 25 minutes. Find it and fix it with your UAV, a drone flight or a team’s SALUTE report from that square, then strike it with a correct strike 9-line within 10 minutes of the fix. It is marked on your map as a militia target.",
+   "text": "A small rocket was fired over the Fuel Depot from the east and landed in the water. No one was hurt. Air defense radar puts the launch point near grid 18T TL 59854 21940 (40.81336, -77.84723). The crew is expected to fire again and move within 25 minutes. Find it and fix it with your UAV, a drone flight or a team’s SALUTE or activity report within about 80 m of that grid, then strike it with a correct strike 9-line within 10 minutes of the fix. It is marked on your map as a militia target.",
    "at": 44,
    "lvl": null,
-   "note": "No props. Same rules as the Blue Force mortar team: fixed by UAV, a drone flight answered with the fix, or a Red Force report in E3. Strike approved on a correct 9-line: +3 points, diplomatic +2 (−10 if civilians are near). Gone at 0709 if not struck.",
+   "note": "No props. Same rules as the Blue Force mortar team: fixed by UAV, a drone flight answered with the fix, or a Red Force report within about 80 m of the grid. Strike approved on a correct 9-line: +3 points, diplomatic +2 (−10 if civilians are near). Gone at 0709 if not struck.",
    "phase": "Phase 2",
-   "oc": "Militia rocket launch site (E3, IP6). If your Red Force team reaches IP6 before 0709 and the target is not destroyed, read: \"A launch rail made of pipe, scorched grass and a cut wire. Two men on a motorbike left toward the road a few minutes ago.\" The team should send a SALUTE or activity report for E3; that fixes the target for its C2.",
+   "oc": "Militia rocket launch site (E3, IP6). If your Red Force team reaches IP6 before 0709 and the target is not destroyed, read: \"A launch rail made of pipe, scorched grass and a cut wire. Two men on a motorbike left toward the road a few minutes ago.\" The team should send a SALUTE or activity report with the grid where it is standing; that fixes the target for its C2.",
    "mt": {
     "label": "Militia rocket launch site",
     "pt": [
@@ -220,12 +220,12 @@
    "label": "Militia technical on the move",
    "to": "both",
    "from": "AOC",
-   "text": "AOC: a First Front pickup with a heavy machine gun in the bed has stopped near grid 18T TL 59643 21955 (40.81344, -77.84974), play square C3, between Radar Ridge and the Airstrip. It is expected to move within 15 minutes. Either force may fix it with a UAV, a drone flight or a SALUTE report from that square, then strike it with a correct strike 9-line within 10 minutes of the fix. Only the first strike counts. Coordinate on the liaison channel so you do not strike each other’s teams.",
+   "text": "AOC: a First Front pickup with a heavy machine gun in the bed has stopped near grid 18T TL 59643 21955 (40.81344, -77.84974), between Radar Ridge and the Airstrip. It is expected to move within 15 minutes. Either force may fix it with a UAV, a drone flight or a SALUTE or activity report within about 80 m of that grid, then strike it with a correct strike 9-line within 10 minutes of the fix. Only the first strike counts. Coordinate on the liaison channel so you do not strike each other’s teams.",
    "at": 76,
    "lvl": null,
    "note": "No props. Shared militia target for both forces. First force to strike it on a correct 9-line: +3 points, diplomatic +2 (−10 if civilians are near). Gone at 0731 if not struck. Watch for a force striking near the other force’s team: crowding is a Provocation call.",
    "phase": "Phase 2",
-   "oc": "Militia technical (C3, X6). If your team reaches X6 before it is destroyed, read: \"A dark pickup with a mounted gun under a tarp, engine running, two men smoking beside it. They have not seen you.\" The team should stay hidden and send a SALUTE for C3.",
+   "oc": "Militia technical (C3, X6). If your team reaches X6 before it is destroyed, read: \"A dark pickup with a mounted gun under a tarp, engine running, two men smoking beside it. They have not seen you.\" The team should stay hidden and send a SALUTE with the grid where it is standing.",
    "mt": {
     "label": "Militia technical (armed pickup)",
     "pt": [
