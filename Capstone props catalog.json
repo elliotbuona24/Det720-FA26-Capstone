@@ -65,13 +65,13 @@
    "id": "pr-dummy-v21",
    "name": "VIPER 21 rescue dummy",
    "home": "Props kit (north and east props lead)",
-   "note": "About 25 lb: a duffel or sandbags in a flight suit, helmet on. ISOPREP card in the chest pocket: VIPER 21, Capt. J. Ward. First dog: RANGER. Favorite sport: hockey. Hometown: Erie, PA. Number of the day: 7."
+   "note": "About 25 lb: a duffel or sandbags in a flight suit, helmet on."
   },
   {
    "id": "pr-dummy-r3",
    "name": "ROTOR 3 rescue dummy",
    "home": "Props kit (west and south props lead)",
-   "note": "About 25 lb: a duffel or sandbags in a dark flight suit. ISOPREP card in the chest pocket: ROTOR 3, Sgt. Ri Myong-chol. Home village: KANGSO. Favorite food: naengmyeon. Brother’s name: Chol-su. Number of the day: 4."
+   "note": "About 25 lb: a duffel or sandbags in a dark flight suit."
   }
  ],
  "propUses": [
@@ -163,7 +163,7 @@
    ],
    "lead": 5,
    "keep": 40,
-   "note": "Lay him in the grass, helmet on, ISOPREP card in the chest pocket. Recover him from whichever HQ or the town office he ends up at."
+   "note": "Lay him in the grass, helmet on. Recover him from whichever HQ or the town office he ends up at."
   },
   {
    "kind": "tpl",
@@ -178,7 +178,7 @@
    ],
    "lead": 5,
    "keep": 40,
-   "note": "Place after the B6 culvert tip closes (0637). Lay him in the grass, ISOPREP card in the chest pocket."
+   "note": "Place after the B6 culvert tip closes (0637). Lay him in the grass."
   },
   {
    "kind": "tpl",

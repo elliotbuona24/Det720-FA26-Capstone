@@ -1614,7 +1614,7 @@ function mtFixed(S, t, side){ const f = t.fix && t.fix[side]; return f != null &
 function mtClean(m){ if (!m || typeof m !== 'object') return null; const pt = Array.isArray(m.pt) && m.pt.length === 2 && m.pt.every(Number.isFinite) ? m.pt : null; const label = String(m.label || '').trim().slice(0, 60); if (!pt || !label) return null; return { label, pt, life:Math.max(5, Math.min(120, Math.round(Number(m.life) || 25))), grid:String(m.grid || '').slice(0, 12) }; }
 const WIN_DONE = { manual:'The White Force marks it', pr:'POC call: Personnel recovered (or procedure missed)', box:'POC call: Supply box delivered', ied:'POC call: Real IED cleared or Hit by an IED', civaid:'POC call: Helped a civilian', conduct:'POC call: Good or Poor conduct', mt:'Militia target destroyed', cache:'Cache cleared or struck', aoc:'The force writes to the AOC', acct:'PERSTAT sent', none:'Not tracked (window only times the props)' };
 const PERSTAT_ST = { task:'On task', move:'Moving', hq:'At Team HQ (casualty collection point)', cas:'Has a casualty', unk:'Unknown' };
-const NEEDS = { ied:'IED 9-line', civaid:'triage and a MEDEVAC 9-line', conduct:'a visit to the mayor', mt:'a SALUTE or UAV fix, then a strike 9-line', cache:'an IED 9-line or a strike 9-line', aoc:'a message to the AOC', acct:'a PERSTAT', pr:'authentication and a MEDEVAC 9-line', box:'delivering the box' };
+const NEEDS = { ied:'IED 9-line', civaid:'triage and a MEDEVAC 9-line', conduct:'a visit to the mayor', mt:'a SALUTE or UAV fix, then a strike 9-line', cache:'an IED 9-line or a strike 9-line', aoc:'a message to the AOC', acct:'a PERSTAT', pr:'a MEDEVAC 9-line and the carry', box:'delivering the box' };
 function refNeeds(S, ref){ const k = String(ref || '').slice(0, 1), id = String(ref || '').slice(2);
   if (k === 'q'){ const q = (S.injq || []).find(x => x.qid === id); return q ? (q.needs || NEEDS[q.done] || '') : ''; }
   if (k === 'p'){ const P = allProblems(S).find(x => x.id === id); if (!P) return ''; return P.field ? (P.field === 'Tip check' ? 'a field check of the spot' : 'field collection: ' + P.field) : P.stmt ? 'an answer, then a public statement' : 'an answer on the Intel tab'; } return ''; }
@@ -1867,8 +1867,8 @@ const OC_CALLS = {
   provocation:{ ev:'provocation', p:{}, name:'Aimed at or crowded the other force', sub:'Escalation +5' },
   firstfire:{ ev:'firstfire', p:{}, name:'Fired first', sub:'Escalation +20 - Diplomatic points −15' },
   returnfire:{ ev:'returnfire', p:{}, name:'Returned fire', sub:'Escalation +5' },
-  prok:{ ev:'adjust', p:{ field:'pts', delta:3, reason:'Personnel recovery' }, name:'Personnel recovered', sub:'+3 points (authenticated, MEDEVAC 9-line, carried to the CCP (Team HQ))' },
-  prpart:{ ev:null, p:{}, name:'Recovered, procedure missed', sub:'No points (not authenticated or no 9-line)' },
+  prok:{ ev:'adjust', p:{ field:'pts', delta:3, reason:'Personnel recovery' }, name:'Personnel recovered', sub:'+3 points (MEDEVAC 9-line, carried to the CCP (Team HQ))' },
+  prpart:{ ev:null, p:{}, name:'Recovered, procedure missed', sub:'No points (no MEDEVAC 9-line)' },
   box:{ ev:'adjust', p:{ field:'hn', delta:5, reason:'Aid supply box delivered' }, name:'Supply box delivered', sub:'Diplomatic points +5 (intact, to the town office)' },
   detain:{ ev:'adjust', p:{ field:'esc', delta:10, reason:'Detained a foreign service member' }, name:'Detained a foreign service member', sub:'Escalation +10' },
   mayorhand:{ ev:'adjust', p:{ field:'hn', delta:10, reason:'Handed a foreign service member to the mayor' }, name:'Handed a service member to the mayor', sub:'Diplomatic points +10' },
