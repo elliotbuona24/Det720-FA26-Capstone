@@ -137,7 +137,7 @@
    "text": "PERSONNEL RECOVERY. An F-16, call sign VIPER 21, went down north of the island. The pilot ejected; his beacon places him near grid 18T TL 59760 22102 (40.81480, -77.84841), play square D1, on the Red Force side. He is injured and cannot walk. There is no litter: two cadets carry him or drag him on a poncho. Treat him, send a MEDEVAC 9-line, then bring him to your casualty collection point (Team HQ). Avoid contact with Red Force.",
    "at": 34,
    "lvl": null,
-   "note": "VIPER 21 rescue dummy at IP8 from 0630. Recovered to Blue Force HQ after a correct MEDEVAC 9-line: adjustment +3 points (reason \"Personnel recovery\"). No MEDEVAC 9-line: no points. If Red Force reaches him first, see the Red Force sighting.",
+   "note": "Rescue dummy at IP8 from 0630. It is the only dummy: C/Capt Nadeau collects it when this window closes (0704) and lays it at X1 for ROTOR 3. Recovered to Blue Force HQ after a correct MEDEVAC 9-line: adjustment +3 points (reason \"Personnel recovery\"). No MEDEVAC 9-line: no points. If Red Force reaches him first, see the Red Force sighting.",
    "phase": "Phase 1",
    "oc": "VIPER 21 (dummy at IP8). Check that the team keeps security out while two cadets carry, and sends a MEDEVAC 9-line. A Red Force team that finds him decides: leave him, report him, detain him, or escort him to the mayor.",
    "win": 30,
@@ -214,36 +214,6 @@
     "pts": 0,
     "hn": 0
    }
-  },
-  {
-   "id": "tx-11",
-   "label": "Personnel recovery: ROTOR 3",
-   "to": "R",
-   "from": "Personnel recovery cell",
-   "text": "PERSONNEL RECOVERY. A Red Force helicopter, call sign ROTOR 3, made a hard landing south of the island. A crewman with a head injury is near grid 18T TL 59596 21786 (40.81190, -77.85023), play square B6, on the Blue Force side. There is no litter: two cadets carry him or drag him on a poncho. Treat him, send a MEDEVAC 9-line, then bring him to your casualty collection point (Team HQ). Avoid contact with Blue Force.",
-   "at": 50,
-   "lvl": null,
-   "note": "ROTOR 3 rescue dummy at X1 from 0645 (after the B6 culvert tip closes at 0637). Recovered to Red Force HQ after a correct MEDEVAC 9-line: adjustment +3 points (reason \"Personnel recovery\"). The carry is long: about 15 minutes.",
-   "phase": "Phase 2",
-   "oc": "ROTOR 3 (dummy at X1). Same checks as VIPER 21: security out, MEDEVAC 9-line. A Blue Force team that finds him decides: leave, report, detain or escort to the mayor.",
-   "win": 30,
-   "who": "each",
-   "done": "pr",
-   "miss": {
-    "pts": 3,
-    "hn": 0
-   }
-  },
-  {
-   "id": "tx-12",
-   "label": "Helicopter down nearby",
-   "to": "B",
-   "from": "Local farmer (HUMINT)",
-   "text": "A farmer heard a helicopter come down hard south of the island. A man in a dark flight suit is lying near grid 18T TL 59596 21786 (40.81190, -77.85023), play square B6, holding his head. He is likely a Red Force crewman. Your commander decides: leave him, observe and report, or detain him. Detaining a foreign service member will raise tension. Carrying him unharmed to the mayor would be seen as a humanitarian act.",
-   "at": 54,
-   "lvl": null,
-   "note": "Detained and taken to Blue Force HQ: escalation +10 to Blue Force (adjustment, reason \"Detained Red Force crewman\"). Carried unharmed to the mayor: Blue Force diplomatic +10 (adjustment). Observed and reported only: SALUTE +1.",
-   "phase": "Phase 2"
   },
   {
    "id": "tx-13",
@@ -346,6 +316,25 @@
    }
   },
   {
+   "id": "tx-11",
+   "label": "Personnel recovery: ROTOR 3",
+   "to": "R",
+   "from": "Personnel recovery cell",
+   "text": "PERSONNEL RECOVERY. A Red Force helicopter, call sign ROTOR 3, made a hard landing south of the island. A crewman with a head injury is near grid 18T TL 59596 21786 (40.81190, -77.85023), play square B6, on the Blue Force side. There is no litter: two cadets carry him or drag him on a poncho. Treat him, send a MEDEVAC 9-line, then bring him to your casualty collection point (Team HQ). Avoid contact with Blue Force.",
+   "at": 78,
+   "lvl": null,
+   "note": "Rescue dummy at X1 from 0714, the same dummy as VIPER 21 (C/Capt Nadeau moves it after 0704). Recovered to Red Force HQ after a correct MEDEVAC 9-line: adjustment +3 points (reason \"Personnel recovery\"). The carry is long: about 15 minutes.",
+   "phase": "Phase 2",
+   "oc": "ROTOR 3 (dummy at X1). Same checks as VIPER 21: security out, MEDEVAC 9-line. A Blue Force team that finds him decides: leave, report, detain or escort to the mayor.",
+   "win": 30,
+   "who": "each",
+   "done": "pr",
+   "miss": {
+    "pts": 3,
+    "hn": 0
+   }
+  },
+  {
    "id": "tx-17",
    "label": "Mass casualty at the C6 cooperative",
    "to": "both",
@@ -373,6 +362,17 @@
    "at": 80,
    "lvl": null,
    "note": "Before sending: Map tab, waypoint queue, Interest Point / Potential Mid Game New Site #4, Make site. Name it Pump Station, timer 15, and enter the Pump Station capture and defense words from the Station Keys. The station POCs must already be in place with the Pump Station cards and a tarp.",
+   "phase": "Phase 3"
+  },
+  {
+   "id": "tx-12",
+   "label": "Helicopter down nearby",
+   "to": "B",
+   "from": "Local farmer (HUMINT)",
+   "text": "A farmer heard a helicopter come down hard south of the island. A man in a dark flight suit is lying near grid 18T TL 59596 21786 (40.81190, -77.85023), play square B6, holding his head. He is likely a Red Force crewman. Your commander decides: leave him, observe and report, or detain him. Detaining a foreign service member will raise tension. Carrying him unharmed to the mayor would be seen as a humanitarian act.",
+   "at": 81,
+   "lvl": null,
+   "note": "Detained and taken to Blue Force HQ: escalation +10 to Blue Force (adjustment, reason \"Detained Red Force crewman\"). Carried unharmed to the mayor: Blue Force diplomatic +10 (adjustment). Observed and reported only: SALUTE +1.",
    "phase": "Phase 3"
   },
   {

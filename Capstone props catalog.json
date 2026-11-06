@@ -63,15 +63,9 @@
   },
   {
    "id": "pr-dummy-v21",
-   "name": "VIPER 21 rescue dummy",
+   "name": "Rescue dummy",
    "home": "Props kit (north and east props lead)",
-   "note": "About 25 lb: a duffel or sandbags in a flight suit, helmet on."
-  },
-  {
-   "id": "pr-dummy-r3",
-   "name": "ROTOR 3 rescue dummy",
-   "home": "Props kit (west and south props lead)",
-   "note": "About 25 lb: a duffel or sandbags in a dark flight suit."
+   "note": "About 25 lb: a duffel or sandbags in a flight suit, helmet on. The only one: VIPER 21 first, then moved to X1 for ROTOR 3."
   }
  ],
  "propUses": [
@@ -163,12 +157,12 @@
    ],
    "lead": 5,
    "keep": 40,
-   "note": "Lay him in the grass, helmet on. Recover him from whichever HQ or the town office he ends up at."
+   "note": "Lay him in the grass, helmet on. At 0704 collect him from wherever he ends up (IP8, either HQ or the town office): he is needed at X1 by 0714 for ROTOR 3."
   },
   {
    "kind": "tpl",
    "id": "u-dummy-r3-x1",
-   "prop": "pr-dummy-r3",
+   "prop": "pr-dummy-v21",
    "item": "tx-11",
    "label": "ROTOR 3 survivor",
    "loc": "Point X1",
@@ -178,7 +172,7 @@
    ],
    "lead": 5,
    "keep": 40,
-   "note": "Place after the B6 culvert tip closes (0637). Lay him in the grass."
+   "note": "The same dummy as VIPER 21: C/Capt Nadeau collects it after 0704 from wherever VIPER 21 ended up and lays it here. Lay him in the grass."
   },
   {
    "kind": "tpl",
