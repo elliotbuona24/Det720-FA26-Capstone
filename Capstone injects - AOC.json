@@ -26,7 +26,14 @@
    "at": 4,
    "lvl": null,
    "note": "IED-C (bag with a 10 m wire) at X6 before STARTEX. Correct cordon and 9-line: POC reports Real IED cleared (+2, diplomatic +5). A team that walks onto the prop without a cordon: Hit by an IED.",
-   "phase": "Phase 1"
+   "phase": "Phase 1",
+   "win": 20,
+   "who": "each",
+   "done": "ied",
+   "miss": {
+    "pts": 2,
+    "hn": 0
+   }
   },
   {
    "id": "tx-02",
@@ -37,7 +44,14 @@
    "at": 6,
    "lvl": null,
    "note": "IED-D (flat board with wires) at X4 before STARTEX. Correct cordon and 9-line: Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED.",
-   "phase": "Phase 1"
+   "phase": "Phase 1",
+   "win": 20,
+   "who": "each",
+   "done": "ied",
+   "miss": {
+    "pts": 2,
+    "hn": 0
+   }
   },
   {
    "id": "tx-03",
@@ -48,7 +62,14 @@
    "at": 10,
    "lvl": null,
    "note": "C/Mock plays the mayor. Respectful answer and weapons outside: POC reports Good conduct (+5); the mayor gives the town code word. Weapons carried in, or the other force’s time ignored: Poor conduct (−5). C/Vernacchio runs the town office records for intel package 3 in the same window.",
-   "phase": "Phase 1"
+   "phase": "Phase 1",
+   "win": 34,
+   "who": "each",
+   "done": "conduct",
+   "miss": {
+    "pts": 0,
+    "hn": 5
+   }
   },
   {
    "id": "tx-04",
@@ -59,7 +80,14 @@
    "at": 18,
    "lvl": null,
    "note": "Humanitarian Aid Supply Box #1 at IP5. First force to carry it to the town office intact: adjustment, diplomatic +5, reason \"Aid supply box delivered\". Opened or damaged: Poor conduct.",
-   "phase": "Phase 1"
+   "phase": "Phase 1",
+   "win": 25,
+   "who": "any",
+   "done": "box",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
   },
   {
    "id": "tx-05",
@@ -84,6 +112,24 @@
    "phase": "Phase 1"
   },
   {
+   "id": "tx-ps1",
+   "label": "PERSTAT 1",
+   "to": "both",
+   "from": "AOC",
+   "text": "AOC: PERSTAT. Report the accountability of your whole force now on the AOC tab: force totals (accounted for and unaccounted for, and who is unaccounted for and why), then every fireteam’s grid, headcount and status. A 6-digit MGRS grid is enough; a more precise grid is fine. Get the grids from your teams over the LMR net; do not guess. The AOC checks the report against where your teams actually are and returns any report that does not match. On time and accepted: +5 points. Not sent: −5.",
+   "at": 30,
+   "lvl": null,
+   "note": "No props. +5 points when the force sends it on time and the White Force Director approves it; −5 if nothing is sent by the deadline; sent late: 0. When a force sends its PERSTAT the board sends a silent position request to every fireteam of that force. The White Force Director checks each team’s reported grid against its GPS fix, approves it to the AOC or returns it with a note. The AOC then acknowledges it.",
+   "phase": "Phase 1",
+   "win": 15,
+   "who": "each",
+   "done": "acct",
+   "miss": {
+    "pts": 5,
+    "hn": 0
+   }
+  },
+  {
    "id": "tx-07",
    "label": "Personnel recovery: VIPER 21",
    "to": "B",
@@ -93,7 +139,14 @@
    "lvl": null,
    "note": "VIPER 21 rescue dummy at IP8 from 0630, ISOPREP card in the chest pocket. Recovered to Blue Force HQ after correct authentication and a correct MEDEVAC 9-line: adjustment +3 points (reason \"Personnel recovery\"). Moved without authenticating: no points. If Red Force reaches him first, see the Red Force sighting.",
    "phase": "Phase 1",
-   "oc": "VIPER 21 (dummy at IP8). Check that the team authenticates by reading the ISOPREP answer to its C2 before moving him, keeps security out while two cadets carry, and sends a MEDEVAC 9-line. A Red Force team that finds him decides: leave him, report him, detain him, or escort him to the mayor."
+   "oc": "VIPER 21 (dummy at IP8). Check that the team authenticates by reading the ISOPREP answer to its C2 before moving him, keeps security out while two cadets carry, and sends a MEDEVAC 9-line. A Red Force team that finds him decides: leave him, report him, detain him, or escort him to the mayor.",
+   "win": 30,
+   "who": "each",
+   "done": "pr",
+   "miss": {
+    "pts": 3,
+    "hn": 0
+   }
   },
   {
    "id": "tx-08",
@@ -125,6 +178,13 @@
     ],
     "grid": "C3",
     "life": 25
+   },
+   "win": 25,
+   "who": "each",
+   "done": "mt",
+   "miss": {
+    "pts": 0,
+    "hn": 0
    }
   },
   {
@@ -146,6 +206,13 @@
     ],
     "grid": "E3",
     "life": 25
+   },
+   "win": 25,
+   "who": "each",
+   "done": "mt",
+   "miss": {
+    "pts": 0,
+    "hn": 0
    }
   },
   {
@@ -158,7 +225,14 @@
    "lvl": null,
    "note": "ROTOR 3 rescue dummy at X1 from 0645 (after the B6 culvert tip closes at 0637). Recovered to Red Force HQ after authentication and a correct MEDEVAC 9-line: adjustment +3 points (reason \"Personnel recovery\"). The carry is long: about 15 minutes.",
    "phase": "Phase 2",
-   "oc": "ROTOR 3 (dummy at X1). Same checks as VIPER 21: authenticate by reading the ISOPREP answer to C2, security out, MEDEVAC 9-line. A Blue Force team that finds him decides: leave, report, detain or escort to the mayor."
+   "oc": "ROTOR 3 (dummy at X1). Same checks as VIPER 21: authenticate by reading the ISOPREP answer to C2, security out, MEDEVAC 9-line. A Blue Force team that finds him decides: leave, report, detain or escort to the mayor.",
+   "win": 30,
+   "who": "each",
+   "done": "pr",
+   "miss": {
+    "pts": 3,
+    "hn": 0
+   }
   },
   {
    "id": "tx-12",
@@ -180,7 +254,14 @@
    "at": 60,
    "lvl": null,
    "note": "Send at 0700. The AOC checks that both new JFACCs confirm by 0705. Form 2 evaluators stay with the same role and evaluate the new leader from 0700.",
-   "phase": "Phase 2"
+   "phase": "Phase 2",
+   "win": 5,
+   "who": "each",
+   "done": "aoc",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
   },
   {
    "id": "tx-14",
@@ -191,7 +272,32 @@
    "at": 64,
    "lvl": null,
    "note": "Cache crate at X5 from 0655. Cleared on foot with a cordon: POC reports Militia cache cleared (+5, diplomatic +5). Walked in without a cordon: Hit by an IED. Strike: correct strike 9-line and the force’s cache strike; the White Force rules it destroyed. One clearance only.",
-   "phase": "Phase 2"
+   "phase": "Phase 2",
+   "win": 45,
+   "who": "any",
+   "done": "cache",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-ps2",
+   "label": "PERSTAT 2 (new commander)",
+   "to": "both",
+   "from": "AOC",
+   "text": "AOC: PERSTAT. The new commander reports the accountability of the whole force now on the AOC tab: force totals, then every fireteam’s grid, headcount and status, gathered over the LMR net. Account for every cadet who changed role or team at the Change of Command.",
+   "at": 68,
+   "lvl": null,
+   "note": "Same check as PERSTAT 1. This one tests the new commander’s grip on the force eight minutes after taking command.",
+   "phase": "Phase 2",
+   "win": 15,
+   "who": "each",
+   "done": "acct",
+   "miss": {
+    "pts": 5,
+    "hn": 0
+   }
   },
   {
    "id": "tx-15",
@@ -202,7 +308,14 @@
    "at": 70,
    "lvl": null,
    "note": "Humanitarian Aid Supply Box #2 at X3. First force to deliver it intact: adjustment, diplomatic +5, reason \"Aid supply box delivered\".",
-   "phase": "Phase 2"
+   "phase": "Phase 2",
+   "win": 25,
+   "who": "any",
+   "done": "box",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
   },
   {
    "id": "tx-16",
@@ -213,7 +326,14 @@
    "at": 72,
    "lvl": null,
    "note": "Watch both nets. A force that confirms by 0717 with every team on the alternate: adjustment +1 point (reason \"PACE executed\"). A force that announces its new channel on the old one: no points.",
-   "phase": "Phase 2"
+   "phase": "Phase 2",
+   "win": 10,
+   "who": "each",
+   "done": "aoc",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
   },
   {
    "id": "tx-16b",
@@ -234,6 +354,13 @@
     ],
     "grid": "C3",
     "life": 15
+   },
+   "win": 15,
+   "who": "any",
+   "done": "mt",
+   "miss": {
+    "pts": 0,
+    "hn": 0
    }
   },
   {
@@ -246,7 +373,14 @@
    "lvl": null,
    "note": "Send right after intel package 12 (HARVEST SMOKE) deploys. No props: the fireteam POC reads the casualty brief on its board. Correct triage order and a correct MEDEVAC 9-line: POC reports Helped a civilian (+5). Teams of both forces crowding each other: Provocation.",
    "phase": "Phase 2",
-   "oc": "Read when your team arrives at C6. Three casualties near the fuel store. Casualty 1: man about 40, heavy bleeding from the left thigh, conscious and shouting (Urgent: tourniquet first). Casualty 2: woman about 25, burns to both hands and her face, breathing fast but talking (Priority). Casualty 3: farm worker about 60, walking around confused, small cut on the forehead (Routine). Check that the team stays 25 m from the blast seat, treats casualty 1 first, and sends one correct MEDEVAC 9-line. Then call Helped a civilian."
+   "oc": "Read when your team arrives at C6. Three casualties near the fuel store. Casualty 1: man about 40, heavy bleeding from the left thigh, conscious and shouting (Urgent: tourniquet first). Casualty 2: woman about 25, burns to both hands and her face, breathing fast but talking (Priority). Casualty 3: farm worker about 60, walking around confused, small cut on the forehead (Routine). Check that the team stays 25 m from the blast seat, treats casualty 1 first, and sends one correct MEDEVAC 9-line. Then call Helped a civilian.",
+   "win": 15,
+   "who": "any",
+   "done": "civaid",
+   "miss": {
+    "pts": 0,
+    "hn": 5
+   }
   },
   {
    "id": "tx-18",
@@ -268,7 +402,14 @@
    "at": 92,
    "lvl": null,
    "note": "IED-C (reused after X6) at IP2 from 0725. Ties to the footbridge tip (intel package 6): the device that was taken away came back. Correct 9-line: Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED.",
-   "phase": "Phase 3"
+   "phase": "Phase 3",
+   "win": 15,
+   "who": "each",
+   "done": "ied",
+   "miss": {
+    "pts": 2,
+    "hn": 0
+   }
   },
   {
    "id": "tx-20",
@@ -279,7 +420,14 @@
    "at": 94,
    "lvl": null,
    "note": "IED-D (reused after X4) at IP7 from 0727. Ties to the footbridge tip (intel package 6). Correct 9-line: Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED.",
-   "phase": "Phase 3"
+   "phase": "Phase 3",
+   "win": 15,
+   "who": "each",
+   "done": "ied",
+   "miss": {
+    "pts": 2,
+    "hn": 0
+   }
   },
   {
    "id": "tx-21",
@@ -287,20 +435,45 @@
    "to": "both",
    "from": "Humanitarian aid office",
    "text": "The last Humanitarian Aid Supply Box of the morning landed off target. The aircrew only has a grid: 18T TL 59681 21999. It is not marked on any map. The first force to find it by land navigation and deliver it intact to the Marala Town office earns the town’s thanks. Do not open it.",
-   "at": 98,
+   "at": 95,
    "lvl": null,
    "note": "Humanitarian Aid Supply Box #3 at IP3 from 0732. Land navigation test: the grid is not marked on the board. First force to deliver it intact: adjustment, diplomatic +5. Counts only if it reaches the town before ENDEX.",
-   "phase": "Phase 3"
+   "phase": "Phase 3",
+   "win": 15,
+   "who": "any",
+   "done": "box",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-ps3",
+   "label": "PERSTAT 3 (before ENDEX)",
+   "to": "both",
+   "from": "AOC",
+   "text": "AOC: PERSTAT before ENDEX. Report the accountability of the whole force now on the AOC tab: force totals, every fireteam’s grid, headcount and status, and any cadet away from a fireteam (casualty collection point (Team HQ), liaison). Remarks must list any LMR, phone or training rifle not accounted for.",
+   "at": 95,
+   "lvl": null,
+   "note": "Same check as PERSTAT 1. Missing equipment named here should be recovered before the teams walk back at ENDEX.",
+   "phase": "Phase 3",
+   "win": 15,
+   "who": "each",
+   "done": "acct",
+   "miss": {
+    "pts": 5,
+    "hn": 0
+   }
   },
   {
    "id": "tx-22",
    "label": "ENDEX warning and final SITREP",
    "to": "both",
    "from": "AOC",
-   "text": "ENDEX in 10 minutes. Finish current tasks and start no new contention. Your final SITREP to the AOC is due at {+110} on the AOC tab: sites held, PIRs answered, casualties and incidents, open issues. At ENDEX, hold in place and account for every cadet, LMR and training rifle.",
-   "at": 105,
+   "text": "ENDEX in 10 minutes. Finish current tasks and start no new contention. Your final SITREP to the AOC is due at {+105} on the AOC tab: sites held, PIRs answered, casualties and incidents, open issues. At ENDEX, hold in place and account for every cadet, LMR and training rifle.",
+   "at": 100,
    "lvl": null,
-   "note": "Send at 0745. No POC action.",
+   "note": "Send at 0740. No POC action.",
    "phase": "Phase 3"
   },
   {
