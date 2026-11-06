@@ -318,24 +318,6 @@
    }
   },
   {
-   "id": "tx-16",
-   "label": "Primary LMR channel compromised",
-   "to": "both",
-   "from": "AOC",
-   "text": "AOC: SIGINT confirms the First Front is monitoring your primary LMR channel. Execute your PACE plan now: move every fireteam to your alternate channel and confirm to the AOC by {+77} that all teams have checked in on it (AOC tab, Ask the AOC, Something else). Do not say the channel number on the old channel.",
-   "at": 72,
-   "lvl": null,
-   "note": "Watch both nets. A force that confirms by 0717 with every team on the alternate: adjustment +1 point (reason \"PACE executed\"). A force that announces its new channel on the old one: no points.",
-   "phase": "Phase 2",
-   "win": 10,
-   "who": "each",
-   "done": "aoc",
-   "miss": {
-    "pts": 0,
-    "hn": 0
-   }
-  },
-  {
    "id": "tx-16b",
    "label": "Militia technical on the move",
    "to": "both",

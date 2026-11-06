@@ -4228,7 +4228,7 @@ function buildOC(){
       <div class="row"><label>Force<select data-ocside><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
       <label>Ask the team: which inject or intel package is this for?<select data-ocinj><option value="">Choose one</option><option value="none">Not for an inject or package</option><option value="unk">The team doesn’t know</option></select></label>
       <p class="small muted" style="margin:-4px 0 0">The White Force sees the answer with your call. If the team doesn’t know, the board compares the team’s GPS with each open item’s location for the White Force.</p>
-      <div class="evgrid">${Object.entries(OC_CALLS).filter(([k]) => k !== 'custom').map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div>
+      <div class="evgrid">${Object.entries(OC_CALLS).filter(([k]) => k !== 'custom' && k !== 'pace').map(([k, c]) => '<button type="button" data-occall="' + k + '">' + esc(c.name) + '<small>' + esc(c.sub) + '</small></button>').join('')}</div>
       <details class="oc-custom"><summary><b>Something else</b> <span class="small muted">anything the buttons above do not cover</span></summary>
         <form class="stack" data-occustom style="margin-top:6px"><label>What happened<textarea name="text" rows="2" maxlength="200" required placeholder="Example: The team gave first aid to a hurt POC and stopped the game safely."></textarea></label>
           <div class="row"><label>Points<input name="pts" type="number" min="-30" max="30" value="0"></label><label>Diplomatic points<input name="hn" type="number" min="-30" max="30" value="0"></label><label>Escalation<input name="esc" type="number" min="-30" max="30" value="0"></label></div>
@@ -6041,7 +6041,7 @@ function buildWhite(){
         <button type="button" data-ev="provocation" data-side="${s}">Aimed at or crowded the other force<small>Escalation +5</small></button>
         <button type="button" data-ev="firstfire" data-side="${s}">Fired first<small>Escalation +20 - Diplomatic points −15</small></button>
         <button type="button" data-ev="returnfire" data-side="${s}">Returned fire<small>Escalation +5</small></button>
-        ${['prok', 'prpart', 'box', 'detain', 'mayorhand', 'pace', 'field'].map(k => '<button type="button" data-wfcall="' + k + '" data-side="' + s + '">' + esc(OC_CALLS[k].name) + '<small>' + esc(OC_CALLS[k].sub) + '</small></button>').join('')}
+        ${['prok', 'prpart', 'box', 'detain', 'mayorhand', 'field'].map(k => '<button type="button" data-wfcall="' + k + '" data-side="' + s + '">' + esc(OC_CALLS[k].name) + '<small>' + esc(OC_CALLS[k].sub) + '</small></button>').join('')}
         <button type="button" data-ev="office" data-side="${s}" data-on="0">Close town office<small>Override</small></button>
       </div>
       <form class="row" data-wf="adjust" data-side="${s}"><label>Adjust<select name="field"><option value="hn">Diplomatic points</option><option value="pts">Points</option><option value="esc">Escalation (charged to them)</option></select></label><label>By<input name="delta" type="number" value="1" step="1"></label><label>Reason<input name="reason" maxlength="80"></label><button type="submit" style="flex:0 0 auto">Apply</button></form>
