@@ -476,6 +476,12 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 .ochead-name{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
 .ochead-name b{font-size:17px}
 .ocinj-cur{border:2px solid var(--warn);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--panel)}
+.ocinj-cur.here{border-width:3px;border-color:var(--good)}
+.ocinj-here{background:var(--good);color:#fff;font-weight:700;font-size:16px;padding:8px 10px;border-radius:6px}
+.ocinj-manual{font-size:12px;color:var(--muted)}
+.ocinj-tag{display:inline-block;background:var(--good);color:#fff;font-size:12px;font-weight:700;padding:1px 6px;border-radius:4px}
+:root[data-theme="dark"] .ocinj-here,:root[data-theme="dark"] .ocinj-tag{color:#0f1f15}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .ocinj-here,:root:not([data-theme="light"]) .ocinj-tag{color:#0f1f15}}
 .ocinj-head{display:flex;flex-direction:column;gap:2px}
 .ocinj-head b{font-size:17px}
 .ocinj-read p{font-size:18px;line-height:1.45;margin:4px 0 0}
@@ -4427,7 +4433,9 @@ function ocScenes(S, v, o){
   $('[data-ocscenegps]', v).textContent = here ? 'GPS ±' + here.acc + ' m' : located ? 'No GPS: tap the inject your team is at' : '';
   if (!app.ocNear) app.ocNear = {};
   list.forEach(x => { x.d = here && x.pt ? distM(here.pt, x.pt) : null; x.near = x.d != null && x.d <= 60 + Math.min(here.acc, 40);
-    if (x.near && !app.ocNear[x.id]){ app.ocNear[x.id] = true; if (!app.ocInj || !list.some(y => y.id === app.ocInj)){ app.ocInj = x.id; app.ocInjAuto = true; } app.ocJump = true; toast('Your team is at ' + x.q.label + '. ' + (x.scene ? 'Read the scene to the team.' : 'Open it to see what to do.')); try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch(e){} } });
+    if (x.near && !app.ocNear[x.id]){ app.ocNear[x.id] = true; x.fresh = true; } });
+  { const curNear = list.some(y => y.id === app.ocInj && y.near), hit = list.find(x => x.fresh);
+    if (hit){ if (!curNear){ app.ocInj = hit.id; app.ocInjAuto = true; } app.ocJump = true; msgSound(); try { navigator.vibrate && navigator.vibrate([300, 150, 300, 150, 300]); } catch(e){} toast('GPS: your team is at ' + hit.q.label + '. ' + (curNear ? 'Tap Switch to this one when ready.' : hit.scene ? 'Read the scene to the team now.' : 'Its card is open on the Now tab.')); } }
   if (app.ocInj && !list.some(x => x.id === app.ocInj)) app.ocInj = null;
   const cur = list.find(x => x.id === app.ocInj) || null;
   const where = x => (x.sq ? 'Square ' + x.sq : '') + (x.pt ? (x.sq ? ', ' : '') + 'grid ' + fmtPt(x.pt).split(' ').slice(2).join(' ') : '') || 'No set location';
@@ -4436,7 +4444,7 @@ function ocScenes(S, v, o){
   let html = '';
   if (cur){
     const read = cur.scene || cur.oc;
-    html += '<div class="ocinj-cur" data-ocinjcur="' + esc(cur.id) + '"><div class="ocinj-head"><b>' + esc(cur.q.label) + '</b><span class="small">' + esc(where(cur) + dist(cur)) + '</span><span class="small">' + esc(time(cur)) + '</span></div>' +
+    html += '<div class="ocinj-cur' + (cur.near ? ' here' : '') + '" data-ocinjcur="' + esc(cur.id) + '">' + (cur.near ? '<div class="ocinj-here" role="alert">Your team is here. GPS puts you about ' + cur.d + ' m from it.</div>' : '<div class="ocinj-manual">Opened by you, not by GPS</div>') + '<div class="ocinj-head"><b>' + esc(cur.q.label) + '</b><span class="small">' + esc(where(cur) + dist(cur)) + '</span><span class="small">' + esc(time(cur)) + '</span></div>' +
       (cur.scene ? '<div class="ocinj-read"><span class="small muted">Read aloud to the team</span><p>“' + esc(cur.scene) + '”</p></div>' : '') +
       (cur.oc ? '<div class="ocinj-sec"><span class="small muted">' + (cur.scene ? 'Your notes' : 'What you do and say') + '</span><p>' + esc(cur.oc) + '</p></div>' : '') +
       (!read ? '<div class="ocinj-sec"><span class="small muted">The scenario (what the team’s C2 received)</span><p>' + esc(cur.text) + '</p></div>' : '') +
@@ -4445,7 +4453,7 @@ function ocScenes(S, v, o){
       '<div class="row" style="justify-content:flex-start">' + (cur.q.win ? '<button type="button" class="btn-side" data-ocinjcall="' + esc(cur.id) + '" style="flex:0 0 auto">Make a call for this inject</button>' : '') + '<button type="button" data-ocinjclose style="flex:0 0 auto">Close</button></div></div>';
   }
   const rest = list.filter(x => x !== cur);
-  html += rest.length ? '<div class="list">' + rest.map(x => '<div class="li' + (x.near ? ' warnrow' : '') + '"><div class="grow"><b>' + esc(x.q.label) + '</b> <span class="small muted">' + esc(where(x) + dist(x)) + '. ' + esc(time(x)) + '.</span></div><button type="button" data-ocinjopen="' + esc(x.id) + '" style="flex:0 0 auto">' + (cur ? 'Switch to this one' : 'We’re at this one') + '</button></div>').join('') + '</div>'
+  html += rest.length ? '<div class="list">' + rest.map(x => '<div class="li' + (x.near ? ' warnrow' : '') + '"><div class="grow">' + (x.near ? '<span class="ocinj-tag">Team is here (GPS)</span> ' : '') + '<b>' + esc(x.q.label) + '</b> <span class="small muted">' + esc(where(x) + dist(x)) + '. ' + esc(time(x)) + '.</span></div><button type="button" data-ocinjopen="' + esc(x.id) + '" style="flex:0 0 auto">' + (cur ? 'Switch to this one' : 'We’re at this one') + '</button></div>').join('') + '</div>'
     : !cur ? '<div class="empty">No injects are out for your team right now. When one comes in it shows here, with what to read and do.</div>' : '';
   const el = $('[data-ocinjs]', v); if (el.dataset.h !== html){ const op = cur ? !!$('[data-ocinjcur] details[open]', el) : false; el.dataset.h = html; el.innerHTML = html; if (op){ const d = $('[data-ocinjcur] details', el); if (d) d.open = true; } }
   $('[data-ocinjn]', v).textContent = list.length ? list.length + ' out now' : '';
