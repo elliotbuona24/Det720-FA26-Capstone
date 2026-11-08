@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-<meta name="theme-color" content="#fafaf7">
+<meta name="theme-color" content="#d5d9d2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1f272c" media="(prefers-color-scheme: dark)">
 <script>
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyB4qzKxVXGawFgukEFqRHhMcvC5lyw0q5I",
@@ -22,15 +23,15 @@ const RECOVERY_CODE_HASH = "3nonh9lo9n";
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
-<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif;background:#fafaf7}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif;background:#d5d9d2}@media (prefers-color-scheme: dark){:root{color-scheme:dark}body{background:#1f272c}}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
 <style>
 /* Layout: an ops-floor console. Status strip on top, island chart left, controls right, feed beside. */
 :root{
-  --bg:#e9ece8; --panel:#fbfbf8; --panel-2:#f2f4f0; --ink:#17202a; --muted:#56616c; --line:#a3ada6;
-  --sea:#c9dde3; --sea-line:#b3cbd3; --land:#e6dcc0; --land-edge:#a8996d; --grid:rgba(23,32,42,.22);
-  --blu:#1d5cc0; --blu-soft:#dce7fb; --red:#bf2f28; --red-soft:#f9dfdc; --wc:#3d4a3f; --wc-soft:#dfe6dd; --aoc:#8a6514; --aoc-soft:#f4ead2;
+  --bg:#d5d9d2; --panel:#e7eae3; --panel-2:#dde1da; --ink:#18212a; --muted:#4a5660; --line:#939d95;
+  --sea:#bccfd6; --sea-line:#a6bec6; --land:#d9cfb2; --land-edge:#9a8b60; --grid:rgba(23,32,42,.24);
+  --blu:#1b56b4; --blu-soft:#cdd9ee; --red:#b32b25; --red-soft:#ecd1cd; --wc:#3a473c; --wc-soft:#d0d9cd; --aoc:#7f5d12; --aoc-soft:#e6dbc0;
   --e0:#2d8a57; --e1:#c39a1d; --e2:#d5712a; --e3:#bf2f28; --e4:#5c1414;
   --good:#2d8a57; --warn:#b7791f; --bad:#bf2f28; --focus:#1d5cc0;
   --display:'Saira Condensed','Arial Narrow',Arial,sans-serif;
@@ -38,16 +39,16 @@ const RECOVERY_CODE_HASH = "3nonh9lo9n";
   --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0e1316; --panel:#151c21; --panel-2:#1b242a; --ink:#e4e9ec; --muted:#97a3ad; --line:#46545e;
-  --sea:#11232b; --sea-line:#1a333d; --land:#2a2a21; --land-edge:#6a6245; --grid:rgba(228,233,236,.16);
-  --blu:#6c9ff0; --blu-soft:#172a48; --red:#ee6d62; --red-soft:#3c1c19; --wc:#b9c7b6; --wc-soft:#202a22; --aoc:#e2bd62; --aoc-soft:#2c2614;
+  --bg:#1f272c; --panel:#2a343a; --panel-2:#313c43; --ink:#e2e7ea; --muted:#a4b0b8; --line:#56656e;
+  --sea:#1d323b; --sea-line:#28434e; --land:#38372c; --land-edge:#7a7152; --grid:rgba(228,233,236,.18);
+  --blu:#78a8f2; --blu-soft:#253b5c; --red:#f07a70; --red-soft:#4b2925; --wc:#bfccbc; --wc-soft:#2e3a30; --aoc:#e4c26c; --aoc-soft:#3d3520;
   --e0:#4fb97c; --e1:#e2bd47; --e2:#f0914c; --e3:#ee6d62; --e4:#b14a4a;
   --good:#4fb97c; --warn:#e2bd47; --bad:#ee6d62; --focus:#6c9ff0; color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --bg:#0e1316; --panel:#151c21; --panel-2:#1b242a; --ink:#e4e9ec; --muted:#97a3ad; --line:#46545e;
-  --sea:#11232b; --sea-line:#1a333d; --land:#2a2a21; --land-edge:#6a6245; --grid:rgba(228,233,236,.16);
-  --blu:#6c9ff0; --blu-soft:#172a48; --red:#ee6d62; --red-soft:#3c1c19; --wc:#b9c7b6; --wc-soft:#202a22; --aoc:#e2bd62; --aoc-soft:#2c2614;
+  --bg:#1f272c; --panel:#2a343a; --panel-2:#313c43; --ink:#e2e7ea; --muted:#a4b0b8; --line:#56656e;
+  --sea:#1d323b; --sea-line:#28434e; --land:#38372c; --land-edge:#7a7152; --grid:rgba(228,233,236,.18);
+  --blu:#78a8f2; --blu-soft:#253b5c; --red:#f07a70; --red-soft:#4b2925; --wc:#bfccbc; --wc-soft:#2e3a30; --aoc:#e4c26c; --aoc-soft:#3d3520;
   --e0:#4fb97c; --e1:#e2bd47; --e2:#f0914c; --e3:#ee6d62; --e4:#b14a4a;
   --good:#4fb97c; --warn:#e2bd47; --bad:#ee6d62; --focus:#6c9ff0; color-scheme:dark;
 }
@@ -388,8 +389,8 @@ fieldset.ip-set legend{font-size:12px;color:var(--muted);padding:0 4px}
 .act details summary{cursor:pointer;font-size:13px;font-weight:500}
 .btn-side{background:var(--side);border-color:var(--side);color:#fff}
 @media (hover:hover) and (pointer:fine){.btn-side:hover:not(:disabled){filter:brightness(1.08)}}
-:root[data-theme="dark"] .btn-side{color:#0e1316}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-side{color:#0e1316}}
+:root[data-theme="dark"] .btn-side{color:#1f272c}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-side{color:#1f272c}}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .tabs button{border:none;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 10px;color:var(--muted)}
 .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--side)}
