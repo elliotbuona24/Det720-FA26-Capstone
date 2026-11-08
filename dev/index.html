@@ -143,7 +143,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .tl-bar{position:absolute;height:24px;min-width:6px;border-radius:5px;border:1.5px solid var(--ink);background:var(--panel-2);display:flex;align-items:center;gap:6px;padding:0 6px;overflow:hidden;white-space:nowrap;font-size:12px;box-sizing:border-box}
 .tl-bar b{font-family:var(--mono)}.tl-bar span{overflow:hidden;text-overflow:ellipsis}
 .tl-bar.to-B{border-color:var(--blu);background:var(--blu-soft)}.tl-bar.to-R{border-color:var(--red);background:var(--red-soft)}.tl-bar.to-both{background:linear-gradient(180deg,var(--blu-soft) 50%,var(--red-soft) 50%)}
-.tl-bar.done{opacity:.5}.tl-bar.miss{outline:2px dashed var(--bad);outline-offset:-2px}.tl-bar[data-tlid]{cursor:pointer}
+.tl-bar.done{opacity:.5}.tl-bar.miss{outline:2px dashed var(--bad);outline-offset:-2px}.tl-bar[data-tlid],.tl-bar[data-stlid]{cursor:pointer}
 .rs-row summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.rs-row .rs-btns{display:flex;gap:6px;margin-left:auto}.rs-row.out{opacity:.75}.rw-help p,.rw-help ul{margin:6px 0}.oc-custom summary{cursor:pointer}.cbf-det summary{cursor:pointer;font-weight:600}.rw-help summary{cursor:pointer}
 .tl-ctl{align-items:end;margin:0 0 8px;gap:10px}.tl-ctl .seg{display:flex;gap:0}.tl-ctl .seg button{border-radius:0;margin-left:-1px}.tl-ctl .seg button:first-child{border-radius:6px 0 0 6px}.tl-ctl .seg button:last-child{border-radius:0 6px 6px 0}.tl-ctl .seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 .tl-detail{grid-column:1 / -1;margin-top:8px;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)}
@@ -449,6 +449,49 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 .public-view .bigclock{font-family:var(--mono);font-size:clamp(48px,10vw,120px);font-weight:600;line-height:1}
 .public-view .biglvl{font-family:var(--display);font-size:clamp(28px,5vw,56px);font-weight:700;letter-spacing:.06em;text-transform:uppercase;line-height:1}
 .public-view .ladder-bar{height:34px}
+.aocf{display:flex;flex-wrap:wrap;gap:6px}
+.aocf button{border-radius:999px;padding:5px 12px;font-size:13px}
+.aocf button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+[data-pane="aoc"] .act.aocf-off{display:none!important}
+.cubclk{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:8px;background:var(--panel-2)}
+.cubclk.ph-draft{border-left-color:var(--focus)}.cubclk.ph-open{border-left-color:var(--good)}.cubclk.ph-due{border-left-color:var(--warn)}.cubclk.ph-late{border-left-color:var(--bad)}.cubclk.ph-sent{border-left-color:var(--muted)}
+.cubclk-top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.cubclk-top b{flex:1 1 220px;min-width:0}
+.cubclk-cd{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.cubclk-cd small{font-size:12px;font-weight:400;color:var(--muted);margin-left:4px}
+.cubclk-bar{position:relative;height:6px;border-radius:3px;background:var(--line);margin:4px 0 16px}
+.cubclk-bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--focus)}
+.ph-open .cubclk-bar>i{background:var(--good)}.ph-due .cubclk-bar>i{background:var(--warn)}.ph-late .cubclk-bar>i{background:var(--bad)}
+.cubclk-mk{position:absolute;top:-4px;width:2px;height:14px;background:var(--ink);transform:translateX(-1px)}
+.cubclk-lb{position:absolute;top:12px;font-size:11px;color:var(--muted);white-space:nowrap;transform:translateX(-50%)}
+.cubclk-lb.l0{transform:none}.cubclk-lb.l2{transform:translateX(-100%)}
+.cubstrip{margin:0 0 10px}
+.cubstrip .cubclk{padding:8px 12px;gap:4px}
+.cubstrip .cubclk-cd{font-size:18px}
+.cubstrip .cubclk-top button{flex:0 0 auto;padding:4px 10px;font-size:13px}
+.ochead summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none}
+.ochead summary::-webkit-details-marker{display:none}
+.ochead summary::after{content:'';width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 0;flex:0 0 auto}
+.ochead[open] summary::after{transform:rotate(-135deg);margin:4px 4px 0 0}
+.ochead-name{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+.ochead-name b{font-size:17px}
+.ocinj-cur{border:2px solid var(--warn);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--panel)}
+.ocinj-head{display:flex;flex-direction:column;gap:2px}
+.ocinj-head b{font-size:17px}
+.ocinj-read p{font-size:18px;line-height:1.45;margin:4px 0 0}
+.ocinj-sec p{margin:4px 0 0}
+.ocinj-cur details summary{cursor:pointer}
+.defend-ov{position:fixed;inset:0;z-index:1800;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:16px}
+.defend-card{background:var(--panel);color:var(--ink);border:2px solid var(--bad);border-radius:12px;width:100%;max-width:440px;padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:10px}
+.defend-card h2{margin:0;font-size:20px;color:var(--bad)}
+.defend-card p{margin:0}
+.defend-time{font-size:15px}
+.defend-time b{font-variant-numeric:tabular-nums}
+.defend-form{display:flex;gap:8px;flex-wrap:wrap}
+.defend-form input{flex:1 1 180px;min-width:0;text-transform:uppercase;font-size:16px}
+.defend-err{color:var(--bad);font-size:14px}
+.defend-bar{border:2px solid var(--bad);background:var(--panel);border-radius:10px;padding:10px 12px;margin:0 0 10px;display:flex;flex-direction:column;gap:8px}
+.defend-bar .defend-head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.defend-head .grow{flex:1 1 200px;min-width:0}
 .warbar{background:var(--e4);color:#fff;font-family:var(--display);font-size:22px;letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;border-radius:8px}
 @media (prefers-reduced-motion: no-preference){.pulse{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{opacity:.55}}}
 .hidden-sm{}
@@ -4229,13 +4272,13 @@ function buildOC(){
   }
   v.innerHTML = `
   <div class="stack">
-    <div class="panel"><div class="act-head"><h2 data-ocname>${esc(me.name)}</h2><span class="small muted">POC - <b class="mono" data-clock>—</b></span></div>
-      <div class="row" style="align-items:end"><label>Attached to<select data-ocassign></select></label><button type="button" data-ocsignout style="flex:0 0 auto">Sign out</button></div>
+    <details class="panel ochead" data-ochead><summary><span class="ochead-name"><b data-ocname>${esc(me.name)}</b><span class="small muted" data-ocwhere></span></span><b class="mono" data-clock>—</b></summary>
+      <div class="stack" style="margin-top:10px"><div class="row" style="align-items:end"><label>Attached to<select data-ocassign></select></label><button type="button" data-ocsignout style="flex:0 0 auto">Sign out</button></div>
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
-      <label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
-      <div class="ip-status" data-ocwarn hidden style="color:var(--bad);font-weight:600"></div></div>
+      <label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label></div></details>
+    <div class="ip-status" data-ocwarn hidden style="color:var(--bad);font-weight:600"></div>
     <div class="panel stack" data-ps="now" data-ocshowbox hidden><h2>Show of force on your team's wing</h2><p class="small muted" style="margin:0">Report whether your team left the area. The board also checks GPS at the deadline; your report settles it if the phone does not answer.</p><div class="list" data-ocshows></div></div>
-    <div class="panel stack" data-ps="now" data-ocscenebox hidden><div class="act-head"><h2>Militia targets for your team</h2><span class="small muted" data-ocscenegps></span></div><p class="small muted" style="margin:0">When your team reaches the square, read the scene aloud so it can send a SALUTE. This phone alerts you when you get within about 60 m.</p><div class="list" data-ocscenes></div></div>
+    <div class="panel stack" data-ps="now" data-ocinjbox><div class="act-head"><h2>Injects for your team</h2><span class="small muted" data-ocinjn></span></div><p class="small muted" style="margin:0">Everything out for your team right now. When GPS puts your team at one, it opens by itself and this phone buzzes. If GPS isn’t working, tap We’re at this one to open what to read and do. <b data-ocscenegps></b></p><div class="stack" data-ocinjs></div></div>
     <div class="panel stack" data-ps="now" data-ocannbox hidden><h2>Announcements</h2><div class="list" data-ocanns></div></div>
     <div class="panel stack" data-ps="now"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
     <div class="panel stack" data-ps="calls"><h2>Calls for the White Force</h2><p class="small muted" style="margin:0">Calls take effect only after White Force approval.</p>
@@ -4266,7 +4309,7 @@ function buildOC(){
       <div class="row" style="justify-content:flex-start"><button type="button" data-ocfull style="flex:0 0 auto">Full screen map</button></div>
       <div class="map-wrap" data-ocmap></div><div data-oclegend></div></div></details>
   </div>`;
-  ptabs(v, 'marala-octab', [['now', 'Now'], ['calls', 'Calls'], ['msg', 'Messages'], ['map', 'Map'], ['all', 'All']], 'now', k => { if (k === 'map'){ const d = $('[data-ocmapbox]', v); if (d) d.open = true; } });
+  ptabs(v, 'marala-octab', [['now', 'Now'], ['calls', 'Calls'], ['msg', 'Messages'], ['map', 'Map'], ['all', 'All']], 'now', k => { if (k === 'map'){ const d = $('[data-ocmapbox]', v); if (d) d.open = true; } const hd = $('[data-ochead]', v); if (hd){ const o = app.S && app.S.ocs[me.id]; hd.open = k === 'all' || !(o && (o.team || o.mayor)); } });
   $('[data-ocmapbox]', v).addEventListener('toggle', () => refresh(true));
   $('[data-occf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return; } await writeEvent('occhat', null, { oc:me.id, from:'oc', text:tx }); f.text.value = ''; });
   $('[data-ocfull]', v).onclick = () => openFullMap(null);
@@ -4290,6 +4333,20 @@ function buildOC(){
     if (n){ const o = app.S && app.S.ocs[me.id]; await writeEvent('nine_res', null, { nine:n.dataset.ocnine, ok:n.dataset.ok === '1', by:(o ? o.name : me.name) }); toast(n.dataset.ok === '1' ? 'Sent to their C2.' : 'Sent back to the team.'); return; }
     if (ev.target.closest('[data-ocstalesend]')){ const k = $('[data-ocstalesite]', v).value; if (!SITES[k]) return; if (!confirm('Report a stalemate at ' + SITES[k].name + '?')) return; await send({ kind:'stale', site:k }, 'Stalemate reported to the White Force.'); return; }
     if (ev.target.closest('[data-ocsitesend]')){ const who = $('[data-ocwho]', v).value; if (await send({ kind:'site', site:$('[data-ocsite]', v).value, who:who === 'both' ? 'both' : 'one', side:who === 'both' ? null : who, text:$('[data-ocsitenote]', v).value })) $('[data-ocsitenote]', v).value = ''; return; }
+  });
+  v.addEventListener('click', ev => {
+    const op = ev.target.closest('[data-ocinjopen]'), cl = ev.target.closest('[data-ocinjclose]'), ca = ev.target.closest('[data-ocinjcall]');
+    if (!op && !cl && !ca) return;
+    if (op){ app.ocInj = op.dataset.ocinjopen; app.ocInjAuto = false; }
+    if (cl){ app.ocInj = null; }
+    if (op || cl){ if (app.S) ocScenes(app.S, v, app.S.ocs[me.id]); if (op){ const c = $('[data-ocinjcur]', v), nv = $('.ptabs', v); if (c) window.scrollTo({ top:window.scrollY + c.getBoundingClientRect().top - (nv ? nv.getBoundingClientRect().height + 8 : 8), behavior:'smooth' }); } return; }
+    const S = app.S, o = S && S.ocs[me.id], ref = 'q:' + ca.dataset.ocinjcall, q = S && (S.injq || []).find(x => x.qid === ca.dataset.ocinjcall);
+    const sd = o && o.side ? o.side : q && (q.to === 'B' || q.to === 'R') ? q.to : $('[data-ocside]', v).value;
+    $('[data-ocside]', v).value = sd; renderOC(S);
+    const sel = $('[data-ocinj]', v); if ([...sel.options].some(x => x.value === ref)){ sel.value = ref; }
+    const tb = $('[data-ptab="calls"]', v); if (tb && v.dataset.ptab !== 'all') tb.click();
+    setTimeout(() => { const nv = $('.ptabs', v); window.scrollTo({ top:window.scrollY + sel.getBoundingClientRect().top - (nv ? nv.getBoundingClientRect().height + 60 : 60), behavior:'smooth' }); }, 80);
+    toast(sel.value === ref ? 'Inject picked. Choose the call.' : 'This inject already has a result for that force.');
   });
   app.ocSideSet = false;
 }
@@ -4320,6 +4377,7 @@ function renderOC(S){
   }
   wakeShow(); refreshSiteSelects(v);
   if (o) $('[data-ocname]', v).textContent = o.name;
+  { const w = $('[data-ocwhere]', v), t = o ? ocWhere(S, o) : ''; if (w && w.textContent !== t) w.textContent = t; const hd = $('[data-ochead]', v); if (hd && o && !(o.team || o.mayor) && !hd.open && !app.ocHeadOpened){ app.ocHeadOpened = true; hd.open = true; } if (o && (o.team || o.mayor)) app.ocHeadOpened = false; }
   const as = $('[data-ocassign]', v);
   if (document.activeElement !== as){ as.innerHTML = ocOpts(S, o); as.value = ocVal(o); }
   const wn = $('[data-ocwarn]', v), det = o && o.detached;
@@ -4341,7 +4399,7 @@ function renderOC(S){
   const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
   $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + (r.reply ? '<div class="small"><b>White Force ' + hhmm(r.resG) + ':</b> ' + esc(r.reply) + '</div>' : '') + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'stale' ? (r.status === 'ok' ? 'marked' : 'not marked') : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : r.reply ? 'replied' : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
   { const reps = S.ocReqs.filter(r => r.oc === me.id && r.reply), n = reps.length; if (app.ocRepN == null || app.ocRepFor !== me.id){ app.ocRepFor = me.id; app.ocRepN = n; } else if (n > app.ocRepN){ app.ocRepN = n; toast('White Force reply: ' + reps[n - 1].reply); } }
-  ptabsBadge(v, { now:$$('[data-ocanns] .li, [data-ocshows] .li, [data-ocnines] .li, [data-ocscenes] .li', v).length, msg:$$('[data-occlog] .chatmsg:not(.me)', v).length, calls:S.ocReqs.filter(r => r.oc === me.id && r.status !== 'open').length });
+  ptabsBadge(v, { now:$$('[data-ocanns] .li, [data-ocshows] .li, [data-ocnines] .li, [data-ocinjs] .li, [data-ocinjcur]', v).length, msg:$$('[data-occlog] .chatmsg:not(.me)', v).length, calls:S.ocReqs.filter(r => r.oc === me.id && r.status !== 'open').length });
 }
 function occSeenKey(id){ return 'marala-occhat-' + (app.gid || 'none') + '-' + id; }
 function occUnread(S, id){ const n = S.occhats.filter(m => m.oc === id && m.from === 'oc').length; let seen = 0; try { seen = +localStorage.getItem(occSeenKey(id)) || 0; } catch(e){} return Math.max(0, n - seen); }
@@ -4350,20 +4408,47 @@ function ocLocBtns(S, o){
   const waiting = pg && (!x || x.ping !== pg.id) && Date.now() - pg.ts < 120000;
   return (fresh ? '<button type="button" data-ocpinhide="' + o.id + ':' + x.ts + '" style="flex:0 0 auto">Remove marker</button>' : '') + '<button type="button" data-oclocate="' + o.id + '" style="flex:0 0 auto"' + (waiting ? ' disabled' : '') + '>' + (waiting ? 'Locating…' : 'Locate') + '</button>';
 }
+function ocInjItems(S, o){
+  const side = o && o.side, M = mapCfg(S), mts = S.mtgts || [];
+  return (S.injq || []).filter(q => q.sent != null && (!side || q.to === 'both' || q.to === 'public' || q.to === side)).map(q => {
+    const mt = mts.find(t => t.id === 'mt-' + q.qid && !t.done && S.g < t.until - 1e-9), end = q.win ? injEnd(q) : null, r = side && q.res ? q.res[side] : null;
+    const live = q.win ? q.closed == null && !r : mt ? true : S.g - q.sent <= 15 + 1e-9;
+    if (!live) return null;
+    const pt = refLoc(S, 'q:' + q.qid), sq = pt ? squareOf(M, pt) : null;
+    return { q, id:q.qid, mt, end, pt, sq, scene:mt && mt.scene ? mt.scene : '', oc:q.oc ? fillT(q.oc) : '', text:q.sentText || fillT(q.text || ''), needs:q.win ? refNeeds(S, 'q:' + q.qid) : '', until:mt ? mt.until : null };
+  }).filter(Boolean).sort((a, b) => (a.end == null) - (b.end == null) || (a.end || 0) - (b.end || 0) || b.q.sent - a.q.sent);
+}
 function ocScenes(S, v, o){
-  const box = $('[data-ocscenebox]', v); if (!box) return;
-  const list = o && o.side ? mtFor(S, o.side).filter(t => t.scene) : [];
-  box.hidden = !list.length;
-  if (list.length && !app.ocWatch && navigator.geolocation){ try { app.ocWatch = navigator.geolocation.watchPosition(p => { app.ocHere = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.S && app.role === 'OC' && $('#vOC [data-ocscenebox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); else { try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; } }, () => { app.ocHere = null; }, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){} }
-  if (!list.length && app.ocWatch != null){ try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; }
+  const box = $('[data-ocinjbox]', v); if (!box) return;
+  const list = ocInjItems(S, o), located = list.some(x => x.pt);
+  if (located && !app.ocWatch && navigator.geolocation){ try { app.ocWatch = navigator.geolocation.watchPosition(p => { app.ocHere = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); else { try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; } }, () => { app.ocHere = null; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); }, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){} }
+  if (!located && app.ocWatch != null){ try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; }
   const here = app.ocHere && Date.now() - app.ocHere.t < 120000 ? app.ocHere : null;
-  $('[data-ocscenegps]', v).textContent = here ? 'GPS ±' + here.acc + ' m' : 'No GPS fix yet';
+  $('[data-ocscenegps]', v).textContent = here ? 'GPS ±' + here.acc + ' m' : located ? 'No GPS: tap the inject your team is at' : '';
   if (!app.ocNear) app.ocNear = {};
-  const html = list.map(t => { const d = here && t.pt ? distM(here.pt, t.pt) : null, near = d != null && d <= 60 + Math.min(here.acc, 40);
-    if (near && !app.ocNear[t.id]){ app.ocNear[t.id] = true; app.ocJump = true; toast('Your team is at the ' + t.label + '. Read the scene to the team.'); try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch(e){} }
-    return '<div class="li' + (near ? ' warnrow' : '') + '" style="' + (near ? 'border-left:4px solid var(--warn,#c98500);padding-left:8px' : '') + '"><div class="grow"><b>' + esc(t.label) + '</b> <span class="small muted">Square ' + esc(t.grid || '?') + ' - gone at ' + hhmm(t.until) + (d != null ? ' - about ' + d + ' m from you' : '') + '</span>' +
-      (near ? '<div style="font-size:17px;margin-top:6px"><b>Read aloud:</b> “' + esc(t.scene) + '”</div>' : '<details><summary class="small">What to read when your team gets there</summary><div style="margin-top:4px">“' + esc(t.scene) + '”</div></details>') + '</div></div>'; }).join('');
-  const el = $('[data-ocscenes]', v); if (el.dataset.h !== html){ el.dataset.h = html; el.innerHTML = html; }
+  list.forEach(x => { x.d = here && x.pt ? distM(here.pt, x.pt) : null; x.near = x.d != null && x.d <= 60 + Math.min(here.acc, 40);
+    if (x.near && !app.ocNear[x.id]){ app.ocNear[x.id] = true; if (!app.ocInj || !list.some(y => y.id === app.ocInj)){ app.ocInj = x.id; app.ocInjAuto = true; } app.ocJump = true; toast('Your team is at ' + x.q.label + '. ' + (x.scene ? 'Read the scene to the team.' : 'Open it to see what to do.')); try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch(e){} } });
+  if (app.ocInj && !list.some(x => x.id === app.ocInj)) app.ocInj = null;
+  const cur = list.find(x => x.id === app.ocInj) || null;
+  const where = x => (x.sq ? 'Square ' + x.sq : '') + (x.pt ? (x.sq ? ', ' : '') + 'grid ' + fmtPt(x.pt).split(' ').slice(2).join(' ') : '') || 'No set location';
+  const time = x => x.end != null ? 'Respond by ' + hhmm(x.end) : x.q.win ? 'Clock starts when props are placed' : x.until != null ? 'Gone at ' + hhmm(x.until) : 'Sent ' + hhmm(x.q.sent);
+  const dist = x => x.d != null ? ', about ' + x.d + ' m from you' : '';
+  let html = '';
+  if (cur){
+    const read = cur.scene || cur.oc;
+    html += '<div class="ocinj-cur" data-ocinjcur="' + esc(cur.id) + '"><div class="ocinj-head"><b>' + esc(cur.q.label) + '</b><span class="small">' + esc(where(cur) + dist(cur)) + '</span><span class="small">' + esc(time(cur)) + '</span></div>' +
+      (cur.scene ? '<div class="ocinj-read"><span class="small muted">Read aloud to the team</span><p>“' + esc(cur.scene) + '”</p></div>' : '') +
+      (cur.oc ? '<div class="ocinj-sec"><span class="small muted">' + (cur.scene ? 'Your notes' : 'What you do and say') + '</span><p>' + esc(cur.oc) + '</p></div>' : '') +
+      (!read ? '<div class="ocinj-sec"><span class="small muted">The scenario (what the team’s C2 received)</span><p>' + esc(cur.text) + '</p></div>' : '') +
+      (cur.needs ? '<div class="ocinj-sec"><span class="small muted">The team needs</span><p>' + esc(cur.needs) + '</p></div>' : '') +
+      (read ? '<details class="ocinj-sec"><summary class="small">What the team’s C2 received</summary><p>' + esc(cur.text) + '</p></details>' : '') +
+      '<div class="row" style="justify-content:flex-start">' + (cur.q.win ? '<button type="button" class="btn-side" data-ocinjcall="' + esc(cur.id) + '" style="flex:0 0 auto">Make a call for this inject</button>' : '') + '<button type="button" data-ocinjclose style="flex:0 0 auto">Close</button></div></div>';
+  }
+  const rest = list.filter(x => x !== cur);
+  html += rest.length ? '<div class="list">' + rest.map(x => '<div class="li' + (x.near ? ' warnrow' : '') + '"><div class="grow"><b>' + esc(x.q.label) + '</b> <span class="small muted">' + esc(where(x) + dist(x)) + '. ' + esc(time(x)) + '.</span></div><button type="button" data-ocinjopen="' + esc(x.id) + '" style="flex:0 0 auto">' + (cur ? 'Switch to this one' : 'We’re at this one') + '</button></div>').join('') + '</div>'
+    : !cur ? '<div class="empty">No injects are out for your team right now. When one comes in it shows here, with what to read and do.</div>' : '';
+  const el = $('[data-ocinjs]', v); if (el.dataset.h !== html){ const op = cur ? !!$('[data-ocinjcur] details[open]', el) : false; el.dataset.h = html; el.innerHTML = html; if (op){ const d = $('[data-ocinjcur] details', el); if (d) d.open = true; } }
+  $('[data-ocinjn]', v).textContent = list.length ? list.length + ' out now' : '';
   if (app.ocJump){ app.ocJump = false; const tb = $('[data-ptab="now"]', v); if (tb && v.dataset.ptab !== 'now' && v.dataset.ptab !== 'all') tb.click(); setTimeout(() => { const nv = $('.ptabs', v), off = nv ? nv.getBoundingClientRect().height + 8 : 8; window.scrollTo({ top:window.scrollY + box.getBoundingClientRect().top - off, behavior:'smooth' }); }, 120); }
 }
 function renderOCChatWhite(S, v){
@@ -4614,7 +4699,9 @@ function buildWing(side){
       <div class="stat"><span class="k">Points so far</span><span class="v" data-pts>0</span><span class="s">${esc(other)}'s points are hidden</span></div>
     </div>
     <nav class="wnav" data-cnav aria-label="Wing CC sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-cnesc></span></div><div class="wnav-tabs" role="tablist">${[['all', 'All'], ['pic', 'Picture'], ['map', 'Map'], ['intel', 'Intel', 'data-cnint'], ['inj', 'Injects', 'data-cninj'], ['act', 'Actions'], ['aoc', 'AOC', 'data-cnaoc'], ['rep', 'Reports and claims', 'data-cnct'], ['teams', 'Fireteams', 'data-cnchat'], ['liaison', 'Liaison'], ['req', 'Requests', 'data-cnreq'], ['msg', 'Messages']].map(([k, n, c]) => '<button type="button" role="tab" data-ctab="' + k + '">' + n + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <div data-defend></div>
     <div data-warbar></div>
+    <div data-cubstrip></div>
     <div data-pri></div>
     <div data-roebanner></div>
     <section class="pic fpic" data-sec="pic" data-fpic data-off>
@@ -4636,7 +4723,7 @@ function buildWing(side){
         <div class="pic-card"><div class="pic-h"><h3>AOC priorities, intent and PIRs</h3><span class="small muted">Acknowledge new priorities at the top of the board</span></div><div data-fppri></div></div>
         <div class="pic-card"><div class="pic-h"><h3>Asset status board</h3><span class="small muted" data-fpasbn></span></div><div class="asb-wrap"><table class="asb" data-fpasb></table></div></div>
       </div>
-      <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Your intel packages, statements, injects and messages</span></div><div class="pic-tl" data-fptl></div></div>
+      <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Your intel packages, statements, injects and messages</span></div><div class="row tl-ctl" data-fptlctl></div><div class="pic-tl" data-fptl></div></div>
     </section>
     <div class="wing-grid" data-cgrid>
       <div class="stack" style="gap:14px;min-width:0" data-sec="map intel inj"><div class="panel" data-sec="map">
@@ -4692,18 +4779,20 @@ function buildWing(side){
             </div></details>
         </div>
         <div data-pane="aoc" class="stack" hidden>
-          <div class="act" data-cubbox><div class="act-head"><b data-cubhead>Commander’s Update Brief</b><span class="cost" data-cubdue></span></div>
+          <div class="aocf" role="group" aria-label="Show in the AOC tab" data-aocfilt>${[['all', 'All'], ['cub', 'Update brief'], ['rhythm', 'Battle rhythm'], ['sup', 'Support requests'], ['strike', 'Strikes'], ['intent', 'Intent and PIRs']].map(([k, n]) => '<button type="button" data-aocf="' + k + '" aria-pressed="false">' + n + '</button>').join('')}</div>
+          <div class="act" data-cubbox data-aock="cub"><div class="act-head"><b data-cubhead>Commander’s Update Brief</b><span class="cost" data-cubdue></span></div>
+            <div data-cubclock></div>
             <p class="small muted" style="margin:0" data-cubwhat></p>
             <form class="stack" data-f="cub"><input type="hidden" name="n">
               <div class="stack" data-cubfields></div>
               <div class="row" style="justify-content:flex-start;align-items:center"><button class="btn-side" type="submit" style="flex:0 0 auto">Send to the AOC</button><button type="button" data-cubdraft style="flex:0 0 auto">Save draft</button><span class="small muted" data-cubsaved></span></div></form></div>
-          <div class="act"><div class="act-head"><b>Battle Rhythm</b><span class="cost">AOC schedule</span></div><div data-rhythm></div></div>
-          <div class="act"><div class="act-head"><b>Ask the AOC for support</b><span class="cost" data-aocres></span></div>
+          <div class="act" data-aock="rhythm"><div class="act-head"><b>Battle Rhythm</b><span class="cost">AOC schedule</span></div><div data-rhythm></div></div>
+          <div class="act" data-aock="sup"><div class="act-head"><b>Ask the AOC for support</b><span class="cost" data-aocres></span></div>
             <p class="small muted" style="margin:0">The AOC can retask ISR, resupply you, approve a CASEVAC, or release another show of force or cache strike. It holds a limited amount for your force, so say why.</p>
             <form class="stack" data-f="aocreq"><div class="row"><label for="aqW-${side}">What you need<select id="aqW-${side}" name="want">${Object.keys(AOC_WANT).filter(k => k !== 'reply').map(k => '<option value="' + k + '">' + AOC_WANT[k] + '</option>').join('')}</select></label></div><label for="aqT-${side}">Why (the AOC reads this)<input id="aqT-${side}" name="text" maxlength="300" placeholder="Example: Team 2 hit an IED at C5 and we lost our drone window."></label><label>Is this for an inject or intel package?<select name="ref" data-forref required><option value="">Choose one</option><option value="none">No</option><option value="unk">I don’t know</option></select></label><div><button class="btn-side" type="submit">Send to the AOC</button></div></form>
             <div class="list" data-aocreqs></div></div>
-          <div class="act"><div class="act-head"><b>Strikes and damage assessment</b><span class="cost" data-authst></span></div><div class="list" data-strikes></div></div>
-          <div class="act"><div class="act-head"><b>Commander's intent and PIRs</b><span class="cost">From the AOC</span></div><div data-cmdintent></div></div>
+          <div class="act" data-aock="strike"><div class="act-head"><b>Strikes and damage assessment</b><span class="cost" data-authst></span></div><div class="list" data-strikes></div></div>
+          <div class="act" data-aock="intent"><div class="act-head"><b>Commander's intent and PIRs</b><span class="cost">From the AOC</span></div><div data-cmdintent></div></div>
         </div>
         <div data-pane="rep" class="stack" hidden>
           <div class="act"><div class="act-head"><b>Report activity</b><span class="cost">+2 when the White Force confirms it</span></div>
@@ -4757,6 +4846,9 @@ function buildWing(side){
   const showPane = k => { $$('[data-tab]', v).forEach(x => x.setAttribute('aria-selected', x.dataset.tab === k ? 'true' : 'false')); $$('[data-pane]', v).forEach(p => p.hidden = p.dataset.pane !== k); };
   $$('[data-tab]', v).forEach(b => b.onclick = () => showPane(b.dataset.tab));
   const PANES = ['act', 'aoc', 'rep', 'teams', 'liaison', 'req'];
+  aocFilt(v, side);
+  v.addEventListener('click', ev => { const b = ev.target.closest('[data-aocf]'); if (!b) return; const k = 'marala-aocf-' + side, f = b.dataset.aocf; let on = []; try { on = JSON.parse(pref.get(k, '[]')) || []; } catch(e){ on = []; } if (f === 'all') on = []; else if (on.includes(f)) on = on.filter(x => x !== f); else on.push(f); if (on.length === 5) on = []; pref.set(k, JSON.stringify(on)); aocFilt(v, side); });
+  v.addEventListener('click', ev => { if (!ev.target.closest('[data-cubgo]')) return; const t = $('[data-ctab="aoc"]', v); if (t) t.click(); const c = $('[data-cubbox]', v); if (c){ c.classList.remove('min'); const mb = $('.act-min', c); if (mb){ mb.textContent = 'Hide'; mb.setAttribute('aria-expanded', 'true'); } const k = 'marala-aocf-' + side; let on = []; try { on = JSON.parse(pref.get(k, '[]')) || []; } catch(e){} if (on.length && !on.includes('cub')){ on.push('cub'); pref.set(k, JSON.stringify(on)); aocFilt(v, side); } setTimeout(() => c.scrollIntoView({ block:'start', behavior:'smooth' }), 50); } });
   $$('[data-pane="aoc"] > .act', v).forEach((c, i) => { const hd = $('.act-head', c); if (!hd) return; const d = $(':scope > p', c); if (d) d.dataset.desc = '1'; const k = 'marala-aocmin-' + side + '-' + i, b = document.createElement('button'); b.type = 'button'; b.className = 'act-min'; const set = on => { c.classList.toggle('min', on); b.textContent = on ? 'Show' : 'Hide'; b.setAttribute('aria-expanded', on ? 'false' : 'true'); }; b.onclick = () => { const on = !c.classList.contains('min'); set(on); pref.set(k, on ? '1' : '0'); }; hd.appendChild(b); set(pref.get(k, '0') === '1'); });
   const setCTab = (k, scroll) => {
     if (!$('[data-ctab="' + k + '"]', v)) k = 'all';
@@ -4842,6 +4934,20 @@ function buildWing(side){
   });
   on('contend', fd => { if (!confirm('Start contention on ' + SITES[fd.get('site')].name + '? Escalation goes up by 5 now and every 10 minutes until it ends.')) return false; return writeEvent('act_contend', side, { site:fd.get('site') }); });
   on('claim', fd => writeEvent('claim', side, { site:fd.get('site'), code:secret(app.cfg.salt, fd.get('code')) }));
+  v.addEventListener('submit', async ev => {
+    const f = ev.target.closest('[data-deff]'); if (!f) return; ev.preventDefault();
+    if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; }
+    const code = f.code.value.trim(); if (!code) return;
+    await writeEvent('claim', side, { site:f.dataset.deff, code:secret(app.cfg.salt, code) });
+    f.code.value = ''; toast('Defense code word sent.');
+  });
+  v.addEventListener('click', ev => {
+    const h = ev.target.closest('[data-defhide]'); if (h){ app.defMin = app.defMin || {}; app.defMin[h.dataset.defhide] = true; if (app.S) renderDefend(app.S, side, v); return; }
+    if (ev.target.matches('[data-defov]')){ const b = $('[data-defhide]', ev.target); if (b) b.click(); }
+  });
+  document.addEventListener('keydown', ev => { if (ev.key !== 'Escape') return; const b = $('[data-defov] [data-defhide]', v); if (b) b.click(); });
+  v.addEventListener('click', ev => { const m = ev.target.closest('[data-stlmode]'), b = !m && ev.target.closest('[data-fptl] [data-stlid]'); if (!m && !b) return; app.stlf = m ? { mode:m.dataset.stlmode, id:'' } : { mode:(app.stlf || {}).mode || 'all', id:app.stlf && app.stlf.id === b.dataset.stlid ? '' : b.dataset.stlid }; refresh(true); });
+  v.addEventListener('change', ev => { const o = ev.target.closest('[data-stlone]'); if (!o) return; app.stlf = { mode:(app.stlf || {}).mode || 'all', id:o.value }; refresh(true); });
   on('order', fd => writeEvent('order', side, { team:fd.get('team'), text:fd.get('text') }));
   on('liaison', fd => { const site = fd.get('site') || null, ut = String(fd.get('until') || '').trim(); let until = null; if (ut){ until = parseHHMM(ut); if (until == null){ toast('Write the time like 0730.', true); return false; } } if (site && until == null){ toast('Add an “until” time when you declare a site.', true); return false; } return writeEvent('liaison', side, { text:fd.get('text'), site, until }); });
   on('handover', fd => { if (!fd.get('site')){ toast('You don’t hold a site to hand over.', true); return false; } return writeEvent('handover_offer', side, { site:fd.get('site'), note:fd.get('note') }); });
@@ -4939,26 +5045,43 @@ function tlCtlRender(S, v, intel){
   box.innerHTML = '<div class="seg" role="group" aria-label="Timeline filter">' + [['all', 'All'], ['intel', 'Intel'], ['inj', 'Injects']].map(([k, n]) => '<button type="button" data-tlmode="' + k + '" aria-pressed="' + (!f.id && f.mode === k) + '">' + n + '</button>').join('') + '</div><label class="small" style="flex:1 1 220px">Zoom to one<select data-tlone><option value="">Pick an intel package or inject</option>' + opts.map(o => '<option value="' + esc(o[0]) + '"' + (o[0] === f.id ? ' selected' : '') + '>' + esc(hhmm(o[2]) + ' ' + o[1]) + '</option>').join('') + '</select></label>';
 }
 function sideTimelineHTML(S, side, full){
-  const len = Math.max(1, END_G - START_G), started = S.clock.started, g = started ? Math.min(S.g, END_G) : START_G;
-  const pos = t => (Math.max(0, Math.min(len, t - START_G)) / len * 100).toFixed(2) + '%', step = len > 150 ? 30 : len > 60 ? 15 : 10;
-  const intel = allProblems(S).map(P => ({ P, o:intelOpen(S, P.id, side) })).filter(x => x.o).map(x => ({ n:pkgNum(S, x.P, side), title:fillT(x.P.title), a:x.o.g, b:x.o.due, done:!!x.o.done, st:x.P.stmt ? stmtDue(S, side, { pkg:x.P }) : null }));
-  const rows = []; intel.slice().sort((x, y) => x.a - y.a).forEach(x => { let r = rows.findIndex(end => end <= x.a); if (r < 0){ r = rows.length; rows.push(0); } rows[r] = x.b; x.row = r; });
-  const ih = Math.max(1, rows.length) * 30;
-  let ax = ''; for (let t = START_G; t <= END_G + .01; t += step) ax += '<span class="tl-tk" style="left:' + pos(t) + '">' + hhmm(t) + '</span>';
-  const bars = intel.map(x => '<div class="tl-bar to-' + side + (x.done ? ' done' : '') + '" style="left:' + pos(x.a) + ';width:calc(' + pos(x.b) + ' - ' + pos(x.a) + ');top:' + (x.row * 30 + 3) + 'px" title="' + esc('Intel ' + x.n + ': ' + x.title + ' - ' + hhmm(x.a) + ' to ' + hhmm(x.b)) + '"><b>' + x.n + '</b><span>' + esc(x.title) + '</span></div>').join('');
-  const stm = intel.filter(x => x.st).map(x => '<span class="tl-mk msg" style="left:' + pos(x.st) + ';background:#c0392b" title="' + esc('Public statement due ' + hhmm(x.st) + ' (intel ' + x.n + ')') + '"></span>').join('');
-  const nowL = started ? '<div class="tl-now" style="left:' + pos(g) + '"><span>' + hhmm(g) + '</span></div>' : '';
-  let lanes = '<div class="tl-lane" style="height:' + ih + 'px">' + bars + '</div><div class="tl-lane">' + stm + '</div>', labs = '<span style="height:23px"></span><span style="height:' + (ih + 1) + 'px">Intel packages</span><span>Statements due</span>';
+  const started = S.clock.started, g = started ? Math.min(S.g, END_G) : START_G, f = full ? (app.stlf || { mode:'all', id:'' }) : { mode:'all', id:'' };
+  const intel = allProblems(S).map(P => ({ P, o:intelOpen(S, P.id, side) })).filter(x => x.o).map(x => ({ id:'p:' + x.P.id, n:pkgNum(S, x.P, side), title:fillT(x.P.title), a:x.o.g, b:x.o.due, done:!!x.o.done, st:x.P.stmt ? stmtDue(S, side, { pkg:x.P }) : null }));
+  intel.forEach(x => { x.tip = 'Intel ' + x.n + ': ' + x.title + ' - ' + hhmm(x.a) + ' to ' + hhmm(x.b); });
+  const wq = full ? (S.injq || []).filter(q => q.win && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).map(q => { const a = q.ws != null ? q.ws : q.sent, b = injEnd(q) != null ? injEnd(q) : Math.max(a + q.win, g), r = q.res && q.res[side]; return { id:'q:' + q.qid, a, b, q, r, done:q.closed != null || !!r, tip:q.label + ' | respond by ' + hhmm(b) + (r ? ' | ' + INJ_ST[r.st][1] : q.closed != null ? ' | closed' : '') }; }) : [];
+  const one = f.id ? intel.concat(wq).find(x => x.id === f.id) || null : null;
+  let lo = START_G, hi = END_G;
+  if (one){ lo = Math.max(START_G, one.a - 10); hi = Math.min(END_G, one.b + 10); }
+  const len = Math.max(1, hi - lo), pos = t => (Math.max(0, Math.min(len, t - lo)) / len * 100).toFixed(2) + '%', step = len > 150 ? 30 : len > 60 ? 15 : len > 30 ? 10 : 5;
+  const inR = t => t >= lo - 1e-9 && t <= hi + 1e-9, show = k => !one && (f.mode === 'all' || f.mode === k);
+  let ax = ''; for (let t = Math.ceil(lo / step) * step; t <= hi + .01; t += step) ax += '<span class="tl-tk" style="left:' + pos(t) + '">' + hhmm(t) + '</span>';
+  const bar = (x, label) => '<div class="tl-bar to-' + side + (x.done ? ' done' : '') + (x.r && x.r.st === 'miss' ? ' miss' : '') + '"' + (full ? ' data-stlid="' + esc(x.id) + '"' : '') + ' style="left:' + pos(x.a) + ';width:calc(' + pos(x.b) + ' - ' + pos(x.a) + ');top:' + (x.row * 30 + 3) + 'px" title="' + esc(x.tip) + '">' + label + '</div>';
+  const labs = ['<span style="height:23px"></span>'], lanes = [];
+  const iB = one ? (one.id[0] === 'p' ? [one] : []) : show('intel') ? intel : [];
+  if (iB.length || show('intel')){ const ih = tlPack(iB) * 30; labs.push('<span style="height:' + (ih + 1) + 'px">Intel packages</span>'); lanes.push('<div class="tl-lane" style="height:' + ih + 'px">' + iB.map(x => bar(x, '<b>' + x.n + '</b><span>' + esc(x.title) + '</span>')).join('') + '</div>');
+    labs.push('<span>Statements due</span>'); lanes.push('<div class="tl-lane">' + iB.filter(x => x.st && inR(x.st)).map(x => '<span class="tl-mk msg" style="left:' + pos(x.st) + ';background:#c0392b" title="' + esc('Public statement due ' + hhmm(x.st) + ' (intel ' + x.n + ')') + '"></span>').join('') + '</div>'); }
   if (full){
-    const feed = S.feed.filter(f => !f.only && (f.to === side || f.to === 'both'));
-    const mk = (list, cls) => list.map(f => '<span class="tl-mk ' + cls + ' to-' + side + '" style="left:' + pos(f.g) + '" title="' + esc(hhmm(f.g) + ' | ' + String(f.text).slice(0, 140)) + '"></span>').join('');
-    const wq = (S.injq || []).filter(q => q.win && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).map(q => { const a = q.ws != null ? q.ws : q.sent, b = injEnd(q) != null ? injEnd(q) : Math.max(a + q.win, g), r = q.res && q.res[side]; return { a, b, q, r, done:q.closed != null || !!r }; }), wh = tlPack(wq) * 30;
-    lanes += '<div class="tl-lane" style="height:' + wh + 'px">' + wq.map(x => '<div class="tl-bar to-' + side + (x.done ? ' done' : '') + (x.r && x.r.st === 'miss' ? ' miss' : '') + '" style="left:' + pos(x.a) + ';width:calc(' + pos(x.b) + ' - ' + pos(x.a) + ');top:' + (x.row * 30 + 3) + 'px" title="' + esc(x.q.label + ' | respond by ' + hhmm(x.b) + (x.r ? ' | ' + INJ_ST[x.r.st][1] : x.q.closed != null ? ' | closed' : '')) + '"><span>' + esc(x.q.label) + '</span></div>').join('') + '</div>';
-    lanes += '<div class="tl-lane">' + mk(feed.filter(f => f.comm === 'inj'), 'inj') + '</div><div class="tl-lane">' + mk(feed.filter(f => f.comm === 'msg' || f.label === 'AOC'), 'msg') + '</div>';
-    labs += '<span style="height:' + (wh + 1) + 'px">Inject windows</span><span>Injects</span><span>AOC and White Force</span><span>AOC battle rhythm</span>';
-    lanes += '<div class="tl-lane">' + RHYTHM.filter(x => rhythmAt(x) <= END_G + 1e-9).map(x => '<span class="tl-mk rh" style="left:' + pos(rhythmAt(x)) + '" title="' + esc(hhmm(rhythmAt(x)) + ' | ' + x.label) + '"></span>').join('') + '</div>';
+    const feed = S.feed.filter(x => !x.only && (x.to === side || x.to === 'both') && inR(x.g));
+    const mk = (list, cls) => list.map(x => '<span class="tl-mk ' + cls + ' to-' + side + '" style="left:' + pos(x.g) + '" title="' + esc(hhmm(x.g) + ' | ' + String(x.text).slice(0, 140)) + '"></span>').join('');
+    const wB = one ? (one.id[0] === 'q' ? [one] : []) : show('inj') ? wq : [];
+    if (wB.length || show('inj')){ const wh = tlPack(wB) * 30; labs.push('<span style="height:' + (wh + 1) + 'px">Inject windows</span>'); lanes.push('<div class="tl-lane" style="height:' + wh + 'px">' + wB.map(x => bar(x, '<span>' + esc(x.q.label) + '</span>')).join('') + '</div>'); }
+    if (show('inj') || one){ labs.push('<span>Injects</span>'); lanes.push('<div class="tl-lane">' + mk(feed.filter(x => x.comm === 'inj'), 'inj') + '</div>'); }
+    if (show('aoc') || one){ labs.push('<span>AOC and White Force</span>'); lanes.push('<div class="tl-lane">' + mk(feed.filter(x => x.comm === 'msg' || x.label === 'AOC'), 'msg') + '</div>');
+      labs.push('<span>AOC battle rhythm</span>'); lanes.push('<div class="tl-lane">' + RHYTHM.filter(x => rhythmAt(x) <= END_G + 1e-9 && inR(rhythmAt(x))).map(x => '<span class="tl-mk rh" style="left:' + pos(rhythmAt(x)) + '" title="' + esc(hhmm(rhythmAt(x)) + ' | ' + x.label) + '"></span>').join('') + '</div>'); }
   }
-  return '<div class="tl-lab">' + labs + '</div><div class="tl-track"><div class="tl-axis">' + ax + '</div>' + lanes + nowL + '</div>';
+  const nowL = started && inR(g) ? '<div class="tl-now" style="left:' + pos(g) + '"><span>' + hhmm(g) + '</span></div>' : '';
+  let h = '<div class="tl-lab">' + labs.join('') + '</div><div class="tl-track"><div class="tl-axis">' + ax + '</div>' + lanes.join('') + nowL + '</div>';
+  if (one) h += '<div class="tl-detail">' + esc(one.tip) + '</div>';
+  return h;
+}
+function sideTlCtl(S, side, v){
+  const box = $('[data-fptlctl]', v); if (!box) return;
+  const f = app.stlf || (app.stlf = { mode:'all', id:'' });
+  const opts = allProblems(S).map(P => ({ P, o:intelOpen(S, P.id, side) })).filter(x => x.o).map(x => ['p:' + x.P.id, 'Intel ' + pkgNum(S, x.P, side) + ': ' + fillT(x.P.title), x.o.g]).concat((S.injq || []).filter(q => q.win && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).map(q => ['q:' + q.qid, 'Inject: ' + q.label, q.ws != null ? q.ws : q.sent])).sort((a, b) => a[2] - b[2]);
+  if (f.id && !opts.some(o => o[0] === f.id)) f.id = '';
+  const key = f.mode + '|' + f.id + '|' + opts.map(o => o[0]).join();
+  if (box.dataset.k === key) return; box.dataset.k = key;
+  box.innerHTML = '<div class="seg" role="group" aria-label="Timeline filter">' + [['all', 'All'], ['intel', 'Intel'], ['inj', 'Injects'], ['aoc', 'AOC and White Force']].map(([k, n]) => '<button type="button" data-stlmode="' + k + '" aria-pressed="' + (!f.id && f.mode === k) + '">' + n + '</button>').join('') + '</div><label class="small" style="flex:1 1 220px">Zoom to one<select data-stlone><option value="">Pick an intel package or inject</option>' + opts.map(o => '<option value="' + esc(o[0]) + '"' + (o[0] === f.id ? ' selected' : '') + '>' + esc(hhmm(o[2]) + ' ' + o[1]) + '</option>').join('') + '</select></label>';
 }
 function mapKeyHTML(staff){
   const row = (sym, t) => '<div><span class="sym">' + sym + '</span><span>' + t + '</span></div>';
@@ -5103,11 +5226,76 @@ function renderForcePic(S, side, v){
   { const e = $('[data-fpcomms]', v); if (e.dataset.h !== ch){ e.dataset.h = ch; e.innerHTML = ch; } }
   { const ph = priHTML((S.aocPri || {})[side], false, SIDES[side].name) + cmdHTML(S, side), e = $('[data-fppri]', v); if (e.dataset.h !== ph){ e.dataset.h = ph; e.innerHTML = ph; } }
   { const h = '<tbody>' + assetRows(S).map(([n, f]) => '<tr><td>' + esc(n) + '</td><td>' + f(side) + '</td></tr>').join('') + '</tbody>', e = $('[data-fpasb]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } $('[data-fpasbn]', v).textContent = 'As of ' + hhmm(S.g); }
+  sideTlCtl(S, side, v);
   { const h = sideTimelineHTML(S, side, true), e = $('[data-fptl]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
+}
+function defendList(S, side){
+  if (S.endex) return [];
+  return SITE_KEYS.filter(k => { const st = S.sites[k]; return st && st.holder === side && st.contestBy === OTHER[side] && st.contestUntil != null && st.contestUntil > S.g; }).map(k => ({ k, st:S.sites[k], key:k + ':' + S.sites[k].contestUntil })).sort((a, b) => a.st.contestUntil - b.st.contestUntil);
+}
+function defendLeft(S, st){ const m = Math.max(0, Math.ceil(st.contestUntil - S.g - 1e-9)); return m === 1 ? '1 minute left' : m + ' minutes left'; }
+function cubPhase(S, side, g){
+  const tg = cubNext(S, side); if (!tg) return null;
+  const cs = RHYTHM.filter(x => x.kind === 'cub' && rhythmAt(x) <= END_G + 1e-9), i = cs.indexOf(tg), prev = i > 0 ? cs[i - 1] : null;
+  const t = rhythmAt(tg), op = t - CUB_EARLY, cl = t + CUB_LATE, st = prev ? Math.min(op, rhythmAt(prev) + CUB_LATE) : Math.min(op, START_G);
+  const c = (S.cubs || []).find(q => q.side === side && q.n === tg.n);
+  let ph, head, sub, to;
+  if (c && c.status === 'sent'){ ph = 'sent'; head = tg.label + ': with the AOC'; sub = 'Sent at ' + hhmm(c.hist[c.hist.length - 1].g) + '. The AOC will approve it, deny it or ask for more.'; to = null; }
+  else if (g < op){ ph = 'draft'; head = tg.label + ': drafting'; sub = 'Write it now. Sending opens at ' + hhmm(op) + ', due ' + hhmm(t) + ', on time until ' + hhmm(cl) + '.'; to = op; }
+  else if (g < t){ ph = 'open'; head = tg.label + ': open to send'; sub = 'Due at ' + hhmm(t) + '. On time until ' + hhmm(cl) + '.'; to = t; }
+  else if (g < cl){ ph = 'due'; head = tg.label + ': due now'; sub = 'Send it before ' + hhmm(cl) + ' to be on time.'; to = cl; }
+  else { ph = 'late'; head = tg.label + ': late'; sub = 'The on-time window closed at ' + hhmm(cl) + '. Send it now; the AOC sees it as late.'; to = null; }
+  if (c && c.status === 'returned' && ph !== 'sent') head = tg.label + ': ' + (c.reply && c.reply.verdict === 'more' ? 'AOC needs more' : 'not approved') + ', send again';
+  return { tg, ph, head, sub, to, st, op, t, cl, g };
+}
+function cubCd(m){ const s = Math.max(0, Math.round(m * 60)), h = Math.floor(s / 3600), mm = Math.floor(s % 3600 / 60), ss = s % 60; return (h ? h + ':' + String(mm).padStart(2, '0') : mm) + ':' + String(ss).padStart(2, '0'); }
+function cubClockHTML(P, strip){
+  if (!P) return '';
+  const len = Math.max(1, P.cl - P.st), pc = t => Math.max(0, Math.min(100, (t - P.st) / len * 100)).toFixed(1) + '%';
+  const lbl = P.ph === 'draft' ? 'until it opens' : P.ph === 'open' ? 'until due' : P.ph === 'due' ? 'left on time' : '';
+  const cd = P.to != null ? '<span class="cubclk-cd" role="timer">' + cubCd(P.to - P.g) + '<small>' + lbl + '</small></span>' : '';
+  const bar = P.ph === 'sent' ? '' : '<div class="cubclk-bar" aria-hidden="true"><i style="width:' + pc(P.g) + '"></i><span class="cubclk-mk" style="left:' + pc(P.op) + '"></span><span class="cubclk-mk" style="left:' + pc(P.cl) + '"></span><span class="cubclk-lb l0" style="left:0">' + hhmm(P.st) + '</span><span class="cubclk-lb" style="left:' + pc(P.op) + '">Opens ' + hhmm(P.op) + '</span><span class="cubclk-lb l2" style="left:' + pc(P.cl) + '">Closes ' + hhmm(P.cl) + '</span></div>';
+  return '<div class="cubclk ph-' + P.ph + '"><div class="cubclk-top"><b>' + esc(P.head) + '</b>' + cd + (strip ? '<button type="button" data-cubgo>Open the brief</button>' : '') + '</div>' + (strip ? '' : '<span class="small">' + esc(P.sub) + '</span>') + bar + '</div>';
+}
+function cubTick(S, side, now){
+  const v = $('#vWing'); if (!v || !S.clock.started || S.endex) { $$('[data-cubclock],[data-cubstrip]', v || document).forEach(el => { if (el.innerHTML) el.innerHTML = ''; }); return; }
+  const P = cubPhase(S, side, gameAt(S, now));
+  [['[data-cubclock]', false], ['[data-cubstrip]', true]].forEach(([q, strip]) => { const el = $(q, v); if (!el) return; const h = strip ? (P ? '<div class="cubstrip">' + cubClockHTML(P, true) + '</div>' : '') : cubClockHTML(P, false); if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } });
+}
+function aocFilt(v, side){
+  const k = 'marala-aocf-' + side; let on = []; try { on = JSON.parse(pref.get(k, '[]')) || []; } catch(e){ on = []; }
+  const all = !on.length;
+  $$('[data-aocf]', v).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.aocf === 'all' ? all : on.includes(b.dataset.aocf))));
+  $$('[data-pane="aoc"] > [data-aock]', v).forEach(c => c.classList.toggle('aocf-off', !all && !on.includes(c.dataset.aock)));
+}
+function renderDefend(S, side, v){
+  const box = $('[data-defend]', v); if (!box) return;
+  app.defSeen = app.defSeen || {}; app.defMin = app.defMin || {};
+  const L = defendList(S, side);
+  let fresh = false;
+  L.forEach(d => { if (app.defSeen[d.key] == null){ app.defSeen[d.key] = S.claims.length; fresh = true; } });
+  if (fresh) msgSound();
+  const errOf = d => { const c = S.claims.slice(app.defSeen[d.key]).filter(c => c.side === side && c.site === d.k && c.status !== 'accepted').pop(); return c ? c.note : ''; };
+  const top = L.find(d => !app.defMin[d.key]);
+  const rest = L.filter(d => d !== top);
+  const sig = L.map(d => d.key + (app.defMin[d.key] ? 'm' : '') + '|' + errOf(d)).join(',') + '/' + (top ? top.key : '');
+  if (box.dataset.sig !== sig){
+    const act = document.activeElement, keep = act && box.contains(act) && act.name === 'code' ? { site:act.form && act.form.dataset.deff, val:act.value } : null;
+    const form = d => '<form class="defend-form" data-deff="' + d.k + '"><input name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Defense code word" aria-label="Defense code word for ' + esc(SITES[d.k].name) + '" required><button class="btn-side" type="submit">Defend</button></form>';
+    const err = d => { const e = errOf(d); return e ? '<p class="defend-err">' + esc(e) + '</p>' : ''; };
+    const bar = rest.map(d => '<div class="defend-bar" role="alert"><div class="defend-head"><b class="grow">' + esc(SIDES[OTHER[side]].name) + ' is contending ' + esc(SITES[d.k].name) + '</b><span class="defend-time">Deadline <b>' + hhmm(d.st.contestUntil) + '</b>, <span data-defleft="' + d.k + '">' + defendLeft(S, d.st) + '</span></span></div>' + form(d) + err(d) + '</div>').join('');
+    const ov = top ? '<div class="defend-ov" data-defov><div class="defend-card" role="alertdialog" aria-modal="true" aria-labelledby="defH"><h2 id="defH">' + esc(SITES[top.k].name) + ' is under contention</h2><p>' + esc(SIDES[OTHER[side]].name) + ' started contention on your site. Enter the defense code word before their team unlocks the capture code word, or the site is theirs.</p><p class="defend-time">Deadline <b>' + hhmm(top.st.contestUntil) + '</b>, <span data-defleft="' + top.k + '">' + defendLeft(S, top.st) + '</span></p>' + form(top) + err(top) + '<div class="row"><button type="button" data-defhide="' + top.key + '">Hide for now</button></div></div></div>' : '';
+    box.innerHTML = bar + ov;
+    box.dataset.sig = sig;
+    if (keep){ const inp = $('[data-deff="' + keep.site + '"] input', box); if (inp){ inp.value = keep.val; inp.focus(); } }
+    else if (top && fresh && !matchMedia('(pointer: coarse)').matches){ const inp = $('[data-defov] input', box); if (inp) inp.focus({ preventScroll:true }); }
+  }
+  L.forEach(d => $$('[data-defleft="' + d.k + '"]', box).forEach(el => { const t = defendLeft(S, d.st); if (el.textContent !== t) el.textContent = t; }));
 }
 function renderWing(S, side, now){
   refreshSiteSelects($('#vWing'));
   const v = $('#vWing'), lvl = levelIndex(S.esc), sc = score(S, side);
+  renderDefend(S, side, v);
   renderIntel(S, side, v);
   renderForcePic(S, side, v);
   renderAocPane(S, side, v);
@@ -5521,8 +5709,8 @@ function renderAocPane(S, side, v){
   const cb = cubOpen(S, side), tg = cubNext(S, side), c = tg ? (S.cubs || []).find(q => q.side === side && q.n === tg.n) : null, f = $('form[data-f="cub"]', v), canEdit = tg && (!c || c.status === 'returned'), canSend = canEdit && cb === tg;
   $('[data-cubhead]', v).textContent = tg ? tg.label : 'Commander’s Update Brief';
   $('[data-cubdue]', v).textContent = tg ? (c ? cubChip(S, c, tg).replace(/<[^>]+>/g, '') : 'Due ' + hhmm(rhythmAt(tg))) : '';
-  { const last = c && c.reply ? ' AOC: ' + c.reply.text : '', opens = tg ? hhmm(rhythmAt(tg) - CUB_EARLY) : '';
-    $('[data-cubwhat]', v).textContent = !tg ? 'No more Commander’s Update Briefs are scheduled.' : c && c.status === 'sent' ? 'Sent at ' + hhmm(c.hist[c.hist.length - 1].g) + '. The AOC will approve it, deny it or ask for more. Nothing else waits on it.' : c ? (c.reply && c.reply.verdict === 'more' ? 'The AOC needs more before it approves.' : 'The AOC did not approve it.') + last + ' Send an updated brief below.' : cb !== tg ? 'Start drafting now. ' + tg.what + ' The draft saves for your whole command post. It can be sent from ' + opens + ' and is on time if sent by ' + hhmm(rhythmAt(tg) + CUB_LATE) + '.' : tg.what + ' On time if sent by ' + hhmm(rhythmAt(tg) + CUB_LATE) + '.'; }
+  { const last = c && c.reply ? ' AOC: ' + c.reply.text : '';
+    $('[data-cubwhat]', v).textContent = !tg ? 'No more Commander’s Update Briefs are scheduled.' : c && c.status === 'sent' ? 'Nothing else waits on it. Keep playing.' : c ? (c.reply && c.reply.verdict === 'more' ? 'The AOC needs more before it approves.' : 'The AOC did not approve it.') + last + ' Send an updated brief below.' : tg.what + ' The draft saves for your whole command post, so anyone can keep writing it.'; }
   f.hidden = !canEdit; if (tg && f.elements.n.value !== String(tg.n)) f.elements.n.value = String(tg.n);
   { const sb = $('button[type=submit]', f); sb.disabled = !canSend; sb.textContent = canSend ? 'Send to the AOC' : tg ? 'Opens at ' + hhmm(rhythmAt(tg) - CUB_EARLY) : 'Send to the AOC'; }
   renderPerstat(S, side, v);
@@ -5745,7 +5933,7 @@ function buildProps(){
       <label class="chk"><input type="checkbox" data-msgsound checked> Sound for messages and schedule changes</label></div>
     <div class="panel stack" data-prannbox hidden><h2>Announcements</h2><div class="list" data-pranns></div></div>
     <div class="panel stack" data-prnav hidden></div>
-    <div class="row pr-aor" style="align-items:end"><label>Show props for<select data-praor><option value="">Everyone</option><option value="west">My area: west and south</option><option value="north">My area: north and east</option><option value="me">Only what I claimed</option></select></label></div>
+    <div class="row pr-aor" style="align-items:end"><label>Show props for<select data-praor><option value="">Everyone</option><option value="west">My area: west and south half</option><option value="north">My area: north and east half</option><option value="me">Only what I claimed</option></select></label><span class="small muted" data-praorn style="flex:1 1 160px"></span></div>
     <div class="panel stack"><div class="act-head"><h2>To place</h2><span class="small muted" data-prtodon></span></div><div class="stack pr-scroll" data-prtodo></div><div class="small muted pr-more" data-prtodomore hidden></div></div>
     <div class="panel stack"><div class="act-head"><h2>In the field</h2><span class="small muted" data-proutn></span></div><div class="stack pr-scroll" data-prout></div><div class="small muted pr-more" data-proutmore hidden></div></div>
     <div class="panel stack"><h2>Map</h2><p class="small muted" style="margin:0">Orange diamonds are placed props; dashed diamonds are where props still need to go. Show on map on a task shows only that spot. Find my position also shows you to the White Force and AOC for 5 minutes.</p>
@@ -5793,9 +5981,13 @@ function renderProps(S){
     const an = S.ocAnns || [], ab = $('[data-prannbox]', v); ab.hidden = !an.length; if (ab.dataset.k !== String(an.length)){ ab.dataset.k = String(an.length); $('[data-pranns]', v).innerHTML = an.slice().reverse().map(a => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(a.g) + '</span> ' + esc(a.text) + '</div></div>').join(''); }
     const nIn = ms.filter(m => m.from === 'wc').length + an.length;
     if (app.prInFor !== me.id){ app.prInFor = me.id; app.prInN = nIn; } else if (nIn > app.prInN){ app.prInN = nIn; const last = [...ms.filter(m => m.from === 'wc'), ...an].sort((a, b) => a.g - b.g).pop(); if (last) toast((an.includes(last) ? 'Announcement: ' : 'White Force: ') + last.text); } }
-  const aor = pref.get('marala-praor-' + me.id, ''), aorOk = r => !aor ? true : aor === 'me' ? !!(r.claim && r.claim.oc === me.id) || (r.state === 'out' && r.st.name === (meO || {}).name) : new RegExp(aor, 'i').test((r.prop && r.prop.home) || '');
-  { const sel = $('[data-praor]', v); if (sel && !sel.dataset.wired){ sel.dataset.wired = '1'; sel.value = aor; sel.onchange = () => { pref.set('marala-praor-' + me.id, sel.value); ['[data-prtodo]', '[data-prout]'].forEach(q => { const b = $(q, v); if (b) b.dataset.h = ''; }); renderProps(S); }; } }
-  const rows = propSched(S).filter(r => (r.it || r.state !== 'todo') && aorOk(r)), todo = rows.filter(r => r.state === 'todo'), out = rows.filter(r => r.state === 'out'), done = rows.filter(r => r.state === 'done');
+  const aor = pref.get('marala-praor-' + me.id, ''), aorM = mapCfg(S);
+  const aorHalf = r => { const pt = (r.st && propOk(r.st.pt) && r.st.pt) || r.u.pt; if (aorM && aorM.sw && aorM.ne && propOk(pt)) return (pt[1] - aorM.sw[1]) / (aorM.ne[1] - aorM.sw[1]) + (pt[0] - aorM.sw[0]) / (aorM.ne[0] - aorM.sw[0]) < 1 ? 'west' : 'north'; const t = [r.u.loc, r.u.label, r.prop && r.prop.home].join(' '); return /west|south/i.test(t) ? 'west' : /north|east/i.test(t) ? 'north' : null; };
+  const aorOk = r => !aor ? true : aor === 'me' ? !!(r.claim && r.claim.oc === me.id) || (r.state !== 'todo' && (r.st.name === (meO || {}).name || r.st.recName === (meO || {}).name)) : (h => h == null || h === aor)(aorHalf(r));
+  { const sel = $('[data-praor]', v); if (sel && !sel.dataset.wired){ sel.dataset.wired = '1'; sel.value = aor; sel.onchange = () => { pref.set('marala-praor-' + me.id, sel.value); ['[data-prtodo]', '[data-prout]'].forEach(q => { const b = $(q, v); if (b) b.dataset.h = ''; }); renderProps(app.S || S); }; } }
+  const rowsAll = propSched(S).filter(r => r.it || r.state !== 'todo'), rows = rowsAll.filter(aorOk);
+  { const n = rowsAll.filter(r => r.state !== 'done').length - rows.filter(r => r.state !== 'done').length, el = $('[data-praorn]', v), t = aor && n > 0 ? n + (n === 1 ? ' prop task is' : ' prop tasks are') + ' hidden by this filter.' : ''; if (el && el.textContent !== t) el.textContent = t; }
+  const todo = rows.filter(r => r.state === 'todo'), out = rows.filter(r => r.state === 'out'), done = rows.filter(r => r.state === 'done');
   const due = r => r.placeBy == null ? 'On call' : 'Place by ' + hhmm(r.placeBy) + (S.clock.started ? (S.g > r.placeBy ? ' - late' : ' - in ' + Math.ceil(r.placeBy - S.g) + ' min') : '');
   const cls = r => r.placeBy == null || !S.clock.started ? '' : S.g > r.placeBy ? ' late' : r.placeBy - S.g <= 10 ? ' soon' : '';
   const claimH = r => r.claim ? '<div class="pr-claim ' + (r.claim.oc === me.id ? 'me">Claimed by you' : 'other">Claimed by ' + esc(r.claim.name)) + ' at ' + hhmm(r.claim.g) + '</div>' : '<div class="pr-claim">Not claimed</div>';
@@ -6023,6 +6215,33 @@ function botStep(){
       if (later('liai' + sd, 8 + rnd() * 10)){ mem['liai' + sd] = g + 10 + rnd() * 10; W('liaison', sd, { text:['Our teams are holding. Call before you cross the town road.', 'We see your team near our site. Keep 50 m clear.', 'Proposal: no contention for the next 15 minutes.'][Math.floor(rnd() * 3)] }, sd); }
     }
   });
+  if (on.L){
+    const pb = mem.pb || (mem.pb = [0, 1].map(i => ({ id:'obot-props' + (i + 1), name:'Bot Props ' + (i + 1), p:(M.sites.wc || M.sites.town).slice(), g, sp:65 + rnd() * 15, job:null, posG:-99 })));
+    pb.forEach(b => once('pjoin' + b.id, () => W('oc_join', null, { oc:b.id, name:b.name, props:true }, 'L')));
+    const known = pb.every(b => S.ocs && S.ocs[b.id]);
+    if (known){
+      const rows = propSched(S), taken = id => pb.some(b => b.job && b.job.use === id);
+      pb.forEach(b => {
+        const dt = Math.max(0, Math.min(15, g - b.g)); b.g = g;
+        if (b.job){ const r = rows.find(x => x.u.id === b.job.use); if (!r || (b.job.kind === 'place' && r.state !== 'todo') || (b.job.kind === 'rec' && r.state !== 'out')) b.job = null; }
+        if (!b.job){
+          const rec = rows.find(r => r.state === 'out' && !taken(r.u.id) && (r.recNow || (r.recAfter != null && g >= r.recAfter + 1)));
+          const plc = rows.filter(r => r.state === 'todo' && r.it && r.placeBy != null && g >= r.placeBy - 15 && !r.clash && !taken(r.u.id))[0];
+          const r = rec || plc;
+          if (r){ b.job = { use:r.u.id, kind:r === rec ? 'rec' : 'place', pt:r === rec ? (r.st.pt || r.u.pt) : r.u.pt }; W('prop_claim', null, { use:r.u.id, oc:b.id }, 'L'); }
+        }
+        let arr = true;
+        if (b.job && propOk(b.job.pt)){ const r2 = step(b.p, b.job.pt, b.sp * dt * (0.8 + rnd() * 0.4)); b.p = r2[0]; arr = r2[1]; }
+        else if (!b.job){ const r2 = step(b.p, M.sites.wc || M.sites.town, b.sp * dt); b.p = r2[0]; }
+        if (b.job && arr){
+          const r = rows.find(x => x.u.id === b.job.use);
+          if (r && b.job.kind === 'place' && g >= r.placeBy - 5){ const pt = propOk(b.job.pt) ? [+(b.job.pt[0] + (rnd() - .5) * 6 / 110950).toFixed(7), +(b.job.pt[1] + (rnd() - .5) * 6 / 84250).toFixed(7)] : null; W('prop_place', null, { use:r.u.id, pt, acc:pt ? 4 + Math.round(rnd() * 5) : null, note:'Placed by practice bot.', oc:b.id }, 'L'); b.job = null; }
+          else if (r && b.job.kind === 'rec'){ W('prop_recover', null, { use:r.u.id, oc:b.id }, 'L'); b.job = null; }
+        }
+        if (g - b.posG >= 2 + rnd()){ b.posG = g; W('oc_pos', null, { oc:b.id, pt:[+b.p[0].toFixed(7), +b.p[1].toFixed(7)], acc:5 + Math.round(rnd() * 5) }, 'L'); }
+      });
+    }
+  }
   if (on.A){
     if ((S.esc || 0) >= 45 && later('roe', 0)){ mem.roe = g + 20; W('aoc_roe', null, { to:'both', level:'restrictive', min:10, why:'Bot AOC: escalation is too high. Cool it down.' }, 'A'); }
     (S.cubs || []).filter(c => c.status === 'sent').forEach(c => { if (later('ac' + c.id + c.hist.length, 1 + rnd() * 2)) once('acd' + c.id + c.hist.length, () => W('cub_reply', null, { id:c.id, verdict:rnd() < .8 ? 'approve' : 'more', text:'Bot AOC: line 9 needs a time for each decision point.' }, 'A')); });
@@ -6296,7 +6515,7 @@ function buildWhite(){
       </div>
       <div class="panel stack" data-sec="setup" data-aoc-off><h2>Practice bots</h2>
         <p class="small muted" style="margin:0">For training only. Bots play the roles you tick, using simple rules: fireteams walk at a real pace (about 55 to 75 m a minute) to sites, the town and inject spots, spend time at each station, then their C2 captures the site with a code word, asks for and runs contention on the other force’s sites, and sends a team back to defend. They also post SALUTE reports, answer intel packages and injects, send briefs and PERSTATs, and approve things in the queue. They are not smart; they give every real player something to react to. They run in this browser only, so keep this tab open. Do not use them in the real game.</p>
-        <div class="row" style="flex-wrap:wrap;gap:6px 16px">${[['B', 'Blue Force C2'], ['R', 'Red Force C2'], ['TB', 'Blue Force fireteams'], ['TR', 'Red Force fireteams'], ['OC', 'POC O/Cs'], ['A', 'AOC'], ['W', 'White Force (sends injects and approves)']].map(([k, n]) => '<label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-botrole="' + k + '"> ' + n + '</label>').join('')}</div>
+        <div class="row" style="flex-wrap:wrap;gap:6px 16px">${[['B', 'Blue Force C2'], ['R', 'Red Force C2'], ['TB', 'Blue Force fireteams'], ['TR', 'Red Force fireteams'], ['OC', 'POC O/Cs'], ['A', 'AOC'], ['L', 'Props and logistics'], ['W', 'White Force (sends injects and approves)']].map(([k, n]) => '<label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-botrole="' + k + '"> ' + n + '</label>').join('')}</div>
         <label>Code words the bot fireteams may report (optional)<input data-botwords autocomplete="off" placeholder="All of this game's code words, any order: ANCHOR, BARREL, ECHO, MAYOR"></label>
         <p class="small muted" style="margin:0">With these, bot fireteams call their C2 over a practice LMR feed when they finish a station ("Capture code word: ANCHOR") so a real C2 can enter it. The board works out which word belongs to which site. They are kept in this tab only.</p>
         <div class="row" style="justify-content:flex-start;align-items:center"><button type="button" class="btn-side" data-botgo style="flex:0 0 auto">Start bots</button><span class="small muted" data-botst>Bots are off.</span></div></div>
@@ -7123,6 +7342,7 @@ function refresh(force){
   uavNotify(S);
   msgWatch(S);
   $$('[data-clock]').forEach(el => el.textContent = clockText(S, now));
+  if (app.role === 'B' || app.role === 'R') cubTick(S, app.role, now);
   $$('[data-next]').forEach(el => el.textContent = nextTickText(S, now));
 }
 setInterval(() => { if (app.cfg && app.role) refresh(false); }, 1000);
