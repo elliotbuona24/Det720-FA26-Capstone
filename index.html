@@ -487,6 +487,8 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 .ocinj-read p{font-size:18px;line-height:1.45;margin:4px 0 0}
 .ocinj-sec p{margin:4px 0 0}
 .ocinj-cur details summary{cursor:pointer}
+.aibox{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--panel-2)}
+.aibox summary{cursor:pointer}
 .defend-ov{position:fixed;inset:0;z-index:1800;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:16px}
 .defend-card{background:var(--panel);color:var(--ink);border:2px solid var(--bad);border-radius:12px;width:100%;max-width:440px;padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:10px}
 .defend-card h2{margin:0;font-size:20px;color:var(--bad)}
@@ -637,6 +639,9 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
         <div class="row"><label for="adEName">Game name<input id="adEName" maxlength="60" required></label><label for="adEPin">Game PIN<input id="adEPin" maxlength="12" required autocomplete="off"></label></div>
         <label class="chk"><input type="checkbox" id="adEListed"> Show on the game menu</label>
         <label class="chk"><input type="checkbox" id="adEStarter"> Include the built-in Capstone intel packages</label>
+        <label class="chk"><input type="checkbox" id="adEBots"> Allow practice bots in this game</label>
+        <label class="chk"><input type="checkbox" id="adEAi"> Allow AI for the bots (each White Force uses its own key)</label>
+        <p class="small muted" style="margin:0">Leave both off for the real Capstone. Turning bots off here stops any bots running in this game within a second.</p>
         <p class="small muted" style="margin:0">New role PINs (leave blank to keep the current PIN)</p>
         <div class="row"><label for="adPW">White Force<input id="adPW" maxlength="12" autocomplete="off"></label><label for="adPA">AOC<input id="adPA" maxlength="12" autocomplete="off"></label><label for="adPB">Blue Force C2<input id="adPB" maxlength="12" autocomplete="off"></label><label for="adPR">Red Force C2<input id="adPR" maxlength="12" autocomplete="off"></label></div>
         <div class="row"><label for="adPTB">Blue Force fireteam<input id="adPTB" maxlength="12" autocomplete="off"></label><label for="adPTR">Red Force fireteam<input id="adPTR" maxlength="12" autocomplete="off"></label><label for="adPOC">POC<input id="adPOC" maxlength="12" autocomplete="off"></label><label for="adPD">Drone operator<input id="adPD" maxlength="12" autocomplete="off"></label><label for="adPL">Props and logistics<input id="adPL" maxlength="12" autocomplete="off"></label></div>
@@ -3539,7 +3544,7 @@ async function adminLoad(){
 }
 function adminList(){
   $('#adCount').textContent = ad.games.length + (ad.games.length === 1 ? ' game' : ' games');
-  $('#adGames').innerHTML = ad.games.length ? ad.games.map(g => '<div class="li"><div class="grow"><b>' + esc(g.name || 'Game') + '</b> <span class="chip ' + (g.listed === false ? 'wait' : 'ok') + '">' + (g.listed === false ? 'Hidden' : 'On menu') + '</span> ' + (g.cfg && g.cfg.blank ? '<span class="chip">No built-in packages</span>' : '<span class="chip">Built-in intel packages</span>') + '<div class="small muted">Game PIN <span class="mono">' + esc(g.pin || '?') + '</span>' + (g.createdAt ? ' - created ' + new Date(g.createdAt).toLocaleDateString() : '') + (g.cfg ? '' : ' - <b>game data missing</b>') + '</div></div><button type="button" data-adopen="' + esc(g.gid) + '" style="flex:0 0 auto"' + (g.key && g.cfg ? '' : ' disabled') + '>Open</button><button type="button" data-adedit="' + esc(g.gid) + '" style="flex:0 0 auto">Edit</button></div>').join('') : '<div class="empty">No games yet. Create one below.</div>';
+  $('#adGames').innerHTML = ad.games.length ? ad.games.map(g => '<div class="li"><div class="grow"><b>' + esc(g.name || 'Game') + '</b> <span class="chip ' + (g.listed === false ? 'wait' : 'ok') + '">' + (g.listed === false ? 'Hidden' : 'On menu') + '</span> ' + (g.cfg && g.cfg.blank ? '<span class="chip">No built-in packages</span>' : '<span class="chip">Built-in intel packages</span>') + (g.cfg && g.cfg.practice && g.cfg.practice.bots ? ' <span class="chip wait">Practice bots allowed' + (g.cfg.practice.ai ? ', with AI' : '') + '</span>' : '') + '<div class="small muted">Game PIN <span class="mono">' + esc(g.pin || '?') + '</span>' + (g.createdAt ? ' - created ' + new Date(g.createdAt).toLocaleDateString() : '') + (g.cfg ? '' : ' - <b>game data missing</b>') + '</div></div><button type="button" data-adopen="' + esc(g.gid) + '" style="flex:0 0 auto"' + (g.key && g.cfg ? '' : ' disabled') + '>Open</button><button type="button" data-adedit="' + esc(g.gid) + '" style="flex:0 0 auto">Edit</button></div>').join('') : '<div class="empty">No games yet. Create one below.</div>';
 }
 $('#adGames').addEventListener('click', ev => {
   const o = ev.target.closest('[data-adopen]'), e = ev.target.closest('[data-adedit]');
@@ -3555,7 +3560,7 @@ async function delAll(paths){ for (let i = 0; i < paths.length; i += 25) await P
 async function adminCreate(cfg, events, pin, listed){
   if (!ad.user) throw new Error('not signed in');
   const gid = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), key = await gameKey(gid, pin), now = Date.now();
-  const c = Object.assign({}, cfg, { gid, createdAt:now });
+  const c = Object.assign({}, cfg, { gid, createdAt:now }); delete c.practice;
   await app.db.doc('keys/' + gid).set({ key, pin:normPin(pin), at:now });
   await app.db.doc('vault/' + key).set(c);
   await writeAll((events || []).filter(e => e && e.id).map(e => ['vault/' + key + '/events/' + e.id, e]));
@@ -3579,17 +3584,18 @@ $('#adFile').addEventListener('submit', ev => {
 });
 function adminEdit(g){
   ad.editing = g; const f = $('#adEdit'); f.hidden = false; $('#adEMsg').textContent = '';
-  $('#adEditTitle').textContent = 'Edit ' + (g.name || 'game'); $('#adEName').value = g.name || ''; $('#adEPin').value = g.pin || ''; $('#adEListed').checked = g.listed !== false; $('#adEStarter').checked = !(g.cfg && g.cfg.blank); $('#adEStarter').closest('label').hidden = !!(g.cfg && g.cfg.blank);
+  $('#adEditTitle').textContent = 'Edit ' + (g.name || 'game'); $('#adEName').value = g.name || ''; $('#adEPin').value = g.pin || ''; $('#adEListed').checked = g.listed !== false; $('#adEStarter').checked = !(g.cfg && g.cfg.blank); $('#adEStarter').closest('label').hidden = !!(g.cfg && g.cfg.blank); { const pr = (g.cfg && g.cfg.practice) || {}; $('#adEBots').checked = !!pr.bots; $('#adEAi').checked = !!(pr.bots && pr.ai); $('#adEAi').disabled = !pr.bots; }
   ['#adPW', '#adPA', '#adPB', '#adPR', '#adPTB', '#adPTR', '#adPOC', '#adPD', '#adPL'].forEach(s => $(s).value = '');
   f.scrollIntoView({ behavior:'smooth', block:'start' });
 }
+$('#adEBots').onchange = () => { const on = $('#adEBots').checked; $('#adEAi').disabled = !on; if (!on) $('#adEAi').checked = false; };
 $('#adECancel').onclick = () => { $('#adEdit').hidden = true; ad.editing = null; };
 async function adminEvents(key){ return (await app.db.collection('vault/' + key + '/events').get()).map(d => d.data()); }
 $('#adEdit').addEventListener('submit', async ev => {
   ev.preventDefault(); const g = ad.editing; if (!g || !g.key || !g.cfg) return; const msg = t => $('#adEMsg').textContent = t;
   const name = $('#adEName').value.trim() || 'Game', pin = normPin($('#adEPin').value), listed = $('#adEListed').checked, blank = !$('#adEStarter').checked;
   if (!pin){ msg('Enter a game PIN.'); return; }
-  const cfg = JSON.parse(JSON.stringify(g.cfg)); cfg.name = name; cfg.blank = blank;
+  const cfg = JSON.parse(JSON.stringify(g.cfg)); cfg.name = name; cfg.blank = blank; { const bo = $('#adEBots').checked; cfg.practice = { bots:bo, ai:bo && $('#adEAi').checked }; }
   const np = { W:'#adPW', A:'#adPA', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC', D:'#adPD', L:'#adPL' };
   const given = Object.entries(np).map(([k, s]) => [k, $(s).value.trim()]).filter(([, v]) => v);
   if (new Set(given.map(([, v]) => v)).size < given.length){ msg('Each new role PIN must be different.'); return; }
@@ -6125,6 +6131,82 @@ function aocMode(on){
   else if (cur && cur.dataset.wtab === 'queue') cur.click();
 }
 const BOT = { on:null, timer:null, mem:{}, words:{} };
+const AI_PROV = {
+  gemini:{ name:'Google Gemini', model:'gemini-flash-lite-latest', keyUrl:'https://aistudio.google.com/apikey' },
+  openrouter:{ name:'OpenRouter (free models)', model:'meta-llama/llama-3.3-70b-instruct:free', keyUrl:'https://openrouter.ai/keys' },
+  groq:{ name:'Groq', model:'llama-3.3-70b-versatile', keyUrl:'https://console.groq.com/keys' }
+};
+const AI_BASE = 'You write for practice bots in an Air Force ROTC field training exercise on the fictional island of Marala. Blue Force and Red Force each have a Wing C2 and fireteams; they capture and hold sites, answer injects and report to the AOC, while a White Force referees. Write like a cadet on the radio or in a brief: short, plain, specific, military brevity, no emojis, no markdown. Never invent code words, PINs, real people or real units. Use only facts from the game state you are given. Output only what is asked.';
+const AI = Object.assign({ on:false, prov:'gemini', model:'', key:'', keep:true, cap:20 }, (() => { try { return JSON.parse(localStorage.getItem('marala-ai') || '{}') || {}; } catch(e){ return {}; } })(), { calls:0, fell:0, busy:false, q:[], win:[], err:'' });
+const AI_ROLE = {
+  c2:'Your seat: the Wing C2 staff (Wing Commander, deputy, staff and intel cell) in your force’s command post. You run the fight from the C2 board and the LMR: you decide which sites to take or defend, when to start contention, which fireteam answers each inject, and you report up to the AOC. How the game works: holding a site scores points over time. To take a site the other force holds, you start contention; your fireteam must earn the capture code word at the site and you must enter it before the site timer runs out, but the holder keeps the site if it enters a defense code word first. Contention, shows of force and strikes raise escalation, which both forces share; at 100 it is war and both scores are cut in half, so you escalate on purpose, not by habit. Diplomatic points come from a town office opened through the mayor, Humanitarian Aid Supply Box deliveries and good conduct. The JFACC (your commander) decides tactics within the ROE; the AOC sets the ROE, can withhold capabilities and runs the battle rhythm; the White Force referees. How you write: commander’s voice, decisive and specific. Name the fireteam, the site or play square, the time in 24-hour form (0715) and the next action. Tie actions to the commander’s intent and PIRs. An order says who, where, what, by when, and when to report. A brief line gives the facts, then your assessment, then what you do next.',
+  team:'Your seat: a GMC cadet fireteam leader talking to your C2 on the LMR. Radio style: short and clipped, usually under 15 words, no greetings. Give position by play square, grid or site name, then what you see or are doing, then what is next. Report the other force in SALUTE terms: size, activity, location, uniform, time, equipment. Use plain radio words: moving to, set at, eyes on, request, copy, wilco, complete. Never say a code word, PIN or real name on the radio. Examples: "Alpha set at Airstrip, starting the station task, about 5 to finish." "Eyes on 3 Red Force, square C4, moving east, rifles, 0712." "Bravo moving to Marala Town for the mayor, ETA 4."',
+  aoc:'Your seat: the AOC Director, the higher headquarters over both wings, working beside the White Force. You run the battle rhythm (Commander’s Update Briefs, PERSTATs, the change of command), set the ROE, and grant or decline support from a limited pool: ISR retasks, resupply, CASEVAC, another show of force or a cache strike. You hold commanders to standard and mentor them. Approve a brief when every line is specific: grids or squares, times, which fireteam, accountability that adds up, casualties stated (or NONE), enemy activity with an assessment, and a next 30 minutes with a decision point. Send it back for more when a line is vague, generic or missing, and name that line and what you need. Voice: senior officer, brief, professional, no fluff. Example: "Approved. Accountability is clear. Next time give me a decision point and time for the airstrip."'
+};
+function aiSave(){ try { const o = { on:AI.on, prov:AI.prov, model:AI.model, cap:AI.cap, keep:AI.keep }; if (AI.keep) o.key = AI.key; localStorage.setItem('marala-ai', JSON.stringify(o)); } catch(e){} }
+function practiceOk(k){ return app.mode === 'local' || !!(app.cfg && app.cfg.practice && app.cfg.practice[k]); }
+function aiReady(){ return AI.on && !!AI.key && practiceOk('bots') && practiceOk('ai'); }
+async function aiCall(prompt, max, role){
+  const P = AI_PROV[AI.prov] || AI_PROV.gemini, model = (AI.model || P.model).trim(), ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 25000);
+  try {
+    let r, j, t;
+    if (AI.prov === 'gemini'){
+      r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', { method:'POST', signal:ctl.signal, headers:{ 'Content-Type':'application/json', 'x-goog-api-key':AI.key }, body:JSON.stringify({ systemInstruction:{ parts:[{ text:AI_BASE + (AI_ROLE[role] ? '\n\n' + AI_ROLE[role] : '') }] }, contents:[{ role:'user', parts:[{ text:prompt }] }], generationConfig:{ maxOutputTokens:max, temperature:.8 } }) });
+      j = await r.json().catch(() => null); if (!r.ok) throw new Error((j && j.error && j.error.message) || 'HTTP ' + r.status);
+      t = ((((j.candidates || [])[0] || {}).content || {}).parts || []).map(x => x.text || '').join('');
+    } else {
+      const url = AI.prov === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions', h = { 'Content-Type':'application/json', Authorization:'Bearer ' + AI.key };
+      if (AI.prov === 'openrouter'){ h['X-Title'] = 'Marala practice bots'; }
+      r = await fetch(url, { method:'POST', signal:ctl.signal, headers:h, body:JSON.stringify({ model, max_tokens:max, temperature:.8, messages:[{ role:'system', content:AI_BASE + (AI_ROLE[role] ? '\n\n' + AI_ROLE[role] : '') }, { role:'user', content:prompt }] }) });
+      j = await r.json().catch(() => null); if (!r.ok) throw new Error((j && j.error && (j.error.message || j.error)) || 'HTTP ' + r.status);
+      t = (((j.choices || [])[0] || {}).message || {}).content || '';
+    }
+    t = String(t || '').trim(); if (!t) throw new Error('empty reply'); return t;
+  } finally { clearTimeout(to); }
+}
+function aiPump(){
+  if (AI.busy || !AI.q.length) return;
+  const job = AI.q.shift(), now = Date.now();
+  AI.win = AI.win.filter(x => now - x < 600000);
+  if (!aiReady() || AI.win.length >= AI.cap){ AI.fell++; job.res(null); aiPump(); return; }
+  AI.busy = true; AI.win.push(now); AI.calls++;
+  aiCall(job.prompt, job.max, job.role).then(t => { AI.err = ''; job.res(t); }, e => { AI.fell++; AI.err = String((e && e.name === 'AbortError') ? 'timed out' : (e && e.message) || e).slice(0, 160); job.res(null); }).finally(() => { AI.busy = false; aiStat(); setTimeout(aiPump, 1200); });
+}
+function aiAsk(prompt, max, role){ if (!aiReady()) return Promise.resolve(null); return new Promise(res => { AI.q.push({ prompt, max:max || 200, role, res }); aiPump(); }); }
+function aiJSON(t){ if (!t) return null; const s = t.replace(/```(?:json)?/gi, ''), a = s.search(/[\[{]/); if (a < 0) return null; const close = s[a] === '[' ? ']' : '}', b = s.lastIndexOf(close); if (b <= a) return null; try { return JSON.parse(s.slice(a, b + 1)); } catch(e){ return null; } }
+function aiJob(k, prompt, max, done, role){ const m = BOT.mem; if (m['ai:' + k]) return; m['ai:' + k] = 1; aiAsk(prompt, max, role || 'c2').then(t => { try { done(t); } catch(e){ console.warn('ai', e); } }); }
+function aiStat(){ const el = $('#vWhite [data-aistat]'); if (!el) return; const t = !practiceOk('ai') ? 'Locked by the admin for this game.' : !AI.on ? 'AI is off. Bots use their built-in text.' : !AI.key ? 'Add an API key to turn AI on.' : 'AI calls this session: ' + AI.calls + (AI.fell ? ', ' + AI.fell + ' used built-in text instead' : '') + '. Limit ' + AI.cap + ' calls every 10 minutes.' + (AI.err ? ' Last error: ' + AI.err : ''); if (el.textContent !== t) el.textContent = t; }
+function aiState(S, sd){
+  const M = mapCfg(S), sq = pt => (pt && squareOf(M, pt)) || '?', other = OTHER[sd];
+  const sites = SITE_KEYS.map(k => { const s = S.sites[k]; return SITES[k].name + ' (' + siteSquare(S, k) + '): ' + (s.holder === sd ? 'ours' : s.holder ? SIDES[s.holder].name : 'neutral') + (s.contestBy ? ', contested by ' + SIDES[s.contestBy].name + ' until ' + hhmm(s.contestUntil) : ''); }).join('; ');
+  const teams = liveTeams(S, sd).map(t => t.name + ' at ' + (t.last && t.last.gps ? 'square ' + sq(t.last.gps) : 'unknown')).join('; ');
+  const seen = S.contacts.filter(c => c.side === sd && c.kind === 'team' && S.g - (c.seenG != null ? c.seenG : c.g) < 15).slice(-3).map(c => 'grid ' + c.grid + ' at ' + (c.seen || hhmm(c.g))).join(', ');
+  const inj = (S.injq || []).filter(q => q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === sd)).slice(-3).map(q => q.label).join('; ');
+  const feed = S.feed.filter(f => f.to === sd || f.to === 'both').slice(-4).map(f => hhmm(f.g) + ' ' + String(f.text).slice(0, 110)).join(' | ');
+  const roe = roeNow(S, sd), wh = Object.keys(HOLD_CAPS).filter(k => held(S, sd, k)).map(k => HOLD_CAPS[k]);
+  return 'Time ' + hhmm(S.g) + ' (game runs 0600 to 0750). You are ' + SIDES[sd].name + '. Commander’s intent: ' + String(intentOf(S, sd)).replace(/\s+/g, ' ').slice(0, 420) + ' PIRs: ' + pirsOf(S, sd).map((x, i) => (i + 1) + ') ' + x).join(' ').slice(0, 420) + ' ROE: ' + (roe ? roe.level + ' until ' + hhmm(roe.until) : 'standard') + (wh.length ? '; withheld by the AOC: ' + wh.join(', ') : '') + '. Escalation ' + S.esc + ' of 100 (' + LEVELS[levelIndex(S.esc)].name + '). Sites: ' + sites + '. Our fireteams: ' + (teams || 'none signed in') + '. ' + SIDES[other].name + ' reported by your teams in the last 15 minutes: ' + (seen || 'none') + '. Recent injects: ' + (inj || 'none') + '. Recent traffic: ' + (feed || 'none') + '.';
+}
+function aiPool(S, sd, kind){
+  const P = BOT.pool || (BOT.pool = {}), k = sd + kind, p = P[k] || (P[k] = { list:[], at:-99, ask:false });
+  if (aiReady() && !p.ask && (p.list.length < 2 || S.g - p.at >= 15)){ p.ask = true;
+    const want = kind === 'radio' ? 'Write 8 different short LMR radio calls (each under 110 characters) from ' + SIDES[sd].name + ' fireteams to their C2 about what they are doing or seeing right now. Mention squares or sites from the state.' : 'Write 4 different short liaison messages (each under 140 characters) from the ' + SIDES[sd].name + ' C2 to the ' + SIDES[OTHER[sd]].name + ' C2. Mix deconfliction, a proposal, and a warning. Stay professional.';
+    aiAsk(aiState(S, sd) + '\n\n' + want + ' Return only a JSON array of strings.', 500, kind === 'radio' ? 'team' : 'c2').then(t => { const a = aiJSON(t); p.ask = false; if (Array.isArray(a) && a.length){ p.list = a.map(x => String(x).trim().slice(0, 160)).filter(Boolean); p.at = app.S ? app.S.g : 0; } }); }
+  return p.list.length ? p.list.splice(Math.floor(Math.random() * p.list.length), 1)[0] : null;
+}
+function aiBrief(S, sd, n, lines){
+  const L = lines.filter(x => x.kind !== 'pers' && x.kind !== 'rag');
+  return aiState(S, sd) + '\n\nWrite ' + SIDES[sd].name + ' Commander’s Update Brief ' + n + ' to the AOC. Return only a JSON object with these keys. Each value is plain text of at least the minimum length shown; write NONE only where allowed.\n' + L.map(x => '"' + x.k + '": ' + x.l + ' (min ' + x.min + ' characters' + (x.none ? ', NONE allowed' : '') + '). ' + x.h).join('\n');
+}
+function botLockSync(v){
+  if (BOT.on && !practiceOk('bots')){ botSet(null); toast('The admin locked practice bots for this game. Bots stopped.', true); const go = v && $('[data-botgo]', v); if (go) go.textContent = 'Start bots'; const st = v && $('[data-botst]', v); if (st) st.textContent = 'Bots are off.'; }
+  const box = v && $('[data-botlock]', v); if (!box) return;
+  const bOk = practiceOk('bots'), aOk = practiceOk('ai'), k = bOk + '|' + aOk;
+  if (box.dataset.k !== k){ box.dataset.k = k; box.hidden = bOk; box.textContent = 'Practice bots are locked for this game. To use them, go to Admin, Edit game, and tick Allow practice bots. Leave it off for the real Capstone.';
+    const go = $('[data-botgo]', v); if (go && !BOT.on) go.disabled = !bOk;
+    const ab = $('[data-aibox]', v); if (ab){ ab.hidden = !bOk; $$('input,select,button', ab).forEach(x => { if (!x.matches('[data-aiopen]')) x.disabled = !aOk; }); const lk = $('[data-ailock]', ab); if (lk) lk.hidden = aOk; } }
+  if (!BOT.on){ const go = $('[data-botgo]', v); if (go) go.disabled = !bOk; }
+  aiStat();
+}
 function botWords(text){ const out = {}, cfg = app.cfg, S = app.S; if (!cfg) return out; const ws = String(text || '').split(/[\s,;]+/).map(w => w.trim().toUpperCase()).filter(Boolean);
   const keys = Object.keys(Object.assign({}, cfg.codes || {}, (S && S.siteCodes) || {}));
   keys.forEach(k => { const c = (S && S.siteCodes && S.siteCodes[k]) || (cfg.codes || {})[k]; if (!c) return; const cap = typeof c === 'string' ? [c] : Array.isArray(c) ? c : (c.cap || []), def = (c && c.def && c.def.length) ? c.def : cap;
@@ -6170,7 +6252,7 @@ function botStep(){
           if (st.tg.kind === 'site') radio('ar' + tkey, si && si.holder === OTHER[sd] ? 'At ' + where + '. ' + SIDES[OTHER[sd]].name + ' holds it. Requesting contention.' : 'At ' + where + '. Starting the station task.');
           else if (st.tg.kind === 'town') radio('ar' + tkey, 'At Town Hall. Weapons outside, meeting the mayor now.');
           else if (st.tg.kind === 'def') radio('ar' + tkey, 'Back at ' + where + ' to defend it.');
-          else if (st.tg.kind === 'ref') radio('ar' + tkey, 'At the ' + where + ' spot, grid ' + botGrid(st.tg.pt) + '. ' + ['Checking the area.', 'Nothing obvious yet, searching.', 'Possible device, holding 50 m back.', 'Locals nearby, talking to them.'][Math.floor(rnd() * 4)]);
+          else if (st.tg.kind === 'ref') radio('ar' + tkey, 'At the ' + where + ' spot, grid ' + botGrid(st.tg.pt) + '. ' + (aiPool(S, sd, 'radio') || ['Checking the area.', 'Nothing obvious yet, searching.', 'Possible device, holding 50 m back.', 'Locals nearby, talking to them.'][Math.floor(rnd() * 4)]));
         }
         if (arr && st.tg.kind === 'site' && si && si.holder === OTHER[sd] && !si.contestBy && !st.req){ st.req = true; W('ct_req', sd, { team:id, name:names[i], site:st.tg.k }, 'T' + sd); }
         if (!on[sd] && st.arr != null && !st.told && g >= st.arr + st.tg.dwell){
@@ -6193,6 +6275,7 @@ function botStep(){
           W('pos', sd, { team:id, name:names[i], gps:[+(np[0] + (rnd() - .5) * 8 / 110950).toFixed(7), +(np[1] + (rnd() - .5) * 8 / 84250).toFixed(7)], acc:5 + Math.round(rnd() * 6), status:arr ? 'At objective' : 'Moving' }, 'T' + sd); }
         once('num' + id, () => W('team_num', sd, { team:id, num:String(i + 1) }, sd));
       });
+      if (aiReady() && later('chat' + sd, 5 + rnd() * 5)){ mem['chat' + sd] = g + 6 + rnd() * 6; const tx = aiPool(S, sd, 'radio'), i = Math.floor(rnd() * 4); if (tx) W('bot_radio', sd, { team:ids[i], name:names[i], text:tx }, 'T' + sd); }
     }
     if (on.OC) ids.forEach((id, i) => { const oc = 'obot-' + id; once('join' + oc, () => W('oc_join', null, { oc, name:'Bot O/C ' + (i + 1) + (sd === 'B' ? ' Blue' : ' Red'), side:sd, team:id }, 'OC')); });
     if (on.OC && on['T' + sd]) (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => {
@@ -6216,12 +6299,32 @@ function botStep(){
       if (en.length && later('sal' + sd, 4 + rnd() * 5)){ mem['sal' + sd] = g + 5 + rnd() * 6; const t = en[Math.floor(rnd() * en.length)], pt = [t.last.gps[0] + (rnd() - .5) * 30 / 110950, t.last.gps[1] + (rnd() - .5) * 30 / 84250];
         W('contact', sd, { kind:'team', grid:botGrid(pt), pt:[+pt[0].toFixed(7), +pt[1].toFixed(7)], seen:hhmm(g), note:'S: 3 people - A: moving - U: ' + SIDES[OTHER[sd]].name + ' uniforms - E: rifles', salute:{ s:'3 people', a:'moving', l:botGrid(pt), u:SIDES[OTHER[sd]].name + ' uniforms', t:hhmm(g).slice(0, 4), e:'rifles' }, ref:'none' }, sd); }
       const cb = cubOpen(S, sd), c = cb ? (S.cubs || []).find(x => x.side === sd && x.n === cb.n) : null;
-      if (cb && (!c || c.status === 'returned') && later('cub' + sd + cb.n + (c ? c.hist.length : ''), 1 + rnd() * 6)){ const f = {}; (cubLines(S, sd, cb.n) || []).forEach(L => { f[L.k] = L.none && rnd() < .5 ? 'NONE' : ('Bot ' + L.l.toLowerCase() + ': ' + tb.map(t => t.name + ' near ' + botGrid(t.last.gps)).join(', ') + '. On track with the plan and watching the other force.').padEnd(Math.max(L.min, 10) + 5, '.'); if (L.kind === 'pers'){ f.p_acc = tb.length * 3 || 12; f.p_una = 0; } if (L.kind === 'rag') f.rag = 'GREEN'; }); W('cub', sd, { n:cb.n, f:cubCompose(cubLines(S, sd, cb.n), f).f || f }, sd); }
-      const a = psOpen(S, sd); if (a && later('ps' + a.id + sd + ((a.reps[sd] || {}).id || ''), 2 + rnd() * 8)) W('perstat', sd, { aid:a.id, sum:{ acc:tb.length * 3 || 12, una:0 }, teams:liveTeams(S, sd).map(t => ({ id:t.id, n:3, grid:t.last && t.last.gps ? botGrid(t.last.gps) : '', st:t.last && t.last.gps ? 'task' : 'unk' })), note:'' }, sd);
+      const cubKey = cb ? 'cub' + sd + cb.n + (c ? c.hist.length : '') : '';
+      if (cb && (!c || c.status === 'returned') && later(cubKey, 1 + rnd() * 6)){
+        const ls = cubLines(S, sd, cb.n) || [], base = () => { const f = {}; ls.forEach(L => { f[L.k] = L.none && rnd() < .5 ? 'NONE' : ('Bot ' + L.l.toLowerCase() + ': ' + tb.map(t => t.name + ' near ' + botGrid(t.last.gps)).join(', ') + '. On track with the plan and watching the other force.').padEnd(Math.max(L.min, 10) + 5, '.'); if (L.kind === 'pers'){ f.p_acc = tb.length * 3 || 12; f.p_una = 0; } if (L.kind === 'rag') f.rag = 'GREEN'; }); return f; };
+        const send = f => W('cub', sd, { n:cb.n, f:cubCompose(ls, f).f || f }, sd);
+        if (!aiReady()) once('cubd' + cubKey, () => send(base()));
+        else aiJob(cubKey, aiBrief(S, sd, cb.n, ls) + (c && c.reply ? '\nThe AOC returned your last brief with: "' + String(c.reply.text || '').slice(0, 200) + '". Fix that in this version.' : ''), 1200, t => {
+          const S2 = app.S, cb2 = S2 && cubOpen(S2, sd), c2 = cb2 ? (S2.cubs || []).find(x => x.side === sd && x.n === cb2.n) : null;
+          if (!cb2 || cb2.n !== cb.n || (c2 && (c2.status !== 'returned' || c2.hist.length !== (c ? c.hist.length : -1)))) return;
+          const f = base(), j = aiJSON(t); if (j && typeof j === 'object') ls.forEach(L => { const x = String(j[L.k] == null ? '' : j[L.k]).replace(/\s+/g, ' ').trim().slice(0, 600); if (x && (x.length >= L.min || (L.none && /^none\b/i.test(x)))) f[L.k] = x; else if (x) f[L.k] = (x + ' ' + f[L.k]).slice(0, 600); });
+          send(f); });
+      }
+      const a = psOpen(S, sd), psKey = a ? 'ps' + a.id + sd + ((a.reps[sd] || {}).id || '') : '';
+      if (a && later(psKey, 2 + rnd() * 8)){ const ps = note => W('perstat', sd, { aid:a.id, sum:{ acc:tb.length * 3 || 12, una:0 }, teams:liveTeams(S, sd).map(t => ({ id:t.id, n:3, grid:t.last && t.last.gps ? botGrid(t.last.gps) : '', st:t.last && t.last.gps ? 'task' : 'unk' })), note:note || '' }, sd);
+        if (!aiReady()) once('psd' + psKey, () => ps('')); else aiJob(psKey, aiState(S, sd) + '\n\nWrite one sentence (under 140 characters) for the remarks line of your PERSTAT to the AOC: where the teams are and anything the AOC should know. Plain text only.', 80, t => { const a2 = app.S && psOpen(app.S, sd); if (a2 && a2.id === a.id && ((a2.reps[sd] || {}).id || '') === ((a.reps[sd] || {}).id || '')) ps(t ? t.replace(/\s+/g, ' ').slice(0, 160) : ''); }); }
       allProblems(S).forEach(P => { const o = intelOpen(S, P.id, sd); if (!o || o.done || S.intel[sd][P.id]) return; if (!later('ia' + P.id + sd, 4 + rnd() * Math.max(2, (o.due - o.g) - 6))) return;
         once('iad' + P.id + sd, () => { const tr = intelTruth(P), good = rnd() < .6, ak = good ? tr.ak : String(Math.floor(rnd() * P.opts.length)), fk = good ? tr.f : P.items[Math.floor(rnd() * P.items.length)].k; W('intel_answer', sd, { pid:P.id, a:intelKey(P.id, 'a', ak), f:intelKey(P.id, 'f', fk) }, sd); }); });
-      (S.injq || []).filter(q => q.win && q.done === 'aoc' && q.sent != null && q.closed == null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => { if (later('aoc' + q.qid + sd, 1 + rnd() * 4)) once('aocd' + q.qid + sd, () => W('aoc_req', sd, { want:'other', text:'Bot C2: done as ordered (' + q.label + ').', ref:'q:' + q.qid }, sd)); });
-      if (later('liai' + sd, 8 + rnd() * 10)){ mem['liai' + sd] = g + 10 + rnd() * 10; W('liaison', sd, { text:['Our teams are holding. Call before you cross the town road.', 'We see your team near our site. Keep 50 m clear.', 'Proposal: no contention for the next 15 minutes.'][Math.floor(rnd() * 3)] }, sd); }
+      (S.injq || []).filter(q => q.win && q.done === 'aoc' && q.sent != null && q.closed == null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => { if (!later('aoc' + q.qid + sd, 1 + rnd() * 4)) return; const go = tx => W('aoc_req', sd, { want:'other', text:tx || 'Bot C2: done as ordered (' + q.label + ').', ref:'q:' + q.qid }, sd);
+        if (!aiReady()) once('aocd' + q.qid + sd, () => go('')); else aiJob('aocd' + q.qid + sd, aiState(S, sd) + '\n\nThe AOC sent this inject: "' + String(q.sentText || q.text || '').slice(0, 500) + '"\nWrite the C2’s message to the AOC (one or two sentences, under 250 characters) reporting what you did about it. Plain text only.', 120, t => go(t ? t.replace(/\s+/g, ' ').slice(0, 280) : '')); });
+      (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && q.done !== 'aoc' && injSides(q).includes(sd) && !(q.res || {})[sd] && S.g - q.sent < 20).forEach(q => { if (!later('ord' + q.qid + sd, .5 + rnd() * 2)) return;
+        const pt = refLoc(S, 'q:' + q.qid), tl = liveTeams(S, sd), dd = t => t.last && t.last.gps && pt ? Math.hypot(t.last.gps[0] - pt[0], t.last.gps[1] - pt[1]) : 9, tm = tl.slice().sort((x, y) => dd(x) - dd(y))[0], team = tm ? tm.id : 'all';
+        const go = tx => W('order', sd, { team, text:tx || 'Respond to ' + q.label + (refNeeds(S, 'q:' + q.qid) ? '. You need ' + refNeeds(S, 'q:' + q.qid) : '') + '. Report when done.' }, sd);
+        if (!aiReady()) once('ordd' + q.qid + sd, () => go('')); else aiJob('ordd' + q.qid + sd, aiState(S, sd) + '\n\nYour force received this inject: "' + String(q.sentText || q.text || '').slice(0, 500) + '"' + (refNeeds(S, 'q:' + q.qid) ? ' It needs ' + refNeeds(S, 'q:' + q.qid) + '.' : '') + '\nWrite the C2’s order to ' + (tm ? 'fireteam ' + tm.name : 'all fireteams') + ' (one or two sentences, under 250 characters): who goes where and what to do. Plain text only.', 120, t => go(t ? t.replace(/\s+/g, ' ').slice(0, 280) : '')); });
+      { const incs = S.incidents.filter(i => !S.statements[sd + ':' + i.id] && S.g <= stmtDue(S, sd, { inc:i }) - 1), pkgs = allProblems(S).filter(P => P.stmt && intelOpen(S, P.id, sd) && !S.statements[sd + ':pkg:' + P.id] && S.g <= stmtDue(S, sd, { pkg:P }) - 1);
+        incs.forEach(i => { if (later('sti' + i.id + sd, 3 + rnd() * 6)) once('stid' + i.id + sd, () => W('act_statement', sd, { incident:i.id, blame:['invest', 'militia', 'deny'][Math.floor(rnd() * 3)] }, sd)); });
+        pkgs.forEach(P => { if (later('stp' + P.id + sd, 4 + rnd() * 8)) once('stpd' + P.id + sd, () => W('act_statement', sd, { pkg:P.id, blame:['militia', 'invest', 'other'][Math.floor(rnd() * 3)] }, sd)); }); }
+      if (later('liai' + sd, 8 + rnd() * 10)){ mem['liai' + sd] = g + 10 + rnd() * 10; W('liaison', sd, { text:aiPool(S, sd, 'liaison') || ['Our teams are holding. Call before you cross the town road.', 'We see your team near our site. Keep 50 m clear.', 'Proposal: no contention for the next 15 minutes.'][Math.floor(rnd() * 3)] }, sd); }
     }
   });
   if (on.L){
@@ -6253,9 +6356,16 @@ function botStep(){
   }
   if (on.A){
     if ((S.esc || 0) >= 45 && later('roe', 0)){ mem.roe = g + 20; W('aoc_roe', null, { to:'both', level:'restrictive', min:10, why:'Bot AOC: escalation is too high. Cool it down.' }, 'A'); }
-    (S.cubs || []).filter(c => c.status === 'sent').forEach(c => { if (later('ac' + c.id + c.hist.length, 1 + rnd() * 2)) once('acd' + c.id + c.hist.length, () => W('cub_reply', null, { id:c.id, verdict:rnd() < .8 ? 'approve' : 'more', text:'Bot AOC: line 9 needs a time for each decision point.' }, 'A')); });
+    (S.cubs || []).filter(c => c.status === 'sent').forEach(c => { const k = 'acd' + c.id + c.hist.length; if (!later('ac' + c.id + c.hist.length, 1 + rnd() * 2)) return;
+      const go = (v, tx) => { const c2 = app.S && (app.S.cubs || []).find(x => x.id === c.id); if (c2 && c2.status === 'sent' && c2.hist.length === c.hist.length) W('cub_reply', null, { id:c.id, verdict:v, text:tx }, 'A'); };
+      const fb = () => go(rnd() < .8 ? 'approve' : 'more', 'Bot AOC: line 9 needs a time for each decision point.');
+      if (!aiReady()){ once(k, fb); return; }
+      if (c.hist.length >= 3){ once(k, () => go('approve', 'AOC: Approved. Keep the next brief this specific.')); return; }
+      const ls = cubLines(S, c.side, c.n) || [], body = ls.map((L, i) => (i + 1) + '. ' + L.l + ': ' + String((c.f || {})[L.k] || '').slice(0, 300)).join('\n');
+      aiJob(k, 'You are the AOC director reviewing ' + SIDES[c.side].name + ' Commander’s Update Brief ' + c.n + ' at ' + hhmm(S.g) + '.\n' + body + '\n\nApprove it if every line is specific and useful. Otherwise ask for more and name the line that is weak. Return only a JSON object: {"verdict":"approve" or "more","text":"one or two sentences of feedback, under 220 characters"}.', 160, t => { const j = aiJSON(t); if (j && (j.verdict === 'approve' || j.verdict === 'more') && j.text) go(j.verdict, ('AOC: ' + String(j.text).replace(/\s+/g, ' ')).slice(0, 260)); else fb(); }, 'aoc'); });
     (S.accts || []).forEach(a => ['B', 'R'].forEach(sd => { const r = a.reps[sd]; if (r && r.status === 'aoc' && later('aa' + a.id + sd, 1)) once('aad' + a.id + sd, () => W('perstat_aoc', null, { aid:a.id, side:sd, text:'Acknowledged.' }, 'A')); }));
-    (S.aocReqs || []).filter(r => r.status === 'open').forEach(r => { if (later('ar' + r.id, 1 + rnd() * 2)) once('ard' + r.id, () => W('aoc_grant', null, { side:r.side, req:r.id, kind:'reply', text:'Bot AOC: copy.' }, 'A')); });
+    (S.aocReqs || []).filter(r => r.status === 'open').forEach(r => { if (!later('ar' + r.id, 1 + rnd() * 2)) return; const go = tx => { const r2 = app.S && (app.S.aocReqs || []).find(x => x.id === r.id); if (r2 && r2.status === 'open') W('aoc_grant', null, { side:r.side, req:r.id, kind:'reply', text:tx || 'Bot AOC: copy.' }, 'A'); };
+      if (!aiReady()) once('ard' + r.id, () => go('')); else aiJob('ard' + r.id, 'You are the AOC director. ' + SIDES[r.side].name + ' C2 sent you this (' + (AOC_WANT[r.want] || r.want) + '): "' + String(r.text || '').slice(0, 300) + '"\nWrite the AOC’s reply in one or two sentences, under 200 characters. Acknowledge it and give a clear next step. Plain text only.', 100, t => go(t ? ('AOC: ' + t.replace(/\s+/g, ' ')).slice(0, 240) : ''), 'aoc'); });
   }
   if (on.W){
     (S.injq || []).filter(q => q.sent == null && q.at != null && START_G + q.at <= g).forEach(q => once('snd' + q.qid, () => W('injq_send', null, { qid:q.qid, ovr:true }, 'W')));
@@ -6522,11 +6632,23 @@ function buildWhite(){
         <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-crexport style="flex:0 0 auto">Download packages and injects</button><label for="crImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload creation files<input id="crImport" type="file" accept=".json,application/json" multiple style="display:none"></label><label for="crCombine" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Combine files into one<input id="crCombine" type="file" accept=".json,application/json" multiple style="display:none"></label></div>
         <p class="small muted" style="margin:0">Upload creation files adds every package and template from the files you choose to this game. Combine files into one merges several teams’ files into a single download without changing this game; use it to review everything before execution day.</p>
       </div>
-      <div class="panel stack" data-sec="setup" data-aoc-off><h2>Practice bots</h2>
+      <div class="panel stack" data-sec="setup" data-aoc-off><h2>Practice bots</h2><div class="banner" data-botlock hidden></div>
         <p class="small muted" style="margin:0">For training only. Bots play the roles you tick, using simple rules: fireteams walk at a real pace (about 55 to 75 m a minute) to sites, the town and inject spots, spend time at each station, then their C2 captures the site with a code word, asks for and runs contention on the other force’s sites, and sends a team back to defend. They also post SALUTE reports, answer intel packages and injects, send briefs and PERSTATs, and approve things in the queue. They are not smart; they give every real player something to react to. They run in this browser only, so keep this tab open. Do not use them in the real game.</p>
         <div class="row" style="flex-wrap:wrap;gap:6px 16px">${[['B', 'Blue Force C2'], ['R', 'Red Force C2'], ['TB', 'Blue Force fireteams'], ['TR', 'Red Force fireteams'], ['OC', 'POC O/Cs'], ['A', 'AOC'], ['L', 'Props and logistics'], ['W', 'White Force (sends injects and approves)']].map(([k, n]) => '<label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-botrole="' + k + '"> ' + n + '</label>').join('')}</div>
         <label>Code words the bot fireteams may report (optional)<input data-botwords autocomplete="off" placeholder="All of this game's code words, any order: ANCHOR, BARREL, ECHO, MAYOR"></label>
         <p class="small muted" style="margin:0">With these, bot fireteams call their C2 over a practice LMR feed when they finish a station ("Capture code word: ANCHOR") so a real C2 can enter it. The board works out which word belongs to which site. They are kept in this tab only.</p>
+        <details class="aibox" data-aibox><summary data-aiopen><b>AI writing</b> <span class="small muted">optional, uses a free AI service</span></summary>
+          <div class="stack" style="margin-top:10px">
+            <p class="small" data-ailock hidden style="margin:0;color:var(--bad)">AI is locked for this game. To use it, go to Admin, Edit game, and tick Allow AI for the bots.</p>
+            <p class="small muted" style="margin:0">The bots still move, claim and approve by rule. With AI on, they also write their Commander’s Update Briefs, PERSTAT remarks, radio calls, liaison messages, orders for injects and the AOC’s replies from the live game state. Each request sends a short script and a summary of the game to the service you pick. If AI is off, hits the limit or fails, the bots fall back to their built-in text.</p>
+            <label class="chk"><input type="checkbox" data-aion> Use AI for the bots’ writing</label>
+            <div class="row"><label>Service<select data-aiprov>${Object.entries(AI_PROV).map(([k, x]) => '<option value="' + k + '">' + esc(x.name) + '</option>').join('')}</select></label><label>Model (leave blank for the default)<input data-aimodel autocomplete="off" spellcheck="false"></label></div>
+            <div class="row" style="align-items:end"><label>API key<input type="password" data-aikey autocomplete="off" spellcheck="false"></label><a data-aikeyurl target="_blank" rel="noopener" style="flex:0 0 auto;padding-bottom:10px">Get a free key</a></div>
+            <div class="row" style="align-items:end"><label class="chk" style="flex:1 1 220px"><input type="checkbox" data-aikeep> Remember the key on this device</label><label>Limit<select data-aicap><option value="10">10 calls every 10 minutes</option><option value="20">20 calls every 10 minutes</option><option value="40">40 calls every 10 minutes</option></select></label></div>
+            <div class="row" style="justify-content:flex-start;align-items:center"><button type="button" data-aitest style="flex:0 0 auto">Test the connection</button><span class="small" data-aitestres></span></div>
+            <p class="small muted" style="margin:0">The key stays in this browser. It is never saved to the game, sent to other screens or put on GitHub. A full practice game uses about 60 to 100 calls.</p>
+            <p class="small" style="margin:0" data-aistat></p>
+          </div></details>
         <div class="row" style="justify-content:flex-start;align-items:center"><button type="button" class="btn-side" data-botgo style="flex:0 0 auto">Start bots</button><span class="small muted" data-botst>Bots are off.</span></div></div>
       <div class="panel" data-sec="setup" data-aoc-off><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
@@ -6758,7 +6880,19 @@ function buildWhite(){
     $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
   }
   { const go = $('[data-botgo]', v), st = $('[data-botst]', v); if (go){ const sync = () => { go.textContent = BOT.on ? 'Stop bots' : 'Start bots'; st.textContent = BOT.on ? 'Bots are playing: ' + Object.keys(BOT.on).map(roleLabel).join(', ') + '. Keep this tab open.' : 'Bots are off.'; }; if (BOT.on) $$('[data-botrole]', v).forEach(c => c.checked = !!BOT.on[c.dataset.botrole]); sync();
-    go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; { const wi = $('[data-botwords]', v); BOT.words = botWords(wi ? wi.value : ''); const n = Object.keys(BOT.words).filter(k => BOT.words[k].cap.length || BOT.words[k].def.length).length; if (wi && wi.value.trim() && !n) toast('None of those words match this game’s code words.', true); } botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
+    go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } if (!practiceOk('bots')){ toast('Practice bots are locked for this game. Unlock them in Admin.', true); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; { const wi = $('[data-botwords]', v); BOT.words = botWords(wi ? wi.value : ''); const n = Object.keys(BOT.words).filter(k => BOT.words[k].cap.length || BOT.words[k].def.length).length; if (wi && wi.value.trim() && !n) toast('None of those words match this game’s code words.', true); } botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
+  { const ab = $('[data-aibox]', v); if (ab){
+    const pv = $('[data-aiprov]', ab), md = $('[data-aimodel]', ab), ky = $('[data-aikey]', ab), kp = $('[data-aikeep]', ab), cp = $('[data-aicap]', ab), on = $('[data-aion]', ab), lk = $('[data-aikeyurl]', ab), res = $('[data-aitestres]', ab);
+    const fill = () => { const P = AI_PROV[AI.prov] || AI_PROV.gemini; md.placeholder = P.model; lk.href = P.keyUrl; };
+    pv.value = AI_PROV[AI.prov] ? AI.prov : 'gemini'; md.value = AI.model || ''; ky.value = AI.key || ''; kp.checked = AI.keep !== false; cp.value = String(AI.cap || 20); on.checked = !!AI.on; fill();
+    pv.onchange = () => { AI.prov = pv.value; AI.model = ''; md.value = ''; fill(); aiSave(); aiStat(); };
+    md.onchange = () => { AI.model = md.value.trim(); aiSave(); };
+    ky.onchange = () => { AI.key = ky.value.trim(); aiSave(); aiStat(); };
+    kp.onchange = () => { AI.keep = kp.checked; aiSave(); };
+    cp.onchange = () => { AI.cap = +cp.value || 20; aiSave(); aiStat(); };
+    on.onchange = () => { AI.key = ky.value.trim(); if (on.checked && !AI.key){ on.checked = false; toast('Paste an API key first.', true); return; } AI.on = on.checked; aiSave(); aiStat(); toast(AI.on ? 'AI writing on.' : 'AI writing off. Bots use built-in text.'); };
+    $('[data-aitest]', ab).onclick = async () => { if (!practiceOk('ai')){ res.textContent = 'Locked by the admin.'; return; } AI.key = ky.value.trim(); AI.model = md.value.trim(); if (!AI.key){ res.textContent = 'Paste an API key first.'; return; } res.textContent = 'Testing…'; try { const t = await aiCall('Reply with exactly: READY', 20); res.textContent = 'Connected. ' + (AI_PROV[AI.prov] || {}).name + ' replied: ' + t.slice(0, 40); } catch(e){ res.textContent = 'Failed: ' + String((e && e.name === 'AbortError') ? 'timed out' : (e && e.message) || e).slice(0, 160); } };
+    botLockSync(v); } }
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-wfcall]'); if (!b) return; const k = b.dataset.wfcall, sd = b.dataset.side; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; writeEvent('wf_call', sd, { call:k }); toast(OC_CALLS[k].name + ': ' + SIDES[sd].name + '.'); });
   v.addEventListener('click', ev => { const m = ev.target.closest('[data-tlmode]'), b = !m && ev.target.closest('[data-pictl] [data-tlid]'); if (!m && !b) return; app.tlf = m ? { mode:m.dataset.tlmode, id:'' } : { mode:(app.tlf || {}).mode || 'all', id:b.dataset.tlid }; const tb = $('[data-pictl]', v); if (tb) tb.dataset.h = ''; refresh(true); });
   v.addEventListener('change', ev => { const o = ev.target.closest('[data-tlone]'); if (!o) return; app.tlf = { mode:(app.tlf || {}).mode || 'all', id:o.value }; refresh(true); });
@@ -7352,6 +7486,7 @@ function refresh(force){
   msgWatch(S);
   $$('[data-clock]').forEach(el => el.textContent = clockText(S, now));
   if (app.role === 'B' || app.role === 'R') cubTick(S, app.role, now);
+  if (BOT.on || app.role === 'W' || app.role === 'A') botLockSync(app.role === 'W' || app.role === 'A' ? $('#vWhite') : null);
   $$('[data-next]').forEach(el => el.textContent = nextTickText(S, now));
 }
 setInterval(() => { if (app.cfg && app.role) refresh(false); }, 1000);
