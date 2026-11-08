@@ -155,6 +155,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 @media (max-width:1000px){.pic-main{grid-template-columns:minmax(0,1fr)}.pic-fill{flex:0 0 auto}.pic-comms{flex:0 0 auto;height:340px}.pic-side>.pic-card:not(.pic-fill){max-height:none}.pic-side [data-picout]{max-height:300px}.pic-head{grid-template-columns:repeat(2,minmax(0,1fr))}.pic-prog{grid-column:1/-1;order:3}}
 @media (max-width:560px){.pic-big{font-size:32px}.pic-tl{grid-template-columns:90px minmax(0,1fr)}}
 #vWhite:not(.aocv) [data-aoc-only]{display:none!important}
+#vWhite.aocv [data-wqcnt]{display:none!important}
 .white-grid>.wfsec{grid-column:1/-1!important}.white-grid>.cmdsec{grid-column:1/-1!important}
 .plan-it summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;list-style:none}.plan-it summary::-webkit-details-marker{display:none}.plan-it summary .tm{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;min-width:64px}.plan-it summary .ttl{flex:1 1 180px;min-width:0}
 .plan-body{display:grid;gap:6px;margin-top:8px;font-size:13px}.plan-body .ip-it{border-left:3px solid var(--line);padding:2px 0 2px 8px}.plan-body .ip-it.f{border-left-color:var(--bad)}.plan-body .opt.ok{color:var(--good);font-weight:700}
@@ -5920,6 +5921,7 @@ function aocMode(on){
   if (on && !app.aocLanded){ app.aocLanded = true; $('[data-wtab="pic"]', v).click(); }
   const cur = $('[data-wtab][aria-selected="true"]', v); if (on && cur && cur.hasAttribute('data-aoc-off')) $('[data-wtab="pic"]', v).click();
   if (!on && cur && cur.hasAttribute('data-aoc-only')) $('[data-wtab="all"]', v).click();
+  else if (cur && cur.dataset.wtab === 'queue') cur.click();
 }
 const BOT = { on:null, timer:null, mem:{}, words:{} };
 function botWords(text){ const out = {}, cfg = app.cfg, S = app.S; if (!cfg) return out; const ws = String(text || '').split(/[\s,;]+/).map(w => w.trim().toUpperCase()).filter(Boolean);
@@ -6385,7 +6387,8 @@ function buildWhite(){
     if (cols.every(c => c.every(Boolean))){ cols.forEach(c => { const col = document.createElement('div'); col.className = 'wcol'; c.forEach(el => col.appendChild(el)); g.appendChild(col); }); kids.filter(c => !cols.flat().includes(c)).forEach(el => { el.classList.add('wfull'); g.appendChild(el); }); } }
   const setTab = (k, scroll) => {
     $$('[data-wtab]', v).forEach(b => b.setAttribute('aria-selected', b.dataset.wtab === k ? 'true' : 'false'));
-    $$('[data-sec]', v).forEach(el => { const sec = el.dataset.sec.split(' '), on = k === 'all' ? !sec.includes('pic') && !sec.includes('plan') && !sec.includes('cmd') : sec.includes(k); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
+    const sk = k === 'queue' && v.classList.contains('aocv') ? 'score' : k;
+    $$('[data-sec]', v).forEach(el => { const sec = el.dataset.sec.split(' '), on = k === 'all' ? !sec.includes('pic') && !sec.includes('plan') && !sec.includes('cmd') : sec.includes(sk); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
     $('[data-wgrid]', v).classList.toggle('filtered', k !== 'all');
     $('[data-wgrid]', v).classList.toggle('picmode', k === 'pic');
     if (k === 'pic' || k === 'wf' || k === 'plan' || k === 'cmd') setTimeout(() => refresh(true), 0);
