@@ -1424,7 +1424,7 @@ function setWindow(cfg){
 }
 setWindow(null);
 const CONTEST_MIN = 10;
-const ESC_DECAY = 0.15;
+const ESC_DECAY = 0.10, ESC_DECAY_QUIET = 0.15, ESC_BASE = 1;
 const UAV_EVERY = 40, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 0.75, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5, UAV_EVERY_FUEL = 30;
 const AID_WAIT = 20, AID_WIN = 15, AID_HN = 5, AID_FIRST = 1, AID_MISS = 10, OFFICE_HN = 1;
 function aidOf(S, side){ if (!S.aid) S.aid = { B:{ on:false, next:null, open:null, due:null, n:0, hold:false, made:0, missed:0 }, R:{ on:false, next:null, open:null, due:null, n:0, hold:false, made:0, missed:0 } }; return S.aid[side]; }
@@ -1968,11 +1968,11 @@ function tick(S, g){
     if (held){ S.pts[side].hold = (S.pts[side].hold || 0) + held * SITE_HOLD; parts[side].push('+' + held * SITE_HOLD + ' for ' + held + (held === 1 ? ' site' : ' sites') + ' held'); }
   });
   ['B','R'].forEach(side => {
-    if (!S.raisedBy[side] && S.escBy[side] > 0){ const d = Math.min(S.escBy[side], Math.max(1, Math.round(S.escBy[side] * ESC_DECAY))); S.escBy[side] -= d; S.decayed[side] += d; }
+    if (S.escBy[side] > 0){ const d = Math.min(S.escBy[side], Math.max(1, Math.round(S.escBy[side] * (ESC_DECAY + (S.raisedBy[side] ? 0 : ESC_DECAY_QUIET))))); S.escBy[side] -= d; S.decayed[side] += d; }
     S.raisedBy[side] = false;
     if (powered(S, 'harbor', side) && S.escBy[side] > 0){ S.escBy[side] -= 1; S.decayed[side] += 1; parts[side].push('escalation caused −1 (Harbor)'); }
   });
-  if (!S.raised){ const before = S.esc; lower(S, ESC.quiet); if (S.esc !== before){ parts.B.push('escalation −' + (before - S.esc)); parts.R.push('escalation −' + (before - S.esc)); } }
+  { const before = S.esc; lower(S, ESC_BASE + (S.raised ? 0 : ESC.quiet)); if (S.esc !== before){ parts.B.push('escalation −' + (before - S.esc)); parts.R.push('escalation −' + (before - S.esc)); } }
   S.raised = false;
   ['B','R'].forEach(side => pushFeed(S, side, hhmm(g) + ' update: ' + parts[side].join(', '), 'tick'));
   if (S.esc >= 50 && !S.war && g - S.crisisCallAt >= 20){
