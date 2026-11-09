@@ -172,7 +172,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .wf-count.on{color:var(--ink);border-color:var(--warn);background:var(--panel-2)}.wf-count.on b{color:var(--warn)}
 .wf-rej{border-color:var(--bad)}
 @media (max-width:900px){.wfsec{grid-template-columns:minmax(0,1fr)}.wf-counts{grid-template-columns:repeat(3,minmax(0,1fr))}}
-#vWhite.aocv [data-aoc-off],#vWhite.aocv [data-act="void"],#vWhite.aocv [data-ipview],#vWhite.aocv [data-act="ipdeploy"],#vWhite.aocv [data-act="ipclose"],#vWhite.aocv [data-injqall],#vWhite.aocv [data-injqsend],#vWhite.aocv [data-injqdel],#vWhite.aocv [data-injquse],#vWhite.aocv [data-tpl],#vWhite.aocv [data-tplq]{display:none!important}
+#vWhite.aocv [data-aoc-off],#vWhite.aocv [data-act="void"],#vWhite.aocv [data-ipview],#vWhite.aocv [data-act="ipdeploy"],#vWhite.aocv [data-act="ipedit"],#vWhite.aocv [data-act="rsedit"],#vWhite.aocv [data-act="ipclose"],#vWhite.aocv [data-injqall],#vWhite.aocv [data-injqsend],#vWhite.aocv [data-injqdel],#vWhite.aocv [data-injquse],#vWhite.aocv [data-tpl],#vWhite.aocv [data-tplq]{display:none!important}
 .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:var(--side);background:var(--side-soft);border:1px solid var(--side);border-radius:4px;padding:2px 8px}
 .chip{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--muted);background:var(--panel-2)}
 .chip.ok{color:var(--good);border-color:var(--good)}
@@ -1944,7 +1944,7 @@ function allProblems(S){
   cs.forEach(c => { if (c.replaces) reps[c.replaces] = c; });
   const ed = (S && S.edits) || {};
   const base = S && S.blank ? [] : PROBLEMS;
-  return base.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !base.some(P => P.id === c.replaces))).map(P => ed[P.id] ? Object.assign({}, P, ed[P.id], { id:P.id, custom:P.custom, replaces:P.replaces, at:P.at, win:P.win, blast:P.blast, wp:P.wp, wps:P.wps, only:P.only, field:P.field, task:P.task, pir:ed[P.id].pir != null ? ed[P.id].pir : P.pir }) : P);
+  return base.map(P => reps[P.id] || P).concat(cs.filter(c => !c.replaces || !base.some(P => P.id === c.replaces))).map(P => ed[P.id] ? Object.assign({}, P, ed[P.id], { id:P.id, custom:P.custom, replaces:P.replaces, at:P.at, win:P.win, blast:P.blast, wp:P.wp, wps:P.wps, only:P.only, field:P.field, task:P.task, pir:ed[P.id].pir != null ? ed[P.id].pir : P.pir }) : P).map(P => S && S.ipTxt && S.ipTxt[P.id] ? Object.assign({}, P, S.ipTxt[P.id]) : P);
 }
 function validEdit(k){ return k && Array.isArray(k.opts) && k.opts.length >= 2 && k.opts.length <= 8 && Array.isArray(k.items) && k.items.length >= 2 && k.items.length <= 8 && k.items.every((it, i) => it && it.k === 'ABCDEFGH'[i]) && typeof k.a === 'string' && typeof k.f === 'string' && typeof k.title === 'string' && typeof k.q === 'string'; }
 function validPkg(k){
@@ -2044,6 +2044,9 @@ const INDOOR_DEFAULT = [
   { id:'320', floor:'3', places:['lzR'] }
 ];
 let ROOMS_LIVE = null;
+const INDOOR_CONTEND = 2 / 3;
+const INDOOR_INJ = { 'tx-17':'Armory', 'tx-16b':'305' };
+function injRoomOf(S, tid, pt){ const o = S && S.indoor && S.indoor.inj && tid ? S.indoor.inj[tid] : null, r = o ? roomFind(o) : null; return r || (pt ? roomOf(pt) : null); }
 function indoorRooms(a){ const L = Array.isArray(a) ? a.slice(0, 40).map(r => ({ id:String((r && r.id) || '').trim().slice(0, 24), floor:String((r && r.floor) || '').slice(0, 12), places:Array.isArray(r && r.places) ? r.places.filter(x => typeof x === 'string').slice(0, 6) : [], use:String((r && r.use) || '').slice(0, 80), alias:Array.isArray(r && r.alias) ? r.alias.filter(x => typeof x === 'string').slice(0, 8).map(x => x.slice(0, 24)) : [] })).filter(r => r.id) : []; return L.length ? L : INDOOR_DEFAULT; }
 function roomLabel(r){ return r ? (/^\d/.test(r.id) ? 'Room ' + r.id : r.id) : ''; }
 function roomNorm(t){ return String(t || '').trim().toLowerCase().replace(/^(room|rm)\.?\s*/, '').replace(/\s+/g, ' '); }
@@ -2375,7 +2378,7 @@ function apply(S, e, cfg){
       if (!st || S.endex || !S.clock.started){ pushLog(S, nm + ' contention refused', side, e, 'rejected'); break; }
       if (st.holder !== OTHER[side]){ pushLog(S, nm + ' contention on ' + SITES[p.site].name + ' refused: the other wing does not hold it', side, e, 'rejected'); pushFeed(S, side, SITES[p.site].name + (st.holder === side ? ' is already yours.' : ' is not held by the other wing. Capture it with a capture code word.'), 'alert'); if (st.holder !== side) S.lastSeen[side][p.site] = { holder:st.holder, g:S.g }; break; }
       if (st.contestBy){ pushLog(S, nm + ' contention refused: already in contention', side, e, 'rejected'); pushFeed(S, side, SITES[p.site].name + ' is already in contention.', 'alert'); break; }
-      const mins = S.siteTimer[p.site] || 15, cost = contendCost(S, p.site), dug = cost > CONTEND_ESC;
+      const mins = Math.max(3, Math.round((S.siteTimer[p.site] || 15) * (S.indoor && S.indoor.on ? INDOOR_CONTEND : 1))), cost = contendCost(S, p.site), dug = cost > CONTEND_ESC;
       st.contested = true; st.contestBy = side; st.contestUntil = Math.min(END_G, S.g + mins); st.contestNext = S.g + 10;
       S.lastSeen[side][p.site] = { holder:st.holder, g:S.g };
       raise(S, side, cost); S.ver++;
@@ -2427,6 +2430,11 @@ function apply(S, e, cfg){
     case 'act_aid':
       pushLog(S, nm + ' aid refused: aid packages are delivered by fireteams and confirmed by POCs', side, e, 'rejected'); break;
     case 'act_statement': {
+      if (p.free){ const tx = String(p.text || '').trim().slice(0, 200); if (!tx || !S.clock.started || S.endex){ pushLog(S, nm + ' statement refused', side, e, 'rejected'); break; }
+        const key = side + ':free:' + e.id; S.statements[key] = 'custom'; if (!S.stmtText) S.stmtText = {}; S.stmtText[key] = tx;
+        pushFeed(S, 'public', SIDES[side].name + ' statement: "' + tx + '"', 'public');
+        S.requests.push({ id:e.id, side, kind:'stmt', text:'"' + tx + '"', blame:'custom', pkg:null, inc:null, free:true, status:'open', g:S.g });
+        pushLog(S, nm + ' public statement of its own ("' + tx + '") waits for a White Force ruling', side, e); break; }
       const pkg = p.pkg ? allProblems(S).find(x => x.id === p.pkg && x.stmt) : null, inc = pkg ? null : S.incidents.find(i => i.id === p.incident);
       const key = side + ':' + (pkg ? 'pkg:' + pkg.id : p.incident), blame = STMT_KINDS.includes(p.blame) ? p.blame : 'militia';
       if ((!inc && !pkg) || S.statements[key] || (pkg && !intelOpen(S, pkg.id, side)) || (blame === 'custom' && !String(p.text || '').trim())){ pushLog(S, nm + ' statement refused', side, e, 'rejected'); break; }
@@ -2447,6 +2455,7 @@ function apply(S, e, cfg){
       pushFeed(S, OTHER[side], 'Your datalink is jammed until ' + hhmm(until) + ': no live map and no drone flights. LMRs still work.', 'alert', { team:true });
       pushLog(S, nm + ' jammed the ' + SIDES[OTHER[side]].name + ' datalink until ' + hhmm(until) + ' (escalation +' + ESC.jam + ')', side, e); break; }
     case 'act_show': {
+      if (S.indoor && S.indoor.on){ pushLog(S, nm + ' show of force refused: none in the indoor game', side, e, 'rejected'); pushFeed(S, side, 'There are no shows of force in the indoor game.', 'alert'); break; }
       if (roeRefuse(S, side, 'show', 'Show of force', nm, e) || heldRefuse(S, side, 'show', 'Show of force', nm, e)) break;
       const M = engMap(S), rad = showRadius(S), pts = Object.assign({}, (M && M.sites) || {}, S.sitePts || {});
       if (p.site && !SITES[p.site]){ pushLog(S, nm + ' show of force refused: unknown site', side, e, 'rejected'); break; }
@@ -2502,7 +2511,7 @@ function apply(S, e, cfg){
           pushLog(S, rn + ' waypoint request ' + (p.result === 'add' ? 'added: ' : 'moved to the waypoint queue: ') + r.label, r.side, e);
         } else { r.answer = 'Declined.' + (p.text ? ' ' + String(p.text).slice(0, 140) : ''); pushFeed(S, r.side, 'Waypoint request declined: ' + r.label + '.', 'alert', { label:'Waypoint' }); pushLog(S, rn + ' waypoint request declined: ' + r.label, r.side, e); }
         S.ver++;
-      } else if (r.kind === 'stmt'){ const ok = p.result === 'true'; r.answer = ok ? 'Ruled true.' : 'Ruled false.'; const P = r.pkg ? allProblems(S).find(x => x.id === r.pkg) : null, I = r.inc ? S.incidents.find(x => x.id === r.inc) : null; stmtApply(S, r.side, ok, P ? '"' + fillT(P.title) + '"' : I ? 'the ' + I.grid + ' explosion' : 'an intel package', e); pushFeed(S, r.side, 'White Force ruling on your public statement (' + r.text + '): ' + (ok ? 'True: escalation \u22125, diplomatic points +5.' : 'False: escalation +10, diplomatic points \u221210.'), ok ? 'good' : 'alert'); }
+      } else if (r.kind === 'stmt'){ const ok = p.result === 'true'; r.answer = ok ? 'Ruled true.' : 'Ruled false.'; const P = r.pkg ? allProblems(S).find(x => x.id === r.pkg) : null, I = r.inc ? S.incidents.find(x => x.id === r.inc) : null; stmtApply(S, r.side, ok, P ? '"' + fillT(P.title) + '"' : I ? 'the ' + I.grid + ' explosion' : r.free ? 'its own statement' : 'an intel package', e); pushFeed(S, r.side, 'White Force ruling on your public statement (' + r.text + '): ' + (ok ? 'True: escalation \u22125, diplomatic points +5.' : 'False: escalation +10, diplomatic points \u221210.'), ok ? 'good' : 'alert'); }
       else if (r.kind === 'drone' && p.fix && (S.mtgts || []).some(t => t.id === p.fix && !t.done)){ const t = S.mtgts.find(x => x.id === p.fix); t.fix[r.side] = S.g; pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.') + ' The drone fixed the militia target "' + t.label + '". Strike it within ' + FIX_MIN + ' minutes or fix it again.', 'hq'); r.by = e.by; pushLog(S, rn + ' drone flight answered and fixed the militia target ' + t.label, r.side, e); }
       else if (r.kind === 'drone'){ pushFeed(S, r.side, 'Drone flight answer to "' + r.text + '": ' + (p.text || 'No answer.'), 'hq'); r.by = e.by; pushLog(S, rn + ' drone flight answered' + (e.by === 'D' ? ' by the drone operator' : ''), r.side, e); }
       else if (r.kind === 'show'){
@@ -2532,7 +2541,8 @@ function apply(S, e, cfg){
       const to = (p.to === 'B' || p.to === 'R' ? [p.to] : ['B','R']).filter(sd => !intelOpen(S, P.id, sd) && (!P.only || P.only === sd));
       if (!to.length && P.only && !intelOpen(S, P.id, P.only)){ pushLog(S, 'Intel package ' + (i + 1) + ' not sent: it is for ' + SIDES[P.only].name + ' only', null, e, 'rejected'); break; }
       if (!to.length){ pushLog(S, 'Intel package ' + (i + 1) + ' already sent', null, e, 'rejected'); break; }
-      const due = Math.min(END_G, S.g + P.win);
+      const due = Math.min(END_G, S.g + (P.win || 15));
+      if (!S.intelOut[P.id] && (typeof p.title === 'string' || typeof p.q === 'string')){ if (!S.ipTxt) S.ipTxt = {}; const tt = String(p.title || P.title).trim().slice(0, 80), qq = String(p.q || P.q).trim().slice(0, 400); S.ipTxt[P.id] = { title:tt || P.title, q:qq || P.q }; P.title = S.ipTxt[P.id].title; pushLog(S, 'Intel package ' + (i + 1) + ' edited by the White Force before sending', null, e); }
       S.intelOut[P.id] = S.intelOut[P.id] || {};
       to.forEach(sd => {
         S.intelOut[P.id][sd] = { g:S.g, due, done:false };
@@ -3032,7 +3042,7 @@ function apply(S, e, cfg){
       break; }
     case 'indoor': {
       const rooms = Array.isArray(p.rooms) ? indoorRooms(p.rooms) : (S.indoor ? S.indoor.rooms : INDOOR_DEFAULT);
-      const was = !!(S.indoor && S.indoor.on); S.indoor = { on:!!p.on, rooms, g:S.g }; S.ver++; roomsBuild(S);
+      const was = !!(S.indoor && S.indoor.on); S.indoor = { on:!!p.on, rooms, inj:Object.assign({}, INDOOR_INJ, (S.indoor && S.indoor.inj) || {}), g:S.g }; S.ver++; roomsBuild(S);
       pushLog(S, p.on ? (was ? 'Indoor room plan updated' : 'Indoor plan in effect (' + rooms.length + ' rooms)') : 'Indoor plan off: back to GPS', null, e);
       if (p.on !== was) pushFeed(S, 'both', p.on ? 'Indoor plan in effect. Positions come from room check-ins, not GPS. Scan the QR code on the door of every room you enter, or pick the room on your board.' : 'Outdoor plan in effect. Positions come from GPS again.', 'hq', { label:'White Force', team:true });
       break;
@@ -3144,7 +3154,7 @@ function replay(cfg, events, now, step, cache){
   setWindow(ws ? Object.assign({}, cfg, { startG:ws.p.startG, lengthMin:ws.p.lengthMin }) : cfg);
   const S = newState();
   S.blank = !!(cfg && cfg.blank);
-  if (cfg && cfg.indoor && cfg.indoor.on){ S.indoor = { on:true, rooms:indoorRooms(cfg.indoor.rooms), g:START_G }; roomsBuild(S); pushFeed(S, 'both', 'Indoor game. Every place on the island is a room. Scan the QR code on the door of every room you enter, or pick the room under Your room on your board.', 'hq', { label:'White Force', team:true }); }
+  if (cfg && cfg.indoor && cfg.indoor.on){ S.indoor = { on:true, rooms:indoorRooms(cfg.indoor.rooms), inj:Object.assign({}, INDOOR_INJ, cfg.indoor.inj || {}), g:START_G }; roomsBuild(S); pushFeed(S, 'both', 'Indoor game. Every place on the island is a room. Scan the QR code on the door of every room you enter, or pick the room under Your room on your board.', 'hq', { label:'White Force', team:true }); }
   if (step) S.step = step;
   for (const e of evs) stepEvent(S, e, cfg, byId, step);
   if (cache){ cache.cfg = cfg; cache.n = events.length; cache.ids = new Set(events.map(e => e.id)); const L = evs[evs.length - 1]; cache.last = L ? [L.ts, L.id] : [-Infinity, '']; cache.win = ws ? Object.assign({}, cfg, { startG:ws.p.startG, lengthMin:ws.p.lengthMin }) : cfg; cache.sites = JSON.stringify([SITE_KEYS, SITES]); cache.S = structuredClone(S); }
@@ -3861,12 +3871,18 @@ function aarExtra(S){
   const ctReqs = (S.ctReqs || []).map(r => ({ side:r.side, team:r.name, site:sn(r.site), g:r.g, status:r.status, resG:r.resG != null ? r.resG : null }));
   const nines = (S.nines || []).map(n => ({ side:n.side, team:n.name, text:nineText(n), g:n.g, status:n.status, resG:n.resG != null ? n.resG : null, by:n.by || '' }));
   const props = propSched(S).filter(r => r.it || r.st.placed != null).map(r => ({ prop:r.prop.name, label:r.u.label || '', item:r.it ? r.it.label : '', placeBy:r.placeBy, placed:r.st.placed != null ? r.st.placed : null, by:r.st.name || '', rec:r.st.rec != null ? r.st.rec : null, recAfter:r.recAfter }));
-  const AP = allProblems(S), stmts = Object.keys(S.statements || {}).map(k => { const [sd, a, b] = k.split(':'), blame = S.statements[k], pkg = a === 'pkg' ? AP.find(P => P.id === b) : null, inc = pkg ? null : S.incidents.find(i => i.id === a);
+  const AP = allProblems(S), stmts = Object.keys(S.statements || {}).map(k => { const [sd, a, b] = k.split(':'), blame = S.statements[k], pkg = a === 'pkg' ? AP.find(P => P.id === b) : null, inc = pkg || a === 'free' ? null : S.incidents.find(i => i.id === a);
+    if (a === 'free'){ const rq = S.requests.find(r => r.id === b); return { side:sd, what:'Own statement: "' + ((S.stmtText || {})[k] || '') + '"', g:rq ? rq.g : null, said:'custom', res:rq && rq.status !== 'open' ? (rq.result === 'ok' || rq.ok || /true/i.test(rq.answer || '') ? 'Ruled correct' : 'Ruled wrong') : 'White Force ruling' }; }
     if (!pkg && !inc) return null; const truth = blame === 'custom' ? null : pkg ? stmtTruth(pkg) : inc.truth, rq = S.requests.find(r => r.kind === 'stmt' && r.side === sd && (pkg ? r.pkg === pkg.id : r.inc === inc.id));
     const res = blame === 'invest' ? 'No change' : truth != null ? (stmtCorrect(sd, blame, truth) ? 'Correct' : 'Wrong') : rq && rq.status !== 'open' ? (rq.result === 'ok' || rq.ok ? 'Ruled correct' : 'Ruled wrong') : 'White Force ruling';
     return { side:sd, what:pkg ? fillT(pkg.title).split(' -- ')[0] : 'Explosion at ' + inc.grid, g:pkg ? (S.log.find(l => l.type === 'act_statement' && l.side === sd && l.text.indexOf(fillT(pkg.title).split(' -- ')[0]) >= 0) || {}).g : inc.g, said:stmtSaid(sd, blame, ''), truth:truth == null ? '–' : truth === 'militia' ? 'The militia' : SIDES[truth].name, res }; }).filter(Boolean);
   const pick = re => S.log.filter(l => re.test(l.type || '')).map(l => ({ g:l.g, side:l.side, text:l.text, status:l.status }));
-  return { indoor:S.indoor && S.indoor.on ? { g:S.indoor.g, rooms:S.indoor.rooms.length } : null, cubs, perstats, injects, aocReqs, ocCalls, ctReqs, nines, props, stmts,
+  const inPaths = S.indoor && S.indoor.on ? ['B', 'R'].flatMap(sd => Object.values(S.teams[sd]).map(t => { const ch = (t.fixes || []).filter(f => f.room && f.g >= S.indoor.g - 1e-9), path = [];
+      ch.forEach(f => { const l = path[path.length - 1]; if (!l || l.room !== f.room) path.push({ room:f.room, g:f.g }); });
+      const ts = ch.map(f => f.g), end = Math.min(S.g, END_G), gaps = ts.map((x, i) => (i ? x - ts[i - 1] : x - Math.max(S.indoor.g, START_G))).concat(ts.length ? [end - ts[ts.length - 1]] : []);
+      const big = gaps.length ? Math.max(...gaps) : null, at = big == null ? null : gaps.indexOf(big);
+      return { side:sd, name:(t.num ? '#' + t.num + ' ' : '') + t.name, n:ch.length, path, gap:big, gapFrom:at == null ? null : at === 0 ? Math.max(S.indoor.g, START_G) : ts[at - 1], over15:gaps.filter(x => x >= 15).length }; })) : [];
+  return { indoor:S.indoor && S.indoor.on ? { g:S.indoor.g, rooms:S.indoor.rooms.length, paths:inPaths } : null, cubs, perstats, injects, aocReqs, ocCalls, ctReqs, nines, props, stmts,
     aocLog:pick(/^(aoc_roe|aoc_hold|aoc_pri|strike_auth|aoc_intent|aoc_pir)/), contention:S.log.filter(l => l.type === 'act_contend' || l.type === 'ct_res' || (l.type === 'claim' && /Defended|unlocked|Contention|contention/.test(l.text))).map(l => ({ g:l.g, side:l.side, text:l.text, status:l.status })),
     aocChat:{ A:(S.aocChat || []).filter(m => m.from === 'A').length, W:(S.aocChat || []).filter(m => m.from === 'W').length }, ocChat:{ oc:(S.occhats || []).filter(m => m.from === 'oc').length, wc:(S.occhats || []).filter(m => m.from === 'wc').length },
     pocs:Object.values(S.ocs || {}).map(o => ({ name:o.name, props:!!o.props, mayor:!!o.mayor, where:ocWhere(S, o), removed:!!o.removed })) };
@@ -4004,6 +4020,7 @@ function aarReportHTML(aar){
     '<h3>C2 liaison</h3><table class="data"><thead><tr><th style="width:.7in">Time</th><th style="width:1in">From</th><th>Message</th></tr></thead><tbody>' + liRows + '</tbody></table>' +
     '<h2>14. Fireteams</h2><table class="data"><thead><tr><th>Force</th><th>Fireteam</th><th class="num">Map looks</th><th class="num">Position reports</th><th class="num">Map-grid checks</th><th class="num">Median error</th><th class="num">Worst</th></tr></thead><tbody>' + tmRows + '</tbody></table>' +
     '<p class="note">A map-grid check is a report where the team typed its grid from the map while the phone also sent GPS; the error is the distance between them.</p><h3>Orders from the C2s</h3><table class="data"><thead><tr><th>Time</th><th>Force</th><th>To</th><th>Order</th></tr></thead><tbody>' + ordRows + '</tbody></table>' +
+    (X.indoor && X.indoor.paths ? '<h2>15. Indoor Check-Ins</h2><p>Each fireteam’s rooms in the order it checked in, and how long it went without checking in. Long gaps mean the C2, the AOC and the White Force were working from an old position.</p><table class="data"><thead><tr><th>Force</th><th>Fireteam</th><th class="num">Check-ins</th><th>Longest gap</th><th class="num">Gaps of 15 min or more</th></tr></thead><tbody>' + (X.indoor.paths.length ? X.indoor.paths.map(p => '<tr>' + sc(p.side, NM[p.side]) + '<td>' + h(p.name) + '</td><td class="num">' + p.n + '</td><td>' + (p.gap == null ? '–' : Math.round(p.gap) + ' min from ' + t(p.gapFrom)) + '</td><td class="num">' + p.over15 + '</td></tr>').join('') : none(5, 'No fireteams.')) + '</tbody></table><h3>Room paths</h3><table class="data"><thead><tr><th style="width:1in">Force</th><th style="width:1.4in">Fireteam</th><th>Rooms, with check-in time</th></tr></thead><tbody>' + (X.indoor.paths.length ? X.indoor.paths.map(p => '<tr>' + sc(p.side, NM[p.side]) + '<td>' + h(p.name) + '</td><td>' + (p.path.length ? p.path.map(x => h((/^\d/.test(x.room) ? 'Room ' : '') + x.room) + ' ' + t(x.g)).join(', ') : 'Never checked in') + '</td></tr>').join('') : none(3, 'No fireteams.')) + '</tbody></table><p class="note">Fireteams keep their last 60 position reports, so a very long game may start partway through.</p>' : '') +
     '<h2 class="pb">Annex A. Chronology of Key Events</h2><table class="data"><thead><tr><th style="width:.7in">Time</th><th style="width:1in">Force</th><th>Event</th></tr></thead><tbody>' + aar.log.filter(e => KEY.test(e.type || '')).map(logRow).join('') + '</tbody></table><p class="note">Struck-through entries were refused by the board. Voided entries are left out of every count.</p>' +
     '<h2 class="pb">Annex B. Full Board Log (' + aar.log.length + ' entries)</h2><table class="data"><thead><tr><th style="width:.7in">Time</th><th style="width:1in">Force</th><th>Entry</th></tr></thead><tbody>' + aar.log.map(logRow).join('') + '</tbody></table>' +
     '<div class="foot">Generated by the Marala Island board. Points and meters are computed by the board’s rules.</div></main></body></html>';
@@ -4195,7 +4212,7 @@ function roomify(text){
 function showRooms(rq){ return ROOMS_LIVE ? ROOMS_LIVE.list.filter(rm => rm.pts.some(([k, q]) => k !== 'wc' && distM(q, rq.center) <= rq.radius)) : []; }
 function feedRoom(f){
   if (!ROOMS_LIVE || !app.S) return f.text;
-  if (f.qid){ const pt = refLoc(app.S, 'q:' + f.qid), r = pt && roomOf(pt); return r ? f.text + ' Indoors: ' + roomLabel(r) + '.' : f.text; }
+  if (f.qid){ const q = (app.S.injq || []).find(x => x.qid === f.qid), r = injRoomOf(app.S, q && q.tid, refLoc(app.S, 'q:' + f.qid)); return r ? f.text + ' Indoors: ' + roomLabel(r) + '.' : f.text; }
   if (f.show){ const rq = app.S.requests.find(x => x.id === f.show), rs = rq && rq.center ? showRooms(rq) : []; return rs.length ? f.text + ' Indoors, the circle covers ' + rs.map(roomLabel).join(', ') + '.' : f.text; }
   return roomify(f.text);
 }
@@ -4819,7 +4836,7 @@ function ocScenes(S, v, o){
   const here = ROOMS_LIVE ? (inRm ? { room:inRm, pt:inRm.pt, acc:0 } : null) : app.ocHere && Date.now() - app.ocHere.t < 120000 ? app.ocHere : null;
   $('[data-ocscenegps]', v).textContent = ROOMS_LIVE ? (inRm ? 'Your team: ' + roomLabel(inRm) : 'Your team has not checked in to a room') : here ? 'GPS ±' + here.acc + ' m' : located ? 'No GPS: tap the inject your team is at' : '';
   if (!app.ocNear) app.ocNear = {};
-  list.forEach(x => { x.rm = ROOMS_LIVE && x.pt ? roomOf(x.pt) : null; x.d = !ROOMS_LIVE && here && x.pt ? distM(here.pt, x.pt) : null; x.near = ROOMS_LIVE ? !!(here && x.rm && x.rm === here.room) : x.d != null && x.d <= 60 + Math.min(here.acc, 40);
+  list.forEach(x => { x.rm = ROOMS_LIVE ? injRoomOf(S, x.q.tid, x.pt) : null; x.d = !ROOMS_LIVE && here && x.pt ? distM(here.pt, x.pt) : null; x.near = ROOMS_LIVE ? !!(here && x.rm && x.rm === here.room) : x.d != null && x.d <= 60 + Math.min(here.acc, 40);
     if (x.near && !app.ocNear[x.id]){ app.ocNear[x.id] = true; x.fresh = true; } });
   { const curNear = list.some(y => y.id === app.ocInj && y.near), hit = list.find(x => x.fresh);
     if (hit){ if (!curNear){ app.ocInj = hit.id; app.ocInjAuto = true; } app.ocJump = true; msgSound(); try { navigator.vibrate && navigator.vibrate([300, 150, 300, 150, 300]); } catch(e){} toast('GPS: your team is at ' + hit.q.label + '. ' + (curNear ? 'Tap Switch to this one when ready.' : hit.scene ? 'Read the scene to the team now.' : 'Its card is open on the Now tab.')); } }
@@ -5297,8 +5314,8 @@ function buildWing(side){
   setCTab(pref.get('marala-ctab-' + side, 'all'), false);
   const on = (name, fn) => { const f = $('[data-f="' + name + '"]', v); f.addEventListener('submit', async ev => { ev.preventDefault(); if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; } const fd = new FormData(f); const ok = await fn(fd); if (ok !== false){ f.reset(); toast('Sent to the board.'); } }); };
   on('drone', fd => writeEvent('act_drone', side, { text:fd.get('q') }));
-  { const bs = $('[name="blame"]', $('[data-f="statement"]', v)), tl = $('[data-sttext]', v); bs.addEventListener('change', () => { tl.hidden = bs.value !== 'custom'; }); }
-  on('statement', fd => { const v = String(fd.get('inc') || ''), blame = String(fd.get('blame') || ''), text = String(fd.get('text') || '').trim(); if (!v){ toast('There is no explosion or intel package to make a statement about yet.', true); return false; } if (blame === 'custom' && !text){ toast('Write the statement first.', true); return false; } const p = { blame }; if (blame === 'custom') p.text = text; if (v.indexOf('pkg:') === 0) p.pkg = v.slice(4); else p.incident = v; return writeEvent('act_statement', side, p); });
+  { const sf = $('[data-f="statement"]', v), bs = $('[name="blame"]', sf), inc = $('[name="inc"]', sf), tl = $('[data-sttext]', v), sync = () => { const fr = inc.value === 'free'; bs.closest('label').hidden = fr; tl.hidden = !fr && bs.value !== 'custom'; }; bs.addEventListener('change', sync); inc.addEventListener('change', sync); sf.addEventListener('reset', () => setTimeout(sync)); }
+  on('statement', fd => { const v = String(fd.get('inc') || ''), blame = String(fd.get('blame') || ''), text = String(fd.get('text') || '').trim(); if (!v){ toast('There is no explosion or intel package to make a statement about yet.', true); return false; } if (blame === 'custom' && !text){ toast('Write the statement first.', true); return false; } if (v === 'free'){ if (!text){ toast('Write the statement first.', true); return false; } return writeEvent('act_statement', side, { free:true, text }); } const p = { blame }; if (blame === 'custom') p.text = text; if (v.indexOf('pkg:') === 0) p.pkg = v.slice(4); else p.incident = v; return writeEvent('act_statement', side, p); });
   on('wpreq', fd => { const pt = locate(mapCfg(app.S), String(fd.get('loc') || '')); if (!pt){ toast('That location did not read. Use a play square, MGRS grid or lat/long.', true); return false; } const sq = squareOf(mapCfg(app.S), pt); return writeEvent('act_wpreq', side, { label:String(fd.get('label')).trim(), pt, grid:(sq ? sq + ', ' : '') + fmtPt(pt), note:fd.get('note') }); });
   $('[data-wrtap]', v).onclick = () => { if (!app.lastClick){ toast('No map tap recorded.', true); return; } $('[data-f="wpreq"] [name="loc"]', v).value = fmtPt(app.lastClick); };
   on('uav', () => { if (!confirm('Launch a UAV? Escalation goes up by 10.')) return false; return writeEvent('act_uav', side, {}); });
@@ -5725,6 +5742,7 @@ function renderDefend(S, side, v){
   L.forEach(d => $$('[data-defleft="' + d.k + '"]', box).forEach(el => { const t = defendLeft(S, d.st); if (el.textContent !== t) el.textContent = t; }));
 }
 function renderWing(S, side, now){
+  { const sf = $('[data-f="show"]', $('#vWing')); if (sf && sf.hidden !== !!ROOMS_LIVE){ const p1 = sf.previousElementSibling, p0 = p1 && p1.previousElementSibling; [sf, p1, p0].forEach(x => { if (x) x.hidden = !!ROOMS_LIVE; }); } }
   refreshSiteSelects($('#vWing'));
   const v = $('#vWing'), lvl = levelIndex(S.esc), sc = score(S, side);
   renderDefend(S, side, v);
@@ -5763,7 +5781,7 @@ function renderWing(S, side, now){
   }).join('') : '<div class="empty">No reports yet. Intel posts them from the Reports tab; each confirmed report is worth 1 point.</div>';
   const incs = S.incidents.filter(i => !S.statements[side + ':' + i.id] && S.g <= stmtDue(S, side, { inc:i }) + 1e-9), pkgs = allProblems(S).map((P, i) => [P, i]).filter(([P]) => P.stmt && intelOpen(S, P.id, side) && !S.statements[side + ':pkg:' + P.id] && S.g <= stmtDue(S, side, { pkg:P }) + 1e-9);
   { const n = incs.length + pkgs.length, bd = $('[data-stmtbadge]', v); if (bd){ const due = Math.min.apply(null, incs.map(i => stmtDue(S, side, { inc:i })).concat(pkgs.map(([P]) => stmtDue(S, side, { pkg:P })))); bd.hidden = !n || S.endex; bd.textContent = (n === 1 ? 'Public statement expected' : n + ' public statements expected') + (n ? ' - next due ' + hhmm(due) : ''); } }
-  keepSelect($('[name="inc"]', v), incs.length || pkgs.length ? (incs.length ? '<optgroup label="Explosions">' + incs.map(i => '<option value="' + i.id + '">' + esc(i.grid) + ' explosion, ' + hhmm(i.g) + ' - due ' + hhmm(stmtDue(S, side, { inc:i })) + '</option>').join('') + '</optgroup>' : '') + (pkgs.length ? '<optgroup label="Intel packages">' + pkgs.map(([P, i]) => '<option value="pkg:' + P.id + '">Intel ' + pkgNum(S, P, side) + ': ' + esc(fillT(P.title)) + ' - due ' + hhmm(stmtDue(S, side, { pkg:P })) + '</option>').join('') + '</optgroup>' : '') : '<option value="">Nothing to make a statement about right now</option>');
+  keepSelect($('[name="inc"]', v), (incs.length || pkgs.length ? (incs.length ? '<optgroup label="Explosions">' + incs.map(i => '<option value="' + i.id + '">' + esc(i.grid) + ' explosion, ' + hhmm(i.g) + ' - due ' + hhmm(stmtDue(S, side, { inc:i })) + '</option>').join('') + '</optgroup>' : '') + (pkgs.length ? '<optgroup label="Intel packages">' + pkgs.map(([P, i]) => '<option value="pkg:' + P.id + '">Intel ' + pkgNum(S, P, side) + ': ' + esc(fillT(P.title)) + ' - due ' + hhmm(stmtDue(S, side, { pkg:P })) + '</option>').join('') + '</optgroup>' : '') : '<option value="">Nothing to make a statement about right now</option>') + '<option value="free">Something else: write your own statement</option>');
   const claims = S.claims.filter(c => c.side === side);
   $('[data-claims]', v).innerHTML = claims.slice(-4).reverse().map(c => '<div class="li"><span class="grow">' + esc(c.site === 'town' ? 'Marala Town' : SITES[c.site].name) + ' - ' + hhmm(c.g) + ' <span class="small muted">' + esc(c.note) + '</span></span><span class="chip ' + (c.status === 'accepted' ? 'ok' : c.status === 'contest' ? 'wait' : 'no') + '">' + (c.status === 'accepted' ? 'Confirmed' : c.status === 'contest' ? 'Contention' : 'Refused') + '</span></div>').join('');
   const reqs = S.requests.filter(r => r.side === side);
@@ -6241,26 +6259,38 @@ function propSched(S){
   return rows;
 }
 function propChip(S, kind, id){ const all = Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id); if (!all.length) return ''; const n = all.filter(u => propLive(S, u)).length; return n === all.length ? '<span class="chip ok">Props ready</span>' : '<span class="chip wait">Props ' + n + ' of ' + all.length + ' placed</span>'; }
+function finalEdit(kind, id, to){
+  const S = app.S; if (!S) return; let title, fields, send;
+  if (kind === 'rsedit'){ const q = (S.injq || []).find(x => x.qid === id); if (!q || q.sent != null) return; title = 'Edit, then send: ' + q.label; fields = [['text', 'Message the forces receive', fillT(q.text), 8, 900]];
+    send = async f => { const tx = f.text.trim(); if (!tx){ toast('The message is empty.', true); return false; } if (!S.clock.started && !confirm('The game clock has not started. Send this inject anyway?')) return false; const hold = propHold(app.S, 'tpl', q.tid).length; if (hold && !confirm('Its props are not reported placed yet. Send anyway? Its response clock starts when they are placed.')) return false; await writeEvent('injq_send', null, Object.assign({ qid:q.qid, text:tx }, hold ? { ovr:true } : {})); toast('Sent: ' + q.label + '.'); }; }
+  else { const P = allProblems(S).find(x => x.id === id); if (!P) return; title = 'Edit, then send: intel package'; fields = [['title', 'Title', fillT(P.title), 2, 80], ['q', 'Question', fillT(P.q), 6, 400]];
+    send = async f => { if (!f.title.trim() || !f.q.trim()){ toast('Fill in the title and the question.', true); return false; } const hold = propHold(app.S, 'pkg', id).length; if (hold && !confirm('Its props are not reported placed yet. Deploy anyway?')) return false; await writeEvent('intel_deploy', null, Object.assign({ pid:id, to, title:f.title.trim(), q:f.q.trim() }, hold ? { ovr:true } : {})); toast('Intel package sent.'); }; }
+  const ov = document.createElement('div'); ov.className = 'defend-ov'; ov.id = 'finalEdit';
+  ov.innerHTML = '<form class="defend-card" style="max-width:640px;border-color:var(--line)"><h2 style="margin:0">' + esc(title) + '</h2><p class="small muted" style="margin:0">Changes apply only to what goes out now. The saved template stays as it was.' + (kind === 'ipedit' ? ' Answer choices and the answer key do not change.' : '') + '</p>' + fields.map(([n, l, v0, r, mx]) => '<label>' + esc(l) + '<textarea name="' + n + '" rows="' + r + '" maxlength="' + mx + '">' + esc(v0) + '</textarea></label>').join('') + '<div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto">Send now</button><button type="button" data-fecancel style="flex:0 0 auto">Cancel</button></div></form>';
+  document.body.appendChild(ov); const fm = $('form', ov); $('textarea', fm).focus();
+  $('[data-fecancel]', ov).onclick = () => ov.remove();
+  fm.addEventListener('submit', async ev => { ev.preventDefault(); const vals = {}; fields.forEach(([n]) => vals[n] = fm.elements[n].value); const ok = await send(vals); if (ok !== false) ov.remove(); });
+}
 function rsRows(S){
   const rows = [], running = S.clock.started && !S.endex, now = S.g;
   (S.injq || []).forEach(q => { const t = q.at != null ? START_G + q.at : null, out = q.sent != null; let status = '', btns = '';
     if (out){ const end = q.win ? injEnd(q) : null; status = q.win ? (q.closed != null ? '<span class="chip">Closed ' + hhmm(q.closed) + '</span>' : end == null ? '<span class="chip wait">Sent, clock waits for props</span>' : '<span class="chip wait">Out, due ' + hhmm(end) + '</span>') : '<span class="chip ok">Sent ' + hhmm(q.sent) + '</span>'; }
     else { const hold = propHold(S, 'tpl', q.tid); if (hold.length){ const claimed = Object.values(S.propUses || {}).some(u => u.kind === 'tpl' && u.item === q.tid && !propLive(S, u) && (S.propClaim || {})[u.id]); status = '<span class="chip wait" title="' + esc('Waiting on: ' + propWaitText(S, 'tpl', q.tid)) + '">Props not placed' + (claimed ? ' (claimed)' : ' (not claimed)') + '</span>'; btns = '<button type="button" data-act="rsinj" data-id="' + q.qid + '" data-ovr="1">Send anyway</button>'; }
-      else btns = '<button type="button" class="btn-side" data-act="rsinj" data-id="' + q.qid + '">Send</button>'; }
+      else btns = '<button type="button" data-act="rsedit" data-id="' + q.qid + '">Edit, then send</button><button type="button" class="btn-side" data-act="rsinj" data-id="' + q.qid + '">Send</button>'; }
     rows.push({ key:'q' + q.qid, t:t != null ? t : q.lvl != null ? 9000 + q.lvl : 9999, when:t != null ? hhmm(t) : q.lvl != null ? 'At ' + LEVELS[q.lvl].name : 'Any time', tag:q.win ? 'Inject, ' + q.win + ' min' : 'Inject', label:q.label + ((pl => pl ? ' (opens ' + pl.name + ')' : '')(Object.values(S.sitePlans || {}).find(x => x.tid && x.tid === q.tid))), to:q.to, out, due:!out && (t != null ? t <= now + 1e-9 && running : q.lvl != null && levelIndex(S.esc) >= q.lvl), status, btns, body:out ? q.sentText : fillT(q.text), note:[q.note, q.oc ? 'POC brief: ' + q.oc : ''].filter(Boolean).join('\n') }); });
   allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), need = P.only ? [P.only] : ['B', 'R'], sent = need.filter(sd => sd === 'B' ? oB : oR), out = sent.length === need.length, t = P.at != null ? START_G + P.at : null; let status = '', btns = '';
     if (sent.length){ const os = [oB, oR].filter(Boolean); status = os.every(o => o.done) ? '<span class="chip">Closed</span>' : '<span class="chip wait">Out, due ' + hhmm(Math.max(...os.map(o => o.due))) + '</span>'; }
     if (!out){ const held = propHold(S, 'pkg', P.id).length && !sent.length;
       if (held) btns = '<button type="button" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (P.only || 'both') + '" data-ovr="1">Deploy anyway</button>', status = '<span class="chip wait" title="' + esc('Waiting on: ' + propWaitText(S, 'pkg', P.id)) + '">Props not placed</span>';
-      else if (P.only) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + P.only + '"' + (running ? '' : ' disabled') + '>Deploy to ' + SIDES[P.only].name + '</button>';
-      else if (!sent.length) btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button>';
+      else if (P.only) btns = '<button type="button" data-act="ipedit" data-id="' + P.id + '" data-to="' + P.only + '"' + (running ? '' : ' disabled') + '>Edit, then send</button><button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + P.only + '"' + (running ? '' : ' disabled') + '>Deploy to ' + SIDES[P.only].name + '</button>';
+      else if (!sent.length) btns = '<button type="button" data-act="ipedit" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Edit, then send</button><button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="both"' + (running ? '' : ' disabled') + '>Deploy to both</button>';
       else btns = '<button type="button" class="btn-side" data-act="ipdeploy" data-id="' + P.id + '" data-to="' + (oB ? 'R' : 'B') + '"' + (running ? '' : ' disabled') + '>Send to ' + SIDES[oB ? 'R' : 'B'].name + ' too</button>'; }
     rows.push({ key:'p' + P.id, t:t != null ? t : 9999, when:t != null ? hhmm(t) : 'Any time', tag:'Intel ' + (i + 1) + (P.win ? ', ' + P.win + ' min' : ''), label:fillT(P.title), to:P.only || 'both', out, due:!out && t != null && t <= now + 1e-9 && running, status, btns, body:fillT(P.q) + (P.task ? '\n' + (P.field === 'Tip check' ? 'Field check: ' : 'Collection gap: ') + fillT(P.task) : ''), note:fillT(P.note || '') }); });
   return rows.sort((a, b) => a.t - b.t);
 }
 function propWaitText(S, kind, id){ return Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id && !propLive(S, u)).map(u => { const c = (S.propClaim || {})[u.id]; return ((S.props || {})[u.prop] || {}).name + (u.label ? ' (' + u.label + ')' : '') + (c ? ', claimed by ' + c.name + ' at ' + hhmm(c.g) : ', not claimed by the props team'); }).join('; '); }
 function propLockHTML(S, kind, id, normal, ovrAttrs){ const hold = propHold(S, kind, id); if (!hold.length) return normal; return '<span class="chip wait" style="flex:0 0 auto" title="' + esc('Waiting on: ' + propWaitText(S, kind, id)) + '">Waiting on ' + hold.length + ' prop' + (hold.length === 1 ? '' : 's') + (Object.values(S.propUses || {}).some(u => u.kind === kind && u.item === id && !propLive(S, u) && (S.propClaim || {})[u.id]) ? ' (claimed)' : ' (not claimed)') + '</span><button type="button" ' + ovrAttrs + ' style="flex:0 0 auto">Override</button>'; }
-function propWhere(S, r){ const M = mapCfg(S), pt = r.u.pt, sq = pt && squareOf(M, pt); return (ROOMS_LIVE && pt ? roomFull(S, roomOf(pt)) + ': ' : '') + (r.u.loc || (pt ? fmtPt(pt) : 'No location')) + (sq && r.u.loc ? ' - Square ' + sq : ''); }
+function propWhere(S, r){ const M = mapCfg(S), pt = r.u.pt, sq = pt && squareOf(M, pt); return (ROOMS_LIVE && pt ? roomFull(S, injRoomOf(S, r.u.kind === 'tpl' ? r.u.item : null, pt)) + ': ' : '') + (r.u.loc || (pt ? fmtPt(pt) : 'No location')) + (sq && r.u.loc ? ' - Square ' + sq : ''); }
 function propLocate(S, text){
   const t = String(text || '').trim(); if (!t) return null; const M = mapCfg(S), pts = Object.assign({}, (M && M.sites) || {}, S.sitePts || {}), lo = t.toLowerCase();
   const named = { 'marala town':'town', 'town':'town', 'blue force hq':'lzB', 'red force hq':'lzR' };
@@ -6352,7 +6382,7 @@ function propNavText(){
   const el = $('[data-prnav]'); if (!el) return; const S = app.S, r = S && app.propNav && propSched(S).find(x => x.u.id === app.propNav);
   if (!r){ el.hidden = true; return; } el.hidden = false;
   const tgt = r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt, me = app.propSelf && Date.now() - app.propSelf.t < 60000 ? app.propSelf : null;
-  el.innerHTML = '<div class="pr-nav">' + (r.state === 'out' ? 'Recovering: ' : 'Placing: ') + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div>' + (!tgt ? '<div class="small">No map point for this prop. Use the written location: ' + esc(r.u.loc || 'none') + '.</div>' : ROOMS_LIVE ? '<div class="pr-nav">Take it to ' + esc(roomFull(S, roomOf(tgt))) + '</div>' : !me ? '<div class="small">Finding your position…</div>' : '<div class="pr-nav"><span class="mono">' + Math.round(GEO.dist(me.pt, tgt)) + ' m ' + propBearing(me.pt, tgt) + '</span> <span class="small muted">±' + me.acc + ' m</span></div>') + '<div class="small">Where: ' + esc(propWhere(S, r)) + '</div><div class="row" style="justify-content:flex-start"><button type="button" data-prnavstop style="flex:0 0 auto">Hide on map</button></div>';
+  el.innerHTML = '<div class="pr-nav">' + (r.state === 'out' ? 'Recovering: ' : 'Placing: ') + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div>' + (!tgt ? '<div class="small">No map point for this prop. Use the written location: ' + esc(r.u.loc || 'none') + '.</div>' : ROOMS_LIVE ? '<div class="pr-nav">Take it to ' + esc(roomFull(S, injRoomOf(S, r.u.kind === 'tpl' ? r.u.item : null, tgt))) + '</div>' : !me ? '<div class="small">Finding your position…</div>' : '<div class="pr-nav"><span class="mono">' + Math.round(GEO.dist(me.pt, tgt)) + ' m ' + propBearing(me.pt, tgt) + '</span> <span class="small muted">±' + me.acc + ' m</span></div>') + '<div class="small">Where: ' + esc(propWhere(S, r)) + '</div><div class="row" style="justify-content:flex-start"><button type="button" data-prnavstop style="flex:0 0 auto">Hide on map</button></div>';
 }
 function buildProps(){
   if (app.built === 'props') return; app.built = 'props';
@@ -6725,7 +6755,9 @@ function botStep(){
           const en = liveTeams(S, OTHER[sd]).filter(o => o.last && o.last.gps && g - o.last.g < 3 && dist(np, o.last.gps) < 150);
           if (en.length && g >= (mem['sw' + sd] || 0)){ mem['sw' + sd] = g + 4 + rnd() * 4; const o = en[0]; W('bot_radio', sd, { team:id, name:names[i], text:'Contact: ' + (2 + Math.floor(rnd() * 3)) + ' ' + SIDES[OTHER[sd]].name + ' near grid ' + botGrid(o.last.gps) + ', ' + ['moving', 'stopped', 'watching us', 'setting up'][Math.floor(rnd() * 4)] + ', rifles, seen ' + hhmm(g).slice(0, 4) + '.' }, 'T' + sd); }
         }
-        if (nowArr || g - st.posG >= 1.5 + rnd()){ st.posG = g;
+        if (ROOMS_LIVE && (nowArr || g - st.posG >= 1.5)){ const rm = roomOf(np), rp = rm && rm.pts.map(x => x[1]).sort((a, b) => dist(np, a) - dist(np, b))[0];
+          if (rp && (arr || dist(np, rp) < 25) && (st.room !== rm.id || g - st.posG >= 8)){ st.posG = g; st.room = rm.id; W('pos', sd, { team:id, name:names[i], gps:[+(rp[0] + (rnd() - .5) * 6 / 110950).toFixed(7), +(rp[1] + (rnd() - .5) * 6 / 84250).toFixed(7)], acc:5, room:rm.id, status:arr ? 'At objective' : 'Moving' }, 'T' + sd); } }
+        else if (nowArr || g - st.posG >= 1.5 + rnd()){ st.posG = g;
           W('pos', sd, { team:id, name:names[i], gps:[+(np[0] + (rnd() - .5) * 8 / 110950).toFixed(7), +(np[1] + (rnd() - .5) * 8 / 84250).toFixed(7)], acc:5 + Math.round(rnd() * 6), status:arr ? 'At objective' : 'Moving' }, 'T' + sd); }
         if (t && !t.num && !(g - (mem['num' + id] ?? -99) < 2)){ mem['num' + id] = g; const mine = mem['nums' + sd] || (mem['nums' + sd] = {}), used = new Set(liveTeams(S, sd).filter(o => o.id !== id && o.num).map(o => String(o.num)).concat(Object.keys(mine).filter(k => k !== id).map(k => mine[k]))); let n = i + 1; while (used.has(String(n))) n++; mine[id] = String(n); W('team_num', sd, { team:id, num:String(n) }, sd); }
       });
@@ -7409,6 +7441,7 @@ function buildWhite(){
     if (a === 'guessok') writeEvent('guess_ack', null, { id });
     if (a === 'resolve'){ const box = $('#ans-' + id); writeEvent('resolve', null, { req:id, result:b.dataset.r, text:box ? box.value : '' }); }
     if (a === 'void') writeEvent('void', null, { target:id });
+    if (a === 'rsedit' || a === 'ipedit'){ finalEdit(a, id, b.dataset.to); return; }
     if (a === 'ipdeploy'){ const ovr = b.dataset.ovr === '1'; if (ovr && !confirm('Deploy this package to both forces before its props are reported placed?\n\nWaiting on: ' + propHold(app.S, 'pkg', id).join(', '))) return; writeEvent('intel_deploy', null, ovr ? { pid:id, to:b.dataset.to, ovr:true } : { pid:id, to:b.dataset.to }); toast('Intel package sent.'); }
     if (a === 'ipclose'){ if (confirm('Close this intel package now and score it?')) writeEvent('intel_close', null, { pid:id }); }
     if (a === 'site') { const sel = $('#site-' + id); writeEvent('site_set', null, { site:id, holder:sel.value || null }); }
