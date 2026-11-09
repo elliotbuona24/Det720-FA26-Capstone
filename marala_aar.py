@@ -20,7 +20,7 @@ RED = "#9e1b1b"
 INK = "#000000"
 MUTED = "#3a3a3a"
 GRID = "#d4d4d4"
-NAMES = {"B": "BLUFOR", "R": "REDFOR"}
+NAMES = {"B": "Blue Force", "R": "Red Force"}
 COLORS = {"B": BLUE, "R": RED}
 LEVEL_BANDS = [
     (0, 25, "Competition", "#f7f7f7"),
@@ -102,7 +102,7 @@ def load(path):
     aar = data.get("aar")
     if not aar or not aar.get("steps"):
         sys.exit(
-            "This backup has no game timeline in it. Download a new backup from the white cell's "
+            "This backup has no game timeline in it. Download a new backup from the White Force's "
             "Game panel on the updated board, then run this again."
         )
     return data, aar
@@ -228,7 +228,7 @@ def chart_sites(aar):
     time_axis(ax, aar["startG"], aar["endG"])
     ax.grid(axis="x", color=GRID, linewidth=0.8)
     ax.grid(axis="y", visible=False)
-    ax.legend(handles=[Patch(color=BLUE, label="BLUFOR"), Patch(color=RED, label="REDFOR"),
+    ax.legend(handles=[Patch(color=BLUE, label="Blue Force"), Patch(color=RED, label="Red Force"),
                        Patch(facecolor="#9aa0a6", hatch="////", edgecolor="white", label="Contention or stalemate (scores nothing)")],
               frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=3)
     return fig_to_png(fig)
@@ -331,9 +331,9 @@ def build_html(data, aar, charts):
     jumps = escalation_jumps(aar)
     stmts = statements(aar)
     if b["total"] > r["total"]:
-        winner = f"BLUFOR wins on points, {b['total']} to {r['total']}."
+        winner = f"Blue Force wins on points, {b['total']} to {r['total']}."
     elif r["total"] > b["total"]:
-        winner = f"REDFOR wins on points, {r['total']} to {b['total']}."
+        winner = f"Red Force wins on points, {r['total']} to {b['total']}."
     else:
         winner = f"A tie at {b['total']} points each."
     war = "War broke out" + (f" at {hhmm(final['warAt'])}" if final.get("warAt") is not None else "") + ", so both scores were cut in half." if final["war"] else \
@@ -460,7 +460,7 @@ def build_html(data, aar, charts):
     built = built_dt.strftime("%d %b %Y").upper()
     outcome = "WAR" if final["war"] else level_name(final["esc"]).upper()
     aidf = final.get("aid")
-    aid_note = f"<p class='note'>Aid packages delivered on time: BLUFOR {aidf['B']['made']}, REDFOR {aidf['R']['made']}. Missed: BLUFOR {aidf['B']['missed']}, REDFOR {aidf['R']['missed']}.</p>" if aidf else ""
+    aid_note = f"<p class='note'>Aid packages delivered on time: Blue Force {aidf['B']['made']}, Red Force {aidf['R']['made']}. Missed: Blue Force {aidf['B']['missed']}, Red Force {aidf['R']['missed']}.</p>" if aidf else ""
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AAR · {esc(aar['name'])}</title>
@@ -510,25 +510,23 @@ table.log{{font-size:10pt}}
 <div class="banner">* EXERCISE * EXERCISE * EXERCISE * EXERCISE *</div>
 <div class="unit"><b>AFROTC DETACHMENT 720</b><span>Capstone</span></div>
 <h1>AFTER-ACTION REPORT</h1>
-<p class="meta">{esc(aar['name'])} · {esc(built)} · board time {hhmm(aar['startG'])}–{hhmm(aar['endG'])}<br>Marala Island · BLUFOR (US-led Coalition) vs. REDFOR (North Korea)</p>
+<p class="meta">{esc(aar['name'])} · {esc(built)} · board time {hhmm(aar['startG'])}–{hhmm(aar['endG'])}<br>Marala Island · Blue Force (US-led Coalition) vs. Red Force (North Korea)</p>
 
 <h2>1. Bottom Line Up Front</h2>
 <div class="bluf"><b>{esc(winner)}</b> {esc(war)}</div>
 <table class="stats"><tr>
-<td class="b"><b>{b['total']}</b><span>BLUFOR points</span></td>
-<td class="r"><b>{r['total']}</b><span>REDFOR points</span></td>
+<td class="b"><b>{b['total']}</b><span>Blue Force points</span></td>
+<td class="r"><b>{r['total']}</b><span>Red Force points</span></td>
 <td><b>{final['esc']}</b><span>Final escalation · {esc(outcome)}</span></td>
 <td><b>{final['hn']['B']} / {final['hn']['R']}</b><span>Diplomatic points B / R</span></td>
 </tr></table>
 
 <h2>2. Final Score</h2>
-<table class="data"><thead><tr><th>Category</th><th class="num">BLUFOR</th><th class="num">REDFOR</th></tr></thead><tbody>{rows_html}</tbody></table>
-{('<p class="note">Escalation caused is shown after it wore off during quiet stretches: ' + str(final['decayed']['B']) + ' points for BLUFOR and ' + str(final['decayed']['R']) + ' for REDFOR.</p>') if final.get('decayed') else ''}
+<table class="data"><thead><tr><th>Category</th><th class="num">Blue Force</th><th class="num">Red Force</th></tr></thead><tbody>{rows_html}</tbody></table>
 
 <h2>3. Escalation</h2>
 <figure>{img(charts['escalation'], 'Escalation over the game')}<figcaption>Figure 1. Shared escalation meter over the game. Marked points are single moves worth 10 or more.</figcaption></figure>
-<table class="data"><thead><tr><th>Time</th><th>Wing</th><th class="num">Change</th><th>Event</th></tr></thead><tbody>{esc_rows}</tbody></table>
-<p class="note">With no new escalation, the meter drops 3 at each 10-minute board update; those drops are not listed.</p>
+<table class="data"><thead><tr><th>Time</th><th>Force</th><th class="num">Change</th><th>Event</th></tr></thead><tbody>{esc_rows}</tbody></table>
 
 <h2>4. Points and Diplomatic Standing</h2>
 <figure>{img(charts['score'], 'Points over time')}<figcaption>Figure 2. Each wing's points over the game.</figcaption></figure>
@@ -538,56 +536,56 @@ table.log{{font-size:10pt}}
 <h2>5. Site Control</h2>
 <figure>{img(charts['sites'], 'Who held each site')}<figcaption>Figure 4. Control of each site over the game. Hatched bars were under contention or stalemate and earned no time-held points.</figcaption></figure>
 <h3>Every site and town-office claim</h3>
-<table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Site</th><th>Result</th><th>Board note</th></tr></thead><tbody>{claim_rows}</tbody></table>
+<table class="data"><thead><tr><th>Time</th><th>Force</th><th>Site</th><th>Result</th><th>Board note</th></tr></thead><tbody>{claim_rows}</tbody></table>
 <h3>Site handovers</h3>
 <table class="data"><thead><tr><th>Time</th><th>Offered by</th><th>Site</th><th>Note</th><th>Result</th></tr></thead><tbody>{ho_rows}</tbody></table>
 
 <h2>6. Field Reports</h2>
-<figure>{img(charts['intel'], 'Reports by verdict')}<figcaption>Figure 5. Reports sent to the board and how the white cell judged them.</figcaption></figure>
-<table class="data"><thead><tr><th>Wing</th><th class="num">Reports</th><th class="num">Confirmed</th><th class="num">False</th><th class="num">Duplicate</th><th class="num">Accuracy</th><th class="num">Median delay</th></tr></thead><tbody>{intel_rows}</tbody></table>
-<p class="note">Delay is the time from a team's sighting to the report reaching the board. Accuracy counts only reports the white cell judged.</p>
+<figure>{img(charts['intel'], 'Reports by verdict')}<figcaption>Figure 5. Reports sent to the board and how the White Force judged them.</figcaption></figure>
+<table class="data"><thead><tr><th>Force</th><th class="num">Reports</th><th class="num">Confirmed</th><th class="num">False</th><th class="num">Duplicate</th><th class="num">Accuracy</th><th class="num">Median delay</th></tr></thead><tbody>{intel_rows}</tbody></table>
+<p class="note">Delay is the time from a team's sighting to the report reaching the board. Accuracy counts only reports the White Force judged.</p>
 <h3>Every report filed</h3>
-<table class="data"><thead><tr><th>Seen</th><th>Posted</th><th>Wing</th><th>Type</th><th>Location</th><th>What was reported</th><th>Verdict</th></tr></thead><tbody>{rep_rows}</tbody></table>
+<table class="data"><thead><tr><th>Seen</th><th>Posted</th><th>Force</th><th>Type</th><th>Location</th><th>What was reported</th><th>Verdict</th></tr></thead><tbody>{rep_rows}</tbody></table>
 <p class="note">Enemy-team reports carry the full SALUTE: Size, Activity, Location, Uniform, Time, Equipment.</p>
 
 <h2>7. Managing Intelligence</h2>
 <h3>Intel packages</h3>
-<table class="data"><thead><tr><th>#</th><th>Problem</th><th>Window</th><th>Key</th><th>BLUFOR</th><th>REDFOR</th></tr></thead><tbody>{ip_rows}</tbody></table>
-<p class="note">Each package gave several pieces of intel (usually HUMINT, SIGINT, IMINT and GEOINT, sometimes more), with one or more of them false or misleading. +2 for the right answer (all correct answers when a package had more than one; +1 for partly right), +2 for catching every false piece and no true ones. The window shows when the white cell sent it and when it closed.</p>
+<table class="data"><thead><tr><th>#</th><th>Problem</th><th>Window</th><th>Key</th><th>Blue Force</th><th>Red Force</th></tr></thead><tbody>{ip_rows}</tbody></table>
+<p class="note">Each package gave several pieces of intel (usually HUMINT, SIGINT, IMINT and GEOINT, sometimes more), with one or more of them false or misleading. +2 for the right answer (all correct answers when a package had more than one; +1 for partly right), +2 for catching every false piece and no true ones. The window shows when the White Force sent it and when it closed.</p>
 <h3>Attribution of explosions</h3>
-<table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Where</th><th>Public statement</th><th>Actual cause</th><th>Result</th></tr></thead><tbody>{stmt_rows}</tbody></table>
+<table class="data"><thead><tr><th>Time</th><th>Force</th><th>Where</th><th>Public statement</th><th>Actual cause</th><th>Result</th></tr></thead><tbody>{stmt_rows}</tbody></table>
 
 <h2>8. Commander's Actions</h2>
 <h3>Drone flights, shows of force and strikes</h3>
-<table class="data"><thead><tr><th>Time</th><th>Wing</th><th>Action</th><th>Asked or targeted</th><th>Outcome</th></tr></thead><tbody>{req_rows}</tbody></table>
+<table class="data"><thead><tr><th>Time</th><th>Force</th><th>Action</th><th>Asked or targeted</th><th>Outcome</th></tr></thead><tbody>{req_rows}</tbody></table>
 <h3>UAV launches</h3>
 <table class="data"><thead><tr><th>Time</th><th>Launched by</th><th class="num">Enemy fireteams located</th><th class="num">Escalation</th></tr></thead><tbody>{uav_rows}</tbody></table>
 <h3>Datalink jams</h3>
 <table class="data"><thead><tr><th>Time</th><th>Jammed by</th><th>Effect</th><th class="num">Escalation</th></tr></thead><tbody>{jam_rows}</tbody></table>
 
 <h2>9. C2 Liaison</h2>
-<p>The Wing Commanders sent {li_count['B']} (BLUFOR) and {li_count['R']} (REDFOR) messages on the liaison channel. Declared sites appear in italics.</p>
+<p>The Wing Commanders sent {li_count['B']} (Blue Force) and {li_count['R']} (Red Force) messages on the liaison channel. Declared sites appear in italics.</p>
 <table class="data"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">From</th><th>Message</th></tr></thead><tbody>{li_rows}</tbody></table>
 
 <h2>10. Fireteams</h2>
-<table class="data"><thead><tr><th>Wing</th><th>Fireteam</th><th class="num">Map looks</th><th class="num">Position reports</th><th class="num">Map-grid checks</th><th class="num">Median error</th><th class="num">Worst</th></tr></thead><tbody>{tm_rows}</tbody></table>
+<table class="data"><thead><tr><th>Force</th><th>Fireteam</th><th class="num">Map looks</th><th class="num">Position reports</th><th class="num">Map-grid checks</th><th class="num">Median error</th><th class="num">Worst</th></tr></thead><tbody>{tm_rows}</tbody></table>
 <p class="note">A map-grid check is a report where the team typed its grid from the map and the phone also sent GPS; the error is the distance between the two. Map looks counts the 3-minute map windows each team opened.</p>
 <h3>Orders from the Wing Commanders</h3>
-<table class="data"><thead><tr><th>Time</th><th>Wing</th><th>To</th><th>Order</th></tr></thead><tbody>{order_rows}</tbody></table>
+<table class="data"><thead><tr><th>Time</th><th>Force</th><th>To</th><th>Order</th></tr></thead><tbody>{order_rows}</tbody></table>
 
 <h2 class="pb">Annex A. Chronology of Key Events</h2>
-<table class="data"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">Wing</th><th>Event</th></tr></thead><tbody>{key_rows}</tbody></table>
-<p class="note">Struck-through entries were refused by the board. The white cell voided {void_n} entr{'y' if void_n == 1 else 'ies'}; voided actions are left out of every count and show in the log as "Voided:" entries.</p>
+<table class="data"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">Force</th><th>Event</th></tr></thead><tbody>{key_rows}</tbody></table>
+<p class="note">Struck-through entries were refused by the board. The White Force voided {void_n} entr{'y' if void_n == 1 else 'ies'}; voided actions are left out of every count and show in the log as "Voided:" entries.</p>
 
 <h2 class="pb">Annex B. Full Board Log ({len(aar['log'])} entries)</h2>
-<table class="data log"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">Wing</th><th>Entry</th></tr></thead><tbody>{full_rows}</tbody></table>
+<table class="data log"><thead><tr><th style="width:0.7in">Time</th><th style="width:1in">Force</th><th>Entry</th></tr></thead><tbody>{full_rows}</tbody></table>
 <div class="foot">Generated from the Marala Island board backup. Points and meters are computed by the board's rules.</div>
 </main></body></html>"""
 
 
 def main():
     ap = argparse.ArgumentParser(description="Turn a Marala Island board backup into an after-action report.")
-    ap.add_argument("backup", help="the .json file from the white cell's Download backup button")
+    ap.add_argument("backup", help="the .json file from the White Force's Download backup button")
     ap.add_argument("-o", "--out", help="report file to write (default: next to the backup)")
     ap.add_argument("--charts", help="also save each chart as a PNG in this folder, for slides")
     args = ap.parse_args()
