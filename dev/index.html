@@ -1985,7 +1985,7 @@ function newState(){
     sites, office:{B:false,R:false}, access:{B:true,R:true},
     uses:{ show:{B:1,R:1}, strike:{B:1,R:1}, cstrike:{B:CACHE_STRIKES,R:CACHE_STRIKES} }, intent:{B:null,R:null}, pirs:{B:null,R:null}, cubs:[], aocReqs:[], aocRes:{ B:Object.assign({}, AOC_RES), R:Object.assign({}, AOC_RES) }, roe:{B:null,R:null}, strikeAuth:{B:'jfacc',R:'jfacc'}, held:{B:{},R:{}}, hits:[], jamLast:{B:null,R:null}, droneLast:{B:null,R:null}, aocPri:{B:null,R:null}, droneDown:false, props:{}, propOrder:[], propUses:{}, propSt:{}, propClaim:{}, droneAt:null, usedCodes:{}, siteTimer:{}, blasts:{}, aidTick:{B:-1,R:-1},
     cacheDone:null, crisisCallAt:-999, war:false, warAt:null, raised:false, tickIdx:0,
-    clock:{ started:false, running:false, anchorReal:0, anchorG:START_G },
+    clock:{ started:false, running:false, anchorReal:0, anchorG:START_G, speed:1 },
     endex:false, reveal:false, jam:{B:null,R:null},
     contacts:[], claims:[], incidents:[], feed:[], requests:[], log:[], statements:{}, lastSeen:{B:{},R:{}},
     g:START_G
@@ -1996,7 +1996,7 @@ function newState(){
 function gameAt(S, t){
   if (!S.clock.started) return START_G;
   if (!S.clock.running) return S.clock.anchorG;
-  return Math.min(END_G, S.clock.anchorG + Math.max(0, t - S.clock.anchorReal) / 60000);
+  return Math.min(END_G, S.clock.anchorG + Math.max(0, t - S.clock.anchorReal) / 60000 * (S.clock.speed || 1));
 }
 function hqFrom(x){ x = String(x || '').trim(); return !x || /^(higher headquarters|higher hq|hhq)$/i.test(x) ? 'AOC' : x; }
 function pushFeed(S, to, text, kind, extra){ S.feed.push(Object.assign({ id:'f' + S.feed.length, to, text, kind:kind||'hq', g:S.g }, extra||{})); }
@@ -2126,6 +2126,7 @@ function apply(S, e, cfg){
     case 'clock_start': S.clock.started = true; S.clock.running = true; S.clock.anchorReal = e.ts; S.clock.anchorG = typeof p.g === 'number' ? p.g : START_G; S.g = S.clock.anchorG; pushFeed(S, 'public', 'STARTEX. The board clock is running.', 'public'); pushLog(S, 'STARTEX at ' + hhmm(S.g), null, e); break;
     case 'clock_pause': if (S.clock.running){ S.clock.anchorG = gameAt(S, e.ts); S.clock.running = false; S.g = S.clock.anchorG; pushLog(S, 'Clock paused at ' + hhmm(S.g), null, e); } break;
     case 'clock_resume': if (S.clock.started && !S.clock.running && !S.endex){ S.clock.running = true; S.clock.anchorReal = e.ts; pushLog(S, 'Clock resumed at ' + hhmm(S.clock.anchorG), null, e); } break;
+    case 'clock_speed': if (S.clock.started && !S.endex){ const x = [1, 2, 4, 8].includes(+p.x) ? +p.x : 1; if (S.clock.running){ S.clock.anchorG = gameAt(S, e.ts); S.clock.anchorReal = e.ts; S.g = S.clock.anchorG; } S.clock.speed = x; pushLog(S, x === 1 ? 'Clock back to real time' : 'Practice fast forward: clock running ' + x + ' times faster', null, e); } break;
     case 'clock_set': if (S.clock.started && !S.endex){ S.clock.anchorG = Math.max(START_G, Math.min(END_G, p.g)); S.clock.anchorReal = e.ts; S.g = S.clock.anchorG; pushLog(S, 'Clock set to ' + hhmm(S.g), null, e); } break;
     case 'reveal': S.reveal = !!p.on; pushLog(S, p.on ? 'Fog of war lifted' : 'Fog of war enacted', null, e); pushFeed(S, 'public', p.on ? 'Fog of war lifted. Every position and both scores are now on every screen.' : 'Fog of war enacted.', 'public'); break;
     case 'site_set': { const s = S.sites[p.site]; if (!s) break; s.holder = p.holder || null; s.contested = false; s.contestBy = null; s.contestUntil = null; s.since = S.g; pushLog(S, SITES[p.site].name + (p.holder ? ' set to ' + SIDES[p.holder].name : ' set to nobody'), p.holder, e); break; }
@@ -3000,7 +3001,7 @@ function apply(S, e, cfg){
       else { pushFeed(S, 'both', 'The White Force is back at its planned spot' + (where ? ', ' + where : '') + '.', 'hq', { label:'White Force' }); pushLog(S, 'White Force back at its planned spot', null, e); }
       break; }
     case 'map_config': S.map = p && p.sw && p.ne ? Object.assign({}, p, { outline:Array.isArray(p.outline) ? p.outline.map(q => Array.isArray(q) ? q : q && Number.isFinite(q.lat) && Number.isFinite(q.lng) ? [q.lat, q.lng] : null).filter(Boolean) : null }) : null; S.wps = S.wps.filter(w => !(w.poi && !w.touched && w.to === 'none' && !w.del)); seedPois(S, S.map ? S.map.pois : DEFAULT_POIS, e.id); S.ver++; pushLog(S, 'Map updated', null, e); break;
-    case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:hqFrom(p.label), comm:'msg' }); pushLog(S, 'Message to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
+    case 'msg': pushFeed(S, p.to, p.text, p.to === 'public' ? 'public' : 'hq', { label:hqFrom(p.label), comm:'msg', src:'wf' }); pushLog(S, 'Message to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[p.to] + ': ' + p.text, null, e); break;
     case 'adjust': {
       const d = Number(p.delta) || 0;
       if (p.field === 'esc'){ if (d > 0) raise(S, side || null, d); else lower(S, -d); }
@@ -3302,21 +3303,32 @@ function subscribeGame(){
   gameUnsubs.push(app.db.doc(gpath()).onSnapshot(s => { app.cfg = s.exists ? s.data() : null; if (app.multi && !s.exists && app.gid){ toast('That game is no longer available.', true); leaveGame(); return; } route(); }, () => {}));
   gameUnsubs.push(app.db.collection(gpath() + '/events').onSnapshot(s => {
     if (app.online === 'firebase') setOffline(s.fromCache);
-    const evs = s.docs.map(d => d.data());
-    const sig = evs.length + ':' + evs.reduce((a, e) => a + e.id, '');
+    const sig = s.docs.length + ':' + s.docs.map(d => d.id).join('');
     if (sig === app.evSig && app.online === 'firebase') return;
-    app.evSig = sig; app.events = evs; refresh(true);
+    app.evSig = sig; app.events = s.docs.map(d => d.data()); refresh(true);
   }, err => setBanner('Live updates stopped (' + (err && err.code) + '). Reload the page.')));
+}
+let lastTs = 0;
+const pend = new Map();
+function pendTick(){
+  if (!pend.size){ if (app.pendWarned){ app.pendWarned = false; toast('Everything is sent.'); } return; }
+  const old = Date.now() - Math.min(...pend.values());
+  if (old > 8000 && !app.pendWarned){ app.pendWarned = true; toast('Saved on this device. ' + pend.size + (pend.size === 1 ? ' change' : ' changes') + ' will send when the connection comes back. Keep this page open.', true); }
 }
 async function writeEvent(type, side, p, by){
   if (!app.cfg) return;
-  const e = { id:uid(), ts:Date.now(), type, side:side || null, p:p || {}, by:by || app.role };
+  lastTs = Math.max(Date.now(), lastTs + 1);
+  const e = { id:uid(), ts:lastTs, type, side:side || null, p:p || {}, by:by || app.role };
   if (app.mode === 'remote'){
-    try { await app.db.doc(gpath() + '/events/' + e.id).set(e); }
-    catch(err){
-      if (err && err.code === 'unavailable'){ await new Promise(r => setTimeout(r, 400 + Math.random() * 600)); try { await app.db.doc(gpath() + '/events/' + e.id).set(e); return; } catch(e2){} }
-      toast('That didn’t save (' + ((err && err.code) || 'error') + '). Check your connection and try again.', true);
-    }
+    const path = gpath() + '/events/' + e.id;
+    pend.set(e.id, Date.now());
+    const save = n => app.db.doc(path).set(e).then(() => { pend.delete(e.id); }, err => {
+      if (err && err.code === 'unavailable' && n < 4) return new Promise(r => setTimeout(r, 800 * (n + 1))).then(() => save(n + 1));
+      pend.delete(e.id); toast('That didn’t save (' + ((err && err.code) || 'error') + '). Check your connection and try again.', true);
+    });
+    save(0);
+    if (!app.events.some(x => x.id === e.id)){ app.events = app.events.concat([e]); app.evSig = null; if (!app.wRef){ app.wRef = true; setTimeout(() => { app.wRef = false; refresh(true); }, 0); } }
+    return true;
   } else {
     const s = localLoad(); if (s && s.gid === app.gid) app.events = s.events || [];
     app.events.push(e); localSave(); refresh(true);
@@ -3749,7 +3761,7 @@ function nextTickText(S, now){
   const secs = Math.max(0, Math.round((t - g) * 60));
   return 'Next board update ' + hhmm(t) + (S.clock.running ? ' in ' + Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0') : ' (clock paused)');
 }
-function clockText(S, now){ const g = S.clock.started ? (S.endex ? END_G : gameAt(S, now)) : START_G; return hhmm(g); }
+function clockText(S, now){ const g = S.clock.started ? (S.endex ? END_G : gameAt(S, now)) : START_G; return hhmm(g) + (S.clock.started && !S.endex && (S.clock.speed || 1) > 1 ? ' ' + S.clock.speed + 'x' : ''); }
 
 const CX = c => 30 + c * 100 + 50, CY = r => 30 + r * 80 + 40;
 function parseGrid(gs){
@@ -6139,6 +6151,7 @@ const AI_PROV = {
 const AI_BASE = 'You write text for practice bots in Capstone, the AFROTC Detachment 720 field training exercise played on the fictional island of Marala (Area 5 on the map). Stay inside this game and its terms.\n\nTHE GAME. Two forces play at once: Blue Force (the Coalition) and Red Force (North Korea, there by a fuel agreement). Each force has a Wing C2 (a command post with the Wing Commander, called the JFACC, a deputy, staff and an intel cell) and about four fireteams of GMC cadets on foot. Fireteams have a name and a number (#1, #2 and so on); always use the name and number exactly as given in the game state. A POC O/C (observer/controller) walks with each fireteam and calls things for the White Force. The White Force referees from Team HQ, which is also the casualty collection point. The AOC is the higher headquarters over both wings. The game runs 0600 to 0750; all times are 24-hour (0715). Battle rhythm: Commander’s Update Brief 1 due 0615, Brief 2 due 0645, Change of Command at 0700 (deputies take command and confirm to the AOC by 0705), Brief 3 due 0725, Final SITREP due 0745. Each brief can be sent from 5 minutes before it is due and is on time until 5 minutes after.\n\nSITES. Harbor (square E5), Fuel Depot (E3), Radar Ridge (B4) and Airstrip (D2) are the key sites; a Pump Station (C2) may be added mid-game. A fireteam at a neutral site does the station task with the station POC (a group leadership problem, a field cipher, an intel cipher radioed to the intel cell, or a dead drop found by compass) and earns a capture code word; the C2 enters it on the board and the site is theirs (+2 points, then +1 every 10 minutes while held). To take a site the other force holds, the C2 starts contention; the attacking team has the site timer (usually 15 minutes) to earn and enter a capture word, and the holder keeps the site if it enters a defense word first, after which the attackers pull back 100 m. If both forces are at a neutral site before either starts, it is a stalemate until one leaves. Marala Town has the mayor: a respectful meeting earns the town code word, which opens the force’s town office and earns diplomatic points every 10 minutes. Humanitarian Aid Supply Box deliveries to the town office also earn diplomatic points.\n\nESCALATION is shared by both forces from 0 to 100: Competition, Tension at 25, Crisis at 50, Brink at 75, War at 100, and at War both scores are cut in half. Contention, shows of force, UAV launches and strikes raise it; each force also pays for the escalation it caused at the end. Good commanders escalate on purpose.\n\nINJECTS are events the White Force or AOC sends: IEDs (answer with an IED 9-line and stay back), casualties (treat, MEDEVAC 9-line, move to the casualty collection point), militia targets (SALUTE report or UAV fix, then a strike 9-line), aid deliveries, the mayor, personnel recovery, PERSTAT requests, and intel packages the intel cell must answer, sometimes with a public statement. Reports of the other force use SALUTE: size, activity, location, uniform, time, equipment. Communications are by LMR radio and the board.\n\nHOW TO WRITE. Sound like a cadet in this exercise: short, plain, specific, military brevity, no emojis, no markdown. Use only facts from the game state you are given; if something is not in the state, do not make it up. Never invent or say code words, PINs, real people or real units. Output only what is asked.';
 const AI = Object.assign({ on:false, prov:'gemini', model:'', key:'', keep:true, cap:20 }, (() => { try { return JSON.parse(localStorage.getItem('marala-ai') || '{}') || {}; } catch(e){ return {}; } })(), { calls:0, fell:0, busy:false, q:[], win:[], err:'' });
 const AI_ROLE = {
+  oc:'Your seat: a POC (senior cadet) working for the White Force in the field, either as the O/C walking with one fireteam or as a props and logistics member. You answer the White Force briefly and factually: where you are, what the team is doing, anything unsafe, and that you will do what was asked. You never coach the cadets or give them answers.',
   c2:'Your seat: the Wing C2 staff (Wing Commander, deputy, staff and intel cell) in your force’s command post. You run the fight from the C2 board and the LMR: you decide which sites to take or defend, when to start contention, which fireteam answers each inject, and you report up to the AOC. How the game works: holding a site scores points over time. To take a site the other force holds, you start contention; your fireteam must earn the capture code word at the site and you must enter it before the site timer runs out, but the holder keeps the site if it enters a defense code word first. Contention, shows of force and strikes raise escalation, which both forces share; at 100 it is war and both scores are cut in half, so you escalate on purpose, not by habit. Diplomatic points come from a town office opened through the mayor, Humanitarian Aid Supply Box deliveries and good conduct. The JFACC (your commander) decides tactics within the ROE; the AOC sets the ROE, can withhold capabilities and runs the battle rhythm; the White Force referees. How you write: commander’s voice, decisive and specific. Name the fireteam, the site or play square, the time in 24-hour form (0715) and the next action. Tie actions to the commander’s intent and PIRs. An order says who, where, what, by when, and when to report. A brief line gives the facts, then your assessment, then what you do next.',
   team:'Your seat: a GMC cadet fireteam leader talking to your C2 on the LMR. Radio style: short and clipped, usually under 15 words, no greetings. Give position by play square, grid or site name, then what you see or are doing, then what is next. Report the other force in SALUTE terms: size, activity, location, uniform, time, equipment. Use plain radio words: moving to, set at, eyes on, request, copy, wilco, complete. Never say a code word, PIN or real name on the radio. Examples: "Alpha set at Airstrip, starting the station task, about 5 to finish." "Eyes on 3 Red Force, square C4, moving east, rifles, 0712." "Bravo moving to Marala Town for the mayor, ETA 4."',
   aoc:'Your seat: the AOC Director, the higher headquarters over both wings, working beside the White Force. You run the battle rhythm (Commander’s Update Briefs, PERSTATs, the change of command), set the ROE, and grant or decline support from a limited pool: ISR retasks, resupply, CASEVAC, another show of force or a cache strike. You hold commanders to standard and mentor them. Approve a brief when every line is specific: grids or squares, times, which fireteam, accountability that adds up, casualties stated (or NONE), enemy activity with an assessment, and a next 30 minutes with a decision point. Send it back for more when a line is vague, generic or missing, and name that line and what you need. Voice: senior officer, brief, professional, no fluff. Example: "Approved. Accountability is clear. Next time give me a decision point and time for the airstrip."'
@@ -6186,6 +6199,9 @@ function aiState(S, sd){
   const roe = roeNow(S, sd), wh = Object.keys(HOLD_CAPS).filter(k => held(S, sd, k)).map(k => HOLD_CAPS[k]);
   return 'Time ' + hhmm(S.g) + ' (game runs 0600 to 0750). You are ' + SIDES[sd].name + '. Commander’s intent: ' + String(intentOf(S, sd)).replace(/\s+/g, ' ').slice(0, 420) + ' PIRs: ' + pirsOf(S, sd).map((x, i) => (i + 1) + ') ' + x).join(' ').slice(0, 420) + ' ROE: ' + (roe ? roe.level + ' until ' + hhmm(roe.until) : 'standard') + (wh.length ? '; withheld by the AOC: ' + wh.join(', ') : '') + '. Escalation ' + S.esc + ' of 100 (' + LEVELS[levelIndex(S.esc)].name + '). Sites: ' + sites + '. Our fireteams: ' + (teams || 'none signed in') + '. ' + SIDES[other].name + ' reported by your teams in the last 15 minutes: ' + (seen || 'none') + '. Recent injects: ' + (inj || 'none') + '. Recent traffic: ' + (feed || 'none') + '.';
 }
+function aiOverview(S){
+  return 'Time ' + hhmm(S.g) + ' (game runs 0600 to 0750). Escalation ' + S.esc + ' of 100 (' + LEVELS[levelIndex(S.esc)].name + '). Sites: ' + SITE_KEYS.map(k => { const x = S.sites[k]; return SITES[k].name + ': ' + (x.holder ? SIDES[x.holder].name : 'neutral') + (x.contestBy ? ', contested by ' + SIDES[x.contestBy].name : x.contested ? ', stalemate' : ''); }).join('; ') + '. ROE: ' + ['B', 'R'].map(sd => { const r = roeNow(S, sd); return SIDES[sd].name + ' ' + (r ? r.level : 'standard'); }).join(', ') + '.';
+}
 function botTask(S, sd, id){
   const st = BOT.mem.tm && BOT.mem.tm[id], tg = st && st.tg; if (!tg) return 'no task yet';
   const nm = tg.kind === 'town' ? 'Marala Town' : SITES[tg.k] ? SITES[tg.k].name : tg.kind === 'ref' ? refLabel(S, tg.k) || 'an inject spot' : tg.k === 'lz' ? 'its landing zone' : 'its area';
@@ -6207,7 +6223,7 @@ function aiPool(S, sd, kind, tid){
 }
 function aiBrief(S, sd, n, lines){
   const L = lines.filter(x => x.kind !== 'pers' && x.kind !== 'rag');
-  return aiState(S, sd) + '\n\nWrite ' + SIDES[sd].name + ' Commander’s Update Brief ' + n + ' to the AOC. Return only a JSON object with these keys. Each value is plain text of at least the minimum length shown; write NONE only where allowed.\n' + L.map(x => '"' + x.k + '": ' + x.l + ' (min ' + x.min + ' characters' + (x.none ? ', NONE allowed' : '') + '). ' + x.h).join('\n');
+  return aiState(S, sd) + '\n\nWrite ' + SIDES[sd].name + ' Commander’s Update Brief ' + n + ' to the AOC. Return only a JSON object with these keys. Each value is plain text of at least the minimum length shown; write NONE only where allowed. Write the way a cadet staff officer briefs: facts with squares, times and fireteam numbers, then a one-clause assessment, then the next action. Example of a good Mission progress line: "Holding Radar Ridge (B4) since 0622 with #2 Bravo. #1 Alpha is on the Airstrip station task, code word expected by 0650. On track with intent: two sites held without contention." Do not copy the example; use the real game state.\n' + L.map(x => '"' + x.k + '": ' + x.l + ' (min ' + x.min + ' characters' + (x.none ? ', NONE allowed' : '') + '). ' + x.h).join('\n');
 }
 function botLockSync(v){
   if (BOT.on && !practiceOk('bots')){ botSet(null); toast('The admin locked practice bots for this game. Bots stopped.', true); const go = v && $('[data-botgo]', v); if (go) go.textContent = 'Start bots'; const st = v && $('[data-botst]', v); if (st) st.textContent = 'Bots are off.'; }
@@ -6217,6 +6233,9 @@ function botLockSync(v){
     const go = $('[data-botgo]', v); if (go && !BOT.on) go.disabled = !bOk;
     const ab = $('[data-aibox]', v); if (ab){ ab.hidden = !bOk; $$('input,select,button', ab).forEach(x => { if (!x.matches('[data-aiopen]')) x.disabled = !aOk; }); const lk = $('[data-ailock]', ab); if (lk) lk.hidden = aOk; } }
   if (!BOT.on){ const go = $('[data-botgo]', v); if (go) go.disabled = !bOk; }
+  { const S = app.S, fb = $('[data-ffbox]', v), fs = $('[data-ffspeed]', v), sp = S ? (S.clock.speed || 1) : 1;
+    if (fb){ fb.hidden = !bOk && sp === 1; if (fs && document.activeElement !== fs && fs.value !== String(sp)) fs.value = String(sp); if (fs && !fs.dataset.w){ fs.dataset.w = '1'; fs.onchange = () => { const x = +fs.value; if (!app.S || !app.S.clock.started){ toast('Start the game first.', true); fs.value = '1'; return; } if (x > 1 && !practiceOk('bots')){ toast('Fast forward is only for practice games.', true); fs.value = '1'; return; } writeEvent('clock_speed', null, { x }); toast(x === 1 ? 'Clock back to real time.' : 'Clock running ' + x + ' times faster.'); }; } }
+    if (S && sp > 1 && !bOk && app.role === 'W' && !app.ffReset){ app.ffReset = true; writeEvent('clock_speed', null, { x:1 }); toast('Practice is locked for this game, so the clock is back to real time.', true); } if (sp === 1) app.ffReset = false; }
   aiStat();
 }
 function botWords(text){ const out = {}, cfg = app.cfg, S = app.S; if (!cfg) return out; const ws = String(text || '').split(/[\s,;]+/).map(w => w.trim().toUpperCase()).filter(Boolean);
@@ -6238,6 +6257,9 @@ function botStep(){
       const tms = mem.tm || (mem.tm = {}), sitePt = k => (S.sitePts && S.sitePts[k]) || M.sites[k], live = k => S.sites[k] && sitePt(k);
       const busy = (k, me) => ids.some(o => o !== me && tms[o] && tms[o].tg && tms[o].tg.k === k);
       const dist = (a2, b2) => Math.hypot((b2[1] - a2[1]) * 111320 * C, (b2[0] - a2[0]) * 110950);
+      const foeNear = (k, m) => { const pt = sitePt(k); return !!pt && liveTeams(S, OTHER[sd]).some(o => o.last && o.last.gps && g - o.last.g < 4 && dist(o.last.gps, pt) < (m || 70)); };
+      const foeBotTo = k => Object.keys(tms).some(o => o.indexOf('bot-' + OTHER[sd].toLowerCase()) === 0 && tms[o].tg && tms[o].tg.kind === 'site' && tms[o].tg.k === k && !tms[o].done);
+      const blocked = k => { const x = S.sites[k]; return !!x && ((x.contested && !x.contestBy) || (x.holder == null && (foeNear(k) || foeBotTo(k)))); };
       ids.forEach((id, i) => {
         const t = S.teams[sd][id];
         let st = tms[id]; if (!st) st = tms[id] = { p:(t && t.last && t.last.gps) || (sd === 'B' ? M.sites.lzB : M.sites.lzR), g, sp:55 + rnd() * 20, posG:-99 };
@@ -6246,11 +6268,13 @@ function botStep(){
         if (defK && !busy(defK, id) && (!st.tg || st.tg.kind !== 'def') && rnd() < .5){ st.tg = { kind:'def', k:defK, pt:sitePt(defK), dwell:3 + rnd() * 3 }; st.arr = null; st.done = false; }
         if (!st.tg || st.done || (st.arr != null && g >= st.arr + st.tg.dwell && !['site', 'town', 'def'].includes(st.tg.kind))){
           const c = [];
-          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder !== sd && !busy(k, id) && !(g < (mem['told' + sd + k] || -99) + 20) && (S.sites[k].holder == null || (S.esc || 0) < 30)).forEach(k => c.push({ kind:'site', k, pt:sitePt(k), dwell:9 + rnd() * 5, w:(i < 2 ? 3 : 1.5) * (S.sites[k].holder == null ? 1 : .35) }));
+          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder !== sd && !busy(k, id) && !blocked(k) && !(g < (mem['told' + sd + k] || -99) + 20) && (S.sites[k].holder == null || (S.esc || 0) < 30)).forEach(k => c.push({ kind:'site', k, pt:sitePt(k), dwell:9 + rnd() * 5, w:(i < 2 ? 3 : 1.5) * (S.sites[k].holder == null ? 1 : .35) }));
           if (!S.office[sd] && S.access[sd] && !busy('town', id) && !(g < (mem['told' + sd + 'town'] || -99) + 20)) c.push({ kind:'town', k:'town', pt:M.sites.town, dwell:6 + rnd() * 4, w:i === 2 ? 3 : 1 });
           refList(S, sd).forEach(([k]) => { const pt = refLoc(S, k); if (pt && !busy(k, id)) c.push({ kind:'ref', k, pt, dwell:3 + rnd() * 4, w:i >= 2 ? 2.5 : 1 }); });
           Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder === sd && !busy(k, id)).forEach(k => c.push({ kind:'hold', k, pt:sitePt(k), dwell:10 + rnd() * 10, w:i === 3 ? 2 : .6 }));
           if (c.length){ c.forEach(o => { o.s = o.w * (0.6 + rnd()) / (1 + dist(st.p, o.pt) / 150); }); c.sort((x, y) => y.s - x.s); st.tg = c[0]; } else st.tg = { kind:'hold', k:'lz', pt:sd === 'B' ? M.sites.lzB : M.sites.lzR, dwell:10 };
+          if (st.tg.kind === 'site' || st.tg.kind === 'town'){ const n = st.tg.kind === 'town' ? (rnd() < .12 ? 1 : 0) : (rnd() < .7 ? 0 : rnd() < .8 ? 1 : 2); if (n){ st.tg.fail = st.tg.dwell; st.tg.dwell += n * (st.tg.kind === 'town' ? 10 : 8 + rnd() * 4); } }
+          st.tg.relay = .8 + rnd() * 2.2; st.tg.cap = 8 + rnd() * 5;
           st.arr = null; st.done = false; st.req = false;
         }
         const radio = (key, tx) => { if (mem['rd' + id + key]) return; mem['rd' + id + key] = true; W('bot_radio', sd, { team:id, name:names[i], text:tx }, 'T' + sd); };
@@ -6260,12 +6284,17 @@ function botStep(){
         const [np, arr] = step(st.p, st.tg.pt, st.sp * dt * (0.8 + rnd() * 0.4)); st.p = np;
         const nowArr = arr && st.arr == null; if (nowArr) st.arr = g;
         const si = S.sites[st.tg.k];
-        if (nowArr){
+        if (st.tg.kind === 'site' && si && st.arr != null && ((si.contested && !si.contestBy) || (si.holder == null && g - st.arr < 1.5 && foeNear(st.tg.k, 60)))){
+          radio('sm' + tkey, (si.contested && !si.contestBy ? 'Stalemate at ' + where + '. Pulling off the site.' : SIDES[OTHER[sd]].name + ' is already working ' + where + '. Moving on so we do not cause a stalemate.'));
+          mem['told' + sd + st.tg.k] = g; st.done = true;
+        }
+        else if (nowArr){
           if (st.tg.kind === 'site') radio('ar' + tkey, si && si.holder === OTHER[sd] ? 'At ' + where + '. ' + SIDES[OTHER[sd]].name + ' holds it. Requesting contention.' : 'At ' + where + '. Starting the station task.');
           else if (st.tg.kind === 'town') radio('ar' + tkey, 'At Town Hall. Weapons outside, meeting the mayor now.');
           else if (st.tg.kind === 'def') radio('ar' + tkey, 'Back at ' + where + ' to defend it.');
           else if (st.tg.kind === 'ref') radio('ar' + tkey, 'At the ' + where + ' spot, grid ' + botGrid(st.tg.pt) + '. ' + (aiPool(S, sd, 'radio', id) || ['Checking the area.', 'Nothing obvious yet, searching.', 'Possible device, holding 50 m back.', 'Locals nearby, talking to them.'][Math.floor(rnd() * 4)]));
         }
+        if (st.tg.fail != null && st.arr != null && !st.tg.failTold && g >= st.arr + st.tg.fail){ st.tg.failTold = true; radio('fl' + tkey, st.tg.kind === 'town' ? 'The mayor ended the meeting. We will try again in 10.' : 'Did not pass the first card at ' + where + '. Starting the next one.'); }
         if (arr && st.tg.kind === 'site' && si && si.holder === OTHER[sd] && !si.contestBy && !st.req){ st.req = true; W('ct_req', sd, { team:id, name:names[i], site:st.tg.k }, 'T' + sd); }
         if (!on[sd] && st.arr != null && !st.told && g >= st.arr + st.tg.dwell){
           const k = st.tg.k, need = ' (No word loaded: enter the code words in Practice bots so the bot teams can report them.)';
@@ -6275,7 +6304,7 @@ function botStep(){
           else if (st.tg.kind === 'def' && si){ const w = botWord(k, true); radio('cw' + tkey, 'Defense task at ' + where + ' done. Defense code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); }
           else if (st.tg.kind === 'site' && si){
             if (si.holder === sd) hold();
-            else if (si.holder === OTHER[sd]){ if (si.contestBy === sd && g >= (si.contestUntil || g) - (S.siteTimer[k] || 15) + 6){ const w = botWord(k); radio('cw' + tkey, 'Task at ' + where + ' done. Capture code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); } else if (g > st.arr + st.tg.dwell + 8){ radio('gv' + tkey, 'No contention at ' + where + '. Moving on.'); st.done = true; } }
+            else if (si.holder === OTHER[sd]){ if (si.contestBy === sd && g >= (si.contestUntil || g) - (S.siteTimer[k] || 15) + (st.tg.cap || 9)){ const w = botWord(k); radio('cw' + tkey, 'Task at ' + where + ' done. Capture code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); } else if (g > st.arr + st.tg.dwell + 8){ radio('gv' + tkey, 'No contention at ' + where + '. Moving on.'); st.done = true; } }
             else { const w = botWord(k); radio('cw' + tkey, 'Station task at ' + where + ' done. Capture code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); }
           }
         }
@@ -6297,14 +6326,15 @@ function botStep(){
     if (on[sd]){
       const codeFor = (k, def) => { const c = (S.siteCodes && S.siteCodes[k]) || (app.cfg && app.cfg.codes ? app.cfg.codes[k] : null); if (!c) return null; const L = typeof c === 'string' ? [c] : Array.isArray(c) ? c : (def && c.def && c.def.length ? c.def : (c.cap || [])); const f = L.filter(x => !(S.usedCodes || {})[k + ':' + x]); return (f.length ? f : L)[Math.floor(rnd() * (f.length || L.length))]; };
       (S.ctReqs || []).filter(r => r.status === 'open' && r.side === sd).forEach(r => { if (later('ctr' + r.id, .5 + rnd() * 1.5)) once('ctrd' + r.id, () => { const e0 = S.esc || 0; W('ct_res', sd, { req:r.id, ok:rnd() < (e0 < 20 ? .7 : e0 < 40 ? .3 : 0) }, sd); }); });
-      if (on['T' + sd] && mem.tm) ids.forEach(id => { const st = mem.tm[id]; if (!st || !st.tg || st.done || st.arr == null || g < st.arr + st.tg.dwell) return; const k = st.tg.k, si = S.sites[k];
+      if (on['T' + sd] && mem.tm) ids.forEach(id => { const st = mem.tm[id]; if (!st || !st.tg || st.done || st.arr == null || g < st.arr + st.tg.dwell + (st.tg.relay || 0)) return; const k = st.tg.k, si = S.sites[k];
         if (st.tg.kind === 'town'){ if (!S.office[sd] && S.access[sd]){ const cd = codeFor('town'); if (cd) W('claim', sd, { site:'town', code:cd }, sd); } st.done = true; return; }
         if (!si){ st.done = true; return; }
         if (st.tg.kind === 'def'){ if (si.holder === sd && si.contestBy === OTHER[sd]){ const cd = codeFor(k, true); if (cd) W('claim', sd, { site:k, code:cd }, sd); } st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:8 + rnd() * 8 }; st.arr = g; return; }
         if (st.tg.kind !== 'site') return;
         if (si.holder === sd){ st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:6 + rnd() * 10 }; st.arr = g; return; }
         if (si.contested && !si.contestBy){ st.done = true; return; }
-        if (si.holder === OTHER[sd]){ if (si.contestBy !== sd){ if (g > st.arr + st.tg.dwell + 8) st.done = true; return; } if (g < (si.contestUntil || g) - (S.siteTimer[k] || 15) + 6) return; }
+        if (si.holder === OTHER[sd]){ if (si.contestBy !== sd){ if (g > st.arr + st.tg.dwell + 8) st.done = true; return; } if (g < (si.contestUntil || g) - (S.siteTimer[k] || 15) + (st.tg.cap || 9)) return; }
+        if (!st.tg.typo && rnd() < .07){ st.tg.typo = true; W('claim', sd, { site:k, code:'typo' + Math.floor(rnd() * 1e6) }, sd); return; }
         const cd = codeFor(k); if (cd) W('claim', sd, { site:k, code:cd }, sd);
         st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:5 + rnd() * 8 }; st.arr = g; });
       const tb = liveTeams(S, sd).filter(t => t.last && t.last.gps), en = liveTeams(S, OTHER[sd]).filter(t => t.last && t.last.gps && g - t.last.g < 5);
@@ -6312,7 +6342,7 @@ function botStep(){
         W('contact', sd, { kind:'team', grid:botGrid(pt), pt:[+pt[0].toFixed(7), +pt[1].toFixed(7)], seen:hhmm(g), note:'S: 3 people - A: moving - U: ' + SIDES[OTHER[sd]].name + ' uniforms - E: rifles', salute:{ s:'3 people', a:'moving', l:botGrid(pt), u:SIDES[OTHER[sd]].name + ' uniforms', t:hhmm(g).slice(0, 4), e:'rifles' }, ref:'none' }, sd); }
       const cb = cubOpen(S, sd), c = cb ? (S.cubs || []).find(x => x.side === sd && x.n === cb.n) : null;
       const cubKey = cb ? 'cub' + sd + cb.n + (c ? c.hist.length : '') : '';
-      if (cb && (!c || c.status === 'returned') && later(cubKey, 1 + rnd() * 6)){
+      if (cb && (!c || c.status === 'returned') && later(cubKey, 1 + rnd() * 7 + (rnd() < .12 ? 9 : 0))){
         const ls = cubLines(S, sd, cb.n) || [], base = () => { const f = {}; ls.forEach(L => { f[L.k] = L.none && rnd() < .5 ? 'NONE' : ('Bot ' + L.l.toLowerCase() + ': ' + tb.map(t => t.name + ' near ' + botGrid(t.last.gps)).join(', ') + '. On track with the plan and watching the other force.').padEnd(Math.max(L.min, 10) + 5, '.'); if (L.kind === 'pers'){ f.p_acc = tb.length * 3 || 12; f.p_una = 0; } if (L.kind === 'rag') f.rag = 'GREEN'; }); return f; };
         const send = f => W('cub', sd, { n:cb.n, f:cubCompose(ls, f).f || f }, sd);
         if (!aiReady()) once('cubd' + cubKey, () => send(base()));
@@ -6366,6 +6396,22 @@ function botStep(){
       });
     }
   }
+  if (mem.startG == null) mem.startG = g;
+  const fresh = m => m.g >= mem.startG - 1e-9;
+  if (on.A) (S.aocChat || []).filter(m => m.from === 'W' && fresh(m)).forEach(m => { const k = 'acw' + m.id; if (mem['d' + k] || !later(k, .5 + rnd())) return; mem['d' + k] = 1;
+    const go = tx => W('aoc_msg', null, { text:tx || 'AOC copies. We are working it and will report back.' }, 'A');
+    if (!aiReady()) go(''); else aiJob(k, aiOverview(S) + '\nRecent AOC and White Force channel:\n' + (S.aocChat || []).slice(-6).map(x => hhmm(x.g) + ' ' + (x.from === 'A' ? 'AOC' : 'White Force') + ': ' + String(x.text).slice(0, 200)).join('\n') + '\n\nThe White Force (exercise control) just wrote to you: "' + String(m.text).slice(0, 400) + '"\nReply as the AOC in one to three sentences, under 300 characters: answer it directly and say what the AOC will do. Plain text only.', 160, t => go(t ? t.replace(/\s+/g, ' ').slice(0, 400) : ''), 'aoc'); });
+  ['B', 'R'].forEach(sd => { if (!on[sd]) return; S.feed.filter(f => f.src === 'wf' && (f.to === sd || f.to === 'both') && fresh(f)).forEach(f => { const k = 'wm' + sd + f.id; if (mem['d' + k] || !later(k, .5 + rnd() * 1.5)) return; mem['d' + k] = 1;
+    const go = tx => W('aoc_req', sd, { want:'other', text:('Re ' + (f.label || 'White Force') + ': ' + (tx || 'Copy. Acting on it now and will report back.')).slice(0, 300), ref:'none' }, sd);
+    if (!aiReady()) go(''); else aiJob(k, aiState(S, sd) + '\n\n' + (f.label || 'The White Force') + ' sent your C2 this message: "' + String(f.text).slice(0, 400) + '"\nWrite the C2’s reply in one or two sentences, under 220 characters: acknowledge it and say what you will do. Plain text only.', 120, t => go(t ? t.replace(/\s+/g, ' ') : '')); }); });
+  (S.occhats || []).filter(m => m.from === 'wc' && fresh(m) && /^obot-/.test(m.oc)).forEach(m => { const o = (S.ocs || {})[m.oc]; if (!o || o.removed || !(o.props ? on.L : on.OC)) return; const k = 'om' + m.id; if (mem['d' + k] || !later(k, .5 + rnd())) return; mem['d' + k] = 1;
+    const go = tx => W('occhat', null, { oc:o.id, from:'oc', text:tx || 'Copy, White Force. Will do.' }, o.props ? 'L' : 'OC');
+    const team = o.side && o.team && S.teams[o.side] && S.teams[o.side][o.team], who = o.props ? 'a props and logistics team member placing and recovering props' : 'the POC O/C walking with ' + (team ? SIDES[o.side].name + ' fireteam ' + teamLabel(team) + ', now ' + botTask(S, o.side, o.team) : 'a fireteam');
+    if (!aiReady()) go(''); else aiJob(k, aiOverview(S) + '\n\nYou are ' + who + '. The White Force just messaged you: "' + String(m.text).slice(0, 300) + '"\nReply in one or two short sentences, under 200 characters: confirm, and answer with what you see. Plain text only.', 100, t => go(t ? t.replace(/\s+/g, ' ').slice(0, 280) : ''), 'oc'); });
+  ['B', 'R'].forEach(sd => { if (!on['T' + sd]) return; (S.tchats || []).filter(m => m.side === sd && m.from === 'c2' && fresh(m) && /^bot-/.test(m.team)).forEach(m => { const t = S.teams[sd][m.team]; if (!t) return; const k = 'tm' + m.id; if (mem['d' + k] || !later(k, .3 + rnd())) return; mem['d' + k] = 1;
+    const go = tx => W('bot_radio', sd, { team:t.id, name:t.name, text:tx || t.name + ', copy, wilco.' }, 'T' + sd);
+    if (!aiReady()) go(''); else aiJob(k, aiState(S, sd) + '\n\nYou are fireteam ' + teamLabel(t) + ', now ' + botTask(S, sd, t.id) + '. Your C2 just sent you: "' + String(m.text).slice(0, 300) + '"\nReply on the LMR in one short call, under 110 characters, starting with "' + t.name + ',". Plain text only.', 60, t2 => go(t2 ? t2.replace(/\s+/g, ' ').slice(0, 160) : ''), 'team'); }); });
+  if (on.W){ const M2 = mapCfg(S); SITE_KEYS.forEach(k => { const x = S.sites[k], pt = (S.sitePts && S.sitePts[k]) || (M2 && M2.sites && M2.sites[k]); if (!x || !x.contested || x.contestBy || !pt) return; const both = ['B', 'R'].every(sd => liveTeams(S, sd).some(o => o.last && o.last.gps && g - o.last.g < 4 && distM(o.last.gps, pt) < 70)); if (both) { mem['stc' + k] = null; return; } if (later('stc' + k, 1.5)){ mem['stc' + k] = null; W('site_contested', null, { site:k, on:false }, 'W'); } }); }
   if (on.A){
     if ((S.esc || 0) >= 45 && later('roe', 0)){ mem.roe = g + 20; W('aoc_roe', null, { to:'both', level:'restrictive', min:10, why:'Bot AOC: escalation is too high. Cool it down.' }, 'A'); }
     (S.cubs || []).filter(c => c.status === 'sent').forEach(c => { const k = 'acd' + c.id + c.hist.length; if (!later('ac' + c.id + c.hist.length, 1 + rnd() * 2)) return;
@@ -6390,7 +6436,7 @@ function botStep(){
 }
 function botKey(){ return 'marala-bots-' + (app.gid || 'local'); }
 function botSave(){ try { if (BOT.on) sessionStorage.setItem(botKey(), JSON.stringify({ on:BOT.on, words:BOT.wordText || '', mem:BOT.mem, at:Date.now() })); else sessionStorage.removeItem(botKey()); } catch(e){} }
-function botSet(on){ clearInterval(BOT.timer); BOT.timer = null; BOT.on = on; if (on){ BOT.timer = setInterval(() => { try { botStep(); } catch(e){ console.warn('bot', e); } botSave(); }, 12000); setTimeout(() => { try { botStep(); } catch(e){} botSave(); }, 500); } botSave(); }
+function botSet(on){ clearInterval(BOT.timer); BOT.timer = null; BOT.on = on; if (on){ BOT.last = Date.now(); BOT.timer = setInterval(() => { const sp = (app.S && app.S.clock.speed) || 1; if (Date.now() - (BOT.last || 0) < 12000 / sp - 100) return; BOT.last = Date.now(); try { botStep(); } catch(e){ console.warn('bot', e); } botSave(); }, 1500); setTimeout(() => { try { botStep(); } catch(e){} botSave(); }, 500); } botSave(); }
 function botResume(){
   if (BOT.on || app.botTried === app.gid) return; app.botTried = app.gid;
   let d = null; try { d = JSON.parse(sessionStorage.getItem(botKey()) || 'null'); } catch(e){ d = null; }
@@ -6434,6 +6480,7 @@ function buildWhite(){
           <button type="button" class="btn-side" data-clk="start" style="flex:0 0 auto">Start the game</button>
           <button type="button" data-clk="pause" style="flex:0 0 auto">Pause</button>
           <button type="button" data-clk="resume" style="flex:0 0 auto">Resume</button>
+          <label data-ffbox hidden style="flex:0 0 auto">Practice speed<select data-ffspeed><option value="1">Real time</option><option value="2">2x faster</option><option value="4">4x faster</option><option value="8">8x faster</option></select></label>
           <form class="row" data-wf="clockset" style="flex:1 1 200px;align-items:end"><label>Set board time<input name="t" maxlength="4" inputmode="numeric" placeholder="Example: 0900"></label><button type="submit" style="flex:0 0 auto">Set</button></form>
           <button type="button" data-clk="reveal" style="flex:0 0 auto">Lift fog of war</button>
         </div>
@@ -7511,6 +7558,7 @@ function refresh(force){
   $$('[data-clock]').forEach(el => el.textContent = clockText(S, now));
   if (app.role === 'B' || app.role === 'R') cubTick(S, app.role, now);
   if (!BOT.on && app.gid !== app.botTried && app.S && app.cfg) botResume();
+  if (app.mode === 'remote') pendTick();
   if (BOT.on || app.role === 'W' || app.role === 'A') botLockSync(app.role === 'W' || app.role === 'A' ? $('#vWhite') : null);
   $$('[data-next]').forEach(el => el.textContent = nextTickText(S, now));
 }
