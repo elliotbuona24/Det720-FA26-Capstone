@@ -1733,7 +1733,7 @@ function mtNow(S){ return (S.mtgts || []).filter(t => !t.done && S.g >= t.g - 1e
 function mtFor(S, side){ return mtNow(S).filter(t => t.to === 'both' || t.to === side); }
 function mtFixed(S, t, side){ const f = t.fix && t.fix[side]; return f != null && S.g - f <= FIX_MIN + 1e-9; }
 function mtClean(m){ if (!m || typeof m !== 'object') return null; const pt = Array.isArray(m.pt) && m.pt.length === 2 && m.pt.every(Number.isFinite) ? m.pt : null; const label = String(m.label || '').trim().slice(0, 60); if (!pt || !label) return null; return { label, pt, life:Math.max(5, Math.min(120, Math.round(Number(m.life) || 25))), grid:String(m.grid || '').slice(0, 12) }; }
-const WIN_DONE = { manual:'The White Force marks it', pr:'POC call: Personnel recovered (or procedure missed)', box:'POC call: Supply box delivered', ied:'POC call: Real IED cleared or Hit by an IED', civaid:'POC call: Helped a civilian', conduct:'POC call: Good or Poor conduct', mt:'Militia target destroyed', cache:'Cache cleared or struck', aoc:'The force writes to the AOC', acct:'PERSTAT sent', none:'Not tracked (window only times the props)' };
+const WIN_DONE = { manual:'The White Force marks it', pr:'POC call: Personnel recovered (or procedure missed)', box:'POC call: Supply box delivered', ied:'POC call: Real IED cleared or Hit by an IED', civaid:'POC call: Helped a civilian', conduct:'POC call: Good or Poor conduct', mt:'Militia target destroyed', cache:'Cache cleared or struck', aoc:'The force writes to the AOC', acct:'PERSTAT sent', spoof:'A fireteam reports the fake order (+2 points)', none:'Not tracked (window only times the props)' };
 const PERSTAT_ST = { task:'On task', move:'Moving', hq:'At Team HQ (casualty collection point)', cas:'Has a casualty', unk:'Unknown' };
 const NEEDS = { ied:'IED 9-line', civaid:'triage and a MEDEVAC 9-line', conduct:'a visit to the mayor', mt:'a SALUTE or UAV fix, then a strike 9-line', cache:'an IED 9-line or a strike 9-line', aoc:'a message to the AOC', acct:'a PERSTAT', pr:'a MEDEVAC 9-line and the carry', box:'delivering the box' };
 function refNeeds(S, ref){ const k = String(ref || '').slice(0, 1), id = String(ref || '').slice(2);
@@ -1765,6 +1765,7 @@ function applyCall(S, e, cfg, side, key, adj, text, extra){
   if (c.ev) apply(S, { id:e.id, ts:e.ts, type:c.ev, side, p:Object.assign({}, c.p, extra || {}), by:e.by }, cfg);
   else pushLog(S, c.name + ' for ' + SIDES[side].name + (text ? ' (' + String(text).slice(0, 120) + ')' : ''), side, e);
 }
+function spoofPay(S, q, sd, why, e){ if (!q.spoofPaid) q.spoofPaid = {}; if (q.spoofPaid[sd]) return; q.spoofPaid[sd] = true; S.pts[sd].adj = (S.pts[sd].adj || 0) + 2; pushLog(S, SIDES[sd].name + ' spoof detected (' + why + '): +2 points', sd, e); }
 function injMark(S, qid, sd, e){
   const q = (S.injq || []).find(x => x.qid === qid); if (!q || !q.win || q.sent == null || !injSides(q).includes(sd)) return;
   if (!q.res) q.res = {}; const old = q.res[sd]; if (old && (old.st === 'done' || old.st === 'exc')) return;
@@ -2347,7 +2348,7 @@ function apply(S, e, cfg){
       break; }
     case 'injq_add': {
       if (!S.injq) S.injq = [];
-      (Array.isArray(p.items) ? p.items : []).forEach(it => { if (!it || typeof it.qid !== 'string' || S.injq.some(q => q.qid === it.qid) || !it.tpl || !it.tpl.text) return; const t = it.tpl; S.injq.push({ qid:it.qid, tid:String(t.id || ''), label:String(t.label || 'Inject').slice(0, 60), to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), text:String(t.text).slice(0, 900), note:String(t.note || '').slice(0, 700), oc:String(t.oc || '').slice(0, 700), mt:mtClean(t.mt), at:Number.isFinite(t.at) ? t.at : null, lvl:Number.isInteger(t.lvl) ? t.lvl : null, sent:null }); Object.assign(S.injq[S.injq.length - 1], winClean(t) || {}); });
+      (Array.isArray(p.items) ? p.items : []).forEach(it => { if (!it || typeof it.qid !== 'string' || S.injq.some(q => q.qid === it.qid) || !it.tpl || !it.tpl.text) return; const t = it.tpl; S.injq.push({ qid:it.qid, tid:String(t.id || ''), label:String(t.label || 'Inject').slice(0, 60), to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), text:String(t.text).slice(0, 900), note:String(t.note || '').slice(0, 700), oc:String(t.oc || '').slice(0, 700), mt:mtClean(t.mt), at:Number.isFinite(t.at) ? t.at : null, lvl:Number.isInteger(t.lvl) ? t.lvl : null, sent:null }); if (t.spoof) S.injq[S.injq.length - 1].spoof = String(t.spoof).trim().slice(0, 300); Object.assign(S.injq[S.injq.length - 1], winClean(t) || {}); });
       S.ver++; break; }
     case 'injq_del': { if (!S.injq) break; const ix = S.injq.findIndex(q => q.qid === p.qid && q.sent == null); if (ix >= 0){ S.injq.splice(ix, 1); S.ver++; } break; }
     case 'injq_send': {
@@ -2360,9 +2361,18 @@ function apply(S, e, cfg){
         if (q.done === 'acct'){ if (!S.accts) S.accts = []; S.accts.push({ id:'ac-' + q.qid, qid:q.qid, label:q.label, g:S.g, due:q.ws != null ? injEnd(q) : S.g + q.win, to:q.to, reps:{} }); } }
       if (q.mt){ if (!S.mtgts) S.mtgts = []; S.mtgts.push({ id:'mt-' + q.qid, label:q.mt.label, pt:q.mt.pt, grid:q.mt.grid, scene:String(q.mt.scene || (String(q.oc || '').match(/"([^"]{10,400})"/) || [])[1] || '').slice(0, 400), to:q.to === 'public' ? 'both' : q.to, g:S.g, until:Math.min(END_G, S.g + q.mt.life), fix:{}, done:null }); }
       if (q.oc) S.ocAnns.push({ id:'oc-' + e.id, text:q.label + ': ' + fillT(q.oc), g:S.g, side:q.to === 'B' || q.to === 'R' ? q.to : null, inj:true });
+      if (q.spoof){ injSides(q).forEach(sd => S.orders.push({ id:'sp-' + q.qid + sd, side:sd, team:'all', text:fillT(q.spoof), g:S.g, spoof:q.qid, rep:{} })); pushLog(S, 'Fake order sent to ' + ({ B:'Blue Force', R:'Red Force', both:'both forces', public:'both forces' })[q.to] + ' fireteams (' + q.label + '): "' + fillT(q.spoof) + '"', null, e); break; }
       pushFeed(S, q.to, text + due, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label, qid:q.qid });
       pushLog(S, 'Inject sent (' + q.label + ') to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[q.to] + ': ' + text, null, e);
       if (S.sitePlans && q.tid) Object.values(S.sitePlans).filter(pl => pl.tid === q.tid && !SITES[pl.k]).forEach(pl => siteMake(S, pl, e));
+      break; }
+    case 'spoof_rep': {
+      const o = S.orders.find(x => x.id === p.order), t = side && p.team && S.teams[side] && S.teams[side][p.team]; if (!o || !t || o.side !== side) break;
+      if (!o.rep) o.rep = {}; if (o.rep[p.team] != null) break; o.rep[p.team] = S.g; S.ver++;
+      if (!o.spoof){ pushLog(S, SIDES[side].name + ' fireteam ' + t.name + ' flagged a real C2 order as fake', side, e); pushFeed(S, side, t.name + ' flagged your ' + hhmm(o.g) + ' order as fake. Confirm it on the LMR.', 'alert'); break; }
+      const q = (S.injq || []).find(x => x.qid === o.spoof); if (!q || q.closed != null || (q.res && q.res[side] && q.res[side].st === 'done')){ pushLog(S, SIDES[side].name + ' fireteam ' + t.name + ' reported the fake order after its window', side, e); break; }
+      injMark(S, q.qid, side, e); spoofPay(S, q, side, t.name + ' reported it', e);
+      pushFeed(S, side, 'Spoof detected, +2 points: ' + t.name + ' reported a fake order sent in your name ("' + o.text + '")', 'good', { team:true });
       break; }
     case 'guess_ack': { const a = (S.guessAlerts || []).find(x => x.id === p.id); if (a){ a.ack = true; S.ver++; } break; }
     case 'oob_ack': { const o = (S.oobs || []).find(x => x.id === p.id); if (o){ o.ack = true; S.ver++; } break; }
@@ -2754,7 +2764,7 @@ function apply(S, e, cfg){
       const t = p.tpl || {}, id = String(t.id || '').slice(0, 40), text = String(t.text || '').trim().slice(0, 900), label = String(t.label || '').trim().slice(0, 60);
       if (!/^t[\w-]{3,40}$/.test(id) || !text || !label){ pushLog(S, 'Inject template refused: incomplete', null, e, 'rejected'); break; }
       if (!S.tpls) S.tpls = [];
-      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 700) }; { const oc = String(t.oc || '').trim().slice(0, 700); if (oc) tp.oc = oc; const mt = mtClean(t.mt); if (mt) tp.mt = mt; const wc = winClean(t); if (wc) Object.assign(tp, wc); }
+      const tp = { id, label, text, to:['both', 'B', 'R', 'public'].includes(t.to) ? t.to : 'both', from:hqFrom(t.from).slice(0, 30), at:Number.isFinite(t.at) ? Math.max(0, Math.min(300, Math.round(t.at))) : null, lvl:Number.isInteger(t.lvl) && t.lvl >= 0 && t.lvl <= 4 ? t.lvl : null, note:String(t.note || '').trim().slice(0, 700) }; { const oc = String(t.oc || '').trim().slice(0, 700); if (oc) tp.oc = oc; const mt = mtClean(t.mt); if (mt) tp.mt = mt; const wc = winClean(t); if (wc) Object.assign(tp, wc); const sp = String(t.spoof || '').trim().slice(0, 300); if (sp) tp.spoof = sp; }
       const ix = S.tpls.findIndex(x => x.id === id), ph = String(t.phase || (ix >= 0 && S.tpls[ix].phase) || '').trim().slice(0, 20); if (ph) tp.phase = ph; if (ix >= 0) S.tpls[ix] = tp; else S.tpls.push(tp); S.ver++;
       pushLog(S, 'Inject template ' + (ix >= 0 ? 'updated' : 'saved') + ': ' + label, null, e);
       break; }
@@ -2849,6 +2859,7 @@ function apply(S, e, cfg){
       injRefund(S, sd, old, q); q.res[sd] = { st, g:S.g, by:'wf' };
       if (st === 'done' && q.who === 'any') injSides(q).forEach(o => { if (o !== sd){ injRefund(S, o, q.res[o], q); q.res[o] = { st:'na', g:S.g }; } });
       S.ver++; pushLog(S, 'White Force marked ' + SIDES[sd].name + ' ' + (st === 'exc' ? 'excused from' : 'as having handled') + ' "' + q.label + '"' + (old && old.st === 'miss' ? ' (miss penalty refunded)' : ''), sd, e);
+      if (st === 'done' && q.done === 'spoof') spoofPay(S, q, sd, 'marked by the White Force', e);
       if (q.closed == null && injSides(q).every(o => q.res[o])) injClose(S, q, 'marked by the White Force');
       break; }
     case 'cub_form': {
@@ -5063,6 +5074,7 @@ function buildTeam(side){
   </div>`;
   ptabs(v, 'marala-ttab-' + side, [['now', 'Alerts'], ['msg', 'Messages'], ['map', 'Map'], ['act', 'Requests'], ['all', 'All']], 'now');
   $('[data-send]', v).onclick = () => sendTeamPos(side, {});
+  $('[data-torders]', v).addEventListener('click', async ev => { const b = ev.target.closest('[data-spoofrep]'); if (!b) return; const me = teamGet(side); if (!me) return; if (!confirm('Report this order as fake? Do this only if your C2 did not send it. Check with your C2 on the LMR first if you can.')) return; b.disabled = true; await writeEvent('spoof_rep', side, { order:b.dataset.spoofrep, team:me.id }); toast('Reported to your C2 and the White Force.'); });
   $('[data-roomgo]', v).onclick = async () => { const r = roomFind($('[data-roomsel]', v).value); if (!r){ toast('Pick a room.', true); return; } if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; } setMyRoom(r); await sendTeamPos(side, { gpsOnly:true, silent:true }); toast('Checked in: ' + roomFull(app.S, r, side) + '.'); refresh(true); };
   $('[data-tcf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; } const nx = tchatNext(app.S, side, me.id); if (nx != null && app.S.g < nx){ toast('Next message available at ' + hhmm(nx) + '.', true); return; } if (!confirm('Send this message to your C2? The next message is available ' + TCHAT_EVERY + ' minutes after this one.')) return; await writeEvent('tchat', side, { team:me.id, name:me.name, from:'team', text:tx }); f.text.value = ''; });
   $('[data-ctsend]', v).onclick = async () => {
@@ -5143,7 +5155,7 @@ function renderTeam(S, side){
   const tm = $('[data-tmap]', v);
   if (tm && !tm.hidden && tm._lm) drawDyn(tm._lm, S, side, { team:true });
   const os = S.orders.filter(o => o.side === side && (o.team === 'all' || o.team === me.id));
-  $('[data-torders]', v).innerHTML = os.length ? os.slice().reverse().map(o => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(o.g) + (o.team === 'all' ? ' - All teams' : ' - To you') + '</span><div>' + esc(o.text) + '</div></div></div>').join('') : '<div class="empty">No orders yet. Your C2 sends them from the board.</div>';
+  { const h = os.length ? os.slice().reverse().map(o => { const r = o.rep && o.rep[me.id] != null; return '<div class="li"><div class="grow"><span class="small muted">' + hhmm(o.g) + (o.team === 'all' ? ' - All teams' : ' - To you') + '</span><div>' + esc(o.text) + '</div></div>' + (r ? '<span class="chip">Reported as fake</span>' : '<button type="button" data-spoofrep="' + esc(o.id) + '" style="flex:0 0 auto" title="Use this if the order did not come from your C2">Report as fake</button>') + '</div>'; }).join('') : '<div class="empty">No orders yet. Your C2 sends them from the board.</div>', el = $('[data-torders]', v); if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
   ptabsBadge(v, { now:$$('[data-talerts] .li, [data-torders] .li', v).length, msg:$$('[data-tclog] .chatmsg:not(.me)', v).length });
 }
 
@@ -6858,6 +6870,7 @@ function botStep(){
         const pickBlame = truth => { const right = truth == null ? null : ['militia', 'other', 'self', 'deny'].filter(b => stmtCorrect(sd, b, truth)), wrong = ['militia', 'other', 'self', 'deny'].filter(b => !right || !right.includes(b)), r = rnd(); if (!right || !right.length) return 'invest'; return r < .7 ? right[Math.floor(rnd() * right.length)] : r < .9 ? 'invest' : wrong[Math.floor(rnd() * wrong.length)]; };
         incs.forEach(i => { if (later('sti' + i.id + sd, 3 + rnd() * 6)) once('stid' + i.id + sd, () => W('act_statement', sd, { incident:i.id, blame:pickBlame(i.truth) }, sd)); });
         pkgs.forEach(P => { if (later('stp' + P.id + sd, 4 + rnd() * 8)) once('stpd' + P.id + sd, () => W('act_statement', sd, { pkg:P.id, blame:pickBlame(stmtTruth(P)) }, sd)); }); }
+      S.orders.filter(o => o.spoof && o.side === sd && !Object.keys(o.rep || {}).length).forEach(o => { if (!later('spf' + o.id, 2 + rnd() * 5)) return; once('spfd' + o.id, () => { const tl = liveTeams(S, sd); if (tl.length && rnd() < .6) W('spoof_rep', sd, { order:o.id, team:tl[Math.floor(rnd() * tl.length)].id }, 'T' + sd); }); });
       if (S.clock.started && !S.endex){ const ck = 'capg' + sd; if (mem[ck] == null) mem[ck] = g + 10 + rnd() * 10;
         if (g >= mem[ck]){ mem[ck] = g + 12 + rnd() * 10; const foe = OTHER[sd], mine = SITE_KEYS.filter(k => S.sites[k].holder === sd), hot = mine.find(k => S.sites[k].contestBy === foe), opts = [];
           if (uavReady(S, sd)) opts.push(['act_uav', {}, 3]);
@@ -7190,6 +7203,7 @@ function buildWhite(){
           <div class="row"><label for="tplAt" style="flex:0 0 200px">Planned time (minutes after STARTEX)<input id="tplAt" name="at" type="number" min="0" max="300" placeholder="Optional"></label><label for="tplLvl" style="flex:0 0 220px">Or send at escalation level<select id="tplLvl" name="lvl"><option value="">No level</option><option value="1">Tension or higher</option><option value="2">Crisis or higher</option><option value="3">Brink or higher</option></select></label><label for="tplNote">White Force note (only the White Force sees it)<input id="tplNote" name="note" maxlength="700" placeholder="Optional: what the POCs need to set up"></label></div>
           <div class="row" style="align-items:end"><label for="tplWin" style="flex:0 0 150px">Response window (minutes)<input id="tplWin" name="win" type="number" min="0" max="120" placeholder="Untimed"></label><label for="tplWho" style="flex:0 0 190px">Who must respond<select id="tplWho" name="who"><option value="each">Each force it goes to</option><option value="any">First force closes it</option></select></label><label for="tplDone">Handled when<select id="tplDone" name="done">${Object.keys(WIN_DONE).map(k => '<option value="' + k + '">' + WIN_DONE[k] + '</option>').join('')}</select></label><label for="tplMp" style="flex:0 0 110px">Miss: points −<input id="tplMp" name="mpts" type="number" min="0" max="20" placeholder="0"></label><label for="tplMh" style="flex:0 0 130px">Miss: diplomatic −<input id="tplMh" name="mhn" type="number" min="0" max="20" placeholder="0"></label><label for="tplNeeds">The force must send (shown in the forces’ dropdowns)<input id="tplNeeds" name="needs" maxlength="80" placeholder="Leave blank to use the standard for Handled when"></label></div>
           <label for="tplOc">POC brief (optional): what the fireteam's POC reads to the team on arrival<textarea id="tplOc" name="oc" maxlength="700" rows="2" placeholder="Example: Three casualties near the fuel store. Casualty 1: heavy bleeding from the left thigh..."></textarea></label>
+          <label for="tplSpoof">Fake order (optional): goes out as a fake order from the force's own C2 on the fireteam phones, instead of the message. A team that reports it as fake gets +2. Set the window's "Done when" to "A fireteam reports the fake order".<textarea id="tplSpoof" name="spoof" maxlength="300" rows="2" placeholder="Example: All Blue Force teams, this is Blue headquarters. Leave your positions and move to the Fuel Depot now. Acknowledge."></textarea></label>
           <div class="stack"><b class="small">Props for this inject</b><div class="pe" data-pe="tpl"></div></div>
           <div class="row" style="justify-content:flex-start"><button type="submit" class="btn-side" style="flex:0 0 auto" data-tplsave>Save template</button><button type="button" data-tplclear style="flex:0 0 auto">Clear</button><span class="small muted" data-tplmode></span></div>
         </form>
@@ -7258,7 +7272,7 @@ function buildWhite(){
   });
   { const tf = $('[data-tplf]', v), tplWinSet = t => { tf.win.value = t.win || ''; tf.who.value = t.who === 'any' ? 'any' : 'each'; tf.done.value = WIN_DONE[t.done] ? t.done : 'manual'; tf.mpts.value = (t.miss && t.miss.pts) || ''; tf.mhn.value = (t.miss && t.miss.hn) || ''; tf.needs.value = t.needs || ''; }, tplClear = () => { tf.reset(); tf.dataset.id = ''; tf.dataset.phase = ''; $('[data-tplmode]', v).textContent = ''; peSet('tpl', []); };
     tf.addEventListener('submit', async ev => { ev.preventDefault(); const fd = new FormData(tf), at = String(fd.get('at') || '').trim(), lvl = String(fd.get('lvl') || '');
-      const tpl = { id:tf.dataset.id || ('t' + uid()), label:String(fd.get('label') || '').trim(), to:fd.get('to'), from:hqFrom(fd.get('from')), text:String(fd.get('text') || '').trim(), at:at === '' ? null : +at, lvl:lvl === '' ? null : +lvl, note:String(fd.get('note') || '').trim(), oc:String(fd.get('oc') || '').trim(), phase:tf.dataset.phase || '', win:+fd.get('win') || 0, who:fd.get('who'), done:fd.get('done'), miss:{ pts:+fd.get('mpts') || 0, hn:+fd.get('mhn') || 0 }, needs:String(fd.get('needs') || '').trim() };
+      const tpl = { id:tf.dataset.id || ('t' + uid()), label:String(fd.get('label') || '').trim(), to:fd.get('to'), from:hqFrom(fd.get('from')), text:String(fd.get('text') || '').trim(), at:at === '' ? null : +at, lvl:lvl === '' ? null : +lvl, note:String(fd.get('note') || '').trim(), oc:String(fd.get('oc') || '').trim(), phase:tf.dataset.phase || '', win:+fd.get('win') || 0, who:fd.get('who'), done:fd.get('done'), miss:{ pts:+fd.get('mpts') || 0, hn:+fd.get('mhn') || 0 }, needs:String(fd.get('needs') || '').trim(), spoof:String(fd.get('spoof') || '').trim() };
       { const old = (app.S.tpls || []).find(x => x.id === tf.dataset.id); if (old && old.mt) tpl.mt = old.mt; }
       if (!tpl.label || !tpl.text){ toast('Add a name and a message.', true); return; }
       await writeEvent('tpl_save', null, { tpl }); await peSave('tpl', tpl.id); toast(tf.dataset.id ? 'Template updated.' : 'Template saved. It is under Send a message.'); tplClear(); });
@@ -7269,7 +7283,7 @@ function buildWhite(){
       if (!confirm('Add ' + todo.length + ' sample template' + (todo.length === 1 ? '' : 's') + ' to this game? Each can be edited or deleted afterward.')) return;
       for (const tpl of todo) await writeEvent('tpl_save', null, { tpl }); toast('Added ' + todo.length + ' template' + (todo.length === 1 ? '' : 's') + '.'); };
     $('[data-tpllist]', v).addEventListener('click', ev => { const e = ev.target.closest('[data-tpledit]'), d = ev.target.closest('[data-tpldel]'), S = app.S;
-      if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; if (tf.oc) tf.oc.value = t.oc || ''; tplWinSet(t); peSet('tpl', peOf(S, 'tpl', t.id)); $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
+      if (e){ const t = (S.tpls || []).find(x => x.id === e.dataset.tpledit); if (!t) return; tf.dataset.id = t.id; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.spoof.value = t.spoof || ''; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; if (tf.oc) tf.oc.value = t.oc || ''; tplWinSet(t); peSet('tpl', peOf(S, 'tpl', t.id)); $('[data-tplmode]', v).textContent = 'Editing: ' + t.label; tf.scrollIntoView({ behavior:'smooth', block:'center' }); }
       if (d){ const t = (S.tpls || []).find(x => x.id === d.dataset.tpldel); if (t && confirm('Delete the template "' + t.label + '"?')) writeEvent('tpl_del', null, { id:t.id }); } });
     $('[data-crexport]', v).onclick = crExport;
     $('#crImport', v).onchange = () => { const fl = Array.from($('#crImport', v).files); $('#crImport', v).value = ''; if (fl.length) crImport(fl); };
