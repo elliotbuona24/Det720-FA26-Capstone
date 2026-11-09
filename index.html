@@ -2173,6 +2173,8 @@ function apply(S, e, cfg){
     case 'clock_pause': if (S.clock.running){ S.clock.anchorG = gameAt(S, e.ts); S.clock.running = false; S.g = S.clock.anchorG; pushLog(S, 'Clock paused at ' + hhmm(S.g), null, e); } break;
     case 'clock_resume': if (S.clock.started && !S.clock.running && !S.endex){ S.clock.running = true; S.clock.anchorReal = e.ts; pushLog(S, 'Clock resumed at ' + hhmm(S.clock.anchorG), null, e); } break;
     case 'clock_speed': if (S.clock.started && !S.endex){ const x = [1, 2, 4, 8].includes(+p.x) ? +p.x : 1; if (S.clock.running){ S.clock.anchorG = gameAt(S, e.ts); S.clock.anchorReal = e.ts; S.g = S.clock.anchorG; } S.clock.speed = x; pushLog(S, x === 1 ? 'Clock back to real time' : 'Practice fast forward: clock running ' + x + ' times faster', null, e); } break;
+    case 'reopen': if (S.endex){ const g = Math.max(START_G, Math.min(END_G - 1, Number.isFinite(p.g) ? p.g : END_G - 30)); S.endex = false; S.reveal = false; S.clock.started = true; S.clock.running = false; S.clock.anchorG = g; S.clock.anchorReal = e.ts; S.g = g; S.tickIdx = Math.max(0, TICKS.findIndex(t => t > g + 1e-9)); if (S.tickIdx < 0) S.tickIdx = TICKS.length - 1; S.reopenN = (S.reopenN || 0) + 1; S.ver++;
+      pushLog(S, 'Game reopened by the White Force at ' + hhmm(g) + ' (clock paused)', null, e); pushFeed(S, 'public', 'The White Force reopened the exercise at ' + hhmm(g) + '. The clock is paused until the White Force resumes it.', 'public'); } break;
     case 'clock_set': if (S.clock.started && !S.endex){ S.clock.anchorG = Math.max(START_G, Math.min(END_G, p.g)); S.clock.anchorReal = e.ts; S.g = S.clock.anchorG; pushLog(S, 'Clock set to ' + hhmm(S.g), null, e); } break;
     case 'reveal': S.reveal = !!p.on; pushLog(S, p.on ? 'Fog of war lifted' : 'Fog of war enacted', null, e); pushFeed(S, 'public', p.on ? 'Fog of war lifted. Every position and both scores are now on every screen.' : 'Fog of war enacted.', 'public'); break;
     case 'site_set': { const s = S.sites[p.site]; if (!s) break; s.holder = p.holder || null; s.contested = false; s.contestBy = null; s.contestUntil = null; s.since = S.g; pushLog(S, SITES[p.site].name + (p.holder ? ' set to ' + SIDES[p.holder].name : ' set to nobody'), p.holder, e); break; }
@@ -3406,12 +3408,14 @@ function lobbyStart(){
   route();
 }
 function joinGame(gid, key, fresh){
+  if (app.gid && app.gid !== gid) stopGameLocal();
   app.gid = gid; app.vkey = key; app.role = null; app.built = null;
   pref.set('marala-join', JSON.stringify({ gid, key }));
   subscribeGame();
   if (fresh) toast('Game opened. Choose your view.');
 }
 function leaveGame(){
+  stopGameLocal();
   gameUnsubs.forEach(fn => { try { fn(); } catch(e){} }); gameUnsubs = [];
   if (app.gid) LS.del('marala-role-' + app.gid);
   app.gid = null; app.vkey = null; app.cfg = null; app.events = []; app.evSig = null; app.role = null; app.built = null; app.S = null; app.sig = '';
@@ -3438,7 +3442,16 @@ function toast(msg, bad){
 
 /* ---------- routing ---------- */
 function freshView(sel){ const old = $(sel); $$('.lmap', old).forEach(el => { if (el._lm){ try { el._lm.map.remove(); } catch(e){} el._lm = null; } }); const v = old.cloneNode(false); old.replaceWith(v); return v; }
-function show(id){ ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone' && id !== '#vProps') closeFullMap(); if (id !== '#vProps') propNavStop(); }
+function clearGameOverlays(){
+  ['#endexOv', '#endexPill', '#phaseOv', '#pauseBar'].forEach(q => { const el = $(q); if (el) el.remove(); });
+  document.body.classList.remove('paused-bar'); document.documentElement.style.removeProperty('--pbh');
+}
+function stopGameLocal(){
+  if (BOT.timer){ clearInterval(BOT.timer); BOT.timer = null; } BOT.on = null; BOT.mem = {}; BOT.pool = {}; app.botTried = null;
+  app.defMin = {}; app.defSeen = {}; app.ocInj = null; app.ocNear = {}; app.stlf = null; app.tlf = null;
+  clearGameOverlays();
+}
+function show(id){ if (!['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].includes(id)) clearGameOverlays(); ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone' && id !== '#vProps') closeFullMap(); if (id !== '#vProps') propNavStop(); }
 function roleLabel(r){ return r === 'OC' ? 'POC O/C' : r === 'D' ? 'Drone operator' : r === 'L' ? 'Props and logistics' : r === 'W' ? 'White Force' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
@@ -3948,7 +3961,7 @@ function phaseUI(S, now){
   else if (bar){ const hh = bar.offsetHeight + 'px'; if (document.documentElement.style.getPropertyValue('--pbh') !== hh) document.documentElement.style.setProperty('--pbh', hh); }
 }
 function endexUI(S){
-  const on = !!(S && S.endex && app.role), ov = $('#endexOv'), pill = $('#endexPill'), key = 'marala-endex-' + (app.gid || 'local');
+  const on = !!(S && S.endex && app.role), ov = $('#endexOv'), pill = $('#endexPill'), key = 'marala-endex-' + (app.gid || 'local') + '-' + ((S && S.reopenN) || 0);
   if (!on){ if (ov) ov.remove(); if (pill) pill.remove(); return; }
   const canAAR = ['W', 'A', 'B', 'R'].includes(app.role), b = score(S, 'B').total, r = score(S, 'R').total;
   const lead = b > r ? 'Blue Force wins, ' + b + ' to ' + r + '.' : r > b ? 'Red Force wins, ' + r + ' to ' + b + '.' : 'A tie at ' + b + ' points each.';
@@ -6756,6 +6769,7 @@ function buildWhite(){
           <button type="button" data-clk="pause" style="flex:0 0 auto">Pause</button>
           <button type="button" data-clk="resume" style="flex:0 0 auto">Resume</button>
           <label data-ffbox hidden style="flex:0 0 auto">Practice speed<select data-ffspeed><option value="1">Real time</option><option value="2">2x faster</option><option value="4">4x faster</option><option value="8">8x faster</option></select></label>
+          <form class="row" data-wf="reopen" hidden style="flex:1 1 100%;align-items:end"><label>Reopen at board time<input name="t" maxlength="4" inputmode="numeric" value="0720"></label><button type="submit" class="btn-side" style="flex:0 0 auto">Reopen the game</button><span class="small muted" style="flex:1 1 200px">Practice games only. The clock comes back paused at that time; press Resume when ready.</span></form>
           <form class="row" data-wf="clockset" style="flex:1 1 200px;align-items:end"><label>Set board time<input name="t" maxlength="4" inputmode="numeric" placeholder="Example: 0900"></label><button type="submit" style="flex:0 0 auto">Set</button></form>
           <button type="button" data-clk="reveal" style="flex:0 0 auto">Lift fog of war</button>
         </div>
@@ -7013,6 +7027,7 @@ function buildWhite(){
     if (k === 'detonation') writeEvent('detonation', null, { grid:String(fd.get('grid')).toUpperCase(), truth:fd.get('truth'), casualties:!!fd.get('cas') });
     if (k === 'msg') writeEvent('msg', null, { to:fd.get('to'), text:fd.get('text'), label:hqFrom(fd.get('label')) });
     if (k === 'window'){ const st = parseHHMM(fd.get('start')), len = Math.round(+fd.get('len')); if (st == null || !(len >= 30 && len <= 300)){ toast('Use 24-hour time like 0830 and a length from 30 to 300 minutes.', true); return; } if (app.S && app.S.clock.started){ toast('The game has already started. Use Set board time instead.', true); return; } writeEvent('window_set', null, { startG:st, lengthMin:len }); app.winKey = null; toast('Start time saved: ' + hhmm(st) + ', ' + len + ' minutes.'); return; }
+    if (k === 'reopen'){ const m = /^(\d{2})(\d{2})$/.exec(String(fd.get('t')).trim()); if (!m){ toast('Use 24-hour time like 0720.', true); return; } if (!practiceOk('bots')){ toast('Reopening is only for practice games.', true); return; } if (!confirm('Reopen this game at ' + m[0] + '? The clock comes back paused there.')) return; writeEvent('reopen', null, { g:(+m[1]) * 60 + (+m[2]) - 360 }); toast('Game reopened, clock paused at ' + m[0] + '.'); return; }
     if (k === 'clockset'){ const m = /^(\d{2})(\d{2})$/.exec(String(fd.get('t')).trim()); if (!m){ toast('Use 24-hour time like 0900.', true); return; } writeEvent('clock_set', null, { g:(+m[1]) * 60 + (+m[2]) - 360 }); }
     if (k !== 'adjust' && k !== 'msg') f.reset();
     if (k === 'msg') f.querySelector('textarea').value = '';
@@ -7688,6 +7703,7 @@ function renderWhite(S, now){
   $('[data-clk="start"]', v).disabled = S.clock.started;
   $('[data-clk="pause"]', v).disabled = !S.clock.running;
   $('[data-clk="resume"]', v).disabled = !S.clock.started || S.clock.running || S.endex;
+  { const ro = $('form[data-wf="reopen"]', v); if (ro) ro.hidden = !(S.endex && practiceOk('bots')); }
   $('[data-clk="reveal"]', v).textContent = S.reveal ? 'Enact fog of war' : 'Lift fog of war';
   const wf = $('form[data-wf="window"]', v), wk = START_G + '|' + END_G;
   if (wf && app.winKey !== wk && !wf.contains(document.activeElement)){ app.winKey = wk; wf.elements.start.value = hhmm(START_G); wf.elements.len.value = END_G - START_G; }
