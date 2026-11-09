@@ -1511,6 +1511,23 @@ const SITES = {
 };
 const SITE_KEYS = Object.keys(SITES);
 const BASE_SITE_KEYS = SITE_KEYS.slice();
+function siteMake(S, p, e){
+  const k = String(p.k || ''), pt = p.pt, name = String(p.name || '').trim().slice(0, 40);
+  if (!/^x[\w-]{3,40}$/.test(k) || SITES[k] || !name || !(Array.isArray(pt) && pt.length === 2 && pt.every(Number.isFinite))){ pushLog(S, 'New site refused: incomplete', null, e, 'rejected'); return false; }
+  const cap = Array.isArray(p.cap) ? p.cap.filter(x => typeof x === 'string').slice(0, 30) : [], def = Array.isArray(p.def) ? p.def.filter(x => typeof x === 'string').slice(0, 30) : [];
+  if (!cap.length){ pushLog(S, 'New site refused: no capture code words', null, e, 'rejected'); return false; }
+  SITES[k] = { name, grid:String(p.square || '?'), col:Number.isInteger(p.col) ? p.col : 0, row:Number.isInteger(p.row) ? p.row : 0, letter:name[0].toUpperCase(), dyn:true };
+      SITE_KEYS.push(k);
+      S.sites[k] = { holder:null, contested:false, since:null };
+      S.sitePts[k] = pt; S.siteCodes[k] = { cap, def };
+      if (Number.isInteger(p.min) && p.min >= 3 && p.min <= 90) S.siteTimer[k] = p.min;
+      if (p.from){ const w = S.wps.find(x => x.id === p.from && !x.del); if (w) w.del = true; }
+      S.ver++;
+      pushFeed(S, 'both', 'New site: ' + name + (p.grid ? ' at ' + p.grid : '') + '. Scores like every other site.', 'hq', { label:'White Force', team:true });
+      pushLog(S, 'New site created: ' + name + (p.grid ? ' at ' + p.grid : '') + ' (' + cap.length + ' capture, ' + def.length + ' defense code words)', null, e);
+  if (S.sitePlans) delete S.sitePlans[k];
+  return true;
+}
 function resetSites(){ SITE_KEYS.length = 0; BASE_SITE_KEYS.forEach(k => SITE_KEYS.push(k)); Object.keys(SITES).forEach(k => { if (!BASE_SITE_KEYS.includes(k)) delete SITES[k]; }); }
 let START_G = 20, END_G = 100, TICKS = [];
 function setWindow(cfg){
@@ -2288,6 +2305,7 @@ function apply(S, e, cfg){
       if (q.oc) S.ocAnns.push({ id:'oc-' + e.id, text:q.label + ': ' + fillT(q.oc), g:S.g, side:q.to === 'B' || q.to === 'R' ? q.to : null, inj:true });
       pushFeed(S, q.to, text + due, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label });
       pushLog(S, 'Inject sent (' + q.label + ') to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[q.to] + ': ' + text, null, e);
+      if (S.sitePlans && q.tid) Object.values(S.sitePlans).filter(pl => pl.tid === q.tid && !SITES[pl.k]).forEach(pl => siteMake(S, pl, e));
       break; }
     case 'guess_ack': { const a = (S.guessAlerts || []).find(x => x.id === p.id); if (a){ a.ack = true; S.ver++; } break; }
     case 'oob_ack': { const o = (S.oobs || []).find(x => x.id === p.id); if (o){ o.ack = true; S.ver++; } break; }
@@ -2960,21 +2978,16 @@ function apply(S, e, cfg){
       else pushFeed(S, n.side, n.name + ': strike 9-line not accepted.', 'alert', { label:'9-line', team:true, tid:n.team, only:true });
       pushLog(S, '9-line from ' + n.name + (p.ok ? ' accepted and sent to ' : ' denied, not sent to ') + SIDES[n.side].name + ' C2 (' + n.by + ')', n.side, e);
       break; }
-    case 'site_new': {
-      const k = String(p.k || ''), pt = p.pt, name = String(p.name || '').trim().slice(0, 40);
-      if (!/^x[\w-]{3,40}$/.test(k) || SITES[k] || !name || !(Array.isArray(pt) && pt.length === 2 && pt.every(Number.isFinite))){ pushLog(S, 'New site refused: incomplete', null, e, 'rejected'); break; }
-      const cap = Array.isArray(p.cap) ? p.cap.filter(x => typeof x === 'string').slice(0, 30) : [], def = Array.isArray(p.def) ? p.def.filter(x => typeof x === 'string').slice(0, 30) : [];
-      if (!cap.length){ pushLog(S, 'New site refused: no capture code words', null, e, 'rejected'); break; }
-      SITES[k] = { name, grid:String(p.square || '?'), col:Number.isInteger(p.col) ? p.col : 0, row:Number.isInteger(p.row) ? p.row : 0, letter:name[0].toUpperCase(), dyn:true };
-      SITE_KEYS.push(k);
-      S.sites[k] = { holder:null, contested:false, since:null };
-      S.sitePts[k] = pt; S.siteCodes[k] = { cap, def };
-      if (Number.isInteger(p.min) && p.min >= 3 && p.min <= 90) S.siteTimer[k] = p.min;
-      if (p.from){ const w = S.wps.find(x => x.id === p.from && !x.del); if (w) w.del = true; }
-      S.ver++;
-      pushFeed(S, 'both', 'New site: ' + name + (p.grid ? ' at ' + p.grid : '') + '. Scores like every other site.', 'hq', { label:'White Force', team:true });
-      pushLog(S, 'New site created: ' + name + (p.grid ? ' at ' + p.grid : '') + ' (' + cap.length + ' capture, ' + def.length + ' defense code words)', null, e);
+    case 'site_plan': {
+      const k = String(p.k || ''), pt = p.pt, name = String(p.name || '').trim().slice(0, 40), cap = Array.isArray(p.cap) ? p.cap.filter(x => typeof x === 'string').slice(0, 30) : [];
+      if (!/^x[\w-]{3,40}$/.test(k) || SITES[k] || !name || !cap.length || !(Array.isArray(pt) && pt.length === 2 && pt.every(Number.isFinite))){ pushLog(S, 'Site plan refused: incomplete', null, e, 'rejected'); break; }
+      if (!S.sitePlans) S.sitePlans = {}; S.sitePlans[k] = Object.assign({}, p, { name, tid:p.tid ? String(p.tid).slice(0, 40) : '' }); S.ver++;
+      const t = (S.tpls || []).find(x => x.id === S.sitePlans[k].tid);
+      pushLog(S, 'Site planned: ' + name + (t ? '. It opens when "' + t.label + '" is sent.' : '. The White Force opens it.'), null, e);
       break; }
+    case 'site_plan_del': { if (S.sitePlans && S.sitePlans[p.k]){ pushLog(S, 'Site plan cancelled: ' + S.sitePlans[p.k].name, null, e); delete S.sitePlans[p.k]; S.ver++; } break; }
+    case 'site_open': { const pl = S.sitePlans && S.sitePlans[p.k]; if (pl && !SITES[pl.k]) siteMake(S, pl, e); break; }
+    case 'site_new': siteMake(S, p, e); break;
     case 'site_remove': {
       const k = p.k, i = SITE_KEYS.indexOf(k);
       if (i < 0 || !SITES[k] || !SITES[k].dyn){ pushLog(S, 'Site removal refused', null, e, 'rejected'); break; }
@@ -3077,7 +3090,8 @@ function replay(cfg, events, now, step, cache){
   if (cache){ cache.cfg = cfg; cache.n = events.length; cache.ids = new Set(events.map(e => e.id)); const L = evs[evs.length - 1]; cache.last = L ? [L.ts, L.id] : [-Infinity, '']; cache.win = ws ? Object.assign({}, cfg, { startG:ws.p.startG, lengthMin:ws.p.lengthMin }) : cfg; cache.sites = JSON.stringify([SITE_KEYS, SITES]); cache.S = structuredClone(S); }
   return finishAt(S, now);
 }
-const REPLAY_FULL = new Set(['void', 'window_set', 'clock_start', 'site_new', 'site_remove']);
+const REPLAY_FULL = new Set(['void', 'window_set', 'clock_start', 'site_new', 'site_remove', 'site_plan', 'site_plan_del', 'site_open']);
+function planOpens(S, e){ if (e.type !== 'injq_send' || !S || !S.sitePlans) return false; const q = (S.injq || []).find(x => x.qid === (e.p && e.p.qid)); return !!(q && Object.values(S.sitePlans).some(pl => pl.tid && pl.tid === q.tid)); }
 function stepEvent(S, e, cfg, byId, step){
   const g = gameAt(S, e.ts);
   runTicks(S, g);
@@ -3091,7 +3105,7 @@ function replayCached(cache, cfg, events, now){
   if (cache.S && cache.cfg === cfg && events.length >= cache.n){
     const fresh = events.length === cache.n ? [] : events.filter(e => !cache.ids.has(e.id));
     const after = (e, L) => e.ts > L[0] || (e.ts === L[0] && e.id > L[1]);
-    if (fresh.length === events.length - cache.n && fresh.every(e => !REPLAY_FULL.has(e.type))){
+    if (fresh.length === events.length - cache.n && fresh.every(e => !REPLAY_FULL.has(e.type) && !planOpens(cache.S, e))){
       let base = null;
       if (fresh.every(e => after(e, cache.last))) base = { S:cache.S, last:cache.last, ids:cache.ids, sites:cache.sites, win:cache.win };
       else { const lo = fresh.reduce((m, e) => (!m || e.ts < m.ts || (e.ts === m.ts && e.id < m.id)) ? e : m, null); base = (cache.hist || []).slice().reverse().find(h => after(lo, h.last)) || null; if (base) cache.hist = cache.hist.slice(0, cache.hist.indexOf(base) + 1); }
@@ -3940,12 +3954,12 @@ function endexUI(S){
   const lead = b > r ? 'Blue Force wins, ' + b + ' to ' + r + '.' : r > b ? 'Red Force wins, ' + r + ' to ' + b + '.' : 'A tie at ' + b + ' points each.';
   const html = '<div class="endex-card" role="dialog" aria-modal="true" aria-labelledby="endexH"><div class="endex-time">' + hhmm(END_G) + '</div><h2 id="endexH" class="endex-word">ENDEX</h2><p class="endex-sub">The exercise is over. The fog of war is lifted: every screen now shows every position and both scores.</p>' +
     '<p class="endex-do">Take accountability and return all equipment.</p>' +
-    '<div class="endex-score"><div class="es-b"><b>' + b + '</b><span>Blue Force</span></div><div class="es-r"><b>' + r + '</b><span>Red Force</span></div><div><b>' + S.esc + '</b><span>Escalation, ' + esc(S.war ? 'War' : LEVELS[levelIndex(S.esc)].name) + '</span></div></div><p class="endex-lead">' + esc(lead) + (S.war ? ' War broke out, so both scores were cut in half.' : '') + '</p>' +
+    '<div class="endex-score"><div class="es-b"><b data-esb>' + b + '</b><span>Blue Force</span></div><div class="es-r"><b data-esr>' + r + '</b><span>Red Force</span></div><div><b data-ese>' + S.esc + '</b><span data-esl>Escalation, ' + esc(S.war ? 'War' : LEVELS[levelIndex(S.esc)].name) + '</span></div></div><p class="endex-lead" data-eslead>' + esc(lead) + (S.war ? ' War broke out, so both scores were cut in half.' : '') + '</p>' +
     '<div class="endex-btns">' + (canAAR ? '<button type="button" class="endex-main" data-endexaar>After-action report (PDF)</button>' : '') + '<button type="button" data-endexclose>Look around the map</button></div></div>';
   let shown = false; try { shown = sessionStorage.getItem(key) === '1'; } catch(e){}
   if (!shown && !ov){ const d = document.createElement('div'); d.id = 'endexOv'; d.className = 'endex-ov'; d.innerHTML = html; d.dataset.h = html; document.body.appendChild(d);
     d.addEventListener('click', ev => { if (ev.target.closest('[data-endexaar]')) openAAR(); else if (ev.target.closest('[data-endexclose]') || ev.target === d){ d.remove(); try { sessionStorage.setItem(key, '1'); } catch(e){} endexUI(app.S); } }); }
-  else if (ov && ov.dataset.h !== html){ ov.dataset.h = html; ov.innerHTML = html; }
+  else if (ov){ const set = (q, v) => { const el = $(q, ov); if (el && el.textContent !== String(v)) el.textContent = v; }; set('[data-esb]', b); set('[data-esr]', r); set('[data-ese]', S.esc); set('[data-esl]', 'Escalation, ' + (S.war ? 'War' : LEVELS[levelIndex(S.esc)].name)); set('[data-eslead]', lead + (S.war ? ' War broke out, so both scores were cut in half.' : '')); }
   if ((shown || !$('#endexOv')) && !pill){ const pl = document.createElement('div'); pl.id = 'endexPill'; pl.className = 'endex-pill'; pl.innerHTML = '<b>ENDEX</b>' + (canAAR ? '<button type="button" data-pillaar>After-action report</button>' : '') + '<button type="button" data-pillopen>Final score</button>'; document.body.appendChild(pl);
     pl.addEventListener('click', ev => { if (ev.target.closest('[data-pillaar]')) openAAR(); else if (ev.target.closest('[data-pillopen]')){ try { sessionStorage.removeItem(key); } catch(e){} pl.remove(); endexUI(app.S); } }); }
   if ($('#endexOv') && pill) pill.remove();
@@ -6093,7 +6107,7 @@ function rsRows(S){
     if (out){ const end = q.win ? injEnd(q) : null; status = q.win ? (q.closed != null ? '<span class="chip">Closed ' + hhmm(q.closed) + '</span>' : end == null ? '<span class="chip wait">Sent, clock waits for props</span>' : '<span class="chip wait">Out, due ' + hhmm(end) + '</span>') : '<span class="chip ok">Sent ' + hhmm(q.sent) + '</span>'; }
     else { const hold = propHold(S, 'tpl', q.tid); if (hold.length){ const claimed = Object.values(S.propUses || {}).some(u => u.kind === 'tpl' && u.item === q.tid && !propLive(S, u) && (S.propClaim || {})[u.id]); status = '<span class="chip wait" title="' + esc('Waiting on: ' + propWaitText(S, 'tpl', q.tid)) + '">Props not placed' + (claimed ? ' (claimed)' : ' (not claimed)') + '</span>'; btns = '<button type="button" data-act="rsinj" data-id="' + q.qid + '" data-ovr="1">Send anyway</button>'; }
       else btns = '<button type="button" class="btn-side" data-act="rsinj" data-id="' + q.qid + '">Send</button>'; }
-    rows.push({ key:'q' + q.qid, t:t != null ? t : q.lvl != null ? 9000 + q.lvl : 9999, when:t != null ? hhmm(t) : q.lvl != null ? 'At ' + LEVELS[q.lvl].name : 'Any time', tag:q.win ? 'Inject, ' + q.win + ' min' : 'Inject', label:q.label, to:q.to, out, due:!out && (t != null ? t <= now + 1e-9 && running : q.lvl != null && levelIndex(S.esc) >= q.lvl), status, btns, body:out ? q.sentText : fillT(q.text), note:[q.note, q.oc ? 'POC brief: ' + q.oc : ''].filter(Boolean).join('\n') }); });
+    rows.push({ key:'q' + q.qid, t:t != null ? t : q.lvl != null ? 9000 + q.lvl : 9999, when:t != null ? hhmm(t) : q.lvl != null ? 'At ' + LEVELS[q.lvl].name : 'Any time', tag:q.win ? 'Inject, ' + q.win + ' min' : 'Inject', label:q.label + ((pl => pl ? ' (opens ' + pl.name + ')' : '')(Object.values(S.sitePlans || {}).find(x => x.tid && x.tid === q.tid))), to:q.to, out, due:!out && (t != null ? t <= now + 1e-9 && running : q.lvl != null && levelIndex(S.esc) >= q.lvl), status, btns, body:out ? q.sentText : fillT(q.text), note:[q.note, q.oc ? 'POC brief: ' + q.oc : ''].filter(Boolean).join('\n') }); });
   allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), need = P.only ? [P.only] : ['B', 'R'], sent = need.filter(sd => sd === 'B' ? oB : oR), out = sent.length === need.length, t = P.at != null ? START_G + P.at : null; let status = '', btns = '';
     if (sent.length){ const os = [oB, oR].filter(Boolean); status = os.every(o => o.done) ? '<span class="chip">Closed</span>' : '<span class="chip wait">Out, due ' + hhmm(Math.max(...os.map(o => o.due))) + '</span>'; }
     if (!out){ const held = propHold(S, 'pkg', P.id).length && !sent.length;
@@ -6835,8 +6849,9 @@ function buildWhite(){
             <div class="small"><b>New site</b> <span class="muted" data-sitenewat></span></div>
             <div class="row" style="align-items:end"><label>Site name<input data-snname maxlength="40"></label><label style="flex:0 0 120px">Timer (min)<input data-snmin type="number" min="3" max="90" value="15"></label></div>
             <div class="row" style="align-items:end"><label>Capture code words<input data-sncap autocomplete="off" placeholder="Example: LANTERN, MAPLE, RIDGE"></label><label>Defense code words<input data-sndef autocomplete="off" placeholder="Example: OAK, PINE"></label></div>
-            <p class="small muted" style="margin:0">Separate code words with commas. Each word is single-use. Scores like every other site. Both wings are notified.</p>
-            <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-sncreate style="flex:0 0 auto">Create site</button><button type="button" data-sncancel style="flex:0 0 auto">Cancel</button></div>
+            <label>When it opens<select data-snwhen></select></label>
+            <p class="small muted" style="margin:0">Separate code words with commas. Each word is single-use. Scores like every other site. Both wings are notified when it opens. If you pick an inject, the site opens by itself the moment that inject is sent; set it up before the game and there is nothing else to do.</p>
+            <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-sncreate style="flex:0 0 auto">Save site</button><button type="button" data-sncancel style="flex:0 0 auto">Cancel</button></div>
           </div>
           <h3 class="small muted" style="margin:6px 0 0">Queue (not deployed)</h3><div class="list" data-wpq></div>
           <h3 class="small muted" style="margin:6px 0 0">Deployed</h3><div class="list" data-wplist></div>
@@ -7083,6 +7098,9 @@ function buildWhite(){
   $('[data-wnav]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-wtab]'); if (b) setTab(b.dataset.wtab, true); });
   setTab(pref.get('marala-wtab', 'all'), false);
   v.addEventListener('click', ev => {
+    const sop = ev.target.closest('[data-siteopen]'), spd = ev.target.closest('[data-siteplandel]');
+    if (sop){ const pl = app.S && (app.S.sitePlans || {})[sop.dataset.siteopen]; if (pl && confirm('Open ' + pl.name + ' now? Both wings are notified and it starts scoring.')){ writeEvent('site_open', null, { k:pl.k }); toast(pl.name + ' is open.'); } return; }
+    if (spd){ const pl = app.S && (app.S.sitePlans || {})[spd.dataset.siteplandel]; if (pl && confirm('Cancel the plan for ' + pl.name + '?')) writeEvent('site_plan_del', null, { k:pl.k }); return; }
     const srm = ev.target.closest('[data-siterm]');
     if (srm){ const k = srm.dataset.siterm, st = app.S && app.S.sites[k]; if (!st || !SITES[k]) return; if (!confirm('Remove ' + SITES[k].name + '?' + (st.holder ? ' ' + SIDES[st.holder].name + ' loses the site; points already earned there stay.' : '') + ' Both wings are notified.')) return; writeEvent('site_remove', null, { k }); return; }
     const iv = ev.target.closest('[data-ipview]');
@@ -7122,7 +7140,8 @@ function buildWhite(){
   const snBox = $('[data-sitenew]', v);
   v.addEventListener('click', ev => {
     const ms = ev.target.closest('[data-wpsite]');
-    if (ms){ const w = app.S && app.S.wps.find(x => x.id === ms.dataset.wpsite && !x.del); if (!w) return; snBox.hidden = false; snBox.dataset.wp = w.id; $('[data-snname]', v).value = w.label; $('[data-sitenewat]', v).textContent = 'at ' + wpGrid(w.pt); $('[data-sncap]', v).value = ''; $('[data-sndef]', v).value = ''; snBox.scrollIntoView({ behavior:'smooth', block:'center' }); $('[data-sncap]', v).focus({ preventScroll:true }); }
+    if (ms){ const w = app.S && app.S.wps.find(x => x.id === ms.dataset.wpsite && !x.del); if (!w) return; snBox.hidden = false; snBox.dataset.wp = w.id; $('[data-snname]', v).value = w.label.replace(/^Interest Point.*$/i, '');
+      { const T = allTemplates(app.S).filter(t => !(app.S.injq || []).some(q => q.tid === t.id && q.sent != null)), guess = T.find(t => /new (key )?site/i.test(t.label)); $('[data-snwhen]', v).innerHTML = '<option value="">Open it now</option>' + T.map(t => '<option value="' + esc(t.id) + '"' + (guess && guess.id === t.id ? ' selected' : '') + '>When this inject is sent: ' + esc(t.label) + (t.at != null ? ' (' + hhmm(START_G + t.at) + ')' : '') + '</option>').join(''); } $('[data-sitenewat]', v).textContent = 'at ' + wpGrid(w.pt); $('[data-sncap]', v).value = ''; $('[data-sndef]', v).value = ''; snBox.scrollIntoView({ behavior:'smooth', block:'center' }); $('[data-sncap]', v).focus({ preventScroll:true }); }
   });
   $('[data-sncancel]', v).onclick = () => { snBox.hidden = true; };
   $('[data-sncreate]', v).onclick = () => {
@@ -7132,11 +7151,11 @@ function buildWhite(){
     if (!w){ toast('That waypoint no longer exists.', true); return; }
     if (!name){ toast('Add a site name.', true); return; }
     if (!cap.length){ toast('Add at least one capture code word.', true); return; }
-    if (SITE_KEYS.some(k => SITES[k].name.toLowerCase() === name.toLowerCase())){ toast('A site with that name already exists.', true); return; }
-    const M = mapCfg(S), sq = squareOf(M, w.pt), mm = sq ? /^([A-L])(\d+)/.exec(sq) : null;
-    if (!confirm('Create the site "' + name + '"? Both wings are notified and it scores like every other site.')) return;
-    writeEvent('site_new', null, { k:'x' + uid(), name, pt:w.pt, grid:wpGrid(w.pt), square:sq || '?', col:mm ? COLS_L.indexOf(mm[1]) : 0, row:mm ? +mm[2] - 1 : 0, cap:cap.map(x => secret(app.cfg.salt, x)), def:def.map(x => secret(app.cfg.salt, x)), min:min >= 3 && min <= 90 ? min : 15, from:w.id });
-    snBox.hidden = true; app.wpKey = null; toast('Site created.');
+    if (SITE_KEYS.some(k => SITES[k].name.toLowerCase() === name.toLowerCase()) || Object.values(S.sitePlans || {}).some(pl => pl.name.toLowerCase() === name.toLowerCase())){ toast('A site with that name already exists or is planned.', true); return; }
+    const M = mapCfg(S), sq = squareOf(M, w.pt), mm = sq ? /^([A-L])(\d+)/.exec(sq) : null, when = $('[data-snwhen]', v).value, tpl = when ? allTemplates(S).find(t => t.id === when) : null;
+    if (!confirm(tpl ? 'Plan the site "' + name + '"? It opens by itself when "' + tpl.label + '" is sent.' : 'Create the site "' + name + '" now? Both wings are notified and it scores like every other site.')) return;
+    writeEvent(tpl ? 'site_plan' : 'site_new', null, Object.assign(tpl ? { tid:tpl.id } : {}, { k:'x' + uid(), name, pt:w.pt, grid:wpGrid(w.pt), square:sq || '?', col:mm ? COLS_L.indexOf(mm[1]) : 0, row:mm ? +mm[2] - 1 : 0, cap:cap.map(x => secret(app.cfg.salt, x)), def:def.map(x => secret(app.cfg.salt, x)), min:min >= 3 && min <= 90 ? min : 15, from:w.id }));
+    snBox.hidden = true; app.wpKey = null; toast(tpl ? 'Site planned. It opens when "' + tpl.label + '" is sent.' : 'Site created.');
   };
   $('[data-wpclearall]', v).onclick = () => { const n = app.S ? app.S.wps.filter(w => !w.del).length : 0; if (!n){ toast('There are no waypoints.', true); return; } if (!confirm('Delete all ' + n + ' waypoints? Wings they were shared with are told they were withdrawn.')) return; writeEvent('wp_clear', null, {}); app.wpKey = null; wpReset(); };
   v.addEventListener('change', ev => {
@@ -7730,6 +7749,7 @@ function renderWhite(S, now){
   if (!typingIn($('[data-sitectl]', v))) $('[data-sitectl]', v).innerHTML = SITE_KEYS.map(k => { const s = S.sites[k]; return '<div class="li"><span class="grow"><b>' + SITES[k].name + '</b> <span class="mono small muted">' + siteSquare(S, k) + '</span>' + (s.contested && !s.contestBy ? ' <span class="chip wait">Stalemate</span>' : '') + '</span>' +
     '<select id="site-' + k + '" aria-label="Who holds ' + SITES[k].name + '"><option value="">Nobody</option><option value="B"' + (s.holder === 'B' ? ' selected' : '') + '>Blue Force</option><option value="R"' + (s.holder === 'R' ? ' selected' : '') + '>Red Force</option></select>' +
     (s.contested && s.contestBy ? '<span class="chip wait">' + SIDES[s.contestBy].name + ' contending until ' + hhmm(s.contestUntil) + '</span>' : '') + '<label class="small" style="flex:0 0 auto;display:flex;align-items:center;gap:4px;flex-direction:row;margin:0">Timer<input type="number" data-timer="' + k + '" min="3" max="90" step="1" value="' + (S.siteTimer[k] || 15) + '" aria-label="Contention timer for ' + SITES[k].name + ' in minutes" style="width:64px">min</label>' + (SITES[k].dyn ? '<button type="button" data-siterm="' + k + '">Remove site</button>' : '') + '<button type="button" data-act="site" data-id="' + k + '">Set</button><button type="button" data-act="contest" data-id="' + k + '" data-on="' + (s.contested ? '0' : '1') + '">' + (s.contested ? (s.contestBy ? 'End contention' : 'Clear stalemate') : 'Mark stalemate') + '</button></div>'; }).join('') +
+    Object.values(S.sitePlans || {}).map(pl => { const t = allTemplates(S).find(x => x.id === pl.tid); return '<div class="li"><span class="grow"><b>' + esc(pl.name) + '</b> <span class="mono small muted">' + esc(pl.square || '') + '</span> <span class="chip wait">Planned</span><div class="small muted">' + (t ? 'Opens by itself when "' + esc(t.label) + '" is sent.' : 'Opens when you press Open now.') + '</div></span><button type="button" class="btn-side" data-siteopen="' + esc(pl.k) + '">Open now</button><button type="button" data-siteplandel="' + esc(pl.k) + '">Cancel plan</button></div>'; }).join('') +
     '<div class="li"><span class="grow"><b>Marala Town</b> <span class="small muted">Town offices</span></span>' + ['B', 'R'].map(s => '<button type="button" data-act="office" data-side="' + s + '" data-on="' + (S.office[s] ? '0' : '1') + '">' + SIDES[s].name + ': ' + (S.office[s] ? 'open' : S.access[s] ? 'closed' : 'closed by mayor') + '</button>').join('') + '</div>';
   renderOCWhite(S, v);
   const q = [];
