@@ -512,7 +512,7 @@ table.log{{font-size:10pt}}
 <h1>AFTER-ACTION REPORT</h1>
 <p class="meta">{esc(aar['name'])} · {esc(built)} · board time {hhmm(aar['startG'])}–{hhmm(aar['endG'])}<br>Marala Island · Blue Force (US-led Coalition) vs. Red Force (North Korea)</p>
 
-<h2>1. Bottom Line Up Front</h2>
+<h2>1. BLUF</h2>
 <div class="bluf"><b>{esc(winner)}</b> {esc(war)}</div>
 <table class="stats"><tr>
 <td class="b"><b>{b['total']}</b><span>Blue Force points</span></td>
