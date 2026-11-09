@@ -6204,9 +6204,9 @@ function aiOverview(S){
 }
 function botTask(S, sd, id){
   const st = BOT.mem.tm && BOT.mem.tm[id], tg = st && st.tg; if (!tg) return 'no task yet';
-  const nm = tg.kind === 'town' ? 'Marala Town' : SITES[tg.k] ? SITES[tg.k].name : tg.kind === 'ref' ? refLabel(S, tg.k) || 'an inject spot' : tg.k === 'lz' ? 'its landing zone' : 'its area';
+  const nm = tg.kind === 'patrol' ? String(tg.label || 'a patrol point').replace(/ \/ .*$/, '') : tg.kind === 'town' ? 'Marala Town' : SITES[tg.k] ? SITES[tg.k].name : tg.kind === 'ref' ? refLabel(S, tg.k) || 'an inject spot' : tg.k === 'lz' ? 'its landing zone' : 'its area';
   const at = st.arr != null;
-  return tg.kind === 'site' ? (at ? 'at ' + nm + ' doing the station task' : 'moving to ' + nm + ' to capture it') : tg.kind === 'def' ? (at ? 'at ' + nm + ' doing the defense task' : 'moving back to defend ' + nm) : tg.kind === 'town' ? (at ? 'meeting the mayor at Marala Town' : 'moving to Marala Town to meet the mayor') : tg.kind === 'ref' ? (at ? 'at the spot for ' + nm + ', checking it' : 'moving to the spot for ' + nm) : at ? 'holding at ' + nm : 'moving to ' + nm;
+  return tg.kind === 'site' ? (at ? 'at ' + nm + ' doing the station task' : 'moving to ' + nm + ' to capture it') : tg.kind === 'def' ? (at ? 'at ' + nm + ' doing the defense task' : 'moving back to defend ' + nm) : tg.kind === 'town' ? (at ? 'meeting the mayor at Marala Town' : 'moving to Marala Town to meet the mayor') : tg.kind === 'ref' ? (at ? 'at the spot for ' + nm + ', checking it' : 'moving to the spot for ' + nm) : tg.kind === 'patrol' ? (at ? 'observing from ' + nm : 'moving to ' + nm + ' to observe') : at ? 'holding at ' + nm : 'moving to ' + nm;
 }
 function aiPool(S, sd, kind, tid){
   const P = BOT.pool || (BOT.pool = {}), k = sd + kind, p = P[k] || (P[k] = { list:[], by:{}, at:-99, ask:false });
@@ -6258,7 +6258,7 @@ function botStep(){
       const busy = (k, me) => ids.some(o => o !== me && tms[o] && tms[o].tg && tms[o].tg.k === k);
       const dist = (a2, b2) => Math.hypot((b2[1] - a2[1]) * 111320 * C, (b2[0] - a2[0]) * 110950);
       const foeNear = (k, m) => { const pt = sitePt(k); return !!pt && liveTeams(S, OTHER[sd]).some(o => o.last && o.last.gps && g - o.last.g < 4 && dist(o.last.gps, pt) < (m || 70)); };
-      const foeBotTo = k => Object.keys(tms).some(o => o.indexOf('bot-' + OTHER[sd].toLowerCase()) === 0 && tms[o].tg && tms[o].tg.kind === 'site' && tms[o].tg.k === k && !tms[o].done);
+      const foeBotTo = k => Object.keys(tms).some(o => o.indexOf('bot-' + OTHER[sd].toLowerCase()) === 0 && tms[o].tg && tms[o].tg.kind === 'site' && tms[o].tg.k === k && tms[o].arr != null && !tms[o].done);
       const blocked = k => { const x = S.sites[k]; return !!x && ((x.contested && !x.contestBy) || (x.holder == null && (foeNear(k) || foeBotTo(k)))); };
       ids.forEach((id, i) => {
         const t = S.teams[sd][id];
@@ -6268,9 +6268,10 @@ function botStep(){
         if (defK && !busy(defK, id) && (!st.tg || st.tg.kind !== 'def') && rnd() < .5){ st.tg = { kind:'def', k:defK, pt:sitePt(defK), dwell:3 + rnd() * 3 }; st.arr = null; st.done = false; }
         if (!st.tg || st.done || (st.arr != null && g >= st.arr + st.tg.dwell && !['site', 'town', 'def'].includes(st.tg.kind))){
           const c = [];
-          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder !== sd && !busy(k, id) && !blocked(k) && !(g < (mem['told' + sd + k] || -99) + 20) && (S.sites[k].holder == null || (S.esc || 0) < 30)).forEach(k => c.push({ kind:'site', k, pt:sitePt(k), dwell:9 + rnd() * 5, w:(i < 2 ? 3 : 1.5) * (S.sites[k].holder == null ? 1 : .35) }));
+          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder !== sd && !busy(k, id) && !blocked(k) && !(g < (mem['told' + sd + k] || -99) + 20) && (S.sites[k].holder == null || (S.esc || 0) < 45)).forEach(k => c.push({ kind:'site', k, pt:sitePt(k), dwell:9 + rnd() * 5, w:(i < 2 ? 3 : 1.5) * (S.sites[k].holder == null ? 1 : .35) }));
           if (!S.office[sd] && S.access[sd] && !busy('town', id) && !(g < (mem['told' + sd + 'town'] || -99) + 20)) c.push({ kind:'town', k:'town', pt:M.sites.town, dwell:6 + rnd() * 4, w:i === 2 ? 3 : 1 });
           refList(S, sd).forEach(([k]) => { const pt = refLoc(S, k); if (pt && !busy(k, id)) c.push({ kind:'ref', k, pt, dwell:3 + rnd() * 4, w:i >= 2 ? 2.5 : 1 }); });
+          if (c.length < 2) (S.wps || []).filter(w => !w.del && w.poi && !busy('wp:' + w.id, id)).forEach(w => c.push({ kind:'patrol', k:'wp:' + w.id, pt:w.pt, label:w.label, dwell:4 + rnd() * 5, w:.5 }));
           Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder === sd && !busy(k, id)).forEach(k => c.push({ kind:'hold', k, pt:sitePt(k), dwell:10 + rnd() * 10, w:i === 3 ? 2 : .6 }));
           if (c.length){ c.forEach(o => { o.s = o.w * (0.6 + rnd()) / (1 + dist(st.p, o.pt) / 150); }); c.sort((x, y) => y.s - x.s); st.tg = c[0]; } else st.tg = { kind:'hold', k:'lz', pt:sd === 'B' ? M.sites.lzB : M.sites.lzR, dwell:10 };
           if (st.tg.kind === 'site' || st.tg.kind === 'town'){ const n = st.tg.kind === 'town' ? (rnd() < .12 ? 1 : 0) : (rnd() < .7 ? 0 : rnd() < .8 ? 1 : 2); if (n){ st.tg.fail = st.tg.dwell; st.tg.dwell += n * (st.tg.kind === 'town' ? 10 : 8 + rnd() * 4); } }
@@ -6278,7 +6279,7 @@ function botStep(){
           st.arr = null; st.done = false; st.req = false;
         }
         const radio = (key, tx) => { if (mem['rd' + id + key]) return; mem['rd' + id + key] = true; W('bot_radio', sd, { team:id, name:names[i], text:tx }, 'T' + sd); };
-        const where = st.tg.kind === 'town' ? 'Marala Town' : S.sites[st.tg.k] && SITES[st.tg.k] ? SITES[st.tg.k].name : st.tg.kind === 'ref' ? refLabel(S, st.tg.k).replace(/^(Inject|Intel package)\s*/i, '') : 'our landing zone';
+        const where = st.tg.kind === 'town' ? 'Marala Town' : st.tg.kind === 'patrol' ? String(st.tg.label || 'the patrol point').replace(/ \/ .*$/, '') : S.sites[st.tg.k] && SITES[st.tg.k] ? SITES[st.tg.k].name : st.tg.kind === 'ref' ? refLabel(S, st.tg.k).replace(/^(Inject|Intel package)\s*/i, '') : 'our landing zone';
         if (!st.tg.id) st.tg.id = (mem.tgc = (mem.tgc || 0) + 1); const tkey = 't' + st.tg.id;
         if (st.lastT !== tkey){ st.lastT = tkey; st.told = false; if (st.tg.kind !== 'hold' || st.tg.k === 'lz') radio('mv' + tkey, 'Moving to ' + where + ', grid ' + botGrid(st.tg.pt) + '. ETA ' + (n => n + (n === 1 ? ' minute.' : ' minutes.'))(Math.max(1, Math.round(dist(st.p, st.tg.pt) / st.sp)))); }
         const [np, arr] = step(st.p, st.tg.pt, st.sp * dt * (0.8 + rnd() * 0.4)); st.p = np;
@@ -6292,6 +6293,7 @@ function botStep(){
           if (st.tg.kind === 'site') radio('ar' + tkey, si && si.holder === OTHER[sd] ? 'At ' + where + '. ' + SIDES[OTHER[sd]].name + ' holds it. Requesting contention.' : 'At ' + where + '. Starting the station task.');
           else if (st.tg.kind === 'town') radio('ar' + tkey, 'At Town Hall. Weapons outside, meeting the mayor now.');
           else if (st.tg.kind === 'def') radio('ar' + tkey, 'Back at ' + where + ' to defend it.');
+          else if (st.tg.kind === 'patrol') radio('ar' + tkey, 'Set at ' + where + ', grid ' + botGrid(st.tg.pt) + '. Observing, nothing to report yet.');
           else if (st.tg.kind === 'ref') radio('ar' + tkey, 'At the ' + where + ' spot, grid ' + botGrid(st.tg.pt) + '. ' + (aiPool(S, sd, 'radio', id) || ['Checking the area.', 'Nothing obvious yet, searching.', 'Possible device, holding 50 m back.', 'Locals nearby, talking to them.'][Math.floor(rnd() * 4)]));
         }
         if (st.tg.fail != null && st.arr != null && !st.tg.failTold && g >= st.arr + st.tg.fail){ st.tg.failTold = true; radio('fl' + tkey, st.tg.kind === 'town' ? 'The mayor ended the meeting. We will try again in 10.' : 'Did not pass the first card at ' + where + '. Starting the next one.'); }
