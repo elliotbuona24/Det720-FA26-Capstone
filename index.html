@@ -6455,7 +6455,6 @@ function buildProps(){
       <div class="row" style="justify-content:flex-start"><button type="button" data-prsignout style="flex:0 0 auto">Sign out</button></div>
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <label class="chk"><input type="checkbox" data-msgsound checked> Sound for messages and schedule changes</label></div>
-    <div class="panel stack" data-prannbox hidden><h2>Announcements</h2><div class="list" data-pranns></div></div>
     <div class="panel stack" data-prnav hidden></div>
     <div class="row pr-aor" style="align-items:end"><label>Show props for<select data-praor><option value="">Everyone</option><option value="west">My area: west and south half</option><option value="north">My area: north and east half</option><option value="me">Only what I claimed</option></select></label><span class="small muted" data-praorn style="flex:1 1 160px"></span></div>
     <div class="panel stack"><div class="act-head"><h2>To place</h2><span class="small muted" data-prtodon></span></div><div class="stack pr-scroll" data-prtodo></div><div class="small muted pr-more" data-prtodomore hidden></div></div>
@@ -6464,6 +6463,7 @@ function buildProps(){
       <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-prself style="flex:0 0 auto">Find my position</button><button type="button" data-prfull style="flex:0 0 auto">Full screen map</button></div>
       <div class="map-wrap" data-prmap></div><div data-prlegend></div></div>
     <div class="panel stack"><h2>Messages with the White Force</h2><div class="chatlog" data-prchat></div><form class="row" data-prchatf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form></div>
+    <details class="panel stack" data-prannbox hidden><summary><h2 style="display:inline">Announcements</h2> <span class="small muted" data-prannsum></span></summary><div class="list" data-pranns style="margin-top:8px"></div></details>
     <div class="panel stack"><h2>Catalog</h2><div class="list" data-prcat></div></div>
     <details class="panel"><summary><b>Recovered</b> <span class="small muted" data-prdonen></span></summary><div class="list" data-prdone style="margin-top:8px"></div></details>
   </div>`;
@@ -6502,7 +6502,7 @@ function renderProps(S){
   answerOcPing(S, me);
   { const lg = $('[data-prchat]', v), ms = (S.occhats || []).filter(m => m.oc === me.id), k = String(ms.length);
     if (lg.dataset.k !== k){ lg.dataset.k = k; lg.innerHTML = ms.length ? ms.slice(-40).map(m => '<div class="chatmsg' + (m.from === 'oc' ? ' me' : '') + '"><span class="small muted">' + hhmm(m.g) + ' | ' + (m.from === 'wc' ? 'White Force' : 'You') + '</span><div>' + esc(m.text) + '</div></div>').join('') : '<div class="empty">No messages.</div>'; lg.scrollTop = lg.scrollHeight; }
-    const an = S.ocAnns || [], ab = $('[data-prannbox]', v); ab.hidden = !an.length; if (ab.dataset.k !== String(an.length)){ ab.dataset.k = String(an.length); $('[data-pranns]', v).innerHTML = an.slice().reverse().map(a => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(a.g) + '</span> ' + esc(a.text) + '</div></div>').join(''); }
+    const an = S.ocAnns || [], ab = $('[data-prannbox]', v); ab.hidden = !an.length; if (ab.dataset.k !== String(an.length)){ ab.dataset.k = String(an.length); $('[data-prannsum]', v).textContent = an.length ? an.length + (an.length === 1 ? ' message' : ' messages') + ', newest ' + hhmm(an[an.length - 1].g) : ''; $('[data-pranns]', v).innerHTML = an.slice().reverse().map(a => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(a.g) + '</span> ' + esc(a.text) + '</div></div>').join(''); }
     const nIn = ms.filter(m => m.from === 'wc').length + an.length;
     if (app.prInFor !== me.id){ app.prInFor = me.id; app.prInN = nIn; } else if (nIn > app.prInN){ app.prInN = nIn; const last = [...ms.filter(m => m.from === 'wc'), ...an].sort((a, b) => a.g - b.g).pop(); if (last) toast((an.includes(last) ? 'Announcement: ' : 'White Force: ') + last.text); } }
   const aor = pref.get('marala-praor-' + me.id, ''), aorM = mapCfg(S);
