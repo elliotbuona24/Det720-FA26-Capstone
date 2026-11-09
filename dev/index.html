@@ -3914,7 +3914,7 @@ function endexUI(S){
     '<div class="endex-score"><div class="es-b"><b>' + b + '</b><span>Blue Force</span></div><div class="es-r"><b>' + r + '</b><span>Red Force</span></div><div><b>' + S.esc + '</b><span>Escalation, ' + esc(S.war ? 'War' : LEVELS[levelIndex(S.esc)].name) + '</span></div></div><p class="endex-lead">' + esc(lead) + (S.war ? ' War broke out, so both scores were cut in half.' : '') + '</p>' +
     '<div class="endex-btns">' + (canAAR ? '<button type="button" class="endex-main" data-endexaar>After-action report (PDF)</button>' : '') + '<button type="button" data-endexclose>Look around the map</button></div></div>';
   let shown = false; try { shown = sessionStorage.getItem(key) === '1'; } catch(e){}
-  if (!shown && !ov){ const d = document.createElement('div'); d.id = 'endexOv'; d.className = 'endex-ov'; d.innerHTML = html; document.body.appendChild(d);
+  if (!shown && !ov){ const d = document.createElement('div'); d.id = 'endexOv'; d.className = 'endex-ov'; d.innerHTML = html; d.dataset.h = html; document.body.appendChild(d);
     d.addEventListener('click', ev => { if (ev.target.closest('[data-endexaar]')) openAAR(); else if (ev.target.closest('[data-endexclose]') || ev.target === d){ d.remove(); try { sessionStorage.setItem(key, '1'); } catch(e){} endexUI(app.S); } }); }
   else if (ov && ov.dataset.h !== html){ ov.dataset.h = html; ov.innerHTML = html; }
   if ((shown || !$('#endexOv')) && !pill){ const pl = document.createElement('div'); pl.id = 'endexPill'; pl.className = 'endex-pill'; pl.innerHTML = '<b>ENDEX</b>' + (canAAR ? '<button type="button" data-pillaar>After-action report</button>' : '') + '<button type="button" data-pillopen>Final score</button>'; document.body.appendChild(pl);
