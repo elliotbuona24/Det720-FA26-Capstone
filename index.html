@@ -6388,7 +6388,19 @@ function botStep(){
     (S.injClaims || []).filter(c => c.status === 'open').forEach(c => { if (later('cl' + c.id, 1)) once('cld' + c.id, () => W('inj_claim_res', null, { id:c.id, ok:true }, 'W')); });
   }
 }
-function botSet(on){ clearInterval(BOT.timer); BOT.timer = null; BOT.on = on; if (on){ BOT.timer = setInterval(() => { try { botStep(); } catch(e){ console.warn('bot', e); } }, 12000); setTimeout(() => { try { botStep(); } catch(e){} }, 500); } }
+function botKey(){ return 'marala-bots-' + (app.gid || 'local'); }
+function botSave(){ try { if (BOT.on) sessionStorage.setItem(botKey(), JSON.stringify({ on:BOT.on, words:BOT.wordText || '', mem:BOT.mem, at:Date.now() })); else sessionStorage.removeItem(botKey()); } catch(e){} }
+function botSet(on){ clearInterval(BOT.timer); BOT.timer = null; BOT.on = on; if (on){ BOT.timer = setInterval(() => { try { botStep(); } catch(e){ console.warn('bot', e); } botSave(); }, 12000); setTimeout(() => { try { botStep(); } catch(e){} botSave(); }, 500); } botSave(); }
+function botResume(){
+  if (BOT.on || app.botTried === app.gid) return; app.botTried = app.gid;
+  let d = null; try { d = JSON.parse(sessionStorage.getItem(botKey()) || 'null'); } catch(e){ d = null; }
+  if (!d || !d.on || !Object.keys(d.on).length) return;
+  if (!practiceOk('bots')){ try { sessionStorage.removeItem(botKey()); } catch(e){} return; }
+  BOT.mem = d.mem && typeof d.mem === 'object' ? d.mem : {}; BOT.wordText = d.words || ''; BOT.words = botWords(BOT.wordText); BOT.pool = {};
+  botSet(d.on);
+  const v = $('#vWhite'); if (v){ $$('[data-botrole]', v).forEach(c => c.checked = !!d.on[c.dataset.botrole]); const wi = $('[data-botwords]', v); if (wi && !wi.value) wi.value = BOT.wordText; const go = $('[data-botgo]', v); if (go){ go.textContent = 'Stop bots'; go.disabled = false; } const st = $('[data-botst]', v); if (st) st.textContent = 'Bots are playing: ' + Object.keys(d.on).map(roleLabel).join(', ') + '. Keep this tab open.'; }
+  toast('Practice bots picked up where they left off.');
+}
 function buildWhite(){
   if (app.built === 'white') return; app.built = 'white'; app.fogView = null;
   const v = freshView('#vWhite');
@@ -6891,8 +6903,8 @@ function buildWhite(){
     $('[data-restore]', v).hidden = false;
     $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
   }
-  { const go = $('[data-botgo]', v), st = $('[data-botst]', v); if (go){ const sync = () => { go.textContent = BOT.on ? 'Stop bots' : 'Start bots'; st.textContent = BOT.on ? 'Bots are playing: ' + Object.keys(BOT.on).map(roleLabel).join(', ') + '. Keep this tab open.' : 'Bots are off.'; }; if (BOT.on) $$('[data-botrole]', v).forEach(c => c.checked = !!BOT.on[c.dataset.botrole]); sync();
-    go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } if (!practiceOk('bots')){ toast('Practice bots are locked for this game. Unlock them in Admin.', true); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; { const wi = $('[data-botwords]', v); BOT.words = botWords(wi ? wi.value : ''); const n = Object.keys(BOT.words).filter(k => BOT.words[k].cap.length || BOT.words[k].def.length).length; if (wi && wi.value.trim() && !n) toast('None of those words match this game’s code words.', true); } botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
+  { const go = $('[data-botgo]', v), st = $('[data-botst]', v); if (go){ const sync = () => { go.textContent = BOT.on ? 'Stop bots' : 'Start bots'; st.textContent = BOT.on ? 'Bots are playing: ' + Object.keys(BOT.on).map(roleLabel).join(', ') + '. Keep this tab open.' : 'Bots are off.'; }; if (BOT.on){ $$('[data-botrole]', v).forEach(c => c.checked = !!BOT.on[c.dataset.botrole]); const wi = $('[data-botwords]', v); if (wi && !wi.value) wi.value = BOT.wordText || ''; } sync();
+    go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } if (!practiceOk('bots')){ toast('Practice bots are locked for this game. Unlock them in Admin.', true); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; { const wi = $('[data-botwords]', v); BOT.wordText = wi ? wi.value : ''; BOT.words = botWords(BOT.wordText); const n = Object.keys(BOT.words).filter(k => BOT.words[k].cap.length || BOT.words[k].def.length).length; if (wi && wi.value.trim() && !n) toast('None of those words match this game’s code words.', true); } botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
   { const ab = $('[data-aibox]', v); if (ab){
     const pv = $('[data-aiprov]', ab), md = $('[data-aimodel]', ab), ky = $('[data-aikey]', ab), kp = $('[data-aikeep]', ab), cp = $('[data-aicap]', ab), on = $('[data-aion]', ab), lk = $('[data-aikeyurl]', ab), res = $('[data-aitestres]', ab);
     const fill = () => { const P = AI_PROV[AI.prov] || AI_PROV.gemini; md.placeholder = P.model; lk.href = P.keyUrl; };
@@ -7498,6 +7510,7 @@ function refresh(force){
   msgWatch(S);
   $$('[data-clock]').forEach(el => el.textContent = clockText(S, now));
   if (app.role === 'B' || app.role === 'R') cubTick(S, app.role, now);
+  if (!BOT.on && app.gid !== app.botTried && app.S && app.cfg) botResume();
   if (BOT.on || app.role === 'W' || app.role === 'A') botLockSync(app.role === 'W' || app.role === 'A' ? $('#vWhite') : null);
   $$('[data-next]').forEach(el => el.textContent = nextTickText(S, now));
 }
