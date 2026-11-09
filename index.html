@@ -19,6 +19,7 @@ const FIREBASE_CONFIG = {
 const RECOVERY_CODE_HASH = "3nonh9lo9n";
 </script>
 <title>Marala Island Board</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2313406e'/%3E%3Cpath d='M8 46c6-11 14-17 24-17s18 6 24 17z' fill='%23e9c46a'/%3E%3Cpath d='M19 38c5-9 11-13 16-13 4 0 8 3 10 9z' fill='%232a9d8f'/%3E%3C/svg%3E">
 <script>(function(){try{var d=document.documentElement,t=localStorage.getItem('marala-theme'),l=localStorage.getItem('marala-look');if(t==='light'||t==='dark')d.dataset.theme=t;if(l==='clean'||l==='command'||l==='field')d.dataset.look=l;var b=localStorage.getItem('marala-bright');if(['-2','-1','1','2'].indexOf(b)>-1)d.dataset.bright=b;var f=localStorage.getItem('marala-fs');if(f==='s'||f==='l'||f==='xl')d.dataset.fs=f;if(localStorage.getItem('marala-calm')==='1')d.dataset.calm='1';}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3269,6 +3270,28 @@ document.addEventListener('visibilitychange', wakeSync);
 document.addEventListener('pointerdown', () => { if (wakeWanted() && !wakeLock) wakeSync(); });
 document.addEventListener('change', ev => { if (ev.target.matches && ev.target.matches('[data-wake]')){ pref.set('marala-wake', ev.target.checked ? '1' : '0'); wakeSync(); } });
 const BASE_TITLE = 'Marala Island Board';
+const VIEW_ICONS = (() => {
+  const bg = (a, b) => '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#g)"/>';
+  const star = '<path d="M32 12L37.3 26.7L52.9 27.2L40.6 36.8L44.9 51.8L32 43L19.1 51.8L23.4 36.8L11.1 27.2L26.7 26.7Z" fill="#fff"/>', chev = '<path d="M15 31l17-13 17 13M15 47l17-13 17 13" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+  const island = bg('#0b2545', '#13406e') + '<path d="M6 53q6-4 13 0t13 0 13 0 13 0" stroke="#8ecae6" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M8 46c6-11 14-17 24-17s18 6 24 17z" fill="#e9c46a"/><path d="M19 38c5-9 11-13 16-13 4 0 8 3 10 9z" fill="#2a9d8f"/><path d="M48 7L49.9 12.3L55.6 12.5L51.1 16L52.7 21.5L48 18.3L43.3 21.5L44.9 16L40.4 12.5L46.1 12.3Z" fill="#fff"/>';
+  return {
+    base:island, P:island,
+    W:bg('#3a3f58', '#15171f') + '<path d="M32 7l21 7.5V30c0 13.5-9 22.5-21 27C20 52.5 11 43.5 11 30V14.5z" fill="#fff"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="23" fill="#15171f">W</text>',
+    A:bg('#0b6e4f', '#022c22') + '<circle cx="32" cy="34" r="21" fill="none" stroke="#9ff5c8" stroke-width="3"/><circle cx="32" cy="34" r="11" fill="none" stroke="#9ff5c8" stroke-width="2.5"/><path d="M32 34L49 21.5A21 21 0 0 1 53 34z" fill="#9ff5c8" opacity=".85"/><circle cx="32" cy="34" r="3.5" fill="#fff"/><circle cx="43" cy="26" r="3" fill="#fff"/><circle cx="22" cy="42" r="2.5" fill="#fff"/>',
+    B:bg('#3b82f6', '#1e3a8a') + star, R:bg('#ef4444', '#7f1d1d') + star,
+    TB:bg('#3b82f6', '#1e3a8a') + chev, TR:bg('#ef4444', '#7f1d1d') + chev,
+    OC:bg('#fbbf24', '#b45309') + '<path d="M7 32c7-11 15-17 25-17s18 6 25 17c-7 11-15 17-25 17S14 43 7 32z" fill="#fff"/><circle cx="32" cy="32" r="10" fill="#7c2d12"/><circle cx="35.5" cy="28.5" r="3.2" fill="#fff"/>',
+    D:bg('#8b5cf6', '#3b0764') + '<path d="M19 19L45 45M45 19L19 45" stroke="#fff" stroke-width="5" stroke-linecap="round"/><g fill="none" stroke="#fff" stroke-width="3.5"><circle cx="17" cy="17" r="8"/><circle cx="47" cy="17" r="8"/><circle cx="17" cy="47" r="8"/><circle cx="47" cy="47" r="8"/></g><rect x="26" y="26" width="12" height="12" rx="3" fill="#fff"/>',
+    L:bg('#c2410c', '#431407') + '<g stroke="#fff" stroke-width="2.5" stroke-linejoin="round"><path d="M32 9L53 19.5L32 30L11 19.5z" fill="#fde68a"/><path d="M11 19.5L32 30V55L11 44.5z" fill="#f59e0b"/><path d="M53 19.5L32 30V55L53 44.5z" fill="#d97706"/></g><path d="M21.5 14.3L42.5 24.8V33" stroke="#fff" stroke-width="2.5" fill="none" opacity=".8"/>'
+  };
+})();
+function viewIcon(k){
+  const svg = VIEW_ICONS[k] || VIEW_ICONS.base, href = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' + svg + '</svg>');
+  let l = document.querySelector('link[rel="icon"]'); if (!l){ l = document.createElement('link'); l.rel = 'icon'; l.type = 'image/svg+xml'; document.head.appendChild(l); }
+  if (l.dataset.k !== k){ l.dataset.k = k; l.href = href; }
+}
+function viewTitle(){ const r = app.role, v = ['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].find(x => !$(x).hidden); return r && v ? (r === 'B' || r === 'R' ? SIDES[r].name + ' C2' : roleLabel(r)) + ' - ' + BASE_TITLE : BASE_TITLE; }
+
 if (/\/dev(\/|$)/.test(location.pathname)){ const d = document.createElement('div'); d.className = 'devflag'; d.textContent = 'DEV COPY'; document.body.appendChild(d); }
 let chimeAt = 0, chimeN = null, audioCtx = null;
 function chime(){
@@ -3326,7 +3349,7 @@ function msgWatch(S){
   app.msgN = n;
 }
 function whiteAttention(n){
-  document.title = (n && pref.get('marala-n-title', '1') === '1' ? '(' + n + ') ' : '') + BASE_TITLE;
+  document.title = (n && pref.get('marala-n-title', '1') === '1' ? '(' + n + ') ' : '') + viewTitle();
   $$('[data-wqcnt]').forEach(el => { el.hidden = !n; el.textContent = n; });
   if (chimeN !== null && n > chimeN) chime();
   chimeN = n;
@@ -3523,7 +3546,7 @@ function stopGameLocal(){
   app.defMin = {}; app.defSeen = {}; app.ocInj = null; app.ocNear = {}; app.stlf = null; app.tlf = null;
   clearGameOverlays();
 }
-function show(id){ if (!['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].includes(id)) clearGameOverlays(); ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone' && id !== '#vProps') closeFullMap(); if (id !== '#vProps') propNavStop(); }
+function show(id){ setTimeout(() => { const vw = ['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].includes(id) && app.role; viewIcon(vw ? app.role : 'base'); if (!vw) document.title = BASE_TITLE; else if (app.role !== 'W') document.title = viewTitle(); }, 0); if (!['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].includes(id)) clearGameOverlays(); ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone' && id !== '#vProps') closeFullMap(); if (id !== '#vProps') propNavStop(); }
 function roleLabel(r){ return r === 'OC' ? 'POC O/C' : r === 'D' ? 'Drone operator' : r === 'L' ? 'Props and logistics' : r === 'W' ? 'White Force' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
@@ -3536,7 +3559,7 @@ function route(){
   if (!app.role){ renderGate(); return; }
   $('#switchRole').hidden = false;
   $('#roleBadge').innerHTML = '<span class="badge side-' + (app.role === 'P' || app.role === 'OC' || app.role === 'D' || app.role === 'L' ? 'W' : app.role[0] === 'T' ? app.role[1] : app.role) + '">' + esc(roleLabel(app.role)) + '</span>';
-  if (app.role !== 'W'){ document.title = BASE_TITLE; chimeN = null; }
+  if (app.role !== 'W'){ document.title = viewTitle(); chimeN = null; }
   setTimeout(wakeSync, 0);
   if (app.role === 'W' || app.role === 'A'){ show('#vWhite'); buildWhite(); aocMode(app.role === 'A'); }
   else if (app.role === 'P'){ show('#vPublic'); buildPublic(); }
