@@ -1545,7 +1545,7 @@ function setWindow(cfg){
 }
 setWindow(null);
 const CONTEST_MIN = 10;
-const ESC_DECAY = 0.10, ESC_DECAY_QUIET = 0.15, ESC_BASE = 1;
+const ESC_DECAY = 0.15, ESC_DECAY_QUIET = 0.15, ESC_BASE = 1;
 const UAV_EVERY = 40, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 0.75, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5, UAV_EVERY_FUEL = 30;
 const AID_WAIT = 20, AID_WIN = 15, AID_HN = 5, AID_FIRST = 1, AID_MISS = 10, OFFICE_HN = 1;
 function aidOf(S, side){ if (!S.aid) S.aid = { B:{ on:false, next:null, open:null, due:null, n:0, hold:false, made:0, missed:0 }, R:{ on:false, next:null, open:null, due:null, n:0, hold:false, made:0, missed:0 } }; return S.aid[side]; }
@@ -2015,7 +2015,7 @@ function seedPois(S, pois, tag){ (pois || []).forEach((x, i) => { if (x && Array
 const WP_SYMS = { pin:'Marker', obj:'Objective', rally:'Rally point', cp:'Checkpoint', lz:'Landing zone', hazard:'Hazard or IED', aid:'Aid or casualty', supply:'Supply point', fuel:'Fuel', water:'Water', danger:'Danger area', star:'Point of interest', target:'Target', eye:'Observation post', camp:'Camp', building:'Building', vehicle:'Vehicle', radio:'LMR or comms', circle:'Circle', square:'Square', triangle:'Triangle', diamond:'Diamond', plus:'Plus', xmark:'X mark', question:'Unknown', info:'Information', arrow:'Arrow', home:'Home base' };
 function wpSides(to){ return to === 'both' ? ['B', 'R'] : to === 'B' || to === 'R' ? [to] : []; }
 function wpSeen(w, side){ return !side || wpSides(w.to).includes(side); }
-const ESC = { provocation:5, sabotage:15, firstfire:20, returnfire:5, falseblame:10, show:10, defied:10, jam:5, strikewing:40, quiet:1, trueblame:5 };
+const ESC = { provocation:5, sabotage:15, firstfire:20, returnfire:5, falseblame:10, show:10, defied:10, jam:5, strikewing:40, quiet:2, trueblame:5 };
 
 function levelIndex(esc){ return esc >= 100 ? 4 : esc >= 75 ? 3 : esc >= 50 ? 2 : esc >= 25 ? 1 : 0; }
 function hhmm(g){ const m = 360 + Math.floor(g); return String(Math.floor(m/60)).padStart(2,'0') + String(m%60).padStart(2,'0'); }
@@ -6855,8 +6855,9 @@ function botStep(){
         const go = tx => W('order', sd, { team, text:tx || 'Respond to ' + q.label + (refNeeds(S, 'q:' + q.qid) ? '. You need ' + refNeeds(S, 'q:' + q.qid) : '') + '. Report when done.' }, sd);
         if (!aiReady()) once('ordd' + q.qid + sd, () => go('')); else aiJob('ordd' + q.qid + sd, aiState(S, sd) + '\n\nYour force received this inject: "' + String(q.sentText || q.text || '').slice(0, 500) + '"' + (refNeeds(S, 'q:' + q.qid) ? ' It needs ' + refNeeds(S, 'q:' + q.qid) + '.' : '') + '\nWrite the C2’s order to ' + (tm ? 'fireteam ' + tm.name : 'all fireteams') + ' (one or two sentences, under 250 characters): who goes where and what to do. Plain text only.', 120, t => go(t ? t.replace(/\s+/g, ' ').slice(0, 280) : '')); });
       { const incs = S.incidents.filter(i => !pkgOfInc(S, i.id) && !S.statements[sd + ':' + i.id] && S.g <= stmtDue(S, sd, { inc:i }) - 1), pkgs = allProblems(S).filter(P => P.stmt && intelOpen(S, P.id, sd) && !S.statements[sd + ':pkg:' + P.id] && S.g <= stmtDue(S, sd, { pkg:P }) - 1);
-        incs.forEach(i => { if (later('sti' + i.id + sd, 3 + rnd() * 6)) once('stid' + i.id + sd, () => W('act_statement', sd, { incident:i.id, blame:['invest', 'militia', 'deny'][Math.floor(rnd() * 3)] }, sd)); });
-        pkgs.forEach(P => { if (later('stp' + P.id + sd, 4 + rnd() * 8)) once('stpd' + P.id + sd, () => W('act_statement', sd, { pkg:P.id, blame:['militia', 'invest', 'other'][Math.floor(rnd() * 3)] }, sd)); }); }
+        const pickBlame = truth => { const right = truth == null ? null : ['militia', 'other', 'self', 'deny'].filter(b => stmtCorrect(sd, b, truth)), wrong = ['militia', 'other', 'self', 'deny'].filter(b => !right || !right.includes(b)), r = rnd(); if (!right || !right.length) return 'invest'; return r < .7 ? right[Math.floor(rnd() * right.length)] : r < .9 ? 'invest' : wrong[Math.floor(rnd() * wrong.length)]; };
+        incs.forEach(i => { if (later('sti' + i.id + sd, 3 + rnd() * 6)) once('stid' + i.id + sd, () => W('act_statement', sd, { incident:i.id, blame:pickBlame(i.truth) }, sd)); });
+        pkgs.forEach(P => { if (later('stp' + P.id + sd, 4 + rnd() * 8)) once('stpd' + P.id + sd, () => W('act_statement', sd, { pkg:P.id, blame:pickBlame(stmtTruth(P)) }, sd)); }); }
       if (S.clock.started && !S.endex){ const ck = 'capg' + sd; if (mem[ck] == null) mem[ck] = g + 10 + rnd() * 10;
         if (g >= mem[ck]){ mem[ck] = g + 12 + rnd() * 10; const foe = OTHER[sd], mine = SITE_KEYS.filter(k => S.sites[k].holder === sd), hot = mine.find(k => S.sites[k].contestBy === foe), opts = [];
           if (uavReady(S, sd)) opts.push(['act_uav', {}, 3]);
