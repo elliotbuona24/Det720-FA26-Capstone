@@ -489,6 +489,7 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 .ocinj-cur details summary{cursor:pointer}
 .aibox{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--panel-2)}
 .aibox summary{cursor:pointer}
+.linkbtn{background:none;border:0;padding:2px 4px;color:var(--focus);text-decoration:underline;font-size:13px;cursor:pointer}
 .defend-ov{position:fixed;inset:0;z-index:1800;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:16px}
 .defend-card{background:var(--panel);color:var(--ink);border:2px solid var(--bad);border-radius:12px;width:100%;max-width:440px;padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:10px}
 .defend-card h2{margin:0;font-size:20px;color:var(--bad)}
@@ -3060,21 +3061,31 @@ function stepEvent(S, e, cfg, byId, step){
 function replayCached(cache, cfg, events, now){
   if (cache.S && cache.cfg === cfg && events.length >= cache.n){
     const fresh = events.length === cache.n ? [] : events.filter(e => !cache.ids.has(e.id));
-    const after = e => e.ts > cache.last[0] || (e.ts === cache.last[0] && e.id > cache.last[1]);
-    if (fresh.length === events.length - cache.n && fresh.every(e => !REPLAY_FULL.has(e.type) && after(e))){
-      setWindow(cache.win);
-      const [keys, sites] = JSON.parse(cache.sites); SITE_KEYS.length = 0; keys.forEach(k => SITE_KEYS.push(k)); Object.keys(SITES).forEach(k => { if (!sites[k]) delete SITES[k]; }); Object.assign(SITES, sites);
-      const S = structuredClone(cache.S);
-      if (fresh.length){
-        fresh.sort((a, b) => (a.ts - b.ts) || (a.id < b.id ? -1 : 1));
-        const byId = new Map(events.map(e => [e.id, e]));
-        fresh.forEach(e => { stepEvent(S, e, cfg, byId); cache.ids.add(e.id); });
-        cache.n = events.length; const L = fresh[fresh.length - 1]; cache.last = [L.ts, L.id]; cache.sites = JSON.stringify([SITE_KEYS, SITES]); cache.S = structuredClone(S);
+    const after = (e, L) => e.ts > L[0] || (e.ts === L[0] && e.id > L[1]);
+    if (fresh.length === events.length - cache.n && fresh.every(e => !REPLAY_FULL.has(e.type))){
+      let base = null;
+      if (fresh.every(e => after(e, cache.last))) base = { S:cache.S, last:cache.last, ids:cache.ids, sites:cache.sites, win:cache.win };
+      else { const lo = fresh.reduce((m, e) => (!m || e.ts < m.ts || (e.ts === m.ts && e.id < m.id)) ? e : m, null); base = (cache.hist || []).slice().reverse().find(h => after(lo, h.last)) || null; if (base) cache.hist = cache.hist.slice(0, cache.hist.indexOf(base) + 1); }
+      if (base){
+        setWindow(base.win);
+        const [keys, sites] = JSON.parse(base.sites); SITE_KEYS.length = 0; keys.forEach(k => SITE_KEYS.push(k)); Object.keys(SITES).forEach(k => { if (!sites[k]) delete SITES[k]; }); Object.assign(SITES, sites);
+        const S = structuredClone(base.S);
+        const todo = events.filter(e => !base.ids.has(e.id));
+        if (todo.length){
+          const byId = new Map(events.map(e => [e.id, e]));
+          todo.sort((x, y) => (x.ts - y.ts) || (x.id < y.id ? -1 : 1));
+          if (base.S !== cache.S) cache.ids = new Set(base.ids);
+          todo.forEach(e => { stepEvent(S, e, cfg, byId); cache.ids.add(e.id); });
+          cache.n = events.length; const L = todo[todo.length - 1]; cache.last = [L.ts, L.id]; cache.sites = JSON.stringify([SITE_KEYS, SITES]); cache.S = structuredClone(S);
+          const t = Date.now(); if (!cache.histAt || t - cache.histAt > 20000){ cache.histAt = t; (cache.hist = cache.hist || []).push({ S:cache.S, last:cache.last, ids:new Set(cache.ids), sites:cache.sites, win:cache.win }); if (cache.hist.length > 8) cache.hist.shift(); }
+        }
+        return finishAt(S, now);
       }
-      return finishAt(S, now);
     }
   }
-  return replay(cfg, events, now, null, cache);
+  const R = replay(cfg, events, now, null, cache);
+  cache.hist = cache.S ? [{ S:cache.S, last:cache.last, ids:new Set(cache.ids), sites:cache.sites, win:cache.win }] : []; cache.histAt = Date.now();
+  return R;
 }
 function finishAt(S, now){
   const gNow = gameAt(S, now);
@@ -3305,7 +3316,9 @@ function subscribeGame(){
     if (app.online === 'firebase') setOffline(s.fromCache);
     const sig = s.docs.length + ':' + s.docs.map(d => d.id).join('');
     if (sig === app.evSig && app.online === 'firebase') return;
-    app.evSig = sig; app.events = s.docs.map(d => d.data()); refresh(true);
+    const same = s.docs.length === app.events.length && (() => { const have = new Set(app.events.map(e => e.id)); return s.docs.every(d => have.has(d.id)); })();
+    app.evSig = sig; if (same) return;
+    app.events = s.docs.map(d => d.data()); refresh(true);
   }, err => setBanner('Live updates stopped (' + (err && err.code) + '). Reload the page.')));
 }
 let lastTs = 0;
@@ -4178,11 +4191,17 @@ function drawDyn(st, S, side, opts){
       .bindTooltip(esc((fade ? 'Last seen ' + hhmm(u.g) : 'UAV now') + ' - ' + (x.num ? '#' + x.num + ' ' : '') + x.name), { permanent:!!pr.names, direction:'right', className:'teamlbl', offset:[14, 0] }).addTo(LS.uav));
   }
 }
+const MAP_QUIET = new Set(['msg', 'tchat', 'occhat', 'aoc_msg', 'aoc_req', 'cub', 'cub_reply', 'cub_draft', 'perstat', 'perstat_aoc', 'perstat_wf', 'order', 'bot_radio', 'act_statement', 'ocann', 'guess_ack', 'oob_ack', 'aoc_pri', 'aoc_pri_ack', 'inj_claim_res', 'tpl_save', 'tpl_del', 'injq_add', 'prop_save', 'intel_custom']);
 function renderMapInto(el, S, side, opts){
   const M = (app.role === 'W' && app.previewMap) || mapCfg(S);
   if (M && window.L){
     const st = lmapEnsure(el, M);
-    if (!M.preview){ drawDyn(st, S, side, opts); if (opts && opts.noPins){ if (st.pins) st.pins.clearLayers(); } else if (!(opts && opts.team)) drawPins(st, S); } else if (st.lay) Object.values(st.lay).forEach(g => g.clearLayers());
+    if (!M.preview){
+      const k = [side, JSON.stringify(opts || null), JSON.stringify(gridPref()), Math.floor(S.g), S.reveal, S.endex, app.gid, app.role].join('|'), evs = app.events || [];
+      const quiet = st.dk === k && st.seen && evs.every(e => st.seen.has(e.id) || MAP_QUIET.has(e.type));
+      if (!quiet){ st.want = [S, side, opts, k]; if (!st.tmr) st.tmr = setTimeout(() => { st.tmr = null; const w = st.want; if (!w || !st.map || !document.body.contains(el)) return; drawDyn(st, w[0], w[1], w[2]); st.dk = w[3]; st.drawnAt = Date.now(); }, st.drawnAt ? Math.max(30, 700 - (Date.now() - st.drawnAt)) : 0); }
+      st.seen = new Set(evs.map(e => e.id));
+      if (opts && opts.noPins){ if (st.pins) st.pins.clearLayers(); } else if (!(opts && opts.team)) drawPins(st, S); } else if (st.lay) Object.values(st.lay).forEach(g => g.clearLayers());
     return true;
   }
   if (el._lm){ el._lm.map.remove(); el._lm = null; el.classList.remove('lmap'); }
@@ -6089,7 +6108,7 @@ function renderDrone(S){
 function renderAocChat(S, v){
   const me = app.role === 'A' ? 'A' : 'W', other = me === 'A' ? 'W' : 'A', ms = S.aocChat || [], key = 'marala-aocseen-' + (app.gid || 'none') + '-' + me;
   const theirs = ms.filter(m => m.from === other).length; let seen = 0; try { seen = +localStorage.getItem(key) || 0; } catch(e){}
-  const panels = $$('[data-aocchat]', v).filter(el => el.offsetParent && !el.closest('[data-off]'));
+  const panels = $$('[data-aocchat]', v).filter(el => !v.hidden && !el.closest('[data-off],[hidden]'));
   if (panels.length && document.visibilityState === 'visible'){ seen = theirs; try { localStorage.setItem(key, String(seen)); } catch(e){} }
   const un = Math.max(0, theirs - seen), k = ms.length + '|' + me;
   $$('[data-aocchat]', v).forEach(el => { if (el.dataset.k === k) return; el.dataset.k = k;
@@ -6954,6 +6973,7 @@ function buildWhite(){
   }
   { const go = $('[data-botgo]', v), st = $('[data-botst]', v); if (go){ const sync = () => { go.textContent = BOT.on ? 'Stop bots' : 'Start bots'; st.textContent = BOT.on ? 'Bots are playing: ' + Object.keys(BOT.on).map(roleLabel).join(', ') + '. Keep this tab open.' : 'Bots are off.'; }; if (BOT.on){ $$('[data-botrole]', v).forEach(c => c.checked = !!BOT.on[c.dataset.botrole]); const wi = $('[data-botwords]', v); if (wi && !wi.value) wi.value = BOT.wordText || ''; } sync();
     go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } if (!practiceOk('bots')){ toast('Practice bots are locked for this game. Unlock them in Admin.', true); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; { const wi = $('[data-botwords]', v); BOT.wordText = wi ? wi.value : ''; BOT.words = botWords(BOT.wordText); const n = Object.keys(BOT.words).filter(k => BOT.words[k].cap.length || BOT.words[k].def.length).length; if (wi && wi.value.trim() && !n) toast('None of those words match this game’s code words.', true); } botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
+  v.addEventListener('click', ev => { const b = ev.target.closest('[data-injhide]'); if (!b) return; const h = injHidden(); if (!h.includes(b.dataset.injhide)) h.push(b.dataset.injhide); pref.set('marala-injhide-' + (app.gid || 'local'), JSON.stringify(h.slice(-200))); refresh(true); });
   { const ab = $('[data-aibox]', v); if (ab){
     const pv = $('[data-aiprov]', ab), md = $('[data-aimodel]', ab), ky = $('[data-aikey]', ab), kp = $('[data-aikeep]', ab), cp = $('[data-aicap]', ab), on = $('[data-aion]', ab), lk = $('[data-aikeyurl]', ab), res = $('[data-aitestres]', ab);
     const fill = () => { const P = AI_PROV[AI.prov] || AI_PROV.gemini; md.placeholder = P.model; lk.href = P.keyUrl; };
@@ -7397,6 +7417,7 @@ async function biCopyImages(S){
   if (n) toast('Copied ' + n + ' built-in intel image' + (n === 1 ? '' : 's') + ' into this game.');
   if (miss) toast(miss + ' built-in intel image' + (miss === 1 ? ' was' : 's were') + ' not found on the site. Upload the intel folder to GitHub, then reload the White Force screen.', true);
 }
+function injHidden(){ try { return JSON.parse(pref.get('marala-injhide-' + (app.gid || 'local'), '[]')) || []; } catch(e){ return []; } }
 function renderWhite(S, now){
   const v = $('#vWhite'), lvl = levelIndex(S.esc);
   biCopyImages(S);
@@ -7426,17 +7447,17 @@ function renderWhite(S, now){
       const hk = h + S.g.toFixed(0); if (box.dataset.h !== hk && !box.contains(document.activeElement)){ box.dataset.h = hk; box.innerHTML = h || '<div class="empty">' + (rows.length ? 'Everything has gone out. Tick the box above to see it.' : 'No injects or intel packages yet. Upload the creation files on the Intel and inject creation tab.') + '</div>'; }
       const dueN = rows.filter(r => r.due && !r.out).length; $('[data-rsn]', v).textContent = rows.filter(r => !r.out).length + ' to go' + (dueN ? ', ' + dueN + ' due now' : '');
       $$('[data-sendcnt]').forEach(el => { el.hidden = !dueN; el.textContent = dueN; }); } }
-  { const box = $('[data-injwin]', v); if (box){ const all = !!($('[data-respall]', v) || {}).checked, act = q => q.closed == null || injSides(q).some(sd => q.res[sd] && q.res[sd].st === 'miss'), W = (S.injq || []).filter(q => q.win && q.sent != null && (all || act(q))).sort((a, b) => ((a.closed != null) - (b.closed != null)) || (a.closed == null ? (injEnd(a) || 1e9) - (injEnd(b) || 1e9) : b.closed - a.closed));
+  { const box = $('[data-injwin]', v); if (box){ const all = !!($('[data-respall]', v) || {}).checked, hid = injHidden(), act = q => q.closed == null || (!hid.includes(q.qid) && ((S.g - q.closed < 10 && injSides(q).some(sd => q.res[sd] && q.res[sd].st === 'miss')) || injPropNames(S, q).length > 0)), W = (S.injq || []).filter(q => q.win && q.sent != null && (all || act(q))).sort((a, b) => ((a.closed != null) - (b.closed != null)) || (a.closed == null ? (injEnd(a) || 1e9) - (injEnd(b) || 1e9) : b.closed - a.closed));
     $$('[data-respcnt]').forEach(el => { const n = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && injEnd(q) - S.g <= 5).length; el.hidden = !n; el.textContent = n; });
     const lab = { done:['ok', 'Done'], miss:['no', 'Missed'], na:['', 'Not needed: the other force did it first'], exc:['', 'Not counted'] };
     const h = W.map(q => { const end = injEnd(q), open = q.closed == null, left = end != null ? Math.ceil(end - S.g) : null;
       const head = open ? (end == null ? '<span class="chip wait">Clock not started</span><div class="small">Starts when its props are reported placed. Waiting on: ' + esc(propWaitText(S, 'tpl', q.tid)) + '</div>' : '<span class="chip ' + (left <= 3 ? 'no' : 'wait') + '">Due ' + hhmm(end) + ' (' + Math.max(0, left) + ' min)</span>') : '<span class="chip">Closed ' + hhmm(q.closed) + '</span>';
       const sides = injSides(q).map(sd => { const r = q.res[sd], L = r ? lab[r.st] : ['wait', 'Waiting'];
         const sn = !r && q.seen && q.seen[sd] != null && !(q.seenNo && q.seenNo[sd]);
-        return '<div class="row" style="align-items:center;gap:6px"><span class="chip ' + sd + '" style="flex:0 0 auto">' + SIDES[sd].name + '</span><span class="chip ' + (sn ? 'ok' : L[0]) + '" style="flex:0 0 auto">' + (sn ? 'Response seen ' + hhmm(q.seen[sd]) + ', confirm it' : L[1]) + (r && r.st === 'miss' && (r.pts || r.hn) ? ' (' + [r.pts ? '−' + r.pts + ' pts' : '', r.hn ? '−' + r.hn + ' diplomatic' : ''].filter(Boolean).join(', ') + ')' : '') + (r && r.auto ? ' (seen by the board)' : r && r.by === 'wf' && r.st === 'done' ? ' (you marked it)' : '') + '</span>' +
-          (!r || r.st === 'miss' ? '<button type="button" class="btn-side" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="done" style="flex:0 0 auto">They did it</button>' : '') + (!r || r.st === 'miss' ? '<button type="button" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="exc" style="flex:0 0 auto">Don’t count it</button>' : '') + '</div>'; }).join('');
+        return '<div class="row" style="align-items:center;gap:6px"><span class="chip ' + sd + '" style="flex:0 0 auto">' + SIDES[sd].name + '</span><span class="chip ' + (sn ? 'ok' : L[0]) + '" style="flex:0 0 auto">' + (sn ? 'Response seen ' + hhmm(q.seen[sd]) + ', confirm it' : L[1]) + (r && r.st === 'miss' ? ((r.pts || r.hn) ? ': ' + [r.pts ? r.pts + ' pts' : '', r.hn ? r.hn + ' diplomatic points' : ''].filter(Boolean).join(' and ') + ' taken off' : '') + '. Nothing to do' : '') + (r && r.auto ? ' (seen by the board)' : r && r.by === 'wf' && r.st === 'done' ? ' (you marked it)' : '') + '</span>' +
+          (!r ? '<button type="button" class="btn-side" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="done" style="flex:0 0 auto">They did it</button><button type="button" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="exc" style="flex:0 0 auto">Don’t count it</button>' : r.st === 'miss' ? '<span class="small muted" style="flex:0 0 auto">Only if it was wrong:</span><button type="button" class="linkbtn" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="done" style="flex:0 0 auto">They did it</button><button type="button" class="linkbtn" data-act="injdone" data-id="' + q.qid + '" data-side="' + sd + '" data-st="exc" style="flex:0 0 auto">Don’t count it</button>' : '') + '</div>'; }).join('');
       const pr = !open ? injPropNames(S, q) : [];
-      return '<div class="li" style="flex-wrap:wrap"><div class="grow"><b>' + esc(q.label) + '</b> ' + head + '<div class="small muted">Done when: ' + esc(WIN_DONE[q.done] || '') + (q.who === 'any' ? '. The first force to respond closes it.' : '.') + '</div>' + sides + (pr.length ? '<div class="small"><span class="chip no">Recover props now</span> ' + esc(pr.join(', ')) + '</div>' : '') + '</div></div>'; }).join('');
+      return '<div class="li" style="flex-wrap:wrap"><div class="grow"><div class="row" style="align-items:center;gap:8px"><span class="grow"><b>' + esc(q.label) + '</b> ' + head + '</span>' + (!open && !hid.includes(q.qid) ? '<button type="button" data-injhide="' + q.qid + '" style="flex:0 0 auto">Clear</button>' : '') + '</div><div class="small muted">Done when: ' + esc(WIN_DONE[q.done] || '') + (q.who === 'any' ? '. The first force to respond closes it.' : '.') + '</div>' + sides + (pr.length ? '<div class="small"><span class="chip no">Recover props now</span> ' + esc(pr.join(', ')) + '</div>' : '') + '</div></div>'; }).join('');
     $('[data-injwn]', v).textContent = W.filter(q => q.closed == null).length + ' open';
     if (box.dataset.h !== h){ box.dataset.h = h; box.innerHTML = h || '<div class="empty">No timed injects are running.</div>'; } } }
   { const showSent = !!($('[data-injqsent]', v) || {}).checked, Q = (S.injq || []).slice().sort((a, b) => ((a.sent != null) - (b.sent != null)) || ((a.at != null ? a.at : a.lvl != null ? 1000 + a.lvl : 2000) - (b.at != null ? b.at : b.lvl != null ? 1000 + b.lvl : 2000))), k2 = JSON.stringify(Q.map(q => [q.qid, q.sent, q.label, propHold(S, 'tpl', q.tid).length])) + showSent + START_G + lvlNow;
