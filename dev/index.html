@@ -23,7 +23,7 @@ const RECOVERY_CODE_HASH = "3nonh9lo9n";
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
-<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif;background:#d5d9d2}@media (prefers-color-scheme: dark){:root{color-scheme:dark}body{background:#1f272c}}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif;background:#d5d9d2}@media (prefers-color-scheme: dark){:root{color-scheme:dark}body{background:#1f272c}}img{max-width:100%}[hidden]{display:none!important}.cmd-rh>summary{cursor:pointer;list-style:none}.cmd-rh>summary::-webkit-details-marker{display:none}.cmd-rh>summary h3::before{content:'\25B8  '}.cmd-rh[open]>summary h3::before{content:'\25BE  '}details.cub-old>summary{cursor:pointer}details.cmd-item.cub-old{display:block}details.cmd-item.cub-old>summary{display:flex;flex-wrap:wrap;gap:6px;align-items:center}details.cmd-item.cub-old>summary::before{content:'\25B8';font-size:12px}details.cmd-item.cub-old[open]>summary::before{content:'\25BE'}details.cmd-item.cub-old>summary::-webkit-details-marker{display:none}details.cmd-item.cub-old>summary{list-style:none}</style>
 </head>
 <body>
 <style>
@@ -668,6 +668,11 @@ body.paused-bar .wnav{top:var(--pbh,40px)}
         <div class="row"><label for="adEName">Game name<input id="adEName" maxlength="60" required></label><label for="adEPin">Game PIN<input id="adEPin" maxlength="12" required autocomplete="off"></label></div>
         <label class="chk"><input type="checkbox" id="adEListed"> Show on the game menu</label>
         <label class="chk"><input type="checkbox" id="adEStarter"> Include the built-in Capstone intel packages</label>
+        <fieldset class="stack" style="border:1px solid var(--line);border-radius:6px;padding:8px 12px"><legend class="small">Where the game is played</legend>
+          <label class="chk"><input type="radio" name="adEVenue" id="adEOut" value="out"> Outdoors in Area 5 (phone GPS)</label>
+          <label class="chk"><input type="radio" name="adEVenue" id="adEIn" value="in"> Indoors, bad-weather plan (fireteams check in to rooms instead of GPS)</label>
+          <details id="adERoomsBox"><summary class="small">Rooms and what each one holds</summary><p class="small muted" style="margin:6px 0">Each room holds up to two places from the island map. Rename a room or change its floor here. Saved with Save changes.</p><div class="list" id="adERooms"></div><div class="row" style="justify-content:flex-start"><button type="button" id="adERoomAdd" style="flex:0 0 auto">Add a room</button><button type="button" id="adERoomReset" style="flex:0 0 auto">Reset to the standard rooms</button></div></details>
+        </fieldset>
         <label class="chk"><input type="checkbox" id="adEBots"> Allow practice bots in this game</label>
         <label class="chk"><input type="checkbox" id="adEAi"> Allow AI for the bots (each White Force uses its own key)</label>
         <p class="small muted" style="margin:0">Leave both off for the real Capstone. Turning bots off here stops any bots running in this game within a second.</p>
@@ -711,6 +716,7 @@ body.paused-bar .wnav{top:var(--pbh,40px)}
         <label for="sStart">Board clock starts at<input id="sStart" value="0600" maxlength="5" inputmode="numeric" required></label>
         <label for="sLen">Game length (minutes)<input id="sLen" type="number" min="30" max="300" step="5" value="110" required></label>
       </div>
+      <label class="chk"><input type="checkbox" id="sIndoor"> Indoor game (bad-weather plan: fireteams check in to rooms instead of GPS) <span class="small muted">(rooms can be changed later by the admin under Edit game)</span></label>
       <label class="chk"><input type="checkbox" id="sBuiltin"> Start with the built-in Capstone intel packages <span class="small muted">(leave off to start with no packages and upload your own file)</span></label>
       <p class="small muted" style="margin:0">Separate code words with commas. Capture and defense words are single-use. If a site has no defense words, its capture words also defend.</p>
       <div class="row">
@@ -1789,7 +1795,7 @@ function injClose(S, q, why){
     if (q.who === 'any' && anyDone){ q.res[sd] = { st:'na', g:S.g }; return; }
     const m = q.miss || {}; q.res[sd] = { st:'miss', g:S.g, pts:m.pts || 0, hn:m.hn || 0 };
     if (m.pts) S.pts[sd][injPk(q)] = (S.pts[sd][injPk(q)] || 0) - m.pts; if (m.hn) addHN(S, sd, -m.hn);
-    if (q.done !== 'none') pushFeed(S, sd, 'Time is up for "' + q.label + '" (due ' + hhmm(injEnd(q)) + '). It is closed and recorded as missed.' + (m.pts ? ' Points −' + m.pts + '.' : '') + (m.hn ? ' Diplomatic points −' + m.hn + '.' : ''), 'alert', { label:hqFrom(q.from), comm:'inj', title:q.label });
+    if (q.done !== 'none') pushFeed(S, sd, 'Time is up for "' + q.label + '" (due ' + hhmm(injEnd(q)) + '). It is closed and recorded as missed.' + (m.pts ? ' Points −' + m.pts + '.' : '') + (m.hn ? ' Diplomatic points −' + m.hn + '.' : ''), 'alert', { label:hqFrom(q.from), comm:'inj', title:q.label, qid:q.qid });
   });
   const pr = injPropNames(S, q);
   pushLog(S, 'Inject window closed' + (why ? ' (' + why + ')' : '') + ': ' + q.label + '. ' + sides.map(sd => SIDES[sd].name + ' ' + ({ done:'handled', miss:'missed', na:'not needed', exc:'excused' })[q.res[sd].st]).join(', ') + (pr.length ? '. Recover props now: ' + pr.join(', ') : ''), null);
@@ -1802,7 +1808,7 @@ function injClock(S, g){
       const us = Object.values(S.propUses || {}).filter(u => u.kind === 'tpl' && u.item === q.tid).map(u => ((S.propSt || {})[u.id] || {}).placed).filter(Number.isFinite);
       q.ws = Math.max(q.sent, ...us); S.ver++;
       const a = (S.accts || []).find(x => x.qid === q.qid); if (a) a.due = injEnd(q);
-      pushFeed(S, q.to, '"' + q.label + '": respond by ' + hhmm(injEnd(q)) + '.', q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label });
+      pushFeed(S, q.to, '"' + q.label + '": respond by ' + hhmm(injEnd(q)) + '.', q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label, qid:q.qid });
       pushLog(S, 'Inject clock started (props placed): ' + q.label + ', due ' + hhmm(injEnd(q)), null);
     }
     const sides = injSides(q);
@@ -2020,7 +2026,51 @@ function hashStr(str, seed){
 }
 function secret(salt, text){ return hashStr(salt + '|' + String(text||'').trim().toUpperCase()); }
 
+const INDOOR_DEFAULT = [
+  { id:'Warrior Room', floor:'1', places:['wc'], use:'AOC and White Force', alias:['warrior'] },
+  { id:'Detachment area', floor:'1', places:['town'], use:'Town office and the mayors in the Guard Room', alias:['guard room', 'guard', 'town', 'marala town', 'detachment'] },
+  { id:'105', floor:'1', places:['lzB'] },
+  { id:'115', floor:'1', places:['poi-0-0'] },
+  { id:'115A', floor:'1', places:['poi-0-1'] },
+  { id:'118', floor:'1', places:['harbor'] },
+  { id:'Armory', floor:'Ground', places:['airstrip', 'poi-0-7'], alias:['gym'] },
+  { id:'201', floor:'2', places:['radar'] },
+  { id:'214', floor:'2', places:['fuel'] },
+  { id:'303', floor:'3', places:['poi-0-3'] },
+  { id:'304', floor:'3', places:['poi-0-2'] },
+  { id:'305', floor:'3', places:['poi-0-4'] },
+  { id:'316', floor:'3', places:['poi-0-5'] },
+  { id:'317', floor:'3', places:['poi-0-6', 'poi-0-8'] },
+  { id:'320', floor:'3', places:['lzR'] }
+];
+let ROOMS_LIVE = null;
+function indoorRooms(a){ const L = Array.isArray(a) ? a.slice(0, 40).map(r => ({ id:String((r && r.id) || '').trim().slice(0, 24), floor:String((r && r.floor) || '').slice(0, 12), places:Array.isArray(r && r.places) ? r.places.filter(x => typeof x === 'string').slice(0, 6) : [], use:String((r && r.use) || '').slice(0, 80), alias:Array.isArray(r && r.alias) ? r.alias.filter(x => typeof x === 'string').slice(0, 8).map(x => x.slice(0, 24)) : [] })).filter(r => r.id) : []; return L.length ? L : INDOOR_DEFAULT; }
+function roomLabel(r){ return r ? (/^\d/.test(r.id) ? 'Room ' + r.id : r.id) : ''; }
+function roomNorm(t){ return String(t || '').trim().toLowerCase().replace(/^(room|rm)\.?\s*/, '').replace(/\s+/g, ' '); }
+function placePt(S, k){
+  const M = S.map && S.map.sw && S.map.ne ? S.map : globalThis.MARALA_MAP, m = /^poi-0-(\d+)$/.exec(k);
+  if (S.sitePts && S.sitePts[k]) return S.sitePts[k];
+  if (M && M.sites && M.sites[k]) return M.sites[k];
+  if (m){ const w = (S.wps || []).find(x => x.id === k); if (w && w.pt) return w.pt; const P = M && M.pois && M.pois[+m[1]]; if (P && P.pt) return P.pt; }
+  return null;
+}
+function roomsBuild(S){
+  if (!S || !S.indoor || !S.indoor.on){ ROOMS_LIVE = null; return null; }
+  const list = S.indoor.rooms.map(r => { const pts = r.places.map(k => [k, placePt(S, k)]).filter(x => x[1]); return Object.assign({}, r, { label:roomLabel(r), pts, pt:pts.length ? pts[0][1] : null }); });
+  ROOMS_LIVE = { list }; return ROOMS_LIVE;
+}
+function roomFind(t){
+  if (!ROOMS_LIVE) return null; const n = roomNorm(t); if (!n) return null;
+  return ROOMS_LIVE.list.find(r => roomNorm(r.id) === n || (r.alias || []).some(a => roomNorm(a) === n)) || ROOMS_LIVE.list.find(r => n.length >= 4 && roomNorm(r.id).startsWith(n)) || null;
+}
+function roomOf(pt){
+  if (!ROOMS_LIVE || !Array.isArray(pt)) return null; let best = null, bd = Infinity;
+  ROOMS_LIVE.list.forEach(r => r.pts.forEach(([k, q]) => { if (k === 'wc') return; const d = (q[0] - pt[0]) ** 2 + ((q[1] - pt[1]) * .76) ** 2; if (d < bd){ bd = d; best = r; } }));
+  return best;
+}
+function roomTag(pt){ const r = roomOf(pt); return r ? ' (' + roomLabel(r) + ')' : ''; }
 function newState(){
+  ROOMS_LIVE = null;
   resetSites();
   const sites = {}; SITE_KEYS.forEach(k => sites[k] = { holder:null, contested:false, since:null });
   const S = {
@@ -2305,7 +2355,7 @@ function apply(S, e, cfg){
         if (q.done === 'acct'){ if (!S.accts) S.accts = []; S.accts.push({ id:'ac-' + q.qid, qid:q.qid, label:q.label, g:S.g, due:q.ws != null ? injEnd(q) : S.g + q.win, to:q.to, reps:{} }); } }
       if (q.mt){ if (!S.mtgts) S.mtgts = []; S.mtgts.push({ id:'mt-' + q.qid, label:q.mt.label, pt:q.mt.pt, grid:q.mt.grid, scene:String(q.mt.scene || (String(q.oc || '').match(/"([^"]{10,400})"/) || [])[1] || '').slice(0, 400), to:q.to === 'public' ? 'both' : q.to, g:S.g, until:Math.min(END_G, S.g + q.mt.life), fix:{}, done:null }); }
       if (q.oc) S.ocAnns.push({ id:'oc-' + e.id, text:q.label + ': ' + fillT(q.oc), g:S.g, side:q.to === 'B' || q.to === 'R' ? q.to : null, inj:true });
-      pushFeed(S, q.to, text + due, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label });
+      pushFeed(S, q.to, text + due, q.to === 'public' ? 'public' : 'hq', { label:hqFrom(q.from), comm:'inj', title:q.label, qid:q.qid });
       pushLog(S, 'Inject sent (' + q.label + ') to ' + ({ B:'Blue Force', R:'Red Force', both:'both wings', public:'the public screen' })[q.to] + ': ' + text, null, e);
       if (S.sitePlans && q.tid) Object.values(S.sitePlans).filter(pl => pl.tid === q.tid && !SITES[pl.k]).forEach(pl => siteMake(S, pl, e));
       break; }
@@ -2413,8 +2463,8 @@ function apply(S, e, cfg){
       const r = { id:e.id, ts:e.ts, side, kind:'show', text:shT, site:p.site || null, center:ctr, radius:rad, square:engSquare(M, ctr), status:'open', g:S.g, until:Math.min(END_G, S.g + SHOW_LEAVE), closed:Math.min(END_G, S.g + SHOW_CLOSED), teams:{} };
       r.text = shT + ' (' + rad + ' m radius' + (r.square ? ', ' + r.square : '') + ')';
       S.requests.push(r);
-      pushFeed(S, side, 'Show of force approved at ' + r.text + '. The other wing must leave by ' + hhmm(r.until) + ' and stay out until ' + hhmm(r.closed) + '.', 'hq');
-      pushFeed(S, OTHER[side], 'Show of force by ' + SIDES[side].name + ' at ' + r.text + ': every team inside must leave by ' + hhmm(r.until) + ' and stay out until ' + hhmm(r.closed) + ', or take +' + ESC.defied + ' escalation. The area is marked on your map.', 'alert');
+      pushFeed(S, side, 'Show of force approved at ' + r.text + '. The other wing must leave by ' + hhmm(r.until) + ' and stay out until ' + hhmm(r.closed) + '.', 'hq', { show:r.id });
+      pushFeed(S, OTHER[side], 'Show of force by ' + SIDES[side].name + ' at ' + r.text + ': every team inside must leave by ' + hhmm(r.until) + ' and stay out until ' + hhmm(r.closed) + ', or take +' + ESC.defied + ' escalation. The area is marked on your map.', 'alert', { show:r.id });
       pushLog(S, nm + ' show of force at ' + r.text + ' (escalation +' + ESC.show + ')', side, e);
       r.ping = 'sf-' + e.id; S.pings.push({ id:r.ping, ts:e.ts, g:S.g, to:OTHER[side], team:null, show:r.id });
       Object.values(S.teams[OTHER[side]]).filter(t => !t.removed && t.last && S.g - t.last.g <= SHOW_FRESH).forEach(t => showMark(S, r, t.id, t.last, 'GPS'));
@@ -2562,7 +2612,7 @@ function apply(S, e, cfg){
         if (!pg || !Array.isArray(p.gps)) break;
         const t0 = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:String(p.name || 'Team').slice(0, 40), fixes:[] });
         oobCheck(S, side, t0, p.gps);
-        t0.pingFix = { g:S.g, ts:e.ts, gps:p.gps, acc:p.acc || null, ping:pg.id, pingG:pg.g, late:e.ts - pg.ts > 120000 }; S.ver++;
+        t0.pingFix = { g:S.g, ts:e.ts, gps:p.gps, acc:p.acc || null, room:typeof p.room === 'string' ? p.room.slice(0, 24) : null, ping:pg.id, pingG:pg.g, late:e.ts - pg.ts > 120000 }; S.ver++;
         if (pg.show){ const r = S.requests.find(x => x.id === pg.show); if (r) showMark(S, r, p.team, { g:S.g, gps:p.gps }, 'GPS'); }
         if (pg.report){ const c = S.contacts.find(x => x.id === pg.report); if (c && c.ans){ if (!c.ans.includes(p.team)) c.ans.push(p.team); matchFix(S, c, p.team, { g:S.g, gps:p.gps }); } }
         const u = pg.uav && S.uav[pg.uav];
@@ -2575,7 +2625,7 @@ function apply(S, e, cfg){
       }
       const t = S.teams[side][p.team] || (S.teams[side][p.team] = { id:p.team, name:p.name || 'Team', fixes:[] });
       if (p.name) t.name = String(p.name).slice(0, 40);
-      const fix = { g:S.g, ts:e.ts, gps:Array.isArray(p.gps) ? p.gps : null, acc:p.acc || null, rep:Array.isArray(p.rep) ? p.rep : null, repText:p.repText || null, status:p.status || null };
+      const fix = { g:S.g, ts:e.ts, gps:Array.isArray(p.gps) ? p.gps : null, acc:p.acc || null, room:typeof p.room === 'string' ? p.room.slice(0, 24) : null, rep:Array.isArray(p.rep) ? p.rep : null, repText:p.repText || null, status:p.status || null };
       if (fix.gps || fix.rep){ t.fixes.push(fix); if (t.fixes.length > 60) t.fixes.shift(); t.last = fix; }
       if (fix.gps) oobCheck(S, side, t, fix.gps);
       if (fix.gps) S.requests.filter(r => r.kind === 'show' && r.status === 'open' && r.center && r.side === OTHER[side] && (!r.checked || r.teams[p.team])).forEach(r => showMark(S, r, p.team, fix, 'GPS'));
@@ -2980,6 +3030,13 @@ function apply(S, e, cfg){
       else pushFeed(S, n.side, n.name + ': strike 9-line not accepted.', 'alert', { label:'9-line', team:true, tid:n.team, only:true });
       pushLog(S, '9-line from ' + n.name + (p.ok ? ' accepted and sent to ' : ' denied, not sent to ') + SIDES[n.side].name + ' C2 (' + n.by + ')', n.side, e);
       break; }
+    case 'indoor': {
+      const rooms = Array.isArray(p.rooms) ? indoorRooms(p.rooms) : (S.indoor ? S.indoor.rooms : INDOOR_DEFAULT);
+      const was = !!(S.indoor && S.indoor.on); S.indoor = { on:!!p.on, rooms, g:S.g }; S.ver++; roomsBuild(S);
+      pushLog(S, p.on ? (was ? 'Indoor room plan updated' : 'Indoor plan in effect (' + rooms.length + ' rooms)') : 'Indoor plan off: back to GPS', null, e);
+      if (p.on !== was) pushFeed(S, 'both', p.on ? 'Indoor plan in effect. Positions come from room check-ins, not GPS. Scan the QR code on the door of every room you enter, or pick the room on your board.' : 'Outdoor plan in effect. Positions come from GPS again.', 'hq', { label:'White Force', team:true });
+      break;
+    }
     case 'site_plan': {
       const k = String(p.k || ''), pt = p.pt, name = String(p.name || '').trim().slice(0, 40), cap = Array.isArray(p.cap) ? p.cap.filter(x => typeof x === 'string').slice(0, 30) : [];
       if (!/^x[\w-]{3,40}$/.test(k) || SITES[k] || !name || !cap.length || !(Array.isArray(pt) && pt.length === 2 && pt.every(Number.isFinite))){ pushLog(S, 'Site plan refused: incomplete', null, e, 'rejected'); break; }
@@ -3087,6 +3144,7 @@ function replay(cfg, events, now, step, cache){
   setWindow(ws ? Object.assign({}, cfg, { startG:ws.p.startG, lengthMin:ws.p.lengthMin }) : cfg);
   const S = newState();
   S.blank = !!(cfg && cfg.blank);
+  if (cfg && cfg.indoor && cfg.indoor.on){ S.indoor = { on:true, rooms:indoorRooms(cfg.indoor.rooms), g:START_G }; roomsBuild(S); pushFeed(S, 'both', 'Indoor game. Every place on the island is a room. Scan the QR code on the door of every room you enter, or pick the room under Your room on your board.', 'hq', { label:'White Force', team:true }); }
   if (step) S.step = step;
   for (const e of evs) stepEvent(S, e, cfg, byId, step);
   if (cache){ cache.cfg = cfg; cache.n = events.length; cache.ids = new Set(events.map(e => e.id)); const L = evs[evs.length - 1]; cache.last = L ? [L.ts, L.id] : [-Infinity, '']; cache.win = ws ? Object.assign({}, cfg, { startG:ws.p.startG, lengthMin:ws.p.lengthMin }) : cfg; cache.sites = JSON.stringify([SITE_KEYS, SITES]); cache.S = structuredClone(S); }
@@ -3571,7 +3629,7 @@ $('#setupForm').addEventListener('submit', async ev => {
   if (new Set(Object.values(pins)).size < 9){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Use nine different PINs so each view stays separate.'; return; }
   const startG = parseHHMM(val('#sStart')), lengthMin = Math.round(+val('#sLen'));
   if (startG == null || !(lengthMin >= 30 && lengthMin <= 300)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter the start as 24-hour time like 0830, and a length from 30 to 300 minutes.'; return; }
-  const cfg = { name:val('#sName') || 'Game', blank:!$('#sBuiltin').checked, salt, createdAt:Date.now(), startG, lengthMin,
+  const cfg = { name:val('#sName') || 'Game', blank:!$('#sBuiltin').checked, indoor:{ on:$('#sIndoor').checked, rooms:INDOOR_DEFAULT }, salt, createdAt:Date.now(), startG, lengthMin,
     pins:{ W:secret(salt, pins.W), A:secret(salt, pins.A), B:secret(salt, pins.B), R:secret(salt, pins.R), TB:secret(salt, pins.TB), TR:secret(salt, pins.TR), OC:secret(salt, pins.OC), D:secret(salt, pins.D), L:secret(salt, pins.L) },
     codes:{ harbor:codeList(salt, 'Harbor'), fuel:codeList(salt, 'Fuel'), radar:codeList(salt, 'Radar'), airstrip:codeList(salt, 'Airstrip'), town:{ cap:words(val('#cTown')).map(w => secret(salt, w)) } } };
   if (app.multi){
@@ -3625,7 +3683,7 @@ async function adminLoad(){
 }
 function adminList(){
   $('#adCount').textContent = ad.games.length + (ad.games.length === 1 ? ' game' : ' games');
-  $('#adGames').innerHTML = ad.games.length ? ad.games.map(g => '<div class="li"><div class="grow"><b>' + esc(g.name || 'Game') + '</b> <span class="chip ' + (g.listed === false ? 'wait' : 'ok') + '">' + (g.listed === false ? 'Hidden' : 'On menu') + '</span> ' + (g.cfg && g.cfg.blank ? '<span class="chip">No built-in packages</span>' : '<span class="chip">Built-in intel packages</span>') + (g.cfg && g.cfg.practice && g.cfg.practice.bots ? ' <span class="chip wait">Practice bots allowed' + (g.cfg.practice.ai ? ', with AI' : '') + '</span>' : '') + '<div class="small muted">Game PIN <span class="mono">' + esc(g.pin || '?') + '</span>' + (g.createdAt ? ' - created ' + new Date(g.createdAt).toLocaleDateString() : '') + (g.cfg ? '' : ' - <b>game data missing</b>') + '</div></div><button type="button" data-adopen="' + esc(g.gid) + '" style="flex:0 0 auto"' + (g.key && g.cfg ? '' : ' disabled') + '>Open</button><button type="button" data-adedit="' + esc(g.gid) + '" style="flex:0 0 auto">Edit</button></div>').join('') : '<div class="empty">No games yet. Create one below.</div>';
+  $('#adGames').innerHTML = ad.games.length ? ad.games.map(g => '<div class="li"><div class="grow"><b>' + esc(g.name || 'Game') + '</b> <span class="chip ' + (g.listed === false ? 'wait' : 'ok') + '">' + (g.listed === false ? 'Hidden' : 'On menu') + '</span> ' + (g.cfg && g.cfg.blank ? '<span class="chip">No built-in packages</span>' : '<span class="chip">Built-in intel packages</span>') + (g.cfg && g.cfg.indoor && g.cfg.indoor.on ? ' <span class="chip wait">Indoors</span>' : '') + (g.cfg && g.cfg.practice && g.cfg.practice.bots ? ' <span class="chip wait">Practice bots allowed' + (g.cfg.practice.ai ? ', with AI' : '') + '</span>' : '') + '<div class="small muted">Game PIN <span class="mono">' + esc(g.pin || '?') + '</span>' + (g.createdAt ? ' - created ' + new Date(g.createdAt).toLocaleDateString() : '') + (g.cfg ? '' : ' - <b>game data missing</b>') + '</div></div><button type="button" data-adopen="' + esc(g.gid) + '" style="flex:0 0 auto"' + (g.key && g.cfg ? '' : ' disabled') + '>Open</button><button type="button" data-adedit="' + esc(g.gid) + '" style="flex:0 0 auto">Edit</button></div>').join('') : '<div class="empty">No games yet. Create one below.</div>';
 }
 $('#adGames').addEventListener('click', ev => {
   const o = ev.target.closest('[data-adopen]'), e = ev.target.closest('[data-adedit]');
@@ -3666,9 +3724,18 @@ $('#adFile').addEventListener('submit', ev => {
 function adminEdit(g){
   ad.editing = g; const f = $('#adEdit'); f.hidden = false; $('#adEMsg').textContent = '';
   $('#adEditTitle').textContent = 'Edit ' + (g.name || 'game'); $('#adEName').value = g.name || ''; $('#adEPin').value = g.pin || ''; $('#adEListed').checked = g.listed !== false; $('#adEStarter').checked = !(g.cfg && g.cfg.blank); $('#adEStarter').closest('label').hidden = !!(g.cfg && g.cfg.blank); { const pr = (g.cfg && g.cfg.practice) || {}; $('#adEBots').checked = !!pr.bots; $('#adEAi').checked = !!(pr.bots && pr.ai); $('#adEAi').disabled = !pr.bots; }
+  { const ind = (g.cfg && g.cfg.indoor) || {}; $('#adEIn').checked = !!ind.on; $('#adEOut').checked = !ind.on; adRoomsShow(indoorRooms(ind.rooms)); $('#adERoomsBox').open = false; }
   ['#adPW', '#adPA', '#adPB', '#adPR', '#adPTB', '#adPTR', '#adPOC', '#adPD', '#adPL'].forEach(s => $(s).value = '');
   f.scrollIntoView({ behavior:'smooth', block:'start' });
 }
+const AD_PLACES = () => [['', 'Nothing']].concat(BASE_SITE_KEYS.map(k => [k, SITES[k].name]), [['town', 'Marala Town'], ['lzB', 'Blue Force HQ'], ['lzR', 'Red Force HQ'], ['wc', 'White Force']], (DEFAULT_MAP.pois || []).map((x, i) => ['poi-0-' + i, x.name]));
+function adRoomRow(r){ const sel = v0 => '<select style="flex:1 1 150px">' + AD_PLACES().map(([k, n]) => '<option value="' + esc(k) + '"' + (k === v0 ? ' selected' : '') + '>' + esc(n) + '</option>').join('') + '</select>';
+  return '<div class="li" data-adroom style="flex-wrap:wrap;gap:6px" data-use="' + esc(r.use || '') + '" data-alias="' + esc((r.alias || []).join('|')) + '"><input value="' + esc(r.id) + '" maxlength="24" aria-label="Room" style="flex:1 1 120px"><input value="' + esc(r.floor || '') + '" maxlength="12" aria-label="Floor" placeholder="Floor" style="flex:0 1 80px">' + sel(r.places[0] || '') + sel(r.places[1] || '') + '<button type="button" data-adroomdel style="flex:0 0 auto">Remove</button></div>'; }
+function adRoomsShow(rooms){ $('#adERooms').innerHTML = rooms.map(adRoomRow).join(''); }
+function adRoomsRead(){ return $$('#adERooms [data-adroom]').map(el => { const ins = $$('input', el), sels = $$('select', el); return { id:ins[0].value.trim(), floor:ins[1].value.trim(), places:sels.map(x => x.value).filter(Boolean), use:el.dataset.use || '', alias:(el.dataset.alias || '').split('|').filter(Boolean) }; }).filter(r => r.id); }
+$('#adERooms').addEventListener('click', ev => { const b = ev.target.closest('[data-adroomdel]'); if (b) b.closest('[data-adroom]').remove(); });
+$('#adERoomAdd').onclick = () => $('#adERooms').insertAdjacentHTML('beforeend', adRoomRow({ id:'', floor:'', places:[] }));
+$('#adERoomReset').onclick = () => { if (confirm('Put every room back to the standard plan?')) adRoomsShow(INDOOR_DEFAULT); };
 $('#adEBots').onchange = () => { const on = $('#adEBots').checked; $('#adEAi').disabled = !on; if (!on) $('#adEAi').checked = false; };
 $('#adECancel').onclick = () => { $('#adEdit').hidden = true; ad.editing = null; };
 async function adminEvents(key){ return (await app.db.collection('vault/' + key + '/events').get()).map(d => d.data()); }
@@ -3677,6 +3744,7 @@ $('#adEdit').addEventListener('submit', async ev => {
   const name = $('#adEName').value.trim() || 'Game', pin = normPin($('#adEPin').value), listed = $('#adEListed').checked, blank = !$('#adEStarter').checked;
   if (!pin){ msg('Enter a game PIN.'); return; }
   const cfg = JSON.parse(JSON.stringify(g.cfg)); cfg.name = name; cfg.blank = blank; { const bo = $('#adEBots').checked; cfg.practice = { bots:bo, ai:bo && $('#adEAi').checked }; }
+  { const was = !!(g.cfg.indoor && g.cfg.indoor.on), on = $('#adEIn').checked, rooms = adRoomsRead(); if (on && !rooms.length){ msg('Add at least one room for the indoor plan.'); return; } if (on !== was && !confirm(on ? 'Switch this game to the indoor plan? Every phone stops using GPS and fireteams check in to rooms.' : 'Switch this game back to outdoors? Every phone goes back to GPS.')) return; cfg.indoor = { on, rooms }; }
   const np = { W:'#adPW', A:'#adPA', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC', D:'#adPD', L:'#adPL' };
   const given = Object.entries(np).map(([k, s]) => [k, $(s).value.trim()]).filter(([, v]) => v);
   if (new Set(given.map(([, v]) => v)).size < given.length){ msg('Each new role PIN must be different.'); return; }
@@ -3798,7 +3866,7 @@ function aarExtra(S){
     const res = blame === 'invest' ? 'No change' : truth != null ? (stmtCorrect(sd, blame, truth) ? 'Correct' : 'Wrong') : rq && rq.status !== 'open' ? (rq.result === 'ok' || rq.ok ? 'Ruled correct' : 'Ruled wrong') : 'White Force ruling';
     return { side:sd, what:pkg ? fillT(pkg.title).split(' -- ')[0] : 'Explosion at ' + inc.grid, g:pkg ? (S.log.find(l => l.type === 'act_statement' && l.side === sd && l.text.indexOf(fillT(pkg.title).split(' -- ')[0]) >= 0) || {}).g : inc.g, said:stmtSaid(sd, blame, ''), truth:truth == null ? '–' : truth === 'militia' ? 'The militia' : SIDES[truth].name, res }; }).filter(Boolean);
   const pick = re => S.log.filter(l => re.test(l.type || '')).map(l => ({ g:l.g, side:l.side, text:l.text, status:l.status }));
-  return { cubs, perstats, injects, aocReqs, ocCalls, ctReqs, nines, props, stmts,
+  return { indoor:S.indoor && S.indoor.on ? { g:S.indoor.g, rooms:S.indoor.rooms.length } : null, cubs, perstats, injects, aocReqs, ocCalls, ctReqs, nines, props, stmts,
     aocLog:pick(/^(aoc_roe|aoc_hold|aoc_pri|strike_auth|aoc_intent|aoc_pir)/), contention:S.log.filter(l => l.type === 'act_contend' || l.type === 'ct_res' || (l.type === 'claim' && /Defended|unlocked|Contention|contention/.test(l.text))).map(l => ({ g:l.g, side:l.side, text:l.text, status:l.status })),
     aocChat:{ A:(S.aocChat || []).filter(m => m.from === 'A').length, W:(S.aocChat || []).filter(m => m.from === 'W').length }, ocChat:{ oc:(S.occhats || []).filter(m => m.from === 'oc').length, wc:(S.occhats || []).filter(m => m.from === 'wc').length },
     pocs:Object.values(S.ocs || {}).map(o => ({ name:o.name, props:!!o.props, mayor:!!o.mayor, where:ocWhere(S, o), removed:!!o.removed })) };
@@ -3904,7 +3972,7 @@ function aarReportHTML(aar){
     '@media print{html{background:#fff}.bar{display:none}main{margin:0;padding:0;max-width:none;box-shadow:none}}@media (max-width:700px){main{padding:24px 16px;margin:0}table.data{font-size:9.5pt}}' +
     '</style></head><body><div class="bar"><button type="button" onclick="window.print()">Save as PDF</button><span>In the print window, choose "Save as PDF" as the printer.</span></div><main>' +
     '<div class="banner">* EXERCISE * EXERCISE * EXERCISE * EXERCISE *</div><div class="unit"><b>AFROTC DETACHMENT 720</b><span>Capstone</span></div><h1>AFTER-ACTION REPORT</h1>' +
-    '<p class="meta">' + h(aar.name) + ', ' + h(built) + ', board time ' + t(aar.startG) + ' to ' + t(aar.endG) + (f.endex ? '' : ' (built at ' + t(f.g) + ', before ENDEX)') + '<br>Marala Island: Blue Force (US-led Coalition) and Red Force (North Korea)</p>' +
+    '<p class="meta">' + h(aar.name) + ', ' + h(built) + ', board time ' + t(aar.startG) + ' to ' + t(aar.endG) + (f.endex ? '' : ' (built at ' + t(f.g) + ', before ENDEX)') + '<br>Marala Island: Blue Force (US-led Coalition) and Red Force (North Korea)' + (aar.extra && aar.extra.indoor ? '<br>Played on the indoor plan from ' + t(aar.extra.indoor.g) + ': ' + aar.extra.indoor.rooms + ' rooms, positions from room check-ins instead of GPS' : '') + '</p>' +
     '<h2>1. Bottom Line Up Front</h2><div class="bluf"><b>' + h(winner) + '</b> ' + h(war) + '</div><table class="stats"><tr><td class="b"><b>' + b.total + '</b><span>Blue Force points</span></td><td class="r"><b>' + r.total + '</b><span>Red Force points</span></td><td><b>' + f.esc + '</b><span>Final escalation, ' + h(lvl(f.esc)) + '</span></td><td><b>' + f.hn.B + ' / ' + f.hn.R + '</b><span>Diplomatic points B / R</span></td></tr></table>' +
     '<h2>2. Final Score</h2><table class="data"><thead><tr><th>Category</th><th class="num">Blue Force</th><th class="num">Red Force</th></tr></thead><tbody>' + scoreRows + '</tbody></table>' +
     (f.aid ? '<p class="note">Aid packages delivered on time: Blue Force ' + f.aid.B.made + ', Red Force ' + f.aid.R.made + '. Missed: Blue Force ' + f.aid.B.missed + ', Red Force ' + f.aid.R.missed + '.</p>' : '') +
@@ -4120,9 +4188,20 @@ function scoreTable(S, sides){
   h += '<tr class="total"><td>Total</td>' + sides.map(s => '<td>' + sc[s].total + '</td>').join('') + '</tr></tbody></table>';
   return h;
 }
+function roomify(text){
+  if (!ROOMS_LIVE || !text) return text; const M = mapCfg(app.S);
+  return String(text).replace(/(?:18T\s*TL\s*)?\b\d{4,5}\s\d{4,5}\b/g, m => { const p = gridPoint(M, m); const r = p && roomOf(p.pt); return r ? m + ' [' + roomLabel(r) + ']' : m; });
+}
+function showRooms(rq){ return ROOMS_LIVE ? ROOMS_LIVE.list.filter(rm => rm.pts.some(([k, q]) => k !== 'wc' && distM(q, rq.center) <= rq.radius)) : []; }
+function feedRoom(f){
+  if (!ROOMS_LIVE || !app.S) return f.text;
+  if (f.qid){ const pt = refLoc(app.S, 'q:' + f.qid), r = pt && roomOf(pt); return r ? f.text + ' Indoors: ' + roomLabel(r) + '.' : f.text; }
+  if (f.show){ const rq = app.S.requests.find(x => x.id === f.show), rs = rq && rq.center ? showRooms(rq) : []; return rs.length ? f.text + ' Indoors, the circle covers ' + rs.map(roomLabel).join(', ') + '.' : f.text; }
+  return roomify(f.text);
+}
 function feedHTML(items, empty){
   if (!items.length) return '<div class="empty">' + esc(empty) + '</div>';
-  return items.slice().reverse().map(f => '<div class="item ' + (f.kind === 'alert' ? 'alert' : f.kind === 'good' ? 'good' : f.kind === 'public' ? 'public' : f.kind === 'tick' ? '' : 'hq') + '"><span class="t">' + hhmm(f.g) + ' | ' + esc(f.label ? hqFrom(f.label) : f.kind === 'tick' ? 'Board' : f.to === 'public' ? 'Public' : f.kind === 'good' || f.kind === 'alert' ? 'Board' : 'AOC') + '</span><span>' + esc(f.text) + '</span></div>').join('');
+  return items.slice().reverse().map(f => '<div class="item ' + (f.kind === 'alert' ? 'alert' : f.kind === 'good' ? 'good' : f.kind === 'public' ? 'public' : f.kind === 'tick' ? '' : 'hq') + '"><span class="t">' + hhmm(f.g) + ' | ' + esc(f.label ? hqFrom(f.label) : f.kind === 'tick' ? 'Board' : f.to === 'public' ? 'Public' : f.kind === 'good' || f.kind === 'alert' ? 'Board' : 'AOC') + '</span><span>' + esc(feedRoom(f)) + '</span></div>').join('');
 }
 function keepSelect(sel, html){ const v = sel.value; sel.innerHTML = html; if ([...sel.options].some(o => o.value === v)) sel.value = v; }
 
@@ -4209,9 +4288,10 @@ function refLoc(S, ref){ const k = String(ref || '').slice(0, 1), id = String(re
   if (k === 'q'){ const q = (S.injq || []).find(x => x.qid === id); if (!q) return null; const u = Object.values(S.propUses || {}).find(u => u.kind === 'tpl' && u.item === q.tid && (((S.propSt || {})[u.id] || {}).pt || u.pt)); if (u) return ((S.propSt || {})[u.id] || {}).pt || u.pt; if (q.mt && q.mt.pt) return q.mt.pt;
     const m = /18T\s*TL\s*(\d{4,5})\s*(\d{4,5})/i.exec(q.sentText || q.text || ''); if (m && typeof locate === 'function') return locate(M, m[1] + ' ' + m[2]); return null; }
   if (k === 'p'){ const P = allProblems(S).find(x => x.id === id); if (!P) return null; const w = (P.wps && P.wps[0]) || P.wp; return w && w.pt ? w.pt : null; } return null; }
-function gridBad(M, text){ const t = String(text || '').trim(); if (!t) return 'Add a grid.'; if (/^[A-L]\s*\d{1,2}(\s*[-–]?\s*\d)?$/i.test(t)) return 'Use an MGRS grid (for example 5964 2203), not a play square like ' + t.toUpperCase() + '.'; return gridPoint(M, t) ? '' : 'The board cannot read "' + t + '". Use an MGRS grid such as 59 21, 596 220, 5964 2203, 59643 22031 or 18T TL 59643 22031.'; }
+function gridBad(M, text){ const t = String(text || '').trim(); if (!t) return ROOMS_LIVE ? 'Add a room or a grid.' : 'Add a grid.'; if (ROOMS_LIVE && roomFind(t)) return ''; if (/^[A-L]\s*\d{1,2}(\s*[-–]?\s*\d)?$/i.test(t)) return 'Use an MGRS grid (for example 5964 2203), not a play square like ' + t.toUpperCase() + '.'; return gridPoint(M, t) ? '' : ROOMS_LIVE ? 'The board cannot read "' + t + '". Type a room, for example 303 or Armory.' : 'The board cannot read "' + t + '". Use an MGRS grid such as 59 21, 596 220, 5964 2203, 59643 22031 or 18T TL 59643 22031.'; }
 function gridPoint(M, text){
   const t = String(text || '').trim(); if (!t) return null;
+  if (ROOMS_LIVE){ const r = roomFind(t); if (r && r.pt) return { pt:r.pt, prec:10, room:r.id }; }
   const dg = /^[\d\s-]+$/.test(t), p = (dg ? shortMGRS(M, t.replace(/-/g, ' ')) : null) || locate(M, t) || locate(M, t.replace(/-/g, ' ')); if (!p) return null;
   const pr = gridPrec(M, t);
   if (pr > 10 && pr < 1000 && !/^[A-L]\s*\d/i.test(t)){ const c = Math.cos(p[0] * Math.PI / 180); return { pt:[p[0] + pr / 2 / 110950, p[1] + pr / 2 / (111320 * c)], prec:pr }; }
@@ -4219,6 +4299,7 @@ function gridPoint(M, text){
 }
 function locate(M, text){
   const t = String(text || '').trim(); if (!t) return null;
+  if (ROOMS_LIVE){ const r = roomFind(t); if (r && r.pt) return r.pt; }
   if (/^[A-L]\s*\d{1,2}(\s*[-–]?\s*\d)?$/i.test(t)) return squareCenter(M, t);
   if (/^[\d\s]+$/.test(t)) return shortMGRS(M, t) || GEO.parsePoint(t);
   return GEO.parsePoint(t) || shortMGRS(M, t);
@@ -4405,7 +4486,7 @@ function drawDyn(st, S, side, opts){
   if (!M) return;
   const pr = gridPref(), LS = st.lay, pts = Object.assign({}, M.sites || {}, S.sitePts || {});
   const tip = (m, text, dir, off) => m.bindTooltip(esc(text), { permanent:!!pr.sitenames, direction:dir || 'top', className:'sitelbl', offset:off || [0, -10] });
-  [['lzB', 'Blue Force HQ', 'B'], ['lzR', 'Red Force HQ', 'R']].forEach(([k, name, sd]) => { if (side && sd !== side && !S.reveal) return; if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name).addTo(LS.sites); });
+  [['lzB', 'Blue Force HQ', 'B'], ['lzR', 'Red Force HQ', 'R']].forEach(([k, name, sd]) => { if (side && sd !== side && !S.reveal) return; if (pts[k]) tip(L.circleMarker(pts[k], { radius:7, color:SIDE_HEX[sd], weight:3, fillColor:'#000', fillOpacity:.45 }), name + roomTag(pts[k])).addTo(LS.sites); });
   SITE_KEYS.forEach(k => {
     const pt = pts[k]; if (!pt) return;
     const v = siteView(S, side, k), raw = S.sites[k];
@@ -4414,18 +4495,18 @@ function drawDyn(st, S, side, opts){
     if (dec && dec.until > S.g) L.circle(pt, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(LS.sites);
     const sub = v.unknown ? 'Unknown' : v.reported ? 'Reported ' + hhmm(v.at) : v.stale ? 'Seen ' + hhmm(v.at) : v.contested ? (raw.contestBy ? 'Contention' : 'Stalemate') + (raw.contestUntil && (!side || raw.holder === side || raw.contestBy === side) ? ' until ' + hhmm(raw.contestUntil) : '') : v.holder ? SIDES[v.holder].name : 'Neutral';
     const hollow = v.unknown || v.reported || v.stale || !v.holder;
-    tip(L.circleMarker(pt, { radius:11, color:v.holder ? SIDE_HEX[v.holder] : '#ffffff', weight:3, dashArray:(v.reported || v.stale) ? '4 3' : null, fillColor:hollow ? '#111' : SIDE_HEX[v.holder], fillOpacity:hollow ? .45 : .9 }), SITES[k].name + ' - ' + sub).addTo(LS.sites);
+    tip(L.circleMarker(pt, { radius:11, color:v.holder ? SIDE_HEX[v.holder] : '#ffffff', weight:3, dashArray:(v.reported || v.stale) ? '4 3' : null, fillColor:hollow ? '#111' : SIDE_HEX[v.holder], fillOpacity:hollow ? .45 : .9 }), SITES[k].name + roomTag(pt) + ' - ' + sub).addTo(LS.sites);
   });
   const wcp = wcSpot(S);
   if (wcp) L.marker(wcp, { icon:WC_ICON(), zIndexOffset:900 }).bindTooltip('White Force' + (S.wcPos ? ' (moved)' : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[10, 0] }).bindPopup('<b>White Force</b><br><span class="mono">' + esc(fmtPt(wcp)) + '</span>' + (squareOf(M, wcp) ? '<br>Play square ' + squareOf(M, wcp) : '')).addTo(LS.wc);
   const onSite = w => SITE_KEYS.some(k => pts[k] && distM(pts[k], w.pt) <= 15);
-  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side)) && !(opts && opts.deployedOnly && w.to === 'none') && !onSite(w)).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label) + (!side ? ' - ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + (w.desc ? esc(w.desc) + '<br>' : '') + '<span class="small">' + esc(WP_SYMS[w.sym]) + '</span><br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(w.poi ? LS.poi : w.sym === 'hazard' ? LS.tips : side ? LS.wp : w.to === 'none' ? LS.wpq : w.to === 'B' ? LS.wpB : w.to === 'R' ? LS.wpR : (pr.wpB ? LS.wpB : LS.wpR)));
+  (S.wps || []).filter(w => !w.del && (S.reveal || wpSeen(w, side)) && !(opts && opts.deployedOnly && w.to === 'none') && !onSite(w)).forEach(w => L.marker(w.pt, { icon:WP_ICON(w.sym, w.color), zIndexOffset:700, opacity:w.to === 'none' ? .65 : 1 }).bindTooltip(esc(w.label + roomTag(w.pt)) + (!side ? ' - ' + (w.to === 'both' ? 'both wings' : w.to === 'none' ? 'not deployed' : SIDES[w.to].name) : ''), { permanent:!!pr.sitenames, direction:'right', className:'sitelbl', offset:[13, 0] }).bindPopup('<b>' + esc(w.label) + '</b><br>' + (w.desc ? esc(w.desc) + '<br>' : '') + '<span class="small">' + esc(WP_SYMS[w.sym]) + '</span><br><span class="mono">' + esc(fmtPt(w.pt)) + '</span>' + (squareOf(M, w.pt) ? '<br>Play square ' + squareOf(M, w.pt) : '')).addTo(w.poi ? LS.poi : w.sym === 'hazard' ? LS.tips : side ? LS.wp : w.to === 'none' ? LS.wpq : w.to === 'B' ? LS.wpB : w.to === 'R' ? LS.wpR : (pr.wpB ? LS.wpB : LS.wpR)));
   if (pts.town){
     const open = s => S.office[s] && S.access[s];
     const txt = 'Marala Town' + ((!side || S.reveal) ? (open('B') ? ' - Blue Force office' : '') + (open('R') ? ' - Red Force office' : '') : (open(side) ? ' - Your office is open' : ''));
     const dec = S.declared.town;
     if (dec && dec.until > S.g) L.circle(pts.town, { radius:75, color:SIDE_HEX[dec.side], weight:2, dashArray:'2 7', fill:false }).bindTooltip(SIDES[dec.side].name + ' declared until ' + hhmm(dec.until)).addTo(LS.sites);
-    tip(L.circleMarker(pts.town, { radius:11, color:'#ffffff', weight:2, fillColor:'#888', fillOpacity:.75 }), txt).addTo(LS.sites);
+    tip(L.circleMarker(pts.town, { radius:11, color:'#ffffff', weight:2, fillColor:'#888', fillOpacity:.75 }), txt + roomTag(pts.town)).addTo(LS.sites);
   }
   S.requests.filter(r => r.kind === 'show' && r.center && r.closed > S.g && r.g <= S.g).forEach(r => { L.circle(r.center, { radius:r.radius, color:'#ff8f00', weight:3, dashArray:'8 6', fillColor:'#ff8f00', fillOpacity:.15 }).bindTooltip('Show of force by ' + SIDES[r.side].name + ': ' + esc(r.text) + '. Closed to ' + SIDES[OTHER[r.side]].name + ' until ' + hhmm(r.closed) + (S.g < r.until ? '; leave by ' + hhmm(r.until) : '')).addTo(LS.show); });
   (S.mtgts || []).filter(t => !t.done && S.g >= t.g && S.g < t.until && (!side || S.reveal || t.to === 'both' || t.to === side)).forEach(t => { const fx = side ? mtFixed(S, t, side) : Object.keys(t.fix || {}).length; L.marker(t.pt, { icon:L.divIcon({ className:'', html:'<div class="mk-mt' + (fx ? ' fx' : '') + '">⌖</div>', iconSize:[26, 26], iconAnchor:[13, 13] }) }).bindTooltip(esc('Militia target: ' + t.label + (fx ? ' (fixed)' : ' (reported, not fixed)') + ' - until ' + hhmm(t.until))).addTo(LS.mt); });
@@ -4445,7 +4526,7 @@ function drawDyn(st, S, side, opts){
       const f = side ? t.last : whiteFix(t); if (!f) return; const pt = f.gps || f.rep; if (!pt) return;
       const age = Math.max(0, Math.floor(S.g - f.g));
       const m = L.marker(pt, { icon:teamIcon(sd, t.num, { op:age > 10 ? .5 : 1 }), zIndexOffset:500 });
-      m.bindTooltip(esc(teamLabel(t) + ' - ' + (f.ping ? 'pinged ' : '') + age + 'm' + (t.status ? ' - ' + t.status : '')), { permanent:!!pr.names, direction:'right', className:'teamlbl', offset:[14, 0] }).addTo(LS.teams);
+      m.bindTooltip(esc(teamLabel(t) + (ROOMS_LIVE ? ' - ' + roomLabel(roomOf(pt)) : '') + ' - ' + (f.ping ? 'pinged ' : '') + age + 'm' + (t.status ? ' - ' + t.status : '')), { permanent:!!pr.names, direction:'right', className:'teamlbl', offset:[14, 0] }).addTo(LS.teams);
     });
   });
   if (!side && ['W', 'A', 'D', 'L'].includes(app.role) && LS.props) drawProps(LS.props, S, pr, opts, st);
@@ -4673,7 +4754,8 @@ function renderOC(S){
   { const box = $('[data-ocshowbox]', v), list = o && o.team ? S.requests.filter(r => r.kind === 'show' && r.side === OTHER[o.side] && r.center && (r.status === 'open' || r.closed > S.g)) : [];
     box.hidden = !list.length;
     const html = list.slice().reverse().map(r => { const t = r.teams && r.teams[o.team], st = t ? t.st : null;
-      return '<div class="li"><div class="grow"><b>' + esc(r.text) + '</b> <span class="small muted">by ' + SIDES[r.side].name + ' at ' + hhmm(r.g) + '</span><div class="small">Leave by ' + hhmm(r.until) + ' - Closed until ' + hhmm(r.closed) + ' - ' + (st === 'left' ? 'Your team: left' : st === 'stayed' ? 'Your team: stayed' : st === 'inside' ? 'Your team was found inside' : 'Your team was not found inside') + '</div></div>' +
+      const rs = showRooms(r);
+      return '<div class="li"><div class="grow"><b>' + esc(r.text) + '</b> <span class="small muted">by ' + SIDES[r.side].name + ' at ' + hhmm(r.g) + '</span>' + (rs.length ? '<div class="small"><b>Rooms to clear: ' + esc(rs.map(roomLabel).join(', ')) + '</b></div>' : '') + '<div class="small">Leave by ' + hhmm(r.until) + ' - Closed until ' + hhmm(r.closed) + ' - ' + (st === 'left' ? 'Your team: left' : st === 'stayed' ? 'Your team: stayed' : st === 'inside' ? 'Your team was found inside' : 'Your team was not found inside') + '</div></div>' +
         (r.status === 'open' && st !== 'left' && st !== 'stayed' ? '<div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocshow="' + r.id + '" data-left="1">Team left</button><button type="button" data-ocshow="' + r.id + '" data-left="0">Team stayed</button></div>' : '') + '</div>'; }).join('');
     const sl = $('[data-ocshows]', v); if (sl.dataset.k !== html){ sl.dataset.k = html; sl.innerHTML = html; } }
   ocScenes(S, v, o);
@@ -4730,18 +4812,20 @@ function ocInjItems(S, o){
 function ocScenes(S, v, o){
   const box = $('[data-ocinjbox]', v); if (!box) return;
   const list = ocInjItems(S, o), located = list.some(x => x.pt);
-  if (located && !app.ocWatch && navigator.geolocation){ try { app.ocWatch = navigator.geolocation.watchPosition(p => { app.ocHere = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); else { try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; } }, () => { app.ocHere = null; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); }, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){} }
+  if (ROOMS_LIVE && app.ocWatch != null){ try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; }
+  if (located && !ROOMS_LIVE && !app.ocWatch && navigator.geolocation){ try { app.ocWatch = navigator.geolocation.watchPosition(p => { app.ocHere = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); else { try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; } }, () => { app.ocHere = null; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); }, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){} }
   if (!located && app.ocWatch != null){ try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; }
-  const here = app.ocHere && Date.now() - app.ocHere.t < 120000 ? app.ocHere : null;
-  $('[data-ocscenegps]', v).textContent = here ? 'GPS ±' + here.acc + ' m' : located ? 'No GPS: tap the inject your team is at' : '';
+  const tmF = ROOMS_LIVE && o && o.team && S.teams[o.side] && S.teams[o.side][o.team] ? S.teams[o.side][o.team].last : null, inRm = ROOMS_LIVE ? (tmF && tmF.room ? roomFind(tmF.room) : null) || myRoom() : null;
+  const here = ROOMS_LIVE ? (inRm ? { room:inRm, pt:inRm.pt, acc:0 } : null) : app.ocHere && Date.now() - app.ocHere.t < 120000 ? app.ocHere : null;
+  $('[data-ocscenegps]', v).textContent = ROOMS_LIVE ? (inRm ? 'Your team: ' + roomLabel(inRm) : 'Your team has not checked in to a room') : here ? 'GPS ±' + here.acc + ' m' : located ? 'No GPS: tap the inject your team is at' : '';
   if (!app.ocNear) app.ocNear = {};
-  list.forEach(x => { x.d = here && x.pt ? distM(here.pt, x.pt) : null; x.near = x.d != null && x.d <= 60 + Math.min(here.acc, 40);
+  list.forEach(x => { x.rm = ROOMS_LIVE && x.pt ? roomOf(x.pt) : null; x.d = !ROOMS_LIVE && here && x.pt ? distM(here.pt, x.pt) : null; x.near = ROOMS_LIVE ? !!(here && x.rm && x.rm === here.room) : x.d != null && x.d <= 60 + Math.min(here.acc, 40);
     if (x.near && !app.ocNear[x.id]){ app.ocNear[x.id] = true; x.fresh = true; } });
   { const curNear = list.some(y => y.id === app.ocInj && y.near), hit = list.find(x => x.fresh);
     if (hit){ if (!curNear){ app.ocInj = hit.id; app.ocInjAuto = true; } app.ocJump = true; msgSound(); try { navigator.vibrate && navigator.vibrate([300, 150, 300, 150, 300]); } catch(e){} toast('GPS: your team is at ' + hit.q.label + '. ' + (curNear ? 'Tap Switch to this one when ready.' : hit.scene ? 'Read the scene to the team now.' : 'Its card is open on the Now tab.')); } }
   if (app.ocInj && !list.some(x => x.id === app.ocInj)) app.ocInj = null;
   const cur = list.find(x => x.id === app.ocInj) || null;
-  const where = x => (x.sq ? 'Square ' + x.sq : '') + (x.pt ? (x.sq ? ', ' : '') + 'grid ' + fmtPt(x.pt).split(' ').slice(2).join(' ') : '') || 'No set location';
+  const where = x => x.rm ? roomLabel(x.rm) + (x.sq ? ', square ' + x.sq : '') : (x.sq ? 'Square ' + x.sq : '') + (x.pt ? (x.sq ? ', ' : '') + 'grid ' + fmtPt(x.pt).split(' ').slice(2).join(' ') : '') || 'No set location';
   const time = x => x.end != null ? 'Respond by ' + hhmm(x.end) : x.q.win ? 'Clock starts when props are placed' : x.until != null ? 'Gone at ' + hhmm(x.until) : 'Sent ' + hhmm(x.q.sent);
   const dist = x => x.d != null ? ', about ' + x.d + ' m from you' : '';
   let html = '';
@@ -4827,9 +4911,33 @@ function answerPings(S, side){
   if ((t && t.pingFix && t.pingFix.ping === pg.id) || Date.now() - pg.ts > 15 * 60000){ pingDone.add(pg.id); return; }
   try { if ((localStorage.getItem(k) || '') === pg.id){ pingDone.add(pg.id); return; } } catch(e){}
   pingDone.add(pg.id);
-  getGPS().then(g => { if (!g) return; try { localStorage.setItem(k, pg.id); } catch(e){} writeEvent('pos', side, { team:me.id, name:me.name, gps:g.pt, acc:g.acc, ping:pg.id }); });
+  getGPS().then(g => { if (!g) return; try { localStorage.setItem(k, pg.id); } catch(e){} writeEvent('pos', side, { team:me.id, name:me.name, gps:g.pt, acc:g.acc, room:g.room || null, ping:pg.id }); });
+}
+function roomLS(){ return 'marala-room-' + (app.gid || 'none'); }
+function myRoom(){ if (!ROOMS_LIVE) return null; let id = null; try { id = localStorage.getItem(roomLS()); } catch(e){} return id ? roomFind(id) : null; }
+function setMyRoom(r){ if (!r) return; try { localStorage.setItem(roomLS(), r.id); } catch(e){} }
+function placeName(S, k, side){
+  if (SITES[k]) return SITES[k].name;
+  if (k === 'town') return 'Marala Town'; if (k === 'wc') return 'White Force';
+  if (k === 'lzB' || k === 'lzR') return side && side !== k[2] ? '' : SIDES[k[2]].name + ' HQ';
+  const pt = placePt(S, k), dyn = pt && SITE_KEYS.find(x => SITES[x].dyn && S.sitePts[x] && distM(S.sitePts[x], pt) < 15); if (dyn) return SITES[dyn].name;
+  const w = (S.wps || []).find(x => x.id === k); if (!w) return side ? '' : k;
+  return !side ? w.label : !w.del && wpSeen(w, side) ? w.label : '';
+}
+function roomFull(S, r, side){ if (!r) return ''; const n = r.places.map(k => placeName(S, k, side)).filter(Boolean); return roomLabel(r) + (n.length ? ' (' + n.join(', ') + ')' : ''); }
+function roomJit(pt){ return [+(pt[0] + (Math.random() - .5) * 6 / 110950).toFixed(7), +(pt[1] + (Math.random() - .5) * 6 / 84250).toFixed(7)]; }
+function roomArrive(S){
+  const q = app.pendingRoom; if (!q || !app.events.length) return;
+  if (!ROOMS_LIVE && Date.now() - (app.pendingAt || 0) < 8000) return; app.pendingRoom = null;
+  if (!ROOMS_LIVE){ toast('This game is not on the indoor plan, so the room code does nothing.', true); return; }
+  const r = roomFind(q); if (!r){ toast('"' + q + '" is not a room in this game’s indoor plan.', true); return; }
+  setMyRoom(r);
+  const sd = app.role && app.role[0] === 'T' ? app.role[1] : null;
+  if (sd && teamGet(sd) && S.clock.started && !S.endex) sendTeamPos(sd, { gpsOnly:true, silent:true }).then(() => { toast('Checked in: ' + roomFull(S, r, sd) + '.'); refresh(true); });
+  else { toast('You are in ' + roomFull(S, r, sd) + '.' + (sd && !S.clock.started ? ' Check in again once the game starts.' : '')); refresh(true); }
 }
 function getGPS(){
+  if (ROOMS_LIVE){ const r = myRoom(); return Promise.resolve(r && r.pt ? { pt:roomJit(r.pt), acc:5, room:r.id } : null); }
   return new Promise(res => {
     if (!navigator.geolocation){ res(null); return; }
     navigator.geolocation.getCurrentPosition(p => res({ pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy) }), () => res(null), { enableHighAccuracy:true, timeout:12000, maximumAge:10000 });
@@ -4843,11 +4951,12 @@ async function sendTeamPos(side, opts){
   const rep = repText ? locate(M, repText) : null;
   if (repText){ const bad = gridBad(M, repText); if (bad){ toast(bad, true); return; } }
   if (repText && !rep){ toast('That grid didn’t read. Use MGRS like 5892 2345 or 18T TL 58927 23452.', true); return; }
+  if (ROOMS_LIVE && repText){ const rr = roomFind(repText); if (rr) setMyRoom(rr); }
   if (!opts.silent){ $('[data-send]', v).disabled = true; $('[data-send]', v).textContent = 'Getting GPS…'; }
   const g = await getGPS();
   if (!opts.silent){ $('[data-send]', v).disabled = false; $('[data-send]', v).textContent = 'Send position'; }
-  if (!g && !rep){ if (!opts.silent) toast('No GPS on this phone right now. Type your grid from the map and send again.', true); return; }
-  await writeEvent('pos', side, { team:me.id, name:me.name, gps:g ? g.pt : null, acc:g ? g.acc : null, rep, repText:repText || null, status:opts.gpsOnly ? null : $('[data-status]', v).value });
+  if (!g && !rep){ if (!opts.silent) toast(ROOMS_LIVE ? 'Check in to a room first: scan the QR code on the door, or pick your room under Your room.' : 'No GPS on this phone right now. Type your grid from the map and send again.', true); return; }
+  await writeEvent('pos', side, { team:me.id, name:me.name, gps:g ? g.pt : null, acc:g ? g.acc : null, room:g && g.room || null, rep, repText:repText || null, status:opts.gpsOnly ? null : $('[data-status]', v).value });
   if (!opts.silent){ $('[data-grid]', v).value = ''; toast('Position sent to your C2.'); }
 }
 function buildTeam(side){
@@ -4864,6 +4973,7 @@ function buildTeam(side){
   <div class="stack">
     <div class="panel"><div class="act-head"><h2>${esc(me.name)} <span data-tnumshow></span></h2><span class="small muted">${esc(SIDES[side].long)}</span></div>
       <div class="row" style="align-items:baseline;justify-content:space-between"><span><span class="k small muted">Board time</span> <b class="mono" data-clock>—</b></span><span data-tlvl></span><span class="row" style="flex:0 0 auto;gap:6px"><button type="button" data-rename style="flex:0 0 auto;padding:4px 10px;font-size:13px">Rename</button><button type="button" data-leave style="flex:0 0 auto;padding:4px 10px;font-size:13px">Leave this fireteam</button></span></div></div>
+    <div class="panel stack" data-indoorbox hidden><div class="act-head"><h2>Your room</h2><span class="small" data-roomnow></span></div><p class="small muted" style="margin:0">Indoor game. Scan the QR code on the door every time you enter a room, or pick the room here and tap Check in.</p><div class="row" style="align-items:end"><label>Room<select data-roomsel></select></label><button type="button" class="btn-side" data-roomgo style="flex:0 0 auto">Check in here</button></div></div>
     <div class="panel stack" data-ps="now"><h2>Alerts</h2><div data-tuav></div><div class="list" data-talerts></div></div>
     <div class="panel" data-ps="now"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
     <div class="panel stack" data-ps="msg"><div class="act-head"><h2>Messages with C2</h2><span class="small muted">One message every ${TCHAT_EVERY} minutes</span></div><div class="chatlog" data-tclog></div><form class="row" data-tcf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form><div class="small muted" data-tcnext></div></div>
@@ -4879,7 +4989,7 @@ function buildTeam(side){
       <label class="chk"><input type="checkbox" data-auto> Also send GPS by itself every 10 minutes</label>
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label>
-      <div class="small muted" data-tlast></div></div>
+      <div class="small muted" data-tlast></div><form class="row" data-g2r hidden style="align-items:end"><label>Which room is this grid?<input name="g" maxlength="40" autocomplete="off" placeholder="Example: 59643 21955"></label><button type="submit" style="flex:0 0 auto">Find room</button><span class="small" data-g2rout style="flex:1 1 100%"></span></form></div>
     <div class="panel stack" data-ps="act"><h2>Contention request</h2>
       <p class="small muted" style="margin:0">Sent to your C2. Contention starts only when your C2 approves it.</p>
       <div class="row"><label>Site<select data-ctsite data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div>
@@ -4893,6 +5003,7 @@ function buildTeam(side){
   </div>`;
   ptabs(v, 'marala-ttab-' + side, [['now', 'Alerts'], ['msg', 'Messages'], ['map', 'Map'], ['act', 'Requests'], ['all', 'All']], 'now');
   $('[data-send]', v).onclick = () => sendTeamPos(side, {});
+  $('[data-roomgo]', v).onclick = async () => { const r = roomFind($('[data-roomsel]', v).value); if (!r){ toast('Pick a room.', true); return; } if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; } setMyRoom(r); await sendTeamPos(side, { gpsOnly:true, silent:true }); toast('Checked in: ' + roomFull(app.S, r, side) + '.'); refresh(true); };
   $('[data-tcf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.clock.started){ toast('The game hasn’t started yet.', true); return; } const nx = tchatNext(app.S, side, me.id); if (nx != null && app.S.g < nx){ toast('Next message available at ' + hhmm(nx) + '.', true); return; } if (!confirm('Send this message to your C2? The next message is available ' + TCHAT_EVERY + ' minutes after this one.')) return; await writeEvent('tchat', side, { team:me.id, name:me.name, from:'team', text:tx }); f.text.value = ''; });
   $('[data-ctsend]', v).onclick = async () => {
     const k = $('[data-ctsite]', v).value;
@@ -4928,8 +5039,17 @@ function buildTeam(side){
   auto.onchange = () => { try { localStorage.setItem(teamIdKey(side) + '-auto', auto.checked ? '1' : '0'); } catch(e){} arm(); };
   arm();
 }
+function teamRoomUI(S, side, v, me){
+  const box = $('[data-indoorbox]', v); if (!box) return; box.hidden = !ROOMS_LIVE; if (!ROOMS_LIVE) return;
+  const sel = $('[data-roomsel]', v), mine = myRoom(), opts = ROOMS_LIVE.list.filter(r => r.pt && !r.places.includes('wc')).map(r => '<option value="' + esc(r.id) + '"' + (mine && mine.id === r.id ? ' selected' : '') + '>' + esc(roomFull(S, r, side) + (r.floor ? ', floor ' + r.floor : '')) + '</option>').join('');
+  if (sel && document.activeElement !== sel && sel.dataset.h !== opts){ sel.dataset.h = opts; sel.innerHTML = '<option value="">Pick your room</option>' + opts; }
+  const t = me && S.teams[side][me.id], f = t && t.last, r = f && f.room ? roomFind(f.room) : null, txt = r ? 'Checked in: ' + roomLabel(r) + ' at ' + hhmm(f.g) : 'Not checked in yet';
+  const el = $('[data-roomnow]', v); if (el.textContent !== txt) el.textContent = txt;
+  const gl = $('[data-grid]', v); if (gl && !gl.dataset.in){ gl.dataset.in = '1'; gl.placeholder = 'Room (for example 303 or Armory) or a grid'; }
+}
 function renderTeam(S, side){
   const v = $('#vTeam'), me = teamGet(side);
+  teamRoomUI(S, side, v, me);
   { const sel = $('[data-ntarget]', v); if (sel && document.activeElement !== sel) keepSelect(sel, mtFor(S, side).map(t => '<option value="mt:' + t.id + '">Militia target: ' + esc(t.label) + '</option>').join('') + '<option value="cache">Militia weapons cache</option><option value="other">' + esc(SIDES[OTHER[side]].name) + ' position</option>'); }
   if (!me){
     const jl = $('[data-tjoinlist]', v); if (!jl) return;
@@ -4957,7 +5077,7 @@ function renderTeam(S, side){
     const nx = tchatNext(S, side, me.id), wait = nx != null && S.g < nx, btn = $('[data-tcf] button', v); btn.disabled = wait; $('[data-tcnext]', v).textContent = wait ? 'Next message available at ' + hhmm(nx) + '.' : ''; } }
   { const cl = $('[data-ctlist]', v); if (cl){ refreshSiteSelects(v); const rs = (S.ctReqs || []).filter(r => r.side === side && r.team === me.id).slice(-3).reverse(); cl.innerHTML = rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(SITES[r.site] ? SITES[r.site].name : 'Removed site') + '</div><span class="chip ' + (r.status === 'ok' ? 'ok' : r.status === 'no' ? 'no' : 'wait') + '">' + (r.status === 'ok' ? 'Started' : r.status === 'no' ? 'Declined' : 'With your C2') + '</span></div>').join(''); } }
   { const nl = $('[data-nlist]', v); if (nl){ const ns = S.nines.filter(n => n.side === side && n.team === me.id).slice(-3).reverse(); nl.innerHTML = ns.map(n => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(n.g) + '</span> ' + esc(nineText(n)) + '</div><span class="chip ' + (n.status === 'ok' ? 'ok' : n.status === 'no' ? 'no' : 'wait') + '">' + (n.status === 'ok' ? 'sent to C2' : n.status === 'no' ? 'not accepted' : 'waiting for check') + '</span></div>').join(''); } }
-  $('[data-talerts]', v).innerHTML = al.length ? al.map(f => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(f.g) + '</span><div>' + esc(f.text) + '</div></div></div>').join('') : '<div class="empty">Nothing yet. UAV sightings and warnings show here.</div>';
+  $('[data-talerts]', v).innerHTML = al.length ? al.map(f => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(f.g) + '</span><div>' + esc(feedRoom(f)) + '</div></div></div>').join('') : '<div class="empty">Nothing yet. UAV sightings and warnings show here.</div>';
   const ph = jammed(S, side) ? '' : uavPhase(S, side), u = S.uav[side];
   $('[data-tuav]', v).innerHTML = jammed(S, side) ? '<div class="li"><div class="grow"><b>Datalink jammed until ' + hhmm(S.jam[side]) + '</b><div class="small muted">No map and no UAV picture.</div></div></div>' : ph ? '<div class="li" style="border-left:3px solid var(--' + (side === 'B' ? 'red' : 'blu') + ');padding-left:8px"><div class="grow"><b>' + (ph === 'live' ? 'Enemy fireteams now' : 'Enemy fireteams last seen ' + hhmm(u.g)) + '</b>' + (u.spots.length ? u.spots.map(x => '<div class="mono small">' + (x.num ? '#' + esc(x.num) + ' ' : '') + esc(GEO.toMGRS(x.pt[0], x.pt[1], 3)) + '</div>').join('') : '<div class="small muted">The UAV found no one.</div>') + '</div></div>' : '';
   const tm = $('[data-tmap]', v);
@@ -5034,7 +5154,7 @@ function buildWing(side){
         <div class="pic-card"><div class="pic-h"><h3>AOC priorities, intent and PIRs</h3><span class="small muted">Acknowledge new priorities at the top of the board</span></div><div data-fppri></div></div>
         <div class="pic-card"><div class="pic-h"><h3>Asset status board</h3><span class="small muted" data-fpasbn></span></div><div class="asb-wrap"><table class="asb" data-fpasb></table></div></div>
       </div>
-      <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Your intel packages, statements, injects and messages</span></div><div class="row tl-ctl" data-fptlctl></div><div class="pic-tl" data-fptl></div></div>
+      <div class="pic-card" data-g2rcard hidden><div class="pic-h"><h3>Indoor rooms</h3><span>Turn a grid from an inject or intel package into a room</span></div><form class="row" data-g2r hidden style="align-items:end"><label>Which room is this grid?<input name="g" maxlength="40" autocomplete="off" placeholder="Example: 59643 21955"></label><button type="submit" style="flex:0 0 auto">Find room</button><span class="small" data-g2rout style="flex:1 1 100%"></span></form></div><div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Your intel packages, statements, injects and messages</span></div><div class="row tl-ctl" data-fptlctl></div><div class="pic-tl" data-fptl></div></div>
     </section>
     <div class="wing-grid" data-cgrid>
       <div class="stack" style="gap:14px;min-width:0" data-sec="map intel inj"><div class="panel" data-sec="map">
@@ -5163,6 +5283,7 @@ function buildWing(side){
   $$('[data-pane="aoc"] > .act', v).forEach((c, i) => { const hd = $('.act-head', c); if (!hd) return; const d = $(':scope > p', c); if (d) d.dataset.desc = '1'; const k = 'marala-aocmin-' + side + '-' + i, b = document.createElement('button'); b.type = 'button'; b.className = 'act-min'; const set = on => { c.classList.toggle('min', on); b.textContent = on ? 'Show' : 'Hide'; b.setAttribute('aria-expanded', on ? 'false' : 'true'); }; b.onclick = () => { const on = !c.classList.contains('min'); set(on); pref.set(k, on ? '1' : '0'); }; hd.appendChild(b); set(pref.get(k, '0') === '1'); });
   const setCTab = (k, scroll) => {
     if (!$('[data-ctab="' + k + '"]', v)) k = 'all';
+    v.dataset.ctab = k; [['[data-defend]', ['rep', 'pic']], ['[data-cubstrip]', ['aoc']], ['[data-pri]', ['pic', 'aoc']]].forEach(([q, ks]) => { const el = $(q, v); if (el) el.hidden = !ks.includes(k); });
     $$('[data-ctab]', v).forEach(b => b.setAttribute('aria-selected', b.dataset.ctab === k ? 'true' : 'false'));
     $$('[data-sec]', v).forEach(el => { const secs = el.dataset.sec.split(' '), on = k === 'all' ? !secs.includes('pic') : secs.includes(k); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
     $('[data-cgrid]', v).classList.toggle('filtered', k !== 'all'); $('[data-cgrid]', v).hidden = k === 'pic';
@@ -5551,12 +5672,12 @@ function cubPhase(S, side, g){
   const t = rhythmAt(tg), op = t - CUB_EARLY, cl = t + CUB_LATE, st = prev ? Math.min(op, rhythmAt(prev) + CUB_LATE) : Math.min(op, START_G);
   const c = (S.cubs || []).find(q => q.side === side && q.n === tg.n);
   let ph, head, sub, to;
-  if (c && c.status === 'sent'){ ph = 'sent'; head = tg.label + ': with the AOC'; sub = 'Sent at ' + hhmm(c.hist[c.hist.length - 1].g) + '. The AOC will approve it, deny it or ask for more.'; to = null; }
-  else if (g < op){ ph = 'draft'; head = tg.label + ': drafting'; sub = 'Write it now. Sending opens at ' + hhmm(op) + ', due ' + hhmm(t) + ', on time until ' + hhmm(cl) + '.'; to = op; }
-  else if (g < t){ ph = 'open'; head = tg.label + ': open to send'; sub = 'Due at ' + hhmm(t) + '. On time until ' + hhmm(cl) + '.'; to = t; }
-  else if (g < cl){ ph = 'due'; head = tg.label + ': due now'; sub = 'Send it before ' + hhmm(cl) + ' to be on time.'; to = cl; }
-  else { ph = 'late'; head = tg.label + ': late'; sub = 'The on-time window closed at ' + hhmm(cl) + '. Send it now; the AOC sees it as late.'; to = null; }
-  if (c && c.status === 'returned' && ph !== 'sent') head = tg.label + ': ' + (c.reply && c.reply.verdict === 'more' ? 'AOC needs more' : 'not approved') + ', send again';
+  if (c && c.status === 'sent'){ ph = 'sent'; head = 'Sent: ' + tg.label + ', with the AOC'; sub = 'Sent at ' + hhmm(c.hist[c.hist.length - 1].g) + '. The AOC will approve it, deny it or ask for more.'; to = null; }
+  else if (g < op){ ph = 'draft'; head = 'Due next: ' + tg.label + ' (opens ' + hhmm(op) + ')'; sub = 'Write it now. Sending opens at ' + hhmm(op) + ', due ' + hhmm(t) + ', on time until ' + hhmm(cl) + '.'; to = op; }
+  else if (g < t){ ph = 'open'; head = 'Out now: ' + tg.label + ', due ' + hhmm(t); sub = 'Due at ' + hhmm(t) + '. On time until ' + hhmm(cl) + '.'; to = t; }
+  else if (g < cl){ ph = 'due'; head = 'Out now: ' + tg.label + ', due now'; sub = 'Send it before ' + hhmm(cl) + ' to be on time.'; to = cl; }
+  else { ph = 'late'; head = 'Out now: ' + tg.label + ', late'; sub = 'The on-time window closed at ' + hhmm(cl) + '. Send it now; the AOC sees it as late.'; to = null; }
+  if (c && c.status === 'returned' && ph !== 'sent') head = 'Out now: ' + tg.label + ', ' + (c.reply && c.reply.verdict === 'more' ? 'AOC needs more' : 'not approved') + ', send again';
   return { tg, ph, head, sub, to, st, op, t, cl, g };
 }
 function cubCd(m){ const s = Math.max(0, Math.round(m * 60)), h = Math.floor(s / 3600), mm = Math.floor(s % 3600 / 60), ss = s % 60; return (h ? h + ':' + String(mm).padStart(2, '0') : mm) + ':' + String(ss).padStart(2, '0'); }
@@ -5585,7 +5706,7 @@ function renderDefend(S, side, v){
   const L = defendList(S, side);
   let fresh = false;
   L.forEach(d => { if (app.defSeen[d.key] == null){ app.defSeen[d.key] = S.claims.length; fresh = true; } });
-  if (fresh) msgSound();
+  if (fresh){ msgSound(); if (!['rep', 'pic'].includes(v.dataset.ctab)) toast('A fireteam needs a defense code word. Open Reports and claims.'); }
   const errOf = d => { const c = S.claims.slice(app.defSeen[d.key]).filter(c => c.side === side && c.site === d.k && c.status !== 'accepted').pop(); return c ? c.note : ''; };
   const top = L.find(d => !app.defMin[d.key]);
   const rest = L.filter(d => d !== top);
@@ -5651,7 +5772,7 @@ function renderWing(S, side, now){
   $('[data-reqs]', v).innerHTML = reqs.length ? reqs.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + kindName[r.kind] + '</b> <span class="muted small">' + hhmm(r.g) + '</span><div class="small">' + esc(r.text) + '</div>' + (r.answer ? '<div class="small muted">Answer: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' || r.status === 'nom' ? 'wait' : 'ok') + '">' + (r.status === 'nom' ? 'With the AOC' : r.status === 'open' ? 'With the White Force' : 'Done') + '</span></div>').join('') : '<div class="empty">Drone flights, shows of force, strikes and waypoint requests wait here until the White Force answers.</div>';
   { const box = $('[data-pri]', v), r = (S.aocPri || {})[side], k = r ? r.id + '|' + r.ack : 'none';
     if (box.dataset.k !== k){ box.dataset.k = k; box.innerHTML = priHTML(r, true); }
-    if (app.priFor === side && r && app.priSeen !== r.id) toast(r.items.length ? 'New AOC priorities received. Acknowledge them at the top of the board.' : 'AOC: no new priorities. ' + PRI_DEFAULT);
+    if (app.priFor === side && r && app.priSeen !== r.id) toast(r.items.length ? 'New AOC priorities received. Acknowledge them on the AOC or Picture tab.' : 'AOC: no new priorities. ' + PRI_DEFAULT);
     app.priFor = side; app.priSeen = r ? r.id : null; }
   $('[data-dronecount]', v).textContent = S.droneDown ? 'Routine maintenance - not ready for tasking' : jammed(S, side) ? 'Jammed until ' + hhmm(S.jam[side]) : droneReady(S, side) ? 'Ready' : 'Ready at ' + hhmm(Math.ceil(S.droneLast[side] + droneEvery(S, side)));
   { const el = $('[data-left="show"]', v); if (el) el.textContent = S.uses.show[side] ? '1 left' : 'used'; }
@@ -5669,7 +5790,7 @@ function renderWing(S, side, now){
     const un = liveTeams(S, side).reduce((a, x) => a + chatUnread(S, side, x.id), 0), c = $('[data-cnchat]', v); if (c){ c.hidden = !un; c.textContent = un; } }
   { const cr = (S.ctReqs || []).filter(r => r.side === side && r.status === 'open' && SITES[r.site]), box = $('[data-ctreqs]', v);
     $('[data-ctbox]', v).hidden = !cr.length; $('[data-ctcount]', v).textContent = cr.length ? ' - ' + cr.length : '';
-    { const c = $('[data-cnct]', v); if (c){ c.hidden = !cr.length; c.textContent = cr.length; } }
+    { const c = $('[data-cnct]', v), nd = cr.length + defendList(S, side).length; if (c){ c.hidden = !nd; c.textContent = nd; } }
     const key = cr.map(r => r.id + (S.sites[r.site] ? S.sites[r.site].contestBy || '' : '')).join();
     if (box.dataset.k !== key){ box.dataset.k = key; box.innerHTML = cr.map(r => { const st = S.sites[r.site]; return '<div class="li"><div class="grow"><b>' + esc(r.name) + '</b> <span class="small muted">' + hhmm(r.g) + '</span><div class="small">' + esc(SITES[r.site].name) + ' - ' + siteSquare(S, r.site) + (st && st.contestBy ? ' - already in contention' : '') + '</div></div><button type="button" class="btn-side" data-ctok="' + r.id + '" style="flex:0 0 auto">Start contention</button><button type="button" data-ctno="' + r.id + '" style="flex:0 0 auto">Decline</button></div>'; }).join(''); } }
   { const nb = $('[data-nines]', v); if (nb){ const ns = S.nines.filter(n => n.side === side && n.status === 'ok' && !n.used).slice(-4).reverse(); nb.innerHTML = ns.length ? '<div class="small muted">Checked 9-lines from your fireteams</div>' + ns.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.resG) + ' - Checked by ' + esc(n.by) + '</span><div class="small">' + esc(nineText(n)) + '</div></div><button type="button" data-usenine="' + n.id + '" style="flex:0 0 auto">Use</button></div>').join('') : ''; } }
@@ -5826,7 +5947,7 @@ function rhythmHTML(S, side){
   const open = cubOpen(S, side);
   return RHYTHM.filter(x => rhythmAt(x) <= END_G + 1e-9).map(x => { const t = rhythmAt(x), c = x.kind === 'cub' ? (S.cubs || []).find(q => q.side === side && q.n === x.n) : null;
     const st = x.kind !== 'cub' ? (S.g >= t ? '<span class="chip ok">Done</span>' : '<span class="chip">' + hhmm(t) + '</span>') : cubChip(S, c, x);
-    return '<div class="rh-row' + (open === x ? ' now' : '') + '"><span class="mono">' + hhmm(t) + '</span><span><b>' + esc(x.label) + '</b><br><span class="small muted">' + esc(x.what) + '</span>' + (c ? c.replies.map(r => '<br><span class="small"><b>AOC ' + hhmm(r.g) + ':</b> ' + (r.verdict === 'approve' ? 'Approved. ' : r.verdict === 'more' ? 'More info needed. ' : 'Not approved. ') + esc(r.text) + '</span>').join('') : '') + '</span>' + st + '</div>'; }).join('');
+    return '<div class="rh-row' + (open === x ? ' now' : '') + '"><span class="mono">' + hhmm(t) + '</span><span><b>' + esc(x.label) + '</b><br><span class="small muted">' + esc(x.what) + '</span>' + (c && c.hist && c.hist.length ? '<details class="small cub-old" data-ok="' + x.n + '"><summary>Open the brief as sent' + (c.replies.length ? ' and the AOC replies' : '') + '</summary>' + cubText(c) + '</details>' : '') + '</span>' + st + '</div>'; }).join('');
 }
 function cbfRowsHTML(rows){
   return rows.map((L, i) => '<fieldset class="cub-pers" data-cbrow data-k="' + esc(L.k) + '"><legend>Line ' + (i + 1) + '</legend>' +
@@ -5852,19 +5973,19 @@ function cbfRender(S, col, s, force, rows){
 }
 function cmdColHTML(s){
   return '<div class="cmd-col side-' + s + '" data-cmdside="' + s + '">' +
-    '<div class="pic-card"><div class="pic-h"><h3><span class="chip ' + s + '">' + SIDES[s].name + '</span> Waiting on the AOC</h3><span data-cmdwaitn></span></div><div data-cmdwait></div></div>' +
-    '<div class="pic-card"><div class="pic-h"><h3>Capabilities</h3><span data-cmdroes></span></div><p class="small muted" style="margin:0 0 6px">The JFACC holds every capability by default. Withhold one only when the force needs reining in, and restore it when the problem is fixed.</p><div data-cmdcaps></div>' +
+    '<div class="pic-card" data-cmdk="wait"><div class="pic-h"><h3><span class="chip ' + s + '">' + SIDES[s].name + '</span> Waiting on the AOC</h3><span data-cmdwaitn></span></div><div data-cmdwait></div></div>' +
+    '<div class="pic-card" data-cmdk="caps"><div class="pic-h"><h3>Capabilities</h3><span data-cmdroes></span></div><p class="small muted" style="margin:0 0 6px">The JFACC holds every capability by default. Withhold one only when the force needs reining in, and restore it when the problem is fixed.</p><div data-cmdcaps></div>' +
       '<div class="row" style="align-items:center;margin-top:8px"><span class="grow" data-cmdauth></span><button type="button" data-cmdauthbtn style="flex:0 0 auto"></button></div>' +
       '<form class="row" data-cmdroef style="align-items:end;margin-top:8px"><label>ROE<select name="level"><option value="restrictive">Restrictive</option><option value="pause">Operational pause</option><option value="standard">Back to standard</option></select></label><label style="flex:0 0 110px">Minutes<input name="min" type="number" min="1" max="60" value="10"></label><label style="flex:0 0 160px">Applies to<select name="to"><option value="' + s + '">' + SIDES[s].name + '</option><option value="both">Both forces</option></select></label><label>Reason (optional)<input name="why" maxlength="200"></label><button type="submit" style="flex:0 0 auto">Set ROE</button></form></div>' +
-    '<div class="pic-card"><div class="pic-h"><h3>Retask ISR or send support</h3><span data-cmdres></span></div>' +
+    '<div class="pic-card" data-cmdk="sup"><div class="pic-h"><h3>Retask ISR or send support</h3><span data-cmdres></span></div>' +
       '<form class="row" data-cmdgrant style="align-items:end"><label>What<select name="kind">' + Object.keys(AOC_GRANT).map(k => '<option value="' + k + '">' + AOC_WANT[k] + '</option>').join('') + '</select></label><label>Note to ' + SIDES[s].name + ' (optional)<input name="text" maxlength="300"></label><button type="submit" class="btn-side" style="flex:0 0 auto">Send</button></form>' +
       '<p class="small muted" style="margin:6px 0 0">ISR: the UAV or a drone flight is ready for them now. Support: aid package ready now, CASEVAC restores part of a recent IED casualty, or one more show of force or cache strike. Use it when a force has a real problem, not as a reward.</p></div>' +
-    '<div class="pic-card"><div class="pic-h"><h3>Commander’s Update Briefs</h3><span data-cmdcubn></span></div><div data-cmdcubs></div></div>' +
-    '<div class="pic-card"><div class="pic-h"><h3>Brief questions</h3><select data-cbfn aria-label="Which brief" style="width:auto">' + RHYTHM.filter(x => x.kind === 'cub').map(x => '<option value="' + x.n + '">' + esc(x.label) + '</option>').join('') + '</select></div>' +
+    '<div class="pic-card" data-cmdk="cub"><div class="pic-h"><h3>Commander’s Update Briefs</h3><span data-cmdcubn></span></div><div data-cmdcubs></div></div>' +
+    '<div class="pic-card" data-cmdk="cub"><div class="pic-h"><h3>Brief questions</h3><select data-cbfn aria-label="Which brief" style="width:auto">' + RHYTHM.filter(x => x.kind === 'cub').map(x => '<option value="' + x.n + '">' + esc(x.label) + '</option>').join('') + '</select></div>' +
       '<details class="cbf-det"><summary class="small">Edit the questions for this brief</summary><p class="small muted" style="margin:6px 0">The questions ' + SIDES[s].name + ' answers in this brief. Reword, add, remove or reorder them, then save. The force’s form changes right away; a brief that is already sent cannot be changed.</p><form class="stack" data-cbff></form></details></div>' +
-    '<div class="pic-card"><div class="pic-h"><h3>Commander’s intent</h3><button type="button" data-cmdintedit style="flex:0 0 auto">Edit</button></div><div class="cmd-txt" data-cmdint></div>' +
+    '<div class="pic-card" data-cmdk="intent"><div class="pic-h"><h3>Commander’s intent</h3><button type="button" data-cmdintedit style="flex:0 0 auto">Edit</button></div><div class="cmd-txt" data-cmdint></div>' +
       '<form class="stack" data-cmdintf hidden><textarea name="text" rows="9" maxlength="1200"></textarea><div class="row"><button type="submit" class="btn-side" style="flex:0 0 auto">Send new intent</button><button type="button" data-cmdintreset style="flex:0 0 auto">Restore standing intent</button><button type="button" data-cmdcancel style="flex:0 0 auto">Cancel</button></div></form></div>' +
-    '<div class="pic-card"><div class="pic-h"><h3>PIRs</h3><button type="button" data-cmdpiredit style="flex:0 0 auto">Edit</button></div><div data-cmdpirs></div>' +
+    '<div class="pic-card" data-cmdk="intent"><div class="pic-h"><h3>PIRs</h3><button type="button" data-cmdpiredit style="flex:0 0 auto">Edit</button></div><div data-cmdpirs></div>' +
       '<form class="stack" data-cmdpirf hidden>' + [1, 2, 3, 4, 5, 6].map(i => '<label>PIR ' + i + '<input name="p' + i + '" maxlength="200"></label>').join('') + '<div class="row"><button type="submit" class="btn-side" style="flex:0 0 auto">Send PIRs</button><button type="button" data-cmdpirreset style="flex:0 0 auto">Restore standing PIRs</button><button type="button" data-cmdcancel style="flex:0 0 auto">Cancel</button></div></form></div>' +
     '</div>';
 }
@@ -5933,8 +6054,9 @@ function renderCmd(S, v){
     { const r = aocResOf(S, s); $('[data-cmdres]', col).textContent = 'Left: ISR ' + r.isr + ' | support ' + r.sup; }
     { const cs = (S.cubs || []).filter(c => c.side === s), e = $('[data-cmdcubs]', col);
       const h = RHYTHM.filter(x => x.kind === 'cub' && rhythmAt(x) <= END_G + 1e-9).map(x => { const c = cs.find(q => q.n === x.n), t = rhythmAt(x);
-        return '<div class="cmd-item"><span class="k">' + hhmm(t) + ' ' + esc(x.label) + '</span><span style="justify-self:start">' + cubChip(S, c, x) + (c ? ' <span class="small muted">' + (c.late ? 'First sent late, ' : 'First sent on time, ') + hhmm(c.g) + '</span>' : '') + '</span>' + (c ? cubText(c) : '') + '</div>'; }).join('');
-      if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } $('[data-cmdcubn]', col).textContent = cs.filter(c => c.status === 'approved').length + ' approved'; }
+        const head = '<span class="k">' + hhmm(t) + ' ' + esc(x.label) + '</span> ' + cubChip(S, c, x) + (c ? ' <span class="small muted">' + (c.late ? 'First sent late, ' : 'First sent on time, ') + hhmm(c.g) + '</span>' : '');
+        return c ? '<details class="cmd-item cub-old" data-ok="' + esc(s + x.n) + '"><summary>' + head + '</summary>' + cubText(c) + '</details>' : '<div class="cmd-item">' + head + '</div>'; }).join('');
+      keepOpen(e, h); $('[data-cmdcubn]', col).textContent = cs.filter(c => c.status === 'approved').length + ' approved'; }
     cbfRender(S, col, s, false);
     { const e = $('[data-cmdint]', col), t = intentOf(S, s) + (S.intent && S.intent[s] ? '' : '\n(standing intent)'); if (e.textContent !== t) e.textContent = t; }
     { const e = $('[data-cmdpirs]', col), h = pirStatus(S, s).map(x => '<div class="pir"><b>PIR ' + x.n + '</b><span>' + esc(x.text) + '</span><span class="chip ' + (x.ok ? 'ok' : x.open ? 'wait' : '') + '">' + (x.sent ? x.ok + ' of ' + x.sent + ' answered' + (x.open ? ', ' + x.open + ' open' : '') : 'No reporting yet') + '</span></div>').join(''); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
@@ -5942,13 +6064,18 @@ function renderCmd(S, v){
   $$('[data-cmdcnt]', v).forEach(el => { el.hidden = !waiting; el.textContent = waiting; });
   { const e = $('[data-cmdrhythm]', sec), h = RHYTHM.filter(x => rhythmAt(x) <= END_G + 1e-9).map(x => { const t = rhythmAt(x), got = x.kind === 'cub' ? ['B', 'R'].map(s => { const c = (S.cubs || []).find(q => q.side === s && q.n === x.n); return '<span class="chip ' + s + '">' + SIDES[s].name + '</span> ' + cubChip(S, c, x); }).join(' ') : '<span class="chip' + (S.g >= t ? ' ok' : '') + '">' + (S.g >= t ? 'Done' : 'Upcoming') + '</span>';
       return '<div class="rh-row' + (Math.abs(S.g - t) <= CUB_LATE ? ' now' : '') + '"><span class="mono">' + hhmm(t) + '</span><span><b>' + esc(x.label) + '</b><br><span class="small muted">' + esc(x.what) + '</span></span><span class="cmd-res">' + got + '</span></div>'; }).join('');
-    if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
+    if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; }
+    const nx = RHYTHM.filter(x => rhythmAt(x) <= END_G + 1e-9).find(x => rhythmAt(x) + (x.kind === 'cub' ? CUB_LATE : 0) >= S.g), nt = nx ? (rhythmAt(nx) <= S.g ? 'Out now: ' : 'Next: ') + nx.label + ' ' + hhmm(rhythmAt(nx)) : 'Battle rhythm complete', ne = $('[data-cmdrhnext]', sec); if (ne.textContent !== nt) ne.textContent = nt; }
 }
+function keepOpen(el, h){ if (el.dataset.h === h) return; const op = $$('details[open][data-ok]', el).map(d => d.dataset.ok); el.dataset.h = h; el.innerHTML = h; op.forEach(k => { const d = el.querySelector('details[data-ok="' + CSS.escape(k) + '"]'); if (d) d.open = true; }); }
 function wireCmd(v){
   const sec = $('[data-cmdsec]', v); if (!sec || sec.dataset.wired) return; sec.dataset.wired = '1';
   { const setF = k => { const cols = $('[data-cmdcols]', sec); cols.dataset.only = k === 'both' ? '' : k; cols.classList.toggle('one', k !== 'both'); $$('[data-cmdf]', sec).forEach(b => b.setAttribute('aria-pressed', b.dataset.cmdf === k ? 'true' : 'false')); pref.set('marala-cmdf', k); };
     sec.addEventListener('click', ev => { const b = ev.target.closest('[data-cmdf]'); if (b) setF(b.dataset.cmdf); });
-    setF(pref.get('marala-cmdf', 'both')); }
+    setF(pref.get('marala-cmdf', 'both'));
+    const setK = () => { let on = []; try { on = JSON.parse(pref.get('marala-cmdk', '[]')) || []; } catch(e){ on = []; } const all = !on.length; $$('[data-cmdk-btn]', sec).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cmdkBtn === 'all' ? all : on.includes(b.dataset.cmdkBtn)))); $$('[data-cmdk]', sec).forEach(c => { c.hidden = !all && !on.includes(c.dataset.cmdk); }); };
+    sec.addEventListener('click', ev => { const b = ev.target.closest('[data-cmdk-btn]'); if (!b) return; const k = b.dataset.cmdkBtn; let on = []; try { on = JSON.parse(pref.get('marala-cmdk', '[]')) || []; } catch(e){ on = []; } on = k === 'all' ? [] : on.includes(k) ? on.filter(x => x !== k) : on.concat(k); pref.set('marala-cmdk', JSON.stringify(on)); setK(); });
+    setK(); }
   const note = b => { const it = b.closest('.cmd-item'); const n = it && $('[data-cmdnote]', it); return n ? n.value.trim() : ''; };
   sec.addEventListener('click', ev => {
     if (app.role !== 'A') return;
@@ -6030,8 +6157,8 @@ function renderAocPane(S, side, v){
     if (box.dataset.k !== key){ box.dataset.k = key; box.dataset.d = ''; box.innerHTML = cubFieldsHTML(tg.n, side, cubLines(S, side, tg.n)); if (c && c.f) fill(c.f); }
     if (dr && box.dataset.d !== dr.id && f.dataset.mine !== dr.id && !f.contains(document.activeElement)){ box.dataset.d = dr.id; fill(dr.f); }
     $('[data-cubsaved]', f).textContent = dr ? 'Draft saved ' + hhmm(dr.g) + '.' : 'Not saved yet.'; }
-  { const ce = $('[data-cnaoc]', v), nOpen = (canSend ? 1 : 0) + S.requests.filter(r => r.side === side && r.kind === 'strike' && r.result === 'hit' && !r.bda).length; if (ce){ ce.hidden = !nOpen; ce.textContent = nOpen; } }
-  { const h = rhythmHTML(S, side), e = $('[data-rhythm]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
+  { const pr = (S.aocPri || {})[side], ce = $('[data-cnaoc]', v), nOpen = (canSend ? 1 : 0) + (pr && pr.ack == null && pr.items && pr.items.length ? 1 : 0) + S.requests.filter(r => r.side === side && r.kind === 'strike' && r.result === 'hit' && !r.bda).length; if (ce){ ce.hidden = !nOpen; ce.textContent = nOpen; } }
+  { const h = rhythmHTML(S, side), e = $('[data-rhythm]', v); keepOpen(e, h); }
   { const r = aocResOf(S, side); $('[data-aocres]', v).textContent = 'AOC holds for you: ISR retasks ' + r.isr + ' | support ' + r.sup; }
   { const rs = (S.aocReqs || []).filter(r => r.side === side).slice(-8).reverse(), h = rs.length ? rs.map(r => '<div class="li"><div class="grow"><b>' + esc(AOC_WANT[r.want]) + '</b> <span class="small muted">' + hhmm(r.g) + '</span>' + (r.text ? '<div class="small">' + esc(r.text) + '</div>' : '') + (r.answer ? '<div class="small muted">AOC: ' + esc(r.answer) + '</div>' : '') + '</div><span class="chip ' + (r.status === 'open' ? 'wait' : r.status === 'ok' ? 'ok' : 'no') + '">' + (r.status === 'open' ? 'With the AOC' : r.status === 'ok' ? 'Granted' : 'Declined') + '</span></div>').join('') : '', e = $('[data-aocreqs]', v); if (e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
   $('[data-authst]', v).textContent = 'Strikes on ' + SIDES[OTHER[side]].name + ': ' + (strikeAuth(S, side) === 'jfacc' ? 'your JFACC decides' : 'need AOC approval');
@@ -6133,7 +6260,7 @@ function rsRows(S){
 }
 function propWaitText(S, kind, id){ return Object.values(S.propUses || {}).filter(u => u.kind === kind && u.item === id && !propLive(S, u)).map(u => { const c = (S.propClaim || {})[u.id]; return ((S.props || {})[u.prop] || {}).name + (u.label ? ' (' + u.label + ')' : '') + (c ? ', claimed by ' + c.name + ' at ' + hhmm(c.g) : ', not claimed by the props team'); }).join('; '); }
 function propLockHTML(S, kind, id, normal, ovrAttrs){ const hold = propHold(S, kind, id); if (!hold.length) return normal; return '<span class="chip wait" style="flex:0 0 auto" title="' + esc('Waiting on: ' + propWaitText(S, kind, id)) + '">Waiting on ' + hold.length + ' prop' + (hold.length === 1 ? '' : 's') + (Object.values(S.propUses || {}).some(u => u.kind === kind && u.item === id && !propLive(S, u) && (S.propClaim || {})[u.id]) ? ' (claimed)' : ' (not claimed)') + '</span><button type="button" ' + ovrAttrs + ' style="flex:0 0 auto">Override</button>'; }
-function propWhere(S, r){ const M = mapCfg(S), pt = r.u.pt, sq = pt && squareOf(M, pt); return (r.u.loc || (pt ? fmtPt(pt) : 'No location')) + (sq && r.u.loc ? ' - Square ' + sq : ''); }
+function propWhere(S, r){ const M = mapCfg(S), pt = r.u.pt, sq = pt && squareOf(M, pt); return (ROOMS_LIVE && pt ? roomFull(S, roomOf(pt)) + ': ' : '') + (r.u.loc || (pt ? fmtPt(pt) : 'No location')) + (sq && r.u.loc ? ' - Square ' + sq : ''); }
 function propLocate(S, text){
   const t = String(text || '').trim(); if (!t) return null; const M = mapCfg(S), pts = Object.assign({}, (M && M.sites) || {}, S.sitePts || {}), lo = t.toLowerCase();
   const named = { 'marala town':'town', 'town':'town', 'blue force hq':'lzB', 'red force hq':'lzR' };
@@ -6216,7 +6343,7 @@ let propWatch = null;
 function propNavStop(){ if (propWatch != null && navigator.geolocation){ navigator.geolocation.clearWatch(propWatch); } propWatch = null; app.propNav = null; }
 function propNavStart(id){
   app.propNav = id;
-  if (propWatch == null && navigator.geolocation) propWatch = navigator.geolocation.watchPosition(p => { app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; propNavText(); if (app.S && Date.now() - (app.propMapAt || 0) > 5000){ app.propMapAt = Date.now(); refresh(true); } }, () => toast('Location unavailable. Allow location for this site.', true), { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
+  if (propWatch == null && !ROOMS_LIVE && navigator.geolocation) propWatch = navigator.geolocation.watchPosition(p => { app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; propNavText(); if (app.S && Date.now() - (app.propMapAt || 0) > 5000){ app.propMapAt = Date.now(); refresh(true); } }, () => toast('Location unavailable. Allow location for this site.', true), { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
   propNavText(); app.propFitFor = null; refresh(true);
   const mp = $('[data-prmap]'); if (mp) setTimeout(() => mp.scrollIntoView({ behavior:'smooth', block:'center' }), 60);
 }
@@ -6225,7 +6352,7 @@ function propNavText(){
   const el = $('[data-prnav]'); if (!el) return; const S = app.S, r = S && app.propNav && propSched(S).find(x => x.u.id === app.propNav);
   if (!r){ el.hidden = true; return; } el.hidden = false;
   const tgt = r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt, me = app.propSelf && Date.now() - app.propSelf.t < 60000 ? app.propSelf : null;
-  el.innerHTML = '<div class="pr-nav">' + (r.state === 'out' ? 'Recovering: ' : 'Placing: ') + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div>' + (!tgt ? '<div class="small">No map point for this prop. Use the written location: ' + esc(r.u.loc || 'none') + '.</div>' : !me ? '<div class="small">Finding your position…</div>' : '<div class="pr-nav"><span class="mono">' + Math.round(GEO.dist(me.pt, tgt)) + ' m ' + propBearing(me.pt, tgt) + '</span> <span class="small muted">±' + me.acc + ' m</span></div>') + '<div class="small">Where: ' + esc(propWhere(S, r)) + '</div><div class="row" style="justify-content:flex-start"><button type="button" data-prnavstop style="flex:0 0 auto">Hide on map</button></div>';
+  el.innerHTML = '<div class="pr-nav">' + (r.state === 'out' ? 'Recovering: ' : 'Placing: ') + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div>' + (!tgt ? '<div class="small">No map point for this prop. Use the written location: ' + esc(r.u.loc || 'none') + '.</div>' : ROOMS_LIVE ? '<div class="pr-nav">Take it to ' + esc(roomFull(S, roomOf(tgt))) + '</div>' : !me ? '<div class="small">Finding your position…</div>' : '<div class="pr-nav"><span class="mono">' + Math.round(GEO.dist(me.pt, tgt)) + ' m ' + propBearing(me.pt, tgt) + '</span> <span class="small muted">±' + me.acc + ' m</span></div>') + '<div class="small">Where: ' + esc(propWhere(S, r)) + '</div><div class="row" style="justify-content:flex-start"><button type="button" data-prnavstop style="flex:0 0 auto">Hide on map</button></div>';
 }
 function buildProps(){
   if (app.built === 'props') return; app.built = 'props';
@@ -6267,7 +6394,7 @@ function buildProps(){
       const busy = propSched(S).find(x => x.u.prop === r.u.prop && x.state === 'out' && x.u.id !== id), other = r.claim && r.claim.oc !== me.id ? r.claim.name : null;
       if (!confirm('Report ' + r.prop.name + (r.u.label ? ' (' + r.u.label + ')' : '') + ' placed?' + (other ? '\n\n' + other + ' claimed this task.' : '') + (busy ? '\n\nThis also marks it recovered from ' + (busy.it ? busy.it.label : 'its last use') + '.' : ''))) return;
       pl.disabled = true; pl.textContent = 'Getting GPS…';
-      const g = app.propSelf && Date.now() - app.propSelf.t < 30000 ? app.propSelf : await getGPS();
+      const g = ROOMS_LIVE && r.u.pt ? { pt:r.u.pt, acc:5 } : app.propSelf && Date.now() - app.propSelf.t < 30000 ? app.propSelf : await getGPS();
       await writeEvent('prop_place', null, { use:id, pt:g ? g.pt : null, acc:g ? g.acc : null, note, oc:me.id }); if (app.propNav === id) propNavStop();
       toast(g ? 'Placed. Sent to the White Force with your position.' : 'Placed. Sent to the White Force without GPS.'); return; }
     if (rc){ const r = propSched(app.S).find(x => x.u.id === rc.dataset.prrec); if (!r || !confirm('Report ' + r.prop.name + ' recovered?' + (r.claim && r.claim.oc !== me.id ? '\n\n' + r.claim.name + ' claimed this task.' : ''))) return; await writeEvent('prop_recover', null, { use:r.u.id, oc:me.id }); if (app.propNav === r.u.id) propNavStop(); toast('Recovered.'); }
@@ -6778,8 +6905,9 @@ function buildWhite(){
     <div data-warbar></div>
     <div class="white-grid" data-wgrid>
       <section class="cmdsec" data-sec="cmd" data-cmdsec data-aoc-only>
-        <div class="pic-card"><div class="pic-h"><h3>Battle Rhythm</h3><span class="small muted">Commander’s Update Briefs from each JFACC, the Change of Command and the final SITREP</span></div><div data-cmdrhythm></div></div>
+        <details class="pic-card cmd-rh" data-cmdrhdet><summary class="pic-h"><h3>Battle Rhythm</h3><span class="small" data-cmdrhnext></span></summary><p class="small muted" style="margin:6px 0">Commander’s Update Briefs from each JFACC, the Change of Command and the final SITREP</p><div data-cmdrhythm></div></details>
         <div class="row cmd-filter"><div class="seg" role="group" aria-label="Which force">${[['both', 'Both forces'], ['B', 'Blue Force'], ['R', 'Red Force']].map(([k, n]) => '<button type="button" data-cmdf="' + k + '" aria-pressed="false">' + n + (k !== 'both' ? '<span class="cnt" data-cmdfcnt="' + k + '" hidden></span>' : '') + '</button>').join('')}</div></div>
+        <div class="row cmd-filter"><div class="seg" role="group" aria-label="What to show">${[['all', 'All'], ['wait', 'Waiting on the AOC'], ['cub', 'Briefs'], ['caps', 'Capabilities and ROE'], ['sup', 'ISR and support'], ['intent', 'Intent and PIRs']].map(([k, n]) => '<button type="button" data-cmdk-btn="' + k + '" aria-pressed="false">' + n + '</button>').join('')}</div></div>
         <div class="cmd-cols" data-cmdcols>${cmdColHTML('B')}${cmdColHTML('R')}</div>
       </section>
       <section class="wfsec" data-sec="wf" data-wfsec data-aoc-only>
@@ -7011,6 +7139,8 @@ function buildWhite(){
             <p class="small" style="margin:0" data-aistat></p>
           </div></details>
         <div class="row" style="justify-content:flex-start;align-items:center"><button type="button" class="btn-side" data-botgo style="flex:0 0 auto">Start bots</button><span class="small muted" data-botst>Bots are off.</span></div></div>
+      <div class="panel stack" data-sec="setup" data-aoc-off data-inwf hidden><div class="act-head"><h2>Indoor game: rooms</h2><span class="small muted">Rooms are set by the admin under Edit game</span></div>
+        <div class="list" data-inwho></div></div>
       <div class="panel" data-sec="setup" data-aoc-off><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-aarpdf style="flex:0 0 auto">After-action report (PDF)</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
   </div>`;
@@ -7693,8 +7823,16 @@ async function biCopyImages(S){
   if (miss) toast(miss + ' built-in intel image' + (miss === 1 ? ' was' : 's were') + ' not found on the site. Upload the intel folder to GitHub, then reload the White Force screen.', true);
 }
 function injHidden(){ try { return JSON.parse(pref.get('marala-injhide-' + (app.gid || 'local'), '[]')) || []; } catch(e){ return []; } }
+function indoorWF(S, v){
+  const box = $('[data-inwf]', v); if (!box) return;
+  const on = !!(S.indoor && S.indoor.on && ROOMS_LIVE); if (box.hidden === on) box.hidden = !on; if (!on) return;
+  const at = {}; ['B', 'R'].forEach(sd => liveTeams(S, sd).forEach(t => { const f = t.last; if (!f || S.g - f.g > 30) return; const r = f.room ? roomFind(f.room) : f.gps ? roomOf(f.gps) : null; if (!r) return; (at[r.id] = at[r.id] || []).push('<span style="color:' + SIDE_HEX[sd] + '">' + esc(teamLabel(t)) + '</span> ' + hhmm(f.g)); }));
+  const who = ROOMS_LIVE.list.filter(r => !r.places.includes('wc')).map(r => '<div class="li"><div class="grow"><b>' + esc(roomFull(S, r)) + '</b>' + (r.floor ? ' <span class="small muted">Floor ' + esc(r.floor) + '</span>' : '') + '<br><span class="small">' + (at[r.id] ? at[r.id].join(', ') : '<span class="muted">No team in the last 30 minutes</span>') + '</span></div></div>').join('');
+  const wl = $('[data-inwho]', box); if (wl.dataset.h !== who){ wl.dataset.h = who; wl.innerHTML = who; }
+}
 function renderWhite(S, now){
   const v = $('#vWhite'), lvl = levelIndex(S.esc);
+  indoorWF(S, v);
   biCopyImages(S);
   $('[data-esclvl]', v).innerHTML = '| <span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + ' ' + S.esc + '</span>';
   $('[data-ladder]', v).innerHTML = ladderHTML(S);
@@ -7833,6 +7971,19 @@ function renderWhite(S, now){
 }
 
 /* ---------- refresh loop ---------- */
+function roomPing(){ try { return JSON.parse(localStorage.getItem('marala-room-ping') || 'null'); } catch(e){ return null; } }
+try { const q = new URLSearchParams(location.search), rm = q.get('room'); app.roomPingSeen = (roomPing() || {}).ts || 0;
+  if (rm){ const pg = { room:rm.slice(0, 24), ts:Date.now() }; localStorage.setItem('marala-room-ping', JSON.stringify(pg)); app.qrPing = pg; app.roomPingSeen = 0; q.delete('room'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); setTimeout(qrTabCard, 600); } } catch(e){}
+function roomPingTake(){ const pg = roomPing(); if (!pg || !pg.ts || pg.ts <= (app.roomPingSeen || 0) || Date.now() - pg.ts > 600000) return; app.roomPingSeen = pg.ts; app.pendingRoom = pg.room; app.pendingAt = Date.now(); try { localStorage.setItem('marala-room-ack', String(pg.ts)); } catch(e){} }
+function qrTabCard(){
+  const pg = app.qrPing; if (!pg || app.role) return;
+  let el = $('#qrCard'); if (!el){ el = document.createElement('div'); el.id = 'qrCard'; el.className = 'panel stack'; el.style.cssText = 'position:fixed;left:50%;top:16px;transform:translateX(-50%);width:min(460px,calc(100% - 32px));z-index:9000;box-shadow:0 8px 30px rgba(0,0,0,.35)'; document.body.appendChild(el); }
+  let ack = ''; try { ack = localStorage.getItem('marala-room-ack') || ''; } catch(e){}
+  const done = ack === String(pg.ts), html = '<h2>Room ' + esc(pg.room) + ' scanned</h2><p style="margin:0">' + (done ? 'Your board checked you in. Close this tab and go back to your board.' : 'Go back to the tab with your board open. It checks you in by itself as soon as you open it. If it does not, pick the room under Your room on the board.') + '</p><div><button type="button" data-qrclose>Close this message</button></div>';
+  if (el.dataset.h !== html){ el.dataset.h = html; el.innerHTML = html; $('[data-qrclose]', el).onclick = () => { app.qrPing = null; el.remove(); }; }
+  if (!done) setTimeout(qrTabCard, 1500);
+}
+document.addEventListener('submit', ev => { const f = ev.target && ev.target.closest && ev.target.closest('[data-g2r]'); if (!f) return; ev.preventDefault(); const t = f.g.value.trim(), out = $('[data-g2rout]', f), S = app.S; if (!t || !S) return; const sd = app.role === 'B' || app.role === 'R' ? app.role : app.role && app.role[0] === 'T' ? app.role[1] : null, p = gridPoint(mapCfg(S), t), r = p && roomOf(p.pt); out.textContent = r ? t + ' is in ' + roomFull(S, r, sd) + '.' : 'The board cannot read that grid. Use MGRS, for example 59643 21955.'; });
 function refresh(force){
   if (!app.cfg || !app.role) return;
   const now = Date.now();
@@ -7840,6 +7991,9 @@ function refresh(force){
   const evKey = app.events.length + '|' + (app.events.length ? app.events[app.events.length - 1].id : '');
   let S = app.S;
   if (force || !S || app.replayKey !== evKey || now - (app.replayAt || 0) >= 3000){ if (!app.rcache || app.rcache.gid !== app.gid) app.rcache = { gid:app.gid }; S = replayCached(app.rcache, app.cfg, app.events, now); app.S = S; app.replayKey = evKey; app.replayAt = now; }
+  roomsBuild(S); roomPingTake(); if (app.pendingRoom) roomArrive(S);
+  { const on = !!ROOMS_LIVE; $$('[data-g2r],[data-g2rcard]').forEach(f => { if (f.hidden === on) f.hidden = !on; }); }
+  if (app.qrPing && $('#qrCard')){ app.qrPing = null; $('#qrCard').remove(); }
   const sig = (app.ocSelf || ((app.role === 'W' || app.role === 'A') && S.ocPos && Object.keys(S.ocPos).length) ? Math.floor(now / 20000) + '|' : '') + app.events.length + '|' + S.tickIdx + '|' + S.endex + '|' + S.reveal + '|' + Math.floor(S.g) + '|' + app.role + '|' + S.intelVer + '|' + S.ver + '|' + uavPhase(S, 'B') + uavPhase(S, 'R') + jammed(S, 'B') + jammed(S, 'R');
   if (force || sig !== app.sig){
     app.sig = sig;
