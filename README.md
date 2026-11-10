@@ -13,7 +13,7 @@ READ ALL SUPPORTING DOCUMENTS PROVIDED BY EXERCISES PRIOR TO USE
 | --- | --- |
 | `index.html` | The game board (this is the website) |
 | `dev/index.html` | Test copy of the board. Upload new versions here first. |
-| `marala_aar.py` | Turns a white cell backup into a printable after-action report |
+| `marala_aar.py` | Turns a white force backup into a printable after-action report |
 
 ## Updating the board
 
@@ -21,7 +21,7 @@ READ ALL SUPPORTING DOCUMENTS PROVIDED BY EXERCISES PRIOR TO USE
 2. When it works, upload the same file to the main top folder and commit. 
 3. Live in about a minute. Check **Actions** for the green check, then hard-refresh (Ctrl+Shift+R).
 
-## After-action report
+## After-action report (generates automatically at ENDEX
 
 One-time setup: install Python (tick **Add to PATH**), then run `pip install matplotlib`.
 
