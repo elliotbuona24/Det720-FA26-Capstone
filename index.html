@@ -158,6 +158,30 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 #vWhite:not(.aocv) [data-aoc-only]{display:none!important}
 #vWhite.aocv [data-wqcnt]{display:none!important}
 .white-grid>.wfsec{grid-column:1/-1!important}.white-grid>.cmdsec{grid-column:1/-1!important}
+.white-grid>.dsk{grid-column:1/-1!important}
+.dsk{display:grid;gap:14px;min-width:0}
+.dsk-head{display:grid;gap:10px;border-top:4px solid var(--side);padding-top:10px}
+.dsk-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dsk-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.escby-row{display:flex;justify-content:space-between;gap:8px;font-size:13px}.escby-row b{font-weight:600}.escby-row span{font-family:var(--mono);font-weight:700}.escby-row.B b,.escby-row.B span{color:var(--blu)}.escby-row.R b,.escby-row.R span{color:var(--red)}
+.dsk-wait button{justify-self:start;padding:4px 10px;font-size:13px;margin-top:2px}
+.dsk-main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:14px;align-items:start}
+.dsk-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.dsk-map.lmap{height:clamp(240px,32vh,360px)}
+.dsk .pic-list{max-height:clamp(300px,52vh,640px);overflow-y:auto;padding-right:4px}
+.dsk-dd>summary{cursor:pointer;list-style:none}.dsk-dd>summary::-webkit-details-marker{display:none}.dsk-dd>summary h3::before{content:'\25B8  '}.dsk-dd[open]>summary h3::before{content:'\25BE  '}.dsk-dd:not([open]){gap:0}
+.dsk-site.held{border-left:4px solid var(--side)}
+.dsk-pips{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dsk-pipset{display:inline-flex;gap:5px}
+.dsk-pip{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:var(--panel-2)}
+.dsk-pip.u-B{background:var(--blu);border-color:var(--blu)}.dsk-pip.u-R{background:var(--red);border-color:var(--red)}
+.dsk-notes{justify-content:flex-start}.dsk-notes .warn{color:var(--warn);font-weight:600}.dsk-foe{color:var(--ink);font-weight:600}
+.dsk-lines{display:grid;gap:3px;font-size:13.5px}
+.dsk-logs{display:flex;flex-direction:column;max-height:clamp(320px,56vh,700px);overflow-y:auto;padding-right:4px}
+.dsk-log{display:grid;grid-template-columns:44px auto minmax(0,1fr);gap:8px;align-items:baseline;padding:6px 2px;border-bottom:1px solid var(--line);font-size:13.5px;overflow-wrap:anywhere}
+.dsk-log.rej>span:last-child{color:var(--muted)}
+@media (max-width:1000px){.dsk-main{grid-template-columns:minmax(0,1fr)}.dsk-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.dsk-log{grid-template-columns:40px minmax(0,1fr)}.dsk-log .pic-tag{display:none}}
 .plan-it summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;list-style:none}.plan-it summary::-webkit-details-marker{display:none}.plan-it summary .tm{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;min-width:64px}.plan-it summary .ttl{flex:1 1 180px;min-width:0}
 .plan-body{display:grid;gap:6px;margin-top:8px;font-size:13px}.plan-body .ip-it{border-left:3px solid var(--line);padding:2px 0 2px 8px}.plan-body .ip-it.f{border-left-color:var(--bad)}.plan-body .opt.ok{color:var(--good);font-weight:700}
 .plan-it.done{opacity:.6}
@@ -5688,6 +5712,18 @@ function aidText(S, side, short){
   if (a.due != null) return (short ? 'Aid package ' + a.n + ' due ' : 'Aid package ' + a.n + ' is ready. Deliver it to the Marala Town office by ') + hhmm(a.due) + (a.hold || aidPending(S, side, a) ? (short ? ' (delivery report pending)' : '. A delivery report is awaiting White Force confirmation.') : short ? '' : '.');
   return (short ? 'Next aid package ' : 'Next aid package ready at ') + hhmm(a.next) + (short ? '' : '.') + (a.made || a.missed ? (short ? '' : ' Delivered ' + a.made + ', missed ' + a.missed + '.') : '');
 }
+function sideDue(S, side){
+  const mine = allProblems(S).map(P => ({ P, o:intelOpen(S, P.id, side) })).filter(x => x.o);
+  const due = [];
+  mine.forEach(({ P, o }) => { if (!o.done && !S.intel[side][P.id]) due.push({ t:o.due, h:'<b>Intel ' + pkgNum(S, P, side) + '</b> ' + esc(fillT(P.title).split(/ (?:--|\u00b7|\|) /)[0]) + ' answer' });
+    if (P.stmt && !S.statements[side + ':pkg:' + P.id]){ const d = stmtDue(S, side, { pkg:P }); if (d >= S.g) due.push({ t:d, h:'<b>Public statement</b> on intel ' + pkgNum(S, P, side) }); } });
+  S.incidents.forEach(i => { if (!S.statements[side + ':' + i.id]){ const d = stmtDue(S, side, { inc:i }); if (d >= S.g) due.push({ t:d, h:'<b>Public statement</b> on the ' + esc(i.grid) + ' explosion' }); } });
+  { const a = aidOf(S, side); if (a.on && a.due != null) due.push({ t:a.due, h:'<b>Aid package ' + a.n + '</b> to the town office' }); }
+  (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && !(q.res || {})[side] && (q.to === 'both' || q.to === 'public' || q.to === side)).forEach(q => due.push({ t:injEnd(q), h:'<b>' + esc(q.label) + '</b> (inject)' }));
+  { const cb = cubOpen(S, side); if (cb) due.push({ t:rhythmAt(cb), h:'<b>' + esc(cb.label) + '</b> to the AOC' }); RHYTHM.filter(x => x.kind === 'coc' && rhythmAt(x) >= S.g && rhythmAt(x) - S.g <= 20).forEach(x => due.push({ t:rhythmAt(x), h:'<b>' + esc(x.label) + '</b>' })); }
+  SITE_KEYS.forEach(k => { const st = S.sites[k]; if (st && st.contestBy && st.contestUntil > S.g && (st.contestBy === side || st.holder === side)) due.push({ t:st.contestUntil, h:'<b>Contention</b> at ' + esc(SITES[k].name) + (st.contestBy === side ? ' (yours)' : ' (against you)') }); });
+  return due.sort((a, b) => a.t - b.t);
+}
 function renderForcePic(S, side, v){
   const box = $('[data-fpic]', v); if (!box || box.hasAttribute('data-off')) return;
   const len = Math.max(1, END_G - START_G), started = S.clock.started, g = started ? Math.min(S.g, END_G) : START_G, el = Math.max(0, Math.floor(g - START_G)), left = Math.max(0, Math.ceil(END_G - g)), lvl = levelIndex(S.esc);
@@ -5703,15 +5739,7 @@ function renderForcePic(S, side, v){
   $('[data-fpmapn]', v).textContent = jm ? 'Datalink jammed until ' + hhmm(S.jam[side]) : 'Fog of war: only what your force knows';
   { const lg = (real ? realLegend() : legendHTML(S.reveal ? null : side)) + mapKeyHTML(false), le = $('[data-fplegend]', v); if (le.dataset.h !== lg){ le.dataset.h = lg; le.innerHTML = lg; } }
   const mine = allProblems(S).map(P => ({ P, o:intelOpen(S, P.id, side) })).filter(x => x.o);
-  const due = [];
-  mine.forEach(({ P, o }) => { if (!o.done && !S.intel[side][P.id]) due.push({ t:o.due, h:'<b>Intel ' + pkgNum(S, P, side) + '</b> ' + esc(fillT(P.title).split(/ (?:--|\u00b7|\|) /)[0]) + ' answer' });
-    if (P.stmt && !S.statements[side + ':pkg:' + P.id]){ const d = stmtDue(S, side, { pkg:P }); if (d >= S.g) due.push({ t:d, h:'<b>Public statement</b> on intel ' + pkgNum(S, P, side) }); } });
-  S.incidents.forEach(i => { if (!S.statements[side + ':' + i.id]){ const d = stmtDue(S, side, { inc:i }); if (d >= S.g) due.push({ t:d, h:'<b>Public statement</b> on the ' + esc(i.grid) + ' explosion' }); } });
-  { const a = aidOf(S, side); if (a.on && a.due != null) due.push({ t:a.due, h:'<b>Aid package ' + a.n + '</b> to the town office' }); }
-  (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && !(q.res || {})[side] && (q.to === 'both' || q.to === 'public' || q.to === side)).forEach(q => due.push({ t:injEnd(q), h:'<b>' + esc(q.label) + '</b> (inject)' }));
-  { const cb = cubOpen(S, side); if (cb) due.push({ t:rhythmAt(cb), h:'<b>' + esc(cb.label) + '</b> to the AOC' }); RHYTHM.filter(x => x.kind === 'coc' && rhythmAt(x) >= S.g && rhythmAt(x) - S.g <= 20).forEach(x => due.push({ t:rhythmAt(x), h:'<b>' + esc(x.label) + '</b>' })); }
-  SITE_KEYS.forEach(k => { const st = S.sites[k]; if (st && st.contestBy && st.contestUntil > S.g && (st.contestBy === side || st.holder === side)) due.push({ t:st.contestUntil, h:'<b>Contention</b> at ' + esc(SITES[k].name) + (st.contestBy === side ? ' (yours)' : ' (against you)') }); });
-  due.sort((a, b) => a.t - b.t);
+  const due = sideDue(S, side);
   const dh = due.length ? due.slice(0, 10).map(d => { const m = Math.ceil(d.t - S.g); return '<div class="pic-item"><div class="pic-meta"><span class="mono">' + hhmm(d.t) + '</span><span class="' + (m <= 5 ? 'warn' : '') + '">' + (m <= 0 ? 'now' : 'in ' + m + ' min') + '</span></div><div class="pic-text">' + d.h + '</div></div>'; }).join('') : '<div class="pic-empty">Nothing due right now.</div>';
   $('[data-fpduen]', v).textContent = due.length ? due.length + ' due' : '';
   { const e = $('[data-fpdue]', v); if (e.dataset.h !== dh){ e.dataset.h = dh; e.innerHTML = dh; } }
@@ -5926,6 +5954,7 @@ const TEMPLATES = [
 const PIC_POC_LIFE = 30;
 function picTo(to){ return to === 'B' || to === 'R' ? '<span class="chip ' + to + '">' + SIDES[to].name + '</span>' : to === 'public' ? '<span class="chip">Public</span>' : to === 'poc' ? '<span class="chip">All POCs</span>' : '<span class="chip both">Both</span>'; }
 function picAgo(m){ m = Math.max(0, Math.round(m)); return m < 1 ? 'just now' : m + ' min ago'; }
+function escCausedHTML(S){ return ['B', 'R'].map(sd => '<div class="escby-row ' + sd + '"><b>' + SIDES[sd].name + ' Escalation Caused:</b><span>' + (S.escBy[sd] || 0) + '</span></div>').join(''); }
 function renderPic(S, v){
   const box = $('[data-pic]', v); if (!box || box.hasAttribute('data-off')) return;
   const len = Math.max(1, END_G - START_G), started = S.clock.started, g = started ? Math.min(S.g, END_G) : START_G, el = Math.max(0, Math.floor(g - START_G)), left = Math.max(0, Math.ceil(END_G - g)), lvl = levelIndex(S.esc);
@@ -5935,6 +5964,7 @@ function renderPic(S, v){
   $('[data-picfill]', v).style.width = (S.endex ? 100 : el / len * 100).toFixed(1) + '%';
   $('[data-picst]', v).textContent = 'STARTEX ' + hhmm(START_G); $('[data-picen]', v).textContent = 'ENDEX ' + hhmm(END_G);
   $('[data-picesc]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + '</span> <span class="mono">' + S.esc + '</span>';
+  { const e = $('[data-picescby]', v), h = escCausedHTML(S); if (e && e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
   $('[data-picsb]', v).textContent = score(S, 'B').total; $('[data-picsr]', v).textContent = score(S, 'R').total;
   const fv = fogSide(S), mapEl = $('[data-picmap]', v), pocBox = $('[data-picpoc]', v), showPoc = pocBox.checked && !fv, now = Date.now(); pocBox.disabled = !!fv;
   const pocs = Object.entries(S.ocPos || {}).map(([id, x]) => ({ o:S.ocs[id], x, age:(now - x.ts) / 60000 })).filter(r => r.o && !r.o.removed && r.age < PIC_POC_LIFE);
@@ -5969,6 +5999,148 @@ function renderPic(S, v){
   { const P = S.aocPri || {}, h = ['B', 'R'].map(sd => { const r = P[sd]; return '<div class="side-' + sd + '">' + priHTML(r, false, SIDES[sd].name) + '</div>'; }).join('');
     const el = $('[data-pricur]', v); if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
   renderAssets(S, v);
+}
+const DESK_KINDS = [['all', 'All'], ['site', 'Sites'], ['rep', 'Reports and 9-lines'], ['intel', 'Intel and statements'], ['aoc', 'AOC and injects'], ['act', 'Actions and orders']];
+const DESK_TYPES = { site:['claim', 'act_contend', 'site_set', 'site_contested', 'ct_req', 'ct_res', 'site_timer', 'office', 'guess_ack'], rep:['contact', 'ied', 'cache', 'nine', 'nine_res', 'spoof_rep', 'report_ack', 'verdict', 'act_strike', 'bda', 'detonation', 'iedhit', 'firstfire', 'returnfire', 'provocation', 'sabotage', 'civaid', 'conduct', 'oob_ack'], intel:['intel_answer', 'intel_close', 'intel_deploy', 'act_statement'], aoc:['cub', 'cub_form', 'cub_reply', 'perstat', 'perstat_aoc', 'perstat_wf', 'aoc_req', 'aoc_grant', 'aoc_roe', 'aoc_auth', 'aoc_hold', 'aoc_nom', 'aoc_pri', 'aoc_pri_ack', 'inj_done', 'inj_claim', 'inj_claim_res', 'inj_seen_no', 'injq_send'], act:['act_drone', 'act_uav', 'act_jam', 'act_show', 'act_aid', 'aid_del', 'act_wpreq', 'order', 'liaison', 'handover_offer', 'handover_reply'] };
+function deskKind(l){ for (const k in DESK_TYPES) if (DESK_TYPES[k].includes(l.type)) return k; return l.type === 'tick' && /intel package/i.test(l.text) ? 'intel' : 'other'; }
+function deskCards(n){
+  const L = n === 6 ? [[1, 'Field cipher'], [2, 'Intel'], [0, 'GLP'], [3, 'Dead drop'], [5, 'Field cipher'], [4, 'GLP']] : n === 4 ? [[1, 'Field cipher'], [0, 'GLP'], [3, 'Field cipher'], [2, 'GLP']] : null;
+  return L ? L.map(([i, t], j) => ({ i, t:'Card ' + (j + 1) + ': ' + t })) : Array.from({ length:n }, (_, i) => ({ i, t:'Code word ' + (i + 1) }));
+}
+function deskEvIdx(){ const evs = app.events || []; if (!app._dskIdx || app._dskIdx.n !== evs.length || app._dskIdx.src !== evs){ app._dskIdx = { n:evs.length, src:evs, m:new Map(evs.map(e => [e.id, e])) }; } return app._dskIdx.m; }
+function deskTeamAt(S, M, t){ const f = whiteFix(t), pt = f ? (f.gps || f.rep) : null, sq = pt ? squareOf(M, pt) : null; return { f, pt, sq, site:sq ? SITE_KEYS.find(k => SITES[k].grid === sq) || null : null, age:f ? Math.max(0, Math.floor(S.g - f.g)) : null }; }
+function deskSites(S, s, M){
+  const ev = deskEvIdx(), o = OTHER[s];
+  const here = sd => { const m = {}; liveTeams(S, sd).forEach(t => { const a = deskTeamAt(S, M, t); if (a.site && a.age != null && a.age <= 10) (m[a.site] = m[a.site] || []).push(teamLabel(t)); }); return m; };
+  const mineAt = here(s), theirsAt = here(o);
+  return SITE_KEYS.map(k => {
+    const st = S.sites[k] || {}, c = (S.siteCodes && S.siteCodes[k]) || ((app.cfg && app.cfg.codes) || {})[k];
+    const cap = !c ? [] : typeof c === 'string' ? [c] : Array.isArray(c) ? c : (c.cap || []), def = c && c.def && c.def.length ? c.def : null;
+    const used = {}, defs = [];
+    S.claims.forEach(cl => { if (cl.site !== k || cl.status !== 'accepted' || cl.note === 'Already yours.') return; const e = ev.get(cl.id), h = e && e.p && e.p.code; if (!h) return;
+      if (/^Defended/.test(cl.note)){ defs.push({ side:cl.side, g:cl.g }); return; }
+      const i = cap.indexOf(h); if (i >= 0 && !used[i]) used[i] = { side:cl.side, g:cl.g }; });
+    const slots = deskCards(cap.length).map(x => Object.assign({}, x, { u:used[x.i] || null }));
+    const bad = S.claims.filter(cl => cl.site === k && cl.side === s && cl.status !== 'accepted' && /did not match/.test(cl.note)).length;
+    const lock = S.codeLock && S.codeLock[s + ':' + k] != null && S.g < S.codeLock[s + ':' + k] ? S.codeLock[s + ':' + k] : null;
+    return { k, st, slots, def, defs, bad, lock, mine:mineAt[k] || [], theirs:theirsAt[k] || [] };
+  });
+}
+function deskSitesHTML(S, s, rows){
+  if (!rows.length) return '<div class="pic-empty">No sites on the board.</div>';
+  const o = OTHER[s];
+  return rows.map(r => {
+    const st = r.st, nm = SITES[r.k].name, mineN = r.slots.filter(x => x.u && x.u.side === s).length, theirN = r.slots.filter(x => x.u && x.u.side === o).length;
+    let hold = st.holder === s ? '<span class="chip ok">Held since ' + hhmm(st.since) + '</span>' : st.holder ? '<span class="chip no">' + esc(SIDES[st.holder].name) + ' holds</span>' : '<span class="chip">Not held</span>';
+    if (st.contestBy && st.contestUntil > S.g) hold += ' <span class="chip wait">' + (st.contestBy === s ? 'Contending' : 'Under contention') + ' until ' + hhmm(st.contestUntil) + '</span>';
+    else if (st.contested) hold += ' <span class="chip wait">Stalemate</span>';
+    const pips = r.slots.map(x => '<span class="dsk-pip' + (x.u ? ' u-' + x.u.side : '') + '" title="' + esc(x.t + (x.u ? ': used by ' + SIDES[x.u.side].name + ' at ' + hhmm(x.u.g) : ': not used yet')) + '"></span>').join('');
+    const notes = [];
+    if (r.mine.length) notes.push('<span>Here now: ' + esc(r.mine.join(', ')) + '</span>');
+    if (r.theirs.length) notes.push('<span class="dsk-foe">' + esc(SIDES[o].name) + ' here: ' + esc(r.theirs.join(', ')) + '</span>');
+    if (r.defs.some(d => d.side === s)) notes.push('<span>Defended ' + r.defs.filter(d => d.side === s).map(d => hhmm(d.g)).join(', ') + '</span>');
+    if (r.lock) notes.push('<span class="warn">Code words locked until ' + hhmm(r.lock) + '</span>');
+    else if (r.bad) notes.push('<span>' + r.bad + ' wrong code word' + (r.bad === 1 ? '' : 's') + '</span>');
+    return '<div class="pic-item dsk-site' + (st.holder === s ? ' held' : '') + '"><div class="pic-it"><b>' + esc(nm) + ' <span class="small muted mono">' + esc(SITES[r.k].grid) + '</span></b>' + hold + '</div>' +
+      (r.slots.length ? '<div class="dsk-pips"><span class="dsk-pipset">' + pips + '</span><span class="small muted">' + mineN + ' of ' + r.slots.length + ' code words used by this force' + (theirN ? ', ' + theirN + ' by ' + esc(SIDES[o].name) : '') + '</span></div>' : '') +
+      (notes.length ? '<div class="pic-meta dsk-notes">' + notes.join('') + '</div>' : '') + '</div>';
+  }).join('');
+}
+function deskTeamsHTML(S, s, M){
+  const ts = liveTeams(S, s).slice().sort((a, b) => String(a.num || '~' + a.name).localeCompare(String(b.num || '~' + b.name), undefined, { numeric:true }));
+  if (!ts.length) return '<div class="pic-empty">No ' + esc(SIDES[s].name) + ' fireteams signed in yet.</div>';
+  return ts.map(t => {
+    const a = deskTeamAt(S, M, t), pocs = Object.values(S.ocs).filter(x => !x.removed && x.side === s && x.team === t.id).map(x => x.name);
+    const ord = S.orders.filter(x => x.side === s && (x.team === t.id || x.team === 'all')).pop(), msg = S.tchats.filter(x => x.side === s && x.team === t.id).pop();
+    const reqs = S.ctReqs.filter(x => x.side === s && x.team === t.id && x.status === 'open'), nines = S.nines.filter(x => x.side === s && x.team === t.id && x.status === 'open');
+    const where = !a.pt ? 'No position yet' : a.site ? 'At ' + SITES[a.site].name + ' (' + a.sq + ')' : a.sq ? 'Square ' + a.sq : 'Off the map';
+    const fresh = a.age == null ? '' : '<span class="chip' + (a.age > 10 ? ' wait' : '') + '">' + (a.age > 10 ? 'Stale, ' : '') + (a.age < 1 ? 'just now' : a.age + ' min ago') + '</span>';
+    const lines = [];
+    if (t.status) lines.push('<div><span class="pic-tag">Status</span> ' + esc(t.status) + '</div>');
+    if (ord) lines.push('<div><span class="pic-tag">Order ' + hhmm(ord.g) + '</span> ' + esc(ord.text) + (ord.team === 'all' ? ' <span class="small muted">(all teams)</span>' : '') + '</div>');
+    if (msg) lines.push('<div><span class="pic-tag">' + (msg.from === 'c2' ? 'From C2' : 'To C2') + ' ' + hhmm(msg.g) + '</span> ' + esc(msg.text) + '</div>');
+    const chips = reqs.map(x => '<span class="chip wait">Asks to contend ' + esc(SITES[x.site] ? SITES[x.site].name : x.site) + '</span>').concat(nines.map(x => '<span class="chip wait">9-line ' + hhmm(x.g) + ' waiting</span>')).join(' ');
+    return '<div class="pic-item"><div class="pic-it"><b>' + esc(teamLabel(t)) + '</b><span class="small">' + esc(where) + '</span>' + fresh + '</div>' +
+      (pocs.length ? '<div class="pic-meta"><span>POC with them: ' + esc(pocs.join(', ')) + '</span></div>' : '') +
+      (lines.length ? '<div class="pic-text dsk-lines">' + lines.join('') + '</div>' : '') + (chips ? '<div>' + chips + '</div>' : '') + '</div>';
+  }).join('');
+}
+function deskIntelHTML(S, s){
+  const L = allProblems(S).map(P => ({ P, o:intelOpen(S, P.id, s) })).filter(x => x.o).sort((a, b) => b.o.g - a.o.g);
+  if (!L.length) return '<div class="pic-empty">No intel packages sent to this force yet.</div>';
+  return L.map(({ P, o }) => { const ans = S.intel[s][P.id], rem = Math.max(0, Math.ceil(o.due - S.g));
+    const st = o.done ? (ans ? '<span class="chip ' + (ans.pts >= 3 ? 'ok' : ans.pts ? 'wait' : 'no') + '">+' + (ans.pts || 0) + ': answer ' + (ans.okA ? 'right' : ans.partA ? 'partly right' : 'wrong') + ', false intel ' + (ans.okF ? 'right' : 'wrong') + '</span>' : '<span class="chip no">No answer</span>')
+      : ans ? '<span class="chip ok">Locked in ' + hhmm(ans.g) + '</span>' : '<span class="chip wait">Open, ' + rem + ' min left</span>';
+    const stm = P.stmt ? (S.statements[s + ':pkg:' + P.id] ? '<span class="chip ok">Statement made</span>' : '<span class="chip">Statement expected</span>') : '';
+    return '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Intel ' + pkgNum(S, P, s) + '</span><b>' + esc(fillT(P.title)) + '</b></div><div class="pic-meta"><span>Out ' + hhmm(o.g) + ', due ' + hhmm(o.due) + '</span><span>' + st + ' ' + stm + '</span></div></div>'; }).join('');
+}
+function deskLogHTML(S, s){
+  const f = (app.deskAct || {})[s] || 'all';
+  const L = S.log.filter(l => l.side === s && (f === 'all' || deskKind(l) === f)).slice(-150).reverse();
+  if (!L.length) return '<div class="pic-empty">' + (f === 'all' ? 'Nothing yet. Claims, reports, requests and answers appear here as the force acts.' : 'Nothing of this kind yet.') + '</div>';
+  const tag = { site:'Site', rep:'Report', intel:'Intel', aoc:'AOC', act:'Action', other:'Board' };
+  return L.map(l => '<div class="dsk-log' + (l.status === 'rejected' ? ' rej' : '') + '"><span class="mono">' + hhmm(l.g) + '</span><span class="pic-tag">' + tag[deskKind(l)] + '</span><span>' + esc(l.text) + (l.status === 'rejected' ? ' <span class="chip no">Refused</span>' : '') + '</span></div>').join('');
+}
+function deskHTML(s){
+  const k = s === 'B' ? 'bdesk' : 'rdesk', nm = SIDES[s].name;
+  return '<section class="dsk side-' + s + '" data-sec="' + k + '" data-desk="' + s + '" data-aoc-only>' +
+    '<div class="dsk-head"><div class="dsk-title"><span class="badge">' + esc(nm) + ' desk</span><span class="small muted" data-dskasof></span></div>' +
+      '<div class="dsk-tiles"><div class="pic-tile"><span class="k">Points</span><b class="pic-mid" data-dskpts></b><span class="pic-sub" data-dskhn></span></div>' +
+      '<div class="pic-tile"><span class="k">Sites held</span><b class="pic-mid" data-dsksites></b><span class="pic-sub" data-dsksitesub></span></div>' +
+      '<div class="pic-tile"><span class="k">Fireteams</span><b class="pic-mid" data-dskteams></b><span class="pic-sub" data-dskteamsub></span></div>' +
+      '<div class="pic-tile"><span class="k">Escalation caused</span><b class="pic-mid" data-dskesc></b></div>' +
+      '<div class="pic-tile dsk-wait"><span class="k">Waiting on the AOC</span><b class="pic-mid" data-dskwait></b><button type="button" data-deskcmd="' + s + '">Open ' + esc(nm) + ' in Command</button></div></div></div>' +
+    '<div class="dsk-main"><div class="dsk-col">' +
+      '<div class="pic-card"><div class="pic-h"><h3>Sites</h3><span data-dsksiten></span></div><p class="small muted" style="margin:0">Each dot is one capture code word. Filled in this force’s color when they used it, in the other force’s color when the enemy did. Hover a dot for the card and time.</p><div class="pic-list" data-dsksitelist></div></div>' +
+      '<details class="pic-card dsk-dd"><summary class="pic-h"><h3>Fireteams</h3><span data-dskteamn></span></summary><div class="pic-list" data-dskteamlist></div></details>' +
+      '<div class="pic-card"><div class="pic-h"><h3>What they have done</h3><span data-dsklogn></span></div><div class="seg pillf" role="group" aria-label="Show">' + DESK_KINDS.map(([x, n]) => '<button type="button" data-dskact="' + x + '" aria-pressed="' + (x === 'all') + '">' + n + '</button>').join('') + '</div><div class="dsk-logs" data-dsklog></div></div>' +
+    '</div><div class="dsk-col">' +
+      '<div class="pic-card"><div class="pic-h"><h3>Map</h3><span class="small muted" data-dskmapn></span></div><div class="fogseg" role="group" aria-label="Map view"><button type="button" data-dskfog="" aria-pressed="true">All (no fog of war)</button><button type="button" data-dskfog="B" aria-pressed="false">Blue Force view</button><button type="button" data-dskfog="R" aria-pressed="false">Red Force view</button></div><div class="dsk-map" data-dskmap></div></div>' +
+      '<div class="pic-card"><div class="pic-h"><h3>Due and upcoming</h3><span data-dskduen></span></div><div class="pic-list pic-due" data-dskdue></div></div>' +
+      '<details class="pic-card dsk-dd"><summary class="pic-h"><h3>Intel packages</h3><span data-dskinteln></span></summary><div class="pic-list" data-dskintel></div></details>' +
+    '</div></div></section>';
+}
+function deskSet(el, h){ if (el && el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
+function renderDesk(S, v){
+  const M = mapCfg(S);
+  ['B', 'R'].forEach(s => {
+    const box = $('[data-desk="' + s + '"]', v); if (!box) return;
+    const nW = cmdWaitHTML(S, s).filter(x => !x.info).length;
+    { const c = $('[data-dskcnt="' + s + '"]', v); if (c){ c.hidden = !nW; c.textContent = nW; } }
+    if (box.hasAttribute('data-off')) return;
+    const q = sel => $(sel, box), txt = (sel, t) => { const e = q(sel); if (e && e.textContent !== String(t)) e.textContent = t; };
+    txt('[data-dskasof]', 'As of ' + hhmm(S.g));
+    txt('[data-dskpts]', score(S, s).total); txt('[data-dskhn]', 'Diplomatic points ' + S.hn[s] + (S.office[s] ? ', town office open' : ''));
+    const rows = deskSites(S, s, M), held = rows.filter(r => r.st.holder === s).length, contest = rows.filter(r => (r.st.contestBy && r.st.contestUntil > S.g && (r.st.holder === s || r.st.contestBy === s)) || (r.st.contested && r.st.holder === s)).length;
+    txt('[data-dsksites]', held + ' of ' + rows.length); txt('[data-dsksitesub]', contest ? contest + ' under contention or stalemate' : 'None contested');
+    const ts = liveTeams(S, s), stale = ts.filter(t => { const a = deskTeamAt(S, M, t); return a.age == null || a.age > 10; }).length;
+    txt('[data-dskteams]', ts.length); txt('[data-dskteamsub]', ts.length ? (stale ? stale + ' with no position in 10 min' : 'All reported in the last 10 min') : 'None signed in');
+    txt('[data-dskwait]', nW);
+    txt('[data-dskesc]', S.escBy[s] || 0);
+    txt('[data-dsksiten]', held + ' held'); txt('[data-dskteamn]', ts.length + ' signed in');
+    deskSet(q('[data-dsksitelist]'), deskSitesHTML(S, s, rows));
+    deskSet(q('[data-dskteamlist]'), deskTeamsHTML(S, s, M));
+    deskSet(q('[data-dsklog]'), deskLogHTML(S, s));
+    txt('[data-dsklogn]', S.log.filter(l => l.side === s).length + ' entries');
+    const due = sideDue(S, s), dh = (due.length ? due.slice(0, 12).map(d => { const m = Math.ceil(d.t - S.g); return '<div class="pic-item"><div class="pic-meta"><span class="mono">' + hhmm(d.t) + '</span><span class="' + (m <= 5 ? 'warn' : '') + '">' + (m <= 0 ? 'now' : 'in ' + m + ' min') + '</span></div><div class="pic-text">' + d.h + '</div></div>'; }).join('') : '<div class="pic-empty">Nothing due right now.</div>');
+    txt('[data-dskduen]', due.length ? due.length + ' due' : ''); deskSet(q('[data-dskdue]'), dh);
+    deskSet(q('[data-dskintel]'), deskIntelHTML(S, s));
+    { const n = allProblems(S).filter(P => intelOpen(S, P.id, s)).length; txt('[data-dskinteln]', n ? n + ' sent' : ''); }
+    const fv = S.reveal ? null : ((app.deskFog || {})[s] || null);
+    $$('[data-dskfog]', box).forEach(b => b.setAttribute('aria-pressed', String((b.dataset.dskfog || null) === fv)));
+    txt('[data-dskmapn]', fv ? fogNote(S, fv) : 'No fog of war');
+    renderMapInto(q('[data-dskmap]'), S, fv, { noPins:true, deployedOnly:true });
+  });
+}
+function wireDesk(v){
+  if (v.dataset.dskwired) return; v.dataset.dskwired = '1';
+  v.addEventListener('click', ev => {
+    const box = ev.target.closest('[data-desk]'); if (!box) return; const s = box.dataset.desk;
+    const fb = ev.target.closest('[data-dskfog]'), ab = ev.target.closest('[data-dskact]'), cb = ev.target.closest('[data-deskcmd]');
+    if (fb){ app.deskFog = Object.assign({}, app.deskFog, { [s]:fb.dataset.dskfog }); refresh(true); return; }
+    if (ab){ app.deskAct = Object.assign({}, app.deskAct, { [s]:ab.dataset.dskact }); $$('[data-dskact]', box).forEach(b => b.setAttribute('aria-pressed', String(b === ab))); if (app.S) deskSet($('[data-dsklog]', box), deskLogHTML(app.S, s)); return; }
+    if (cb){ const f = $('[data-cmdf="' + s + '"]', v); if (f) f.click(); const t = $('[data-wtab="cmd"]', v); if (t) t.click(); }
+  });
 }
 function renderPlan(S, v){
   const box = $('[data-plansec]', v); if (!box || box.hasAttribute('data-off')) return;
@@ -6983,7 +7155,7 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <nav class="wnav" data-wnav aria-label="White Force sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['cmd', 'Command', 'data-cmdcnt'], ['wf', 'White Force'], ['plan', 'Upcoming'], ['queue', 'Queue'], ['send', 'Send', 'data-sendcnt'], ['resp', 'Response Windows', 'data-respcnt'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log/Points'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup'], ['set', 'Settings'], ['all', 'All']].map(([k, n, c]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup', 'send', 'resp'].includes(k) ? ' data-aoc-off' : k === 'wf' || k === 'plan' || k === 'cmd' ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-wnav aria-label="White Force sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['cmd', 'Command', 'data-cmdcnt'], ['wf', 'White Force'], ['plan', 'Upcoming'], ['queue', 'Queue'], ['send', 'Send', 'data-sendcnt'], ['resp', 'Response Windows', 'data-respcnt'], ['bdesk', 'Blue desk', 'data-dskcnt="B"'], ['rdesk', 'Red desk', 'data-dskcnt="R"'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log/Points'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup'], ['set', 'Settings'], ['all', 'All']].map(([k, n, c]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup', 'send', 'resp', 'map'].includes(k) ? ' data-aoc-off' : ['wf', 'plan', 'cmd', 'bdesk', 'rdesk'].includes(k) ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
@@ -7029,11 +7201,12 @@ function buildWhite(){
           <div class="pic-card"><div class="pic-h"><h3>Full map</h3><span class="small muted">Includes markers the forces cannot see yet (faded)</span></div><div class="map-wrap" data-planmap></div><div class="row" style="justify-content:flex-start"><button type="button" data-planfull style="flex:0 0 auto">Full screen map</button></div></div>
         </div>
       </section>
+      ${deskHTML('B')}${deskHTML('R')}
       <section class="pic" data-sec="pic" data-pic>
         <div class="pic-head">
           <div class="pic-tile"><span class="k">Board time</span><b class="mono pic-big" data-clock>—</b><span class="pic-sub" data-picphase></span></div>
           <div class="pic-tile pic-prog"><div class="pic-row"><span class="k" data-picel></span><span class="k" data-picleft></span></div><div class="pic-bar"><i data-picfill></i></div><div class="pic-row pic-ends"><span data-picst></span><span data-picen></span></div></div>
-          <div class="pic-tile"><span class="k">Escalation</span><b class="pic-mid" data-picesc></b></div>
+          <div class="pic-tile"><span class="k">Escalation</span><b class="pic-mid" data-picesc></b><div data-picescby></div></div>
           <div class="pic-tile"><span class="k">Points</span><div class="pic-score"><b class="B" data-picsb></b><span>:</span><b class="R" data-picsr></b></div></div>
         </div>
         <div class="pic-main">
@@ -7331,10 +7504,10 @@ function buildWhite(){
   const setTab = (k, scroll) => {
     $$('[data-wtab]', v).forEach(b => b.setAttribute('aria-selected', b.dataset.wtab === k ? 'true' : 'false'));
     const sk = k === 'queue' && v.classList.contains('aocv') ? 'score' : k;
-    $$('[data-sec]', v).forEach(el => { const sec = el.dataset.sec.split(' '), on = k === 'all' ? !sec.includes('pic') && !sec.includes('plan') && !sec.includes('cmd') && !sec.includes('set') : sec.includes(sk); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
+    $$('[data-sec]', v).forEach(el => { const sec = el.dataset.sec.split(' '), on = k === 'all' ? !sec.includes('pic') && !sec.includes('plan') && !sec.includes('cmd') && !sec.includes('set') && !sec.includes('bdesk') && !sec.includes('rdesk') : sec.includes(sk); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
     $('[data-wgrid]', v).classList.toggle('filtered', k !== 'all');
     $('[data-wgrid]', v).classList.toggle('picmode', k === 'pic');
-    if (['pic', 'wf', 'plan', 'cmd', 'log', 'queue', 'all'].includes(k)) setTimeout(() => refresh(true), 0);
+    if (['pic', 'wf', 'plan', 'cmd', 'log', 'queue', 'all', 'bdesk', 'rdesk'].includes(k)) setTimeout(() => refresh(true), 0);
     if (k === 'intel'){ const f = $('[data-ipbuild]', v); if (f) f.open = true; }
     if (k === 'setup'){ const f = $('[data-mapsetup]', v); if (f) f.open = true; }
     pref.set('marala-wtab', k);
@@ -8119,7 +8292,7 @@ function renderWhite(S, now){
   const voids = app.events.filter(e => e.type === 'void').length;
   if (app.multi){ const ng = $('[data-newgame]', v), rs = $('[data-restore]', v); if (ng) ng.hidden = true; if (rs) rs.hidden = true; }
   renderPic(S, v);
-  if (app.role === 'A'){ wireCmd(v); renderCmd(S, v); renderWF(S, v); renderPlan(S, v); }
+  if (app.role === 'A'){ wireCmd(v); renderCmd(S, v); renderWF(S, v); renderPlan(S, v); wireDesk(v); renderDesk(S, v); }
   if (app.role === 'W') renderPropPlan(S, v);
   propNotify(S);
   $('[data-gameinfo]', v).textContent = (app.cfg && app.cfg.name ? app.cfg.name + ' - ' : '') + app.events.length + ' events' + (voids ? ' (' + voids + ' voided)' : '') + (app.mode === 'local' ? ' - Saved on this computer' : ' - Shared');
