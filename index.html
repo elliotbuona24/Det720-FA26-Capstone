@@ -163,6 +163,10 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .dsk-head{display:grid;gap:10px;border-top:4px solid var(--side);padding-top:10px}
 .dsk-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .dsk-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.escby{position:relative;margin-top:2px}.escby>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px}.escby>summary::-webkit-details-marker{display:none}
+.escby-bar{flex:1 1 auto;display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--panel-2)}.escby-bar i{display:block;height:100%;transition:width .6s}.escby-bar i.B{background:var(--blu)}.escby-bar i.R{background:var(--red)}.escby.none .escby-bar i{opacity:.25}
+.escby>summary>b.B{color:var(--blu)}.escby>summary>b.R{color:var(--red)}
+.escby-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:1200;min-width:250px;display:grid;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .escby-row{display:flex;justify-content:space-between;gap:8px;font-size:13px}.escby-row b{font-weight:600}.escby-row span{font-family:var(--mono);font-weight:700}.escby-row.B b,.escby-row.B span{color:var(--blu)}.escby-row.R b,.escby-row.R span{color:var(--red)}
 .dsk-wait button{justify-self:start;padding:4px 10px;font-size:13px;margin-top:2px}
 .dsk-main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:14px;align-items:start}
@@ -5954,7 +5958,6 @@ const TEMPLATES = [
 const PIC_POC_LIFE = 30;
 function picTo(to){ return to === 'B' || to === 'R' ? '<span class="chip ' + to + '">' + SIDES[to].name + '</span>' : to === 'public' ? '<span class="chip">Public</span>' : to === 'poc' ? '<span class="chip">All POCs</span>' : '<span class="chip both">Both</span>'; }
 function picAgo(m){ m = Math.max(0, Math.round(m)); return m < 1 ? 'just now' : m + ' min ago'; }
-function escCausedHTML(S){ return ['B', 'R'].map(sd => '<div class="escby-row ' + sd + '"><b>' + SIDES[sd].name + ' Escalation Caused:</b><span>' + (S.escBy[sd] || 0) + '</span></div>').join(''); }
 function renderPic(S, v){
   const box = $('[data-pic]', v); if (!box || box.hasAttribute('data-off')) return;
   const len = Math.max(1, END_G - START_G), started = S.clock.started, g = started ? Math.min(S.g, END_G) : START_G, el = Math.max(0, Math.floor(g - START_G)), left = Math.max(0, Math.ceil(END_G - g)), lvl = levelIndex(S.esc);
@@ -5964,7 +5967,7 @@ function renderPic(S, v){
   $('[data-picfill]', v).style.width = (S.endex ? 100 : el / len * 100).toFixed(1) + '%';
   $('[data-picst]', v).textContent = 'STARTEX ' + hhmm(START_G); $('[data-picen]', v).textContent = 'ENDEX ' + hhmm(END_G);
   $('[data-picesc]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + '</span> <span class="mono">' + S.esc + '</span>';
-  { const e = $('[data-picescby]', v), h = escCausedHTML(S); if (e && e.dataset.h !== h){ e.dataset.h = h; e.innerHTML = h; } }
+  { const e = $('[data-picescby]', v); if (e){ const n = { B:S.escBy.B || 0, R:S.escBy.R || 0 }, sum = n.B + n.R; ['B', 'R'].forEach(sd => { $('[data-escn="' + sd + '"]', e).textContent = n[sd]; $('[data-escn2="' + sd + '"]', e).textContent = n[sd]; $('[data-escw="' + sd + '"]', e).style.width = (sum ? n[sd] / sum * 100 : 50).toFixed(1) + '%'; }); e.classList.toggle('none', !sum); } }
   $('[data-picsb]', v).textContent = score(S, 'B').total; $('[data-picsr]', v).textContent = score(S, 'R').total;
   const fv = fogSide(S), mapEl = $('[data-picmap]', v), pocBox = $('[data-picpoc]', v), showPoc = pocBox.checked && !fv, now = Date.now(); pocBox.disabled = !!fv;
   const pocs = Object.entries(S.ocPos || {}).map(([id, x]) => ({ o:S.ocs[id], x, age:(now - x.ts) / 60000 })).filter(r => r.o && !r.o.removed && r.age < PIC_POC_LIFE);
@@ -7206,7 +7209,7 @@ function buildWhite(){
         <div class="pic-head">
           <div class="pic-tile"><span class="k">Board time</span><b class="mono pic-big" data-clock>—</b><span class="pic-sub" data-picphase></span></div>
           <div class="pic-tile pic-prog"><div class="pic-row"><span class="k" data-picel></span><span class="k" data-picleft></span></div><div class="pic-bar"><i data-picfill></i></div><div class="pic-row pic-ends"><span data-picst></span><span data-picen></span></div></div>
-          <div class="pic-tile"><span class="k">Escalation</span><b class="pic-mid" data-picesc></b><div data-picescby></div></div>
+          <div class="pic-tile"><span class="k">Escalation</span><b class="pic-mid" data-picesc></b><details class="escby" data-picescby><summary title="Escalation caused by each force. Click for the numbers."><b class="B" data-escn="B"></b><span class="escby-bar"><i class="B" data-escw="B"></i><i class="R" data-escw="R"></i></span><b class="R" data-escn="R"></b></summary><div class="escby-pop"><div class="escby-row B"><b>Blue Force Escalation Caused:</b><span data-escn2="B"></span></div><div class="escby-row R"><b>Red Force Escalation Caused:</b><span data-escn2="R"></span></div></div></details></div>
           <div class="pic-tile"><span class="k">Points</span><div class="pic-score"><b class="B" data-picsb></b><span>:</span><b class="R" data-picsr></b></div></div>
         </div>
         <div class="pic-main">
@@ -7493,6 +7496,7 @@ function buildWhite(){
   $('[data-prireset]', v).onclick = () => { if (app.role !== 'A') return; const f = $('[data-prif]', v), to = f.elements.to.value, nm = ({ both:'both forces', B:'Blue Force', R:'Red Force' })[to];
     if (!confirm('Return ' + nm + ' to the standing priority (“' + PRI_DEFAULT + '”)?')) return; writeEvent('aoc_pri', null, { to, reset:true }); toast(nm + ' returned to the standing priority.'); };
   $$('[data-aocf]', v).forEach(f => f.addEventListener('submit', ev => { ev.preventDefault(); const t = f.elements.text.value.trim(); if (!t) return; writeEvent('aoc_msg', null, { text:t }); f.reset(); f.elements.text.focus(); }));
+  document.addEventListener('click', ev => { const d = $('[data-picescby]', v); if (d && d.open && !d.contains(ev.target)) d.open = false; });
   $('[data-picping]', v).onclick = () => { const S = app.S; if (!S) return; const n = Object.values(S.ocs).filter(o => !o.removed).length;
     if (S.clock.started) writeEvent('ping', null, { to:'both' });
     if (n) writeEvent('oc_ping', null, { all:true });
