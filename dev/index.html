@@ -89,7 +89,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
 .row>*{flex:1 1 140px}
 .stack{display:grid;gap:10px}
-.app{max-width:1500px;margin-inline:auto;display:grid;gap:14px}.wnav{position:sticky;top:0;z-index:1100;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-bottom:1.5px solid var(--line);padding:8px 2px;box-shadow:0 6px 8px -8px rgba(0,0,0,.35)}.wnav-stat{display:flex;gap:8px;align-items:baseline;font-size:14px;white-space:nowrap}.wnav-stat b{font-size:18px}.wnav-tabs{display:flex;gap:6px;flex-wrap:wrap}.wnav-tabs button{padding:5px 11px;font-size:13.5px}.wnav-tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}.wnav .cnt{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center}.wing-grid.filtered{grid-template-columns:minmax(0,1fr)}.wing-grid.filtered .feedcol{grid-column:auto}.wing-grid.filtered .feedcol .feed{max-height:none}.wnav .cnt[hidden]{display:none}.chatlog{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;padding:6px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg)}.chatmsg{max-width:85%;align-self:flex-start;border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--panel)}.chatmsg.me{align-self:flex-end;border-color:var(--ink)}.white-grid.filtered{grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr))}.white-grid.filtered .span2{grid-column:auto}[data-sec][data-off]{display:none!important}[data-ps][data-off]{display:none!important}#vTeam,#vOC{min-width:0}.ptabs{margin:-4px 0 10px;padding:6px 2px;min-width:0;max-width:100%;box-sizing:border-box;contain:inline-size}.ptabs .wnav-tabs{flex:1 1 auto;min-width:0;max-width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.ptabs .wnav-tabs::-webkit-scrollbar{display:none}.ptabs .wnav-tabs button{flex:0 0 auto;padding:9px 13px;font-size:15px;white-space:nowrap}
+.app{max-width:1500px;margin-inline:auto;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}.wnav{position:sticky;top:0;z-index:1100;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-bottom:1.5px solid var(--line);padding:8px 2px;box-shadow:0 6px 8px -8px rgba(0,0,0,.35)}.wnav-stat{display:flex;gap:8px;align-items:baseline;font-size:14px;white-space:nowrap}@media (max-width:560px){.wnav-stat{flex-wrap:wrap;white-space:normal;gap:2px 8px}}.wnav-stat b{font-size:18px}.wnav-tabs{display:flex;gap:6px;flex-wrap:wrap}.wnav-tabs button{padding:5px 11px;font-size:13.5px}.wnav-tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}.wnav .cnt{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center}.wing-grid.filtered{grid-template-columns:minmax(0,1fr)}.wing-grid.filtered .feedcol{grid-column:auto}.wing-grid.filtered .feedcol .feed{max-height:none}.wnav .cnt[hidden]{display:none}.chatlog{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;padding:6px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg)}.chatmsg{max-width:85%;align-self:flex-start;border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--panel)}.chatmsg.me{align-self:flex-end;border-color:var(--ink)}.white-grid.filtered{grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr))}.white-grid.filtered .span2{grid-column:auto}[data-sec][data-off]{display:none!important}[data-ps][data-off]{display:none!important}#vTeam,#vOC{min-width:0}.ptabs{margin:-4px 0 10px;padding:6px 2px;min-width:0;max-width:100%;box-sizing:border-box;contain:inline-size}.ptabs .wnav-tabs{flex:1 1 auto;min-width:0;max-width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.ptabs .wnav-tabs::-webkit-scrollbar{display:none}.ptabs .wnav-tabs button{flex:0 0 auto;padding:9px 13px;font-size:15px;white-space:nowrap}
 .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
 .brand{display:flex;align-items:baseline;gap:10px}
 .brand h1{font-size:22px;text-transform:uppercase;letter-spacing:.06em}
@@ -101,10 +101,10 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .side-W{--side:var(--wc);--side-soft:var(--wc-soft)}
 .side-A{--side:var(--aoc);--side-soft:var(--aoc-soft)}
 .white-grid>.pic{grid-column:1/-1!important}.white-grid.picmode{display:block}
-.pic{display:grid;gap:14px;min-width:0}
+.pic{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0}
 .pic .k{font-family:var(--display);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .pic-head{display:grid;grid-template-columns:minmax(150px,auto) minmax(0,1fr) minmax(150px,auto) minmax(150px,auto);gap:14px}
-.pic-tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:grid;gap:4px;align-content:center;min-width:0}
+.pic-tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:grid;grid-template-columns:minmax(0,1fr);gap:4px;align-content:center;min-width:0}
 .pic-big{font-size:40px;line-height:1;letter-spacing:.02em}
 .pic-mid{font-family:var(--display);font-size:24px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
 .pic-sub{font-size:13px;color:var(--muted)}
@@ -159,7 +159,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .tl-now{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--bad);z-index:2}
 .tl-now span{position:absolute;top:-1px;left:4px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--panel);background:var(--bad);border-radius:3px;padding:0 4px}
 @media (max-width:1000px){.pic-main{grid-template-columns:minmax(0,1fr)}.pic-fill{flex:0 0 auto}.pic-comms{flex:0 0 auto;height:340px}.pic-side>.pic-card:not(.pic-fill){max-height:none}.pic-side [data-picout]{max-height:300px}.pic-head{grid-template-columns:repeat(2,minmax(0,1fr))}.pic-prog{grid-column:1/-1;order:3}}
-@media (max-width:560px){.pic-big{font-size:32px}.pic-tl{grid-template-columns:90px minmax(0,1fr)}}
+@media (max-width:560px){.pic-big{font-size:32px}.pic-mid{font-size:17px;letter-spacing:.02em;overflow-wrap:anywhere}.pic-tl{grid-template-columns:90px minmax(0,1fr)}}
 #vWhite:not(.aocv) [data-aoc-only]{display:none!important}
 #vWhite.aocv [data-wqcnt]{display:none!important}
 .white-grid>.wfsec{grid-column:1/-1!important}.white-grid>.cmdsec{grid-column:1/-1!important}
@@ -6879,7 +6879,7 @@ function aocMode(on){
   if (!on && cur && cur.hasAttribute('data-aoc-only')) $('[data-wtab="all"]', v).click();
   else if (cur && cur.dataset.wtab === 'queue') cur.click();
 }
-const BOT = { on:null, timer:null, mem:{}, words:{} };
+const BOT = { on:null, timer:null, mem:{}, words:{}, names:{}, nameText:'' };
 const AI_PROV = {
   gemini:{ name:'Google Gemini', model:'gemini-flash-lite-latest', keyUrl:'https://aistudio.google.com/apikey' },
   openrouter:{ name:'OpenRouter (free models)', model:'meta-llama/llama-3.3-70b-instruct:free', keyUrl:'https://openrouter.ai/keys' },
@@ -7087,7 +7087,7 @@ function botStep(){
       });
       if (aiReady() && later('chat' + sd, 5 + rnd() * 5)){ mem['chat' + sd] = g + 6 + rnd() * 6; const i = Math.floor(rnd() * 4), tx = aiPool(S, sd, 'radio', ids[i]); if (tx) W('bot_radio', sd, { team:ids[i], name:names[i], text:tx }, 'T' + sd); }
     }
-    if (on.OC) ids.forEach((id, i) => { const oc = 'obot-' + id; once('join' + oc, () => W('oc_join', null, { oc, name:(sd === 'B' ? ['C/1Lt Reyes', 'C/Capt Nguyen', 'C/1Lt Walsh', 'C/2Lt Okafor'] : ['C/1Lt Brennan', 'C/Capt Delgado', 'C/2Lt Kowalski', 'C/1Lt Haddad'])[i], side:sd, team:id }, 'OC')); });
+    if (on.OC) ids.forEach((id, i) => { const oc = 'obot-' + id; once('join' + oc, () => W('oc_join', null, { oc, name:botName(sd, i, sd === 'B' ? ['C/1Lt Reyes', 'C/Capt Nguyen', 'C/1Lt Walsh', 'C/2Lt Okafor'] : ['C/1Lt Brennan', 'C/Capt Delgado', 'C/2Lt Kowalski', 'C/1Lt Haddad']), side:sd, team:id }, 'OC')); });
     if (on.OC && on['T' + sd]) (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => {
       const call = q.done === 'ied' ? 'ied_real' : q.done === 'pr' ? 'prok' : q.done === 'box' ? 'box' : q.done === 'civaid' ? 'civaid' : q.done === 'conduct' ? 'good' : null; if (!call) return;
       const k = 'call' + q.qid + sd; if (!later(k + 't', 3 + rnd() * Math.max(2, q.win - 5))) return;
@@ -7150,7 +7150,7 @@ function botStep(){
     }
   });
   if (on.L){
-    const pb = mem.pb || (mem.pb = [0, 1].map(i => ({ id:'obot-props' + (i + 1), name:['C/2Lt Patel', 'C/2Lt Morrow'][i] + ' (Props)', p:(M.sites.wc || M.sites.town).slice(), g, sp:65 + rnd() * 15, job:null, posG:-99 })));
+    const pb = mem.pb || (mem.pb = [0, 1].map(i => ({ id:'obot-props' + (i + 1), name:botName('L', i, ['C/2Lt Patel (Props)', 'C/2Lt Morrow (Props)']), p:(M.sites.wc || M.sites.town).slice(), g, sp:65 + rnd() * 15, job:null, posG:-99 })));
     pb.forEach(b => once('pjoin' + b.id, () => W('oc_join', null, { oc:b.id, name:b.name, props:true }, 'L')));
     const known = pb.every(b => S.ocs && S.ocs[b.id]);
     if (known){
@@ -7215,16 +7215,18 @@ function botStep(){
   }
 }
 function botKey(){ return 'marala-bots-' + (app.gid || 'local'); }
-function botSave(){ try { if (BOT.on) sessionStorage.setItem(botKey(), JSON.stringify({ on:BOT.on, words:BOT.wordText || '', mem:BOT.mem, at:Date.now() })); else sessionStorage.removeItem(botKey()); } catch(e){} }
+function botNames(t){ const o = {}; String(t || '').split('\n').forEach(l => { const m = l.match(/^\s*(B|R|L)\s*:(.*)$/i); if (m) o[m[1].toUpperCase()] = m[2].split(',').map(x => x.trim()).filter(Boolean).slice(0, 8); }); return o; }
+function botName(k, i, def){ const L = (BOT.names || {})[k] || []; return (L[i] || def[i] || def[0]).slice(0, 60); }
+function botSave(){ try { if (BOT.on) sessionStorage.setItem(botKey(), JSON.stringify({ on:BOT.on, words:BOT.wordText || '', names:BOT.nameText || '', mem:BOT.mem, at:Date.now() })); else sessionStorage.removeItem(botKey()); } catch(e){} }
 function botSet(on){ clearInterval(BOT.timer); BOT.timer = null; BOT.on = on; if (on){ BOT.last = Date.now(); BOT.timer = setInterval(() => { const sp = (app.S && app.S.clock.speed) || 1; if (Date.now() - (BOT.last || 0) < 12000 / sp - 100) return; BOT.last = Date.now(); try { botStep(); } catch(e){ console.warn('bot', e); } botSave(); }, 1500); setTimeout(() => { try { botStep(); } catch(e){} botSave(); }, 500); } botSave(); }
 function botResume(){
   if (BOT.on || app.botTried === app.gid) return; app.botTried = app.gid;
   let d = null; try { d = JSON.parse(sessionStorage.getItem(botKey()) || 'null'); } catch(e){ d = null; }
   if (!d || !d.on || !Object.keys(d.on).length) return;
   if (!practiceOk('bots')){ try { sessionStorage.removeItem(botKey()); } catch(e){} return; }
-  BOT.mem = d.mem && typeof d.mem === 'object' ? d.mem : {}; BOT.wordText = d.words || ''; BOT.words = botWords(BOT.wordText); BOT.pool = {};
+  BOT.mem = d.mem && typeof d.mem === 'object' ? d.mem : {}; BOT.wordText = d.words || ''; BOT.words = botWords(BOT.wordText); BOT.nameText = d.names || ''; BOT.names = botNames(BOT.nameText); BOT.pool = {};
   botSet(d.on);
-  const v = $('#vWhite'); if (v){ $$('[data-botrole]', v).forEach(c => c.checked = !!d.on[c.dataset.botrole]); const wi = $('[data-botwords]', v); if (wi && !wi.value) wi.value = BOT.wordText; const go = $('[data-botgo]', v); if (go){ go.textContent = 'Stop bots'; go.disabled = false; } const st = $('[data-botst]', v); if (st) st.textContent = 'Bots are playing: ' + Object.keys(d.on).map(roleLabel).join(', ') + '. Keep this tab open.'; }
+  const v = $('#vWhite'); if (v){ $$('[data-botrole]', v).forEach(c => c.checked = !!d.on[c.dataset.botrole]); const wi = $('[data-botwords]', v); if (wi && !wi.value) wi.value = BOT.wordText; { const ni = $('[data-botnames]', v); if (ni && !ni.value) ni.value = BOT.nameText; } const go = $('[data-botgo]', v); if (go){ go.textContent = 'Stop bots'; go.disabled = false; } const st = $('[data-botst]', v); if (st) st.textContent = 'Bots are playing: ' + Object.keys(d.on).map(roleLabel).join(', ') + '. Keep this tab open.'; }
   toast('Practice bots picked up where they left off.');
 }
 function buildWhite(){
@@ -7494,6 +7496,8 @@ function buildWhite(){
         <div class="row" style="flex-wrap:wrap;gap:6px 16px">${[['B', 'Blue Force C2'], ['R', 'Red Force C2'], ['TB', 'Blue Force fireteams'], ['TR', 'Red Force fireteams'], ['OC', 'POC O/Cs'], ['A', 'AOC'], ['L', 'Props and logistics'], ['W', 'White Force (sends injects and approves)']].map(([k, n]) => '<label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-botrole="' + k + '"> ' + n + '</label>').join('')}</div>
         <label>Code words the bot fireteams may report (optional)<input data-botwords autocomplete="off" placeholder="All of this game's code words, any order: ANCHOR, BARREL, ECHO, MAYOR"></label>
         <p class="small muted" style="margin:0">With these, bot fireteams call their C2 over a practice LMR feed when they finish a station ("Capture code word: ANCHOR") so a real C2 can enter it. The board works out which word belongs to which site. They are kept in this tab only.</p>
+        <label>Names for the bot POCs (optional)<textarea data-botnames rows="3" autocomplete="off" placeholder="B: C/1Lt Smith, C/Capt Jones, C/1Lt Lee, C/2Lt Diaz&#10;R: C/1Lt Kim, C/Capt Park, C/2Lt Cruz, C/1Lt Ford&#10;L: C/2Lt Hall, C/2Lt Wood"></textarea></label>
+        <p class="small muted" style="margin:0">One line per group. B is the Blue Force POC O/Cs and R the Red Force POC O/Cs, in fireteam order (#1, #2, ...). L is Props and logistics. Names left out use made-up cadet names. Kept in this tab only, never saved to the game file or GitHub; set them before Start bots.</p>
         <details class="aibox" data-aibox><summary data-aiopen><b>AI writing</b> <span class="small muted">optional, uses a free AI service</span></summary>
           <div class="stack" style="margin-top:10px">
             <p class="small" data-ailock hidden style="margin:0;color:var(--bad)">AI is locked for this game. To use it, go to Admin, Edit game, and tick Allow AI for the bots.</p>
@@ -7750,7 +7754,7 @@ function buildWhite(){
     $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
   }
   { const go = $('[data-botgo]', v), st = $('[data-botst]', v); if (go){ const sync = () => { go.textContent = BOT.on ? 'Stop bots' : 'Start bots'; st.textContent = BOT.on ? 'Bots are playing: ' + Object.keys(BOT.on).map(roleLabel).join(', ') + '. Keep this tab open.' : 'Bots are off.'; }; if (BOT.on){ $$('[data-botrole]', v).forEach(c => c.checked = !!BOT.on[c.dataset.botrole]); const wi = $('[data-botwords]', v); if (wi && !wi.value) wi.value = BOT.wordText || ''; } sync();
-    go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } if (!practiceOk('bots')){ toast('Practice bots are locked for this game. Unlock them in Admin.', true); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; { const wi = $('[data-botwords]', v); BOT.wordText = wi ? wi.value : ''; BOT.words = botWords(BOT.wordText); const n = Object.keys(BOT.words).filter(k => BOT.words[k].cap.length || BOT.words[k].def.length).length; if (wi && wi.value.trim() && !n) toast('None of those words match this game’s code words.', true); } botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
+    go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } if (!practiceOk('bots')){ toast('Practice bots are locked for this game. Unlock them in Admin.', true); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; { const ni = $('[data-botnames]', v); BOT.nameText = ni ? ni.value : ''; BOT.names = botNames(BOT.nameText); } { const wi = $('[data-botwords]', v); BOT.wordText = wi ? wi.value : ''; BOT.words = botWords(BOT.wordText); const n = Object.keys(BOT.words).filter(k => BOT.words[k].cap.length || BOT.words[k].def.length).length; if (wi && wi.value.trim() && !n) toast('None of those words match this game’s code words.', true); } botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
   v.addEventListener('click', ev => { if (ev.target.closest('[data-injhideall]')){ const h = injHidden(); (app.S.injq || []).filter(q => q.win && q.sent != null).forEach(q => { if (!h.includes(q.qid)) h.push(q.qid); }); pref.set('marala-injhide-' + (app.gid || 'local'), JSON.stringify(h.slice(-200))); const bx = $('[data-injwin]', v); if (bx) bx.dataset.h = ''; refresh(true); toast('Response windows cleared. They still close and score by themselves.'); return; } const b = ev.target.closest('[data-injhide]'); if (!b) return; const h = injHidden(); if (!h.includes(b.dataset.injhide)) h.push(b.dataset.injhide); pref.set('marala-injhide-' + (app.gid || 'local'), JSON.stringify(h.slice(-200))); refresh(true); });
   { const ab = $('[data-aibox]', v); if (ab){
     const pv = $('[data-aiprov]', ab), md = $('[data-aimodel]', ab), ky = $('[data-aikey]', ab), kp = $('[data-aikeep]', ab), cp = $('[data-aicap]', ab), on = $('[data-aion]', ab), lk = $('[data-aikeyurl]', ab), res = $('[data-aitestres]', ab);
