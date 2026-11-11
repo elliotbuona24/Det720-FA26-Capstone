@@ -5335,7 +5335,7 @@ function buildWing(side){
           <div class="act"><div class="act-head"><b>Aid packages</b><span class="cost">Needs an open town office - On time <span class="esc-down">diplomatic points +5</span> - Missed <span class="esc-up">diplomatic points −10</span></span></div>
             <p class="small muted" style="margin:0">A package is ready 20 minutes after the town office opens and 20 minutes after each delivery or missed deadline. A fireteam must deliver it to the Marala Town office within 15 minutes. Its POC reports the delivery to the White Force. The first wing to deliver each package number earns diplomatic points +1 more.</p>
             <div data-aidstate class="small"></div></div>
-          <details class="act"><summary>Pressure options (they raise escalation)</summary>
+          <div class="act"><div class="act-head"><b>Pressure options</b><span class="cost"><span class="esc-up">They raise escalation</span></span></div>
             <div class="stack" style="margin-top:8px">
               <div class="act-head"><b>Show of force</b><span class="cost"><span data-left="show"></span> - <span class="esc-up">+10 escalation</span></span></div>
               <p class="small muted" style="margin:0">Closes a circle of <span data-shrad>about 35</span> m radius to the other wing for 10 minutes. Its teams inside are alerted on their phones and must leave within 5 minutes; the board checks their GPS 30 seconds after the deadline, and the wing takes +10 escalation if a team stayed. The circle cannot cover Marala Town or either HQ.</p>
@@ -5349,7 +5349,7 @@ function buildWing(side){
               <form class="stack" data-f="strike"><div class="row"><label for="skT-${side}">Target<select id="skT-${side}" name="target"><option value="cache">Militia weapons cache</option><option value="other">${esc(other)} (+40 escalation)</option></select></label><label for="skM-${side}" data-skmt hidden>Militia target<select id="skM-${side}" name="mt"></select></label><label for="skG-${side}">Grid<input id="skG-${side}" name="grid" maxlength="40" placeholder="Example: C4-6" required></label></div>
               <div class="row"><label for="skF-${side}">Fixed by<input id="skF-${side}" name="fix" maxlength="80" data-skfix placeholder="Filled in from your latest UAV pass or SALUTE report"></label><label for="skC-${side}">Civilians near the target<select id="skC-${side}" name="civ"><option value="none">None seen</option><option value="possible">Possible</option><option value="yes">Yes</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="nine" required style="width:auto"> A team has sent the strike 9-line</label><div><button type="submit">Ask for strike</button></div></form>
               <div class="list" data-nines></div>
-            </div></details>
+            </div></div>
         </div>
         <div data-pane="aoc" class="stack" hidden>
           <div class="aocf" role="group" aria-label="Show in the AOC tab" data-aocfilt>${[['all', 'All'], ['cub', 'Update brief'], ['rhythm', 'Battle rhythm'], ['sup', 'Support requests'], ['strike', 'Strikes'], ['intent', 'Intent and PIRs']].map(([k, n]) => '<button type="button" data-aocf="' + k + '" aria-pressed="false">' + n + '</button>').join('')}</div>
