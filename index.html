@@ -6917,6 +6917,34 @@ function botWords(text){ const out = {}, cfg = app.cfg, S = app.S; if (!cfg) ret
   return out; }
 function botWord(k, def){ const o = BOT.words[k]; const L = o ? (def ? o.def : o.cap) : []; return L.length ? L[Math.floor(Math.random() * L.length)] : ''; }
 function botGrid(pt){ return GEO.toMGRS(pt[0], pt[1], 4).split(' ').slice(2).join(' '); }
+function botCubLine(S, sd, L, tb){
+  const M = mapCfg(S), o = OTHER[sd], tl = t => (t.num ? '#' + t.num + ' ' : '') + t.name, sq = pt => (pt && squareOf(M, pt)) || '?';
+  const held = SITE_KEYS.filter(k => S.sites[k].holder === sd).map(k => SITES[k].name + ' (' + siteSquare(S, k) + ') since ' + hhmm(S.sites[k].since));
+  const hot = SITE_KEYS.filter(k => S.sites[k].contestBy || S.sites[k].contested).map(k => SITES[k].name);
+  const open = SITE_KEYS.filter(k => S.sites[k].holder !== sd).map(k => SITES[k].name);
+  const where = tb.map(t => tl(t) + ' at ' + sq(t.last.gps) + (/^bot-/.test(t.id) ? ', ' + botTask(S, sd, t.id) : ''));
+  const seen = S.contacts.filter(c => c.side === sd && S.g - c.g <= 30), last = seen[seen.length - 1];
+  const done = allProblems(S).filter(P => intelOpen(S, P.id, sd) && S.intel[sd][P.id]).length, sent = allProblems(S).filter(P => intelOpen(S, P.id, sd)).length;
+  const lvl = LEVELS[levelIndex(S.esc)].name, dp = hhmm(Math.ceil(S.g + 15)), tgt = open[0] || 'our held sites';
+  const T = {
+    prog:(held.length ? 'Holding ' + held.join(', ') + '. ' : 'No sites held yet. ') + (where.length ? where.join('; ') + '. ' : '') + (held.length >= 2 ? 'On track with intent.' : 'Behind on sites, pushing for ' + tgt + ' next.'),
+    chg:hot.length ? 'Shifted a team to cover ' + hot.join(' and ') + ' after contention. Costs us time on ' + tgt + '.' : 'No changes. Teams are on the routes and sites we briefed, so the plan still holds.',
+    pers:'All ' + tb.length + ' fireteams accounted for, 3 per team. ' + (where.join('; ') || 'Positions on the board.') + '.',
+    cas:'NONE',
+    en:seen.length ? seen.length + ' ' + SIDES[o].name + ' contact' + (seen.length === 1 ? '' : 's') + ' in the last 30 min, last at grid ' + last.grid + ' at ' + (last.seen || hhmm(last.g)) + '. Expect them to push on ' + (held[0] ? held[0].replace(/ \(.*/, '') : tgt) + '.' : 'No contact with ' + SIDES[o].name + ' since the last brief. Expect them to move on ' + tgt + ' next.',
+    intel:'Intel cell answered ' + done + ' of ' + sent + ' package' + (sent === 1 ? '' : 's') + ' so far. PIR 1 advanced by our team reports; we judged one report unconfirmed until a second source.',
+    sus:'PACE primary, LMR. All radios up on net, batteries good, phones charged. No equipment problems or shortages.',
+    risk:'Escalation ' + S.esc + ' (' + lvl + '), diplomatic points ' + S.hn[sd] + '. Biggest risk is a stalemate at a site; we deconflict by liaison before moving in.',
+    next:(where.length ? where.join('; ') + '. ' : '') + 'Decision point at ' + dp + ': contend ' + tgt + ' or hold what we have.',
+    req:'NONE',
+    cdr:held.length + ' site' + (held.length === 1 ? '' : 's') + ' held, all teams accounted for, escalation ' + lvl.toLowerCase() + '.',
+    hand:'Incoming commander takes the board at 0700. Open: ' + (hot.length ? 'contention at ' + hot.join(', ') : 'no open contention') + '; next CUB and PERSTAT on time; liaison line with ' + SIDES[o].name + ' is open.',
+    msn:'Held ' + held.length + ' site' + (held.length === 1 ? '' : 's') + ' at ENDEX and answered ' + done + ' intel package' + (done === 1 ? '' : 's') + '. ' + (held.length >= 2 ? 'Met the commander’s intent.' : 'Fell short on sites because of time at contested objectives.')
+  };
+  let t = T[L.k] || T.prog;
+  if (t.length < (L.min || 0)) t += ' ' + T.prog;
+  return t.slice(0, 600);
+}
 function botStep(){
   const S = app.S, on = BOT.on; if (!S || !on || !S.clock.started || S.endex || !S.clock.running) return;
   const M = mapCfg(S); if (!M || !M.sites) return;
@@ -6924,7 +6952,7 @@ function botStep(){
   const later = (k, mins) => { if (mem[k] == null) mem[k] = g + mins; return g >= mem[k]; };
   const C = Math.cos(M.sites.lzB[0] * Math.PI / 180), step = (a, b, m) => { const dx = (b[1] - a[1]) * 111320 * C, dy = (b[0] - a[0]) * 110950, d = Math.hypot(dx, dy); if (d <= m) return [b, true]; const f = m / d; return [[a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], false]; };
   ['B', 'R'].forEach(sd => {
-    const ids = [1, 2, 3, 4].map(i => 'bot-' + sd.toLowerCase() + i), names = sd === 'B' ? ['Bot Alpha', 'Bot Bravo', 'Bot Charlie', 'Bot Delta'] : ['Bot Dagger', 'Bot Sabre', 'Bot Lance', 'Bot Spear'];
+    const ids = [1, 2, 3, 4].map(i => 'bot-' + sd.toLowerCase() + i), names = sd === 'B' ? ['Hawk', 'Viper', 'Mustang', 'Talon'] : ['Dagger', 'Sabre', 'Lance', 'Spear'];
     if (on['T' + sd]){
       const tms = mem.tm || (mem.tm = {}), sitePt = k => (S.sitePts && S.sitePts[k]) || M.sites[k], live = k => S.sites[k] && sitePt(k);
       const busy = (k, me) => ids.some(o => o !== me && tms[o] && tms[o].tg && tms[o].tg.k === k);
@@ -6994,11 +7022,11 @@ function botStep(){
       });
       if (aiReady() && later('chat' + sd, 5 + rnd() * 5)){ mem['chat' + sd] = g + 6 + rnd() * 6; const i = Math.floor(rnd() * 4), tx = aiPool(S, sd, 'radio', ids[i]); if (tx) W('bot_radio', sd, { team:ids[i], name:names[i], text:tx }, 'T' + sd); }
     }
-    if (on.OC) ids.forEach((id, i) => { const oc = 'obot-' + id; once('join' + oc, () => W('oc_join', null, { oc, name:'Bot O/C ' + (i + 1) + (sd === 'B' ? ' Blue' : ' Red'), side:sd, team:id }, 'OC')); });
+    if (on.OC) ids.forEach((id, i) => { const oc = 'obot-' + id; once('join' + oc, () => W('oc_join', null, { oc, name:(sd === 'B' ? ['C/1Lt Reyes', 'C/Capt Nguyen', 'C/1Lt Walsh', 'C/2Lt Okafor'] : ['C/1Lt Brennan', 'C/Capt Delgado', 'C/2Lt Kowalski', 'C/1Lt Haddad'])[i], side:sd, team:id }, 'OC')); });
     if (on.OC && on['T' + sd]) (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => {
       const call = q.done === 'ied' ? 'ied_real' : q.done === 'pr' ? 'prok' : q.done === 'box' ? 'box' : q.done === 'civaid' ? 'civaid' : q.done === 'conduct' ? 'good' : null; if (!call) return;
       const k = 'call' + q.qid + sd; if (!later(k + 't', 3 + rnd() * Math.max(2, q.win - 5))) return;
-      once(k, () => { if (rnd() < .2) return; W('oc_req', null, { oc:'obot-' + ids[Math.floor(rnd() * 4)], kind:'call', call, side:sd, text:'Bot team responded', ref:rnd() < .7 ? 'q:' + q.qid : 'unk' }, 'OC'); }); });
+      once(k, () => { if (rnd() < .2) return; W('oc_req', null, { oc:'obot-' + ids[Math.floor(rnd() * 4)], kind:'call', call, side:sd, text:({ ied_real:'Team spotted the device, marked it and pulled back 50 m before reporting.', prok:'Team kept their cool, did not return fire and reported up.', box:'Team carried the aid box to the drop point and handed it over.', civaid:'Team gave first aid to the civilian and called it in.', good:'Team was respectful with the locals and kept weapons down.' })[call] || 'Team responded on scene.', ref:rnd() < .7 ? 'q:' + q.qid : 'unk' }, 'OC'); }); });
     if (on[sd]){
       const codeFor = (k, def) => { const c = (S.siteCodes && S.siteCodes[k]) || (app.cfg && app.cfg.codes ? app.cfg.codes[k] : null); if (!c) return null; const L = typeof c === 'string' ? [c] : Array.isArray(c) ? c : (def && c.def && c.def.length ? c.def : (c.cap || [])); const f = L.filter(x => !(S.usedCodes || {})[k + ':' + x]); return (f.length ? f : L)[Math.floor(rnd() * (f.length || L.length))]; };
       (S.ctReqs || []).filter(r => r.status === 'open' && r.side === sd).forEach(r => { if (later('ctr' + r.id, .5 + rnd() * 1.5)) once('ctrd' + r.id, () => { const e0 = S.esc || 0; W('ct_res', sd, { req:r.id, ok:rnd() < (e0 < 20 ? .7 : e0 < 40 ? .3 : 0) }, sd); }); });
@@ -7017,11 +7045,11 @@ function botStep(){
       const recent = S.contacts.filter(c => c.side === sd && c.kind === 'team' && c.match && g - (c.sg != null ? c.sg : c.g) <= MATCH_DUP + 2).map(c => c.match.team), credited = en.filter(t => recent.includes(t.id));
       const enNew = en.filter(t => !recent.includes(t.id) && !(mem['rep' + sd + t.id] != null && g - mem['rep' + sd + t.id] < MATCH_DUP + 2) && !credited.some(o => o.last && o.last.gps && Math.hypot((o.last.gps[0] - t.last.gps[0]) * 110950, (o.last.gps[1] - t.last.gps[1]) * 84250) < 120));
       if (enNew.length && later('sal' + sd, 4 + rnd() * 5)){ mem['sal' + sd] = g + 5 + rnd() * 6; const t = enNew[Math.floor(rnd() * enNew.length)]; mem['rep' + sd + t.id] = g; const pt = [t.last.gps[0] + (rnd() - .5) * 30 / 110950, t.last.gps[1] + (rnd() - .5) * 30 / 84250];
-        W('contact', sd, { kind:'team', grid:botGrid(pt), pt:[+pt[0].toFixed(7), +pt[1].toFixed(7)], seen:hhmm(g), note:'S: 3 people - A: moving - U: ' + SIDES[OTHER[sd]].name + ' uniforms - E: rifles', salute:{ s:'3 people', a:'moving', l:botGrid(pt), u:SIDES[OTHER[sd]].name + ' uniforms', t:hhmm(g).slice(0, 4), e:'rifles' }, ref:'none' }, sd); }
+        W('contact', sd, { kind:'team', grid:botGrid(pt), pt:[+pt[0].toFixed(7), +pt[1].toFixed(7)], seen:hhmm(g), salute:(() => { const sz = (2 + Math.floor(rnd() * 3)) + ' personnel', ac = ['moving east', 'moving west', 'moving north', 'moving south', 'stopped, watching the road', 'setting up near the site', 'talking to locals'][Math.floor(rnd() * 7)], eq = ['rifles', 'rifles and a radio', 'rifles and a rucksack', 'rifles, one with binoculars'][Math.floor(rnd() * 4)]; return { s:sz, a:ac, l:botGrid(pt), u:SIDES[OTHER[sd]].name + ' uniforms', t:hhmm(g).slice(0, 4), e:eq }; })(), ref:'none' }, sd); }
       const cb = cubOpen(S, sd), c = cb ? (S.cubs || []).find(x => x.side === sd && x.n === cb.n) : null;
       const cubKey = cb ? 'cub' + sd + cb.n + (c ? c.hist.length : '') : '';
       if (cb && (!c || c.status === 'returned') && later(cubKey, 1 + rnd() * 7 + (rnd() < .12 ? 9 : 0))){
-        const ls = cubLines(S, sd, cb.n) || [], base = () => { const f = {}; ls.forEach(L => { f[L.k] = L.none && rnd() < .5 ? 'NONE' : ('Bot ' + L.l.toLowerCase() + ': ' + tb.map(t => t.name + ' near ' + botGrid(t.last.gps)).join(', ') + '. On track with the plan and watching the other force.').padEnd(Math.max(L.min, 10) + 5, '.'); if (L.kind === 'pers'){ f.p_acc = tb.length * 3 || 12; f.p_una = 0; } if (L.kind === 'rag') f.rag = 'GREEN'; }); return f; };
+        const ls = cubLines(S, sd, cb.n) || [], base = () => { const f = {}; ls.forEach(L => { f[L.k] = L.none && rnd() < .5 ? 'NONE' : botCubLine(S, sd, L, tb); if (L.kind === 'pers'){ f.p_acc = tb.length * 3 || 12; f.p_una = 0; } if (L.kind === 'rag') f.rag = SITE_KEYS.filter(k => S.sites[k].holder === sd).length >= 2 ? 'GREEN' : 'AMBER'; }); return f; };
         const send = f => W('cub', sd, { n:cb.n, f:cubCompose(ls, f).f || f }, sd);
         if (!aiReady()) once('cubd' + cubKey, () => send(base()));
         else aiJob(cubKey, aiBrief(S, sd, cb.n, ls) + (c && c.reply ? '\nThe AOC returned your last brief with: "' + String(c.reply.text || '').slice(0, 200) + '". Fix that in this version.' : ''), 1200, t => {
@@ -7035,7 +7063,7 @@ function botStep(){
         if (!aiReady()) once('psd' + psKey, () => ps('')); else aiJob(psKey, aiState(S, sd) + '\n\nWrite one sentence (under 140 characters) for the remarks line of your PERSTAT to the AOC: where the teams are and anything the AOC should know. Plain text only.', 80, t => { const a2 = app.S && psOpen(app.S, sd); if (a2 && a2.id === a.id && ((a2.reps[sd] || {}).id || '') === ((a.reps[sd] || {}).id || '')) ps(t ? t.replace(/\s+/g, ' ').slice(0, 160) : ''); }); }
       allProblems(S).forEach(P => { const o = intelOpen(S, P.id, sd); if (!o || o.done || S.intel[sd][P.id]) return; if (!later('ia' + P.id + sd, 4 + rnd() * Math.max(2, (o.due - o.g) - 6))) return;
         once('iad' + P.id + sd, () => { const tr = intelTruth(P), good = rnd() < .6, ak = good ? tr.ak : String(Math.floor(rnd() * P.opts.length)), fk = good ? tr.f : P.items[Math.floor(rnd() * P.items.length)].k; W('intel_answer', sd, { pid:P.id, a:intelKey(P.id, 'a', ak), f:intelKey(P.id, 'f', fk) }, sd); }); });
-      (S.injq || []).filter(q => q.win && q.done === 'aoc' && q.sent != null && q.closed == null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => { if (!later('aoc' + q.qid + sd, 1 + rnd() * 4)) return; const go = tx => W('aoc_req', sd, { want:'other', text:tx || 'Bot C2: done as ordered (' + q.label + ').', ref:'q:' + q.qid }, sd);
+      (S.injq || []).filter(q => q.win && q.done === 'aoc' && q.sent != null && q.closed == null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => { if (!later('aoc' + q.qid + sd, 1 + rnd() * 4)) return; const go = tx => W('aoc_req', sd, { want:'other', text:tx || ('Done as ordered: ' + q.label + '. Team is back on task and we will report any change.'), ref:'q:' + q.qid }, sd);
         if (!aiReady()) once('aocd' + q.qid + sd, () => go('')); else aiJob('aocd' + q.qid + sd, aiState(S, sd) + '\n\nThe AOC sent this inject: "' + String(q.sentText || q.text || '').slice(0, 500) + '"\nWrite the C2’s message to the AOC (one or two sentences, under 250 characters) reporting what you did about it. Plain text only.', 120, t => go(t ? t.replace(/\s+/g, ' ').slice(0, 280) : '')); });
       (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && q.done !== 'aoc' && injSides(q).includes(sd) && !(q.res || {})[sd] && S.g - q.sent < 20).forEach(q => { if (!later('ord' + q.qid + sd, .5 + rnd() * 2)) return;
         const pt = refLoc(S, 'q:' + q.qid), tl = liveTeams(S, sd), dd = t => t.last && t.last.gps && pt ? Math.hypot(t.last.gps[0] - pt[0], t.last.gps[1] - pt[1]) : 9, tm = tl.slice().sort((x, y) => dd(x) - dd(y))[0], team = tm ? tm.id : 'all';
@@ -7053,11 +7081,11 @@ function botStep(){
           if (S.jamLast[sd] == null || g - S.jamLast[sd] >= JAM_EVERY) opts.push(['act_jam', {}, hot ? 4 : 1]);
           if (!(S.indoor && S.indoor.on) && hot) opts.push(['act_show', { site:hot }, 2]);
           if (opts.length && rnd() < .6){ let r = rnd() * opts.reduce((a, o) => a + o[2], 0); const pk = opts.find(o => (r -= o[2]) < 0) || opts[0]; W(pk[0], sd, pk[1], sd); } } }
-      if (later('liai' + sd, 8 + rnd() * 10)){ mem['liai' + sd] = g + 10 + rnd() * 10; W('liaison', sd, { text:aiPool(S, sd, 'liaison') || ['Our teams are holding. Call before you cross the town road.', 'We see your team near our site. Keep 50 m clear.', 'Proposal: no contention for the next 15 minutes.'][Math.floor(rnd() * 3)] }, sd); }
+      if (later('liai' + sd, 8 + rnd() * 10)){ mem['liai' + sd] = g + 10 + rnd() * 10; W('liaison', sd, { text:aiPool(S, sd, 'liaison') || (L => L[Math.floor(rnd() * L.length)])(['Our teams are holding. Call before you cross the town road.', 'We see your team near our site. Keep 50 m clear.', 'Proposal: no contention for the next 15 minutes.', 'Deconfliction: our team is moving through the town road in 5 minutes. Not hostile.', 'Request you pull your team back from our site perimeter. We hold it and are not contesting yours.', 'Proposal: we split the Humanitarian Aid Supply Box drops, you take the north, we take the south.', 'Warning: any show of force at our site will be reported to the AOC.', 'We are pausing contention to keep escalation down. Expect the same from you.', 'Our team is treating a civilian near the town. Keep your teams clear for 10 minutes.', 'Confirm you saw the IED report near the road. Recommend both forces stay 50 m back.']) }, sd); }
     }
   });
   if (on.L){
-    const pb = mem.pb || (mem.pb = [0, 1].map(i => ({ id:'obot-props' + (i + 1), name:'Bot Props ' + (i + 1), p:(M.sites.wc || M.sites.town).slice(), g, sp:65 + rnd() * 15, job:null, posG:-99 })));
+    const pb = mem.pb || (mem.pb = [0, 1].map(i => ({ id:'obot-props' + (i + 1), name:['C/2Lt Patel', 'C/2Lt Morrow'][i] + ' (Props)', p:(M.sites.wc || M.sites.town).slice(), g, sp:65 + rnd() * 15, job:null, posG:-99 })));
     pb.forEach(b => once('pjoin' + b.id, () => W('oc_join', null, { oc:b.id, name:b.name, props:true }, 'L')));
     const known = pb.every(b => S.ocs && S.ocs[b.id]);
     if (known){
@@ -7076,7 +7104,7 @@ function botStep(){
         else if (!b.job){ const r2 = step(b.p, M.sites.wc || M.sites.town, b.sp * dt); b.p = r2[0]; }
         if (b.job && arr){
           const r = rows.find(x => x.u.id === b.job.use);
-          if (r && b.job.kind === 'place' && g >= r.placeBy - 5){ const pt = propOk(b.job.pt) ? [+(b.job.pt[0] + (rnd() - .5) * 6 / 110950).toFixed(7), +(b.job.pt[1] + (rnd() - .5) * 6 / 84250).toFixed(7)] : null; W('prop_place', null, { use:r.u.id, pt, acc:pt ? 4 + Math.round(rnd() * 5) : null, note:'Placed by practice bot.', oc:b.id }, 'L'); b.job = null; }
+          if (r && b.job.kind === 'place' && g >= r.placeBy - 5){ const pt = propOk(b.job.pt) ? [+(b.job.pt[0] + (rnd() - .5) * 6 / 110950).toFixed(7), +(b.job.pt[1] + (rnd() - .5) * 6 / 84250).toFixed(7)] : null; W('prop_place', null, { use:r.u.id, pt, acc:pt ? 4 + Math.round(rnd() * 5) : null, note:'Placed at the marked spot.', oc:b.id }, 'L'); b.job = null; }
           else if (r && b.job.kind === 'rec'){ W('prop_recover', null, { use:r.u.id, oc:b.id }, 'L'); b.job = null; }
         }
         if (g - b.posG >= 2 + rnd()){ b.posG = g; W('oc_pos', null, { oc:b.id, pt:[+b.p[0].toFixed(7), +b.p[1].toFixed(7)], acc:5 + Math.round(rnd() * 5) }, 'L'); }
@@ -7100,16 +7128,16 @@ function botStep(){
     if (!aiReady()) go(''); else aiJob(k, aiState(S, sd) + '\n\nYou are fireteam ' + teamLabel(t) + ', now ' + botTask(S, sd, t.id) + '. Your C2 just sent you: "' + String(m.text).slice(0, 300) + '"\nReply on the LMR in one short call, under 110 characters, starting with "' + t.name + ',". Plain text only.', 60, t2 => go(t2 ? t2.replace(/\s+/g, ' ').slice(0, 160) : ''), 'team'); }); });
   if (on.W){ const M2 = mapCfg(S); SITE_KEYS.forEach(k => { const x = S.sites[k], pt = (S.sitePts && S.sitePts[k]) || (M2 && M2.sites && M2.sites[k]); if (!x || !x.contested || x.contestBy || !pt) return; const both = ['B', 'R'].every(sd => liveTeams(S, sd).some(o => o.last && o.last.gps && g - o.last.g < 4 && distM(o.last.gps, pt) < 70)); if (both) { mem['stc' + k] = null; return; } if (later('stc' + k, 1.5)){ mem['stc' + k] = null; W('site_contested', null, { site:k, on:false }, 'W'); } }); }
   if (on.A){
-    if ((S.esc || 0) >= 45 && later('roe', 0)){ mem.roe = g + 20; W('aoc_roe', null, { to:'both', level:'restrictive', min:10, why:'Bot AOC: escalation is too high. Cool it down.' }, 'A'); }
+    if ((S.esc || 0) >= 45 && later('roe', 0)){ mem.roe = g + 20; W('aoc_roe', null, { to:'both', level:'restrictive', min:10, why:'Escalation is too high. No contention or shows of force for 10 minutes. Use liaison.' }, 'A'); }
     (S.cubs || []).filter(c => c.status === 'sent').forEach(c => { const k = 'acd' + c.id + c.hist.length; if (!later('ac' + c.id + c.hist.length, 1 + rnd() * 2)) return;
       const go = (v, tx) => { const c2 = app.S && (app.S.cubs || []).find(x => x.id === c.id); if (c2 && c2.status === 'sent' && c2.hist.length === c.hist.length) W('cub_reply', null, { id:c.id, verdict:v, text:tx }, 'A'); };
-      const fb = () => go(rnd() < .8 ? 'approve' : 'more', 'Bot AOC: line 9 needs a time for each decision point.');
+      const pick = L => L[Math.floor(rnd() * L.length)], fb = () => rnd() < .75 ? go('approve', pick(['AOC: Approved. Accountability adds up. Keep the grids and times this specific.', 'AOC: Approved. Good enemy picture. Tie your next decision point to a time.', 'AOC: Approved. Clear and complete. Watch escalation before you contend again.', 'AOC: Approved. Solid brief. Make sure the incoming commander gets the same picture.'])) : go('more', pick(['AOC: Line 9 needs a time for each decision point and which fireteam owns it. Resend.', 'AOC: Enemy line is too thin. Give me grids, times and your assessment of their next move.', 'AOC: Accountability does not show where each fireteam is. Grid for every team, then resend.', 'AOC: Intel line has no evidence. Which report answered which PIR? Resend.']));
       if (!aiReady()){ once(k, fb); return; }
       if (c.hist.length >= 3){ once(k, () => go('approve', 'AOC: Approved. Keep the next brief this specific.')); return; }
       const ls = cubLines(S, c.side, c.n) || [], body = ls.map((L, i) => (i + 1) + '. ' + L.l + ': ' + String((c.f || {})[L.k] || '').slice(0, 300)).join('\n');
       aiJob(k, 'You are the AOC director reviewing ' + SIDES[c.side].name + ' Commander’s Update Brief ' + c.n + ' at ' + hhmm(S.g) + '.\n' + body + '\n\nApprove it if every line is specific and useful. Otherwise ask for more and name the line that is weak. Return only a JSON object: {"verdict":"approve" or "more","text":"one or two sentences of feedback, under 220 characters"}.', 160, t => { const j = aiJSON(t); if (j && (j.verdict === 'approve' || j.verdict === 'more') && j.text) go(j.verdict, ('AOC: ' + String(j.text).replace(/\s+/g, ' ')).slice(0, 260)); else fb(); }, 'aoc'); });
     (S.accts || []).forEach(a => ['B', 'R'].forEach(sd => { const r = a.reps[sd]; if (r && r.status === 'aoc' && later('aa' + a.id + sd, 1)) once('aad' + a.id + sd, () => W('perstat_aoc', null, { aid:a.id, side:sd, text:'Acknowledged.' }, 'A')); }));
-    (S.aocReqs || []).filter(r => r.status === 'open').forEach(r => { if (!later('ar' + r.id, 1 + rnd() * 2)) return; const go = tx => { const r2 = app.S && (app.S.aocReqs || []).find(x => x.id === r.id); if (r2 && r2.status === 'open') W('aoc_grant', null, { side:r.side, req:r.id, kind:'reply', text:tx || 'Bot AOC: copy.' }, 'A'); };
+    (S.aocReqs || []).filter(r => r.status === 'open').forEach(r => { if (!later('ar' + r.id, 1 + rnd() * 2)) return; const go = tx => { const r2 = app.S && (app.S.aocReqs || []).find(x => x.id === r.id); if (r2 && r2.status === 'open') W('aoc_grant', null, { side:r.side, req:r.id, kind:'reply', text:tx || 'AOC: Copy. Working it now, stand by for a decision.' }, 'A'); };
       if (!aiReady()) once('ard' + r.id, () => go('')); else aiJob('ard' + r.id, 'You are the AOC director. ' + SIDES[r.side].name + ' C2 sent you this (' + (AOC_WANT[r.want] || r.want) + '): "' + String(r.text || '').slice(0, 300) + '"\nWrite the AOC’s reply in one or two sentences, under 200 characters. Acknowledge it and give a clear next step. Plain text only.', 100, t => go(t ? ('AOC: ' + t.replace(/\s+/g, ' ')).slice(0, 240) : ''), 'aoc'); });
   }
   if (on.W){
