@@ -6668,10 +6668,10 @@ function buildProps(){
   }
   v.innerHTML = `
   <div class="stack">
-    <div class="panel"><div class="act-head"><h2 data-prname>${esc(me.name)}</h2><span class="small muted">Props and logistics - <b class="mono" data-clock>\u2014</b></span></div>
-      <div class="row" style="justify-content:flex-start"><button type="button" data-prsignout style="flex:0 0 auto">Sign out</button></div>
+    <details class="panel ochead" data-prhead><summary><span class="ochead-name"><b data-prname>${esc(me.name)}</b><span class="small muted">Props and logistics</span></span><b class="mono" data-clock>\u2014</b></summary>
+      <div class="stack" style="margin-top:10px"><div class="row" style="justify-content:flex-start"><button type="button" data-prsignout style="flex:0 0 auto">Sign out</button></div>
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
-      <label class="chk"><input type="checkbox" data-msgsound checked> Sound for messages and schedule changes</label></div>
+      <label class="chk"><input type="checkbox" data-msgsound checked> Sound for messages and schedule changes</label></div></details>
     <div class="panel stack" data-prnav hidden></div>
     <div class="pr-next" data-prnext hidden></div>
     <div class="row pr-aor" style="align-items:end"><label>Show props for<select data-praor><option value="">Everyone</option><option value="west">My area: west and south half</option><option value="north">My area: north and east half</option><option value="me">Only what I claimed</option></select></label><span class="small muted" data-praorn style="flex:1 1 160px"></span></div>
