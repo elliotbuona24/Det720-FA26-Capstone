@@ -4824,7 +4824,7 @@ function buildOC(){
       if (!g){ toast('Location unavailable. Allow location for this site and try again outdoors.', true); return; }
       app.ocSelf = { pt:g.pt, acc:g.acc, t:Date.now() }; const mb = $('[data-ocmapbox]', v); if (mb && !mb.open) mb.open = true; refresh(true); return;
     }
-    if (ev.target.closest('[data-ocselfclr]')){ app.ocSelf = null; refresh(true); return; }
+    if (ev.target.closest('[data-ocselfclr]')){ app.ocSelf = null; app.ocMapFocus = null; refresh(true); return; }
     const sh = ev.target.closest('[data-ocshow]');
     if (sh){ const left = sh.dataset.left === '1'; if (!confirm(left ? 'Confirm your team left the area?' : 'Report that your team did not leave? The wing takes +10 escalation.')) return; writeEvent('show_oc', null, { req:sh.dataset.ocshow, oc:me.id, left }); toast('Sent to the board.'); return; }
     const n = ev.target.closest('[data-ocnine]');
