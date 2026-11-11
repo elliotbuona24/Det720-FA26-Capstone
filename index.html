@@ -313,7 +313,9 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .pr-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pr-btns button{min-height:48px;font-size:15px}.pr-nav{font-size:15px;font-weight:700}.pr-nav .mono{font-size:20px}
 .pr-tbl{width:100%;border-collapse:collapse;font-size:13px}.pr-tbl th,.pr-tbl td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}.pr-tbl th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}.pr-clash{color:var(--bad);font-weight:600}
 .mk-target{width:26px;height:26px;border-radius:50%;background:#ff9800;border:3px solid #fff;box-shadow:0 0 0 2px #000;animation:tgtpulse 1.4s ease-out infinite}@keyframes tgtpulse{0%{box-shadow:0 0 0 2px #000,0 0 0 0 rgba(255,152,0,.7)}100%{box-shadow:0 0 0 2px #000,0 0 0 22px rgba(255,152,0,0)}}@media (prefers-reduced-motion:reduce){.mk-target{animation:none}}
-.pr-claim{font-size:13px;font-weight:600}.pr-claim.me{color:var(--good)}.pr-claim.other{color:var(--warn)}
+.pr-claim{font-size:13px;font-weight:600}.pr-claim.warn{color:var(--bad)}
+.pr-rec{font-size:15px}.pr-card.soon .pr-rec,.pr-card.late .pr-rec{color:var(--bad)}.pr-dist{font-size:14px}
+.pr-next{position:sticky;top:6px;z-index:30}.pr-next-in{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;border:2px solid var(--warn);background:var(--panel);box-shadow:0 4px 14px rgba(0,0,0,.15)}.pr-next-in.late{border-color:var(--bad)}.pr-next-in .grow{display:grid;gap:2px;min-width:0}.pr-next-in b{font-size:15px;overflow-wrap:anywhere}.pr-claim.me{color:var(--good)}.pr-claim.other{color:var(--warn)}
 .mk-prop{width:14px;height:14px;transform:rotate(45deg);border:2px solid #fff;background:#ff9800;box-shadow:0 0 0 1px #000}.mk-prop.plan{background:transparent;border:2px dashed #ff9800;box-shadow:none}
 .dr-req{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px}.dr-req textarea{width:100%;min-height:64px;font-size:16px;box-sizing:border-box}.dr-req .q{font-size:16px;font-weight:600}
 .team-big{font-size:18px;padding:14px;width:100%}
@@ -518,6 +520,13 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 .ocinj-cur details summary{cursor:pointer}
 .aibox{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--panel-2)}
 .aibox summary{cursor:pointer}
+.ocinj-dist{margin-top:4px;font-size:14px}.ocinj-dist b{font-weight:700}
+.ocinj-btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;flex:0 1 auto}
+.ocinj-clr{margin-top:8px}
+.ocfocus span{display:block;width:34px;height:34px;border-radius:50%;border:3px solid #ffd400;background:rgba(255,212,0,.25);box-shadow:0 0 0 2px #000;animation:ocpulse 1.6s ease-out infinite}
+@keyframes ocpulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.4);opacity:.35}}
+@media (prefers-reduced-motion:reduce){.ocfocus span{animation:none}}
+.ocfocus-tip{font-weight:700}
 .linkbtn{background:none;border:0;padding:2px 4px;color:var(--focus);text-decoration:underline;font-size:13px;cursor:pointer}
 .endex-ov{position:fixed;inset:0;z-index:2500;background:rgba(10,14,18,.82);display:grid;place-items:center;padding:16px;overflow:auto}
 .endex-card{width:100%;max-width:560px;background:var(--panel);color:var(--ink);border-radius:14px;padding:26px 24px 22px;text-align:center;border-top:6px solid var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.45)}
@@ -1807,7 +1816,7 @@ function refOpen(S, side, ref){ const k = String(ref || '').slice(0, 1), id = St
   if (k === 'q'){ const q = (S.injq || []).find(x => x.qid === id); return !!(q && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side) && !(q.win && ((q.res || {})[side] || q.closed != null))); }
   if (k === 'p'){ const o = intelOpen(S, id, side); return !!(o && !o.done && !(S.intel[side] || {})[id]); } return false; }
 function refList(S, side){ const out = [], nd = r => { const n = refNeeds(S, r); return n ? ' (needs ' + n + ')' : ''; };
-  (S.injq || []).filter(q => q.sent != null && q.win && refOpen(S, side, 'q:' + q.qid)).forEach(q => out.push(['q:' + q.qid, 'Inject: ' + q.label + nd('q:' + q.qid)]));
+  (S.injq || []).filter(q => !q.spoof && q.sent != null && q.win && refOpen(S, side, 'q:' + q.qid)).forEach(q => out.push(['q:' + q.qid, 'Inject: ' + q.label + nd('q:' + q.qid)]));
   allProblems(S).forEach((P, i) => { if (refOpen(S, side, 'p:' + P.id)) out.push(['p:' + P.id, 'Intel ' + (i + 1) + ': ' + fillT(P.title).split(/ -- /)[0] + nd('p:' + P.id)]); });
   return out; }
 function markRef(S, ref, side, e){ ref = String(ref || ''); if (/^q:/.test(ref)) injMark(S, ref.slice(2), side, e); else if (/^p:/.test(ref)) pushLog(S, 'White Force recorded ' + SIDES[side].name + ' response to "' + (refLabel(S, ref) || 'an intel package') + '"', side, e); else if (ref && !/^(none|unk)$/.test(ref)) injMark(S, ref, side, e); }
@@ -4825,6 +4834,16 @@ function buildOC(){
   });
   v.addEventListener('click', ev => {
     const op = ev.target.closest('[data-ocinjopen]'), cl = ev.target.closest('[data-ocinjclose]'), ca = ev.target.closest('[data-ocinjcall]');
+    { const xc = ev.target.closest('[data-ocinjclr]'), xu = ev.target.closest('[data-ocunclr]'), xs = ev.target.closest('[data-occlrshow]'), xm = ev.target.closest('[data-ocinjmap]');
+      if (xc){ ocClr().add(xc.dataset.ocinjclr); ocClrSave(); if (app.ocInj === xc.dataset.ocinjclr) app.ocInj = null; toast('Cleared from your screen. Show cleared brings it back.'); }
+      if (xu){ ocClr().delete(xu.dataset.ocunclr); ocClrSave(); }
+      if (xs){ app.ocClrShow = !app.ocClrShow; }
+      if (xc || xu || xs){ if (app.S) ocScenes(app.S, v, app.S.ocs[me.id]); return; }
+      if (xm){ const S = app.S, q = S && (S.injq || []).find(x => x.qid === xm.dataset.ocinjmap), pt = S && refLoc(S, 'q:' + xm.dataset.ocinjmap); if (!pt){ toast('This inject has no location on the map.', true); return; }
+        app.ocMapFocus = { pt, label:q ? q.label : 'Inject', t:Date.now(), done:false };
+        if (app.ocHere && Date.now() - app.ocHere.t < 120000) app.ocSelf = { pt:app.ocHere.pt, acc:app.ocHere.acc, t:Date.now() };
+        const tb = $('[data-ptab="map"]', v); if (tb && v.dataset.ptab !== 'map') tb.click(); const mb = $('[data-ocmapbox]', v); if (mb && !mb.open) mb.open = true;
+        refresh(true); setTimeout(() => { const nv = $('.ptabs', v), off = nv ? nv.getBoundingClientRect().height + 8 : 8; if (mb) window.scrollTo({ top:window.scrollY + mb.getBoundingClientRect().top - off, behavior:'smooth' }); }, 150); return; } }
     if (!op && !cl && !ca) return;
     if (op){ app.ocInj = op.dataset.ocinjopen; app.ocInjAuto = false; }
     if (cl){ app.ocInj = null; }
@@ -4885,7 +4904,7 @@ function renderOC(S){
       if (tx.dataset.h !== html){ tx.dataset.h = html; tx.innerHTML = html; } clr.hidden = !s; } }
   answerOcPing(S, me);
   const mb = $('[data-ocmapbox]', v);
-  if (mb && mb.open){ const real = renderMapInto($('[data-ocmap]', v), S, null); { const lg = (real ? realLegend() : legendHTML(null)) + mapKeyHTML(true), le = $('[data-oclegend]', v); if (le.dataset.h !== lg){ le.dataset.h = lg; le.innerHTML = lg; } } }
+  if (mb && mb.open){ const mel = $('[data-ocmap]', v), real = renderMapInto(mel, S, null); { const lg = (real ? realLegend() : legendHTML(null)) + mapKeyHTML(true), le = $('[data-oclegend]', v); if (le.dataset.h !== lg){ le.dataset.h = lg; le.innerHTML = lg; } } ocMapFocus(mel); }
   const rs = S.ocReqs.filter(r => r.oc === me.id).slice(-8).reverse();
   $('[data-ocmine]', v).innerHTML = rs.length ? rs.map(r => '<div class="li"><div class="grow"><span class="small muted">' + hhmm(r.g) + '</span> ' + esc(ocReqText(S, r)) + (r.reply ? '<div class="small"><b>White Force ' + hhmm(r.resG) + ':</b> ' + esc(r.reply) + '</div>' : '') + '</div>' + ocStat(r.status) + (r.status === 'open' ? 'waiting' : r.kind === 'stale' ? (r.status === 'ok' ? 'marked' : 'not marked') : r.kind === 'call' ? (r.status === 'ok' ? 'approved' : 'denied') : r.reply ? 'replied' : 'seen') + '</span></div>').join('') : '<div class="empty">Nothing sent yet.</div>';
   { const reps = S.ocReqs.filter(r => r.oc === me.id && r.reply), n = reps.length; if (app.ocRepN == null || app.ocRepFor !== me.id){ app.ocRepFor = me.id; app.ocRepN = n; } else if (n > app.ocRepN){ app.ocRepN = n; toast('White Force reply: ' + reps[n - 1].reply); } }
@@ -4908,9 +4927,23 @@ function ocInjItems(S, o){
     return { q, id:q.qid, mt, end, pt, sq, scene:mt && mt.scene ? mt.scene : '', oc:q.oc ? fillT(q.oc) : '', text:q.sentText || fillT(q.text || ''), needs:q.win ? refNeeds(S, 'q:' + q.qid) : '', until:mt ? mt.until : null };
   }).filter(Boolean).sort((a, b) => (a.end == null) - (b.end == null) || (a.end || 0) - (b.end || 0) || b.q.sent - a.q.sent);
 }
+function ocMapFocus(mel){
+  const st = mel && mel._lm, f = app.ocMapFocus; if (!st || !st.map || !window.L) return;
+  if (!st.focus) st.focus = L.layerGroup().addTo(st.map);
+  if (!f || Date.now() - f.t > 180000){ if (st.focusK){ st.focus.clearLayers(); st.focusK = null; } if (f) app.ocMapFocus = null; return; }
+  const k = f.t + '|' + f.pt.join(',');
+  if (st.focusK !== k){ st.focusK = k; st.focus.clearLayers();
+    L.marker(f.pt, { icon:L.divIcon({ className:'ocfocus', html:'<span></span>', iconSize:[34, 34], iconAnchor:[17, 17] }), interactive:false, keyboard:false, zIndexOffset:2000 }).addTo(st.focus);
+    L.tooltip({ permanent:true, direction:'top', offset:[0, -18], className:'ocfocus-tip' }).setLatLng(f.pt).setContent(esc(f.label)).addTo(st.focus); }
+  if (!f.done){ f.done = true; setTimeout(() => { try { st.map.invalidateSize(); const me = app.ocSelf && Date.now() - app.ocSelf.t < 120000 ? app.ocSelf.pt : null; if (me && distM(me, f.pt) < 1500) st.map.fitBounds(L.latLngBounds([f.pt, me]).pad(0.35), { maxZoom:19 }); else st.map.setView(f.pt, Math.max(st.map.getZoom() || 17, 18)); } catch(e){} }, 80); }
+}
+function ocClrKey(){ return 'marala-occlr-' + (app.gid || 'local'); }
+function ocClr(){ if (!app.ocClrSet){ let a = []; try { a = JSON.parse(localStorage.getItem(ocClrKey()) || '[]') || []; } catch(e){ a = []; } app.ocClrSet = new Set(Array.isArray(a) ? a : []); app.ocClrGid = app.gid; } else if (app.ocClrGid !== app.gid){ app.ocClrSet = null; return ocClr(); } return app.ocClrSet; }
+function ocClrSave(){ try { localStorage.setItem(ocClrKey(), JSON.stringify([...ocClr()])); } catch(e){} }
+function ocDist(m){ return m < 1000 ? 'About ' + Math.max(10, Math.round(m / 10) * 10) + ' m from you' : 'About ' + (m / 1000).toFixed(1) + ' km from you'; }
 function ocScenes(S, v, o){
   const box = $('[data-ocinjbox]', v); if (!box) return;
-  const list = ocInjItems(S, o), located = list.some(x => x.pt);
+  const all = ocInjItems(S, o), clr = ocClr(), list = all.filter(x => !clr.has(x.id)), hid = all.filter(x => clr.has(x.id)), located = list.some(x => x.pt);
   if (ROOMS_LIVE && app.ocWatch != null){ try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; }
   if (located && !ROOMS_LIVE && !app.ocWatch && navigator.geolocation){ try { app.ocWatch = navigator.geolocation.watchPosition(p => { app.ocHere = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); else { try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; } }, () => { app.ocHere = null; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); }, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){} }
   if (!located && app.ocWatch != null){ try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; }
@@ -4924,25 +4957,29 @@ function ocScenes(S, v, o){
     if (hit){ if (!curNear){ app.ocInj = hit.id; app.ocInjAuto = true; } app.ocJump = true; msgSound(); try { navigator.vibrate && navigator.vibrate([300, 150, 300, 150, 300]); } catch(e){} toast('GPS: your team is at ' + hit.q.label + '. ' + (curNear ? 'Tap Switch to this one when ready.' : hit.scene ? 'Read the scene to the team now.' : 'Its card is open on the Now tab.')); } }
   if (app.ocInj && !list.some(x => x.id === app.ocInj)) app.ocInj = null;
   const cur = list.find(x => x.id === app.ocInj) || null;
+  if (!ROOMS_LIVE && here && (!app.ocDistPt || Date.now() - app.ocDistPt.t >= 15000)) app.ocDistPt = { pt:here.pt, t:Date.now(), g:S.g };
+  if (!here) app.ocDistPt = null;
+  const dline = x => ROOMS_LIVE || !x.pt ? '' : app.ocDistPt ? '<div class="ocinj-dist"><b>' + ocDist(distM(app.ocDistPt.pt, x.pt)) + '</b> <span class="small muted">updated ' + hhmm(app.ocDistPt.g) + '</span></div>' : '<div class="ocinj-dist muted small">No GPS on this phone yet, so no distance.</div>';
+  const xbtn = x => (x.pt ? '<button type="button" data-ocinjmap="' + esc(x.id) + '" style="flex:0 0 auto">Show on map</button>' : '') + (!x.q.win ? '<button type="button" data-ocinjclr="' + esc(x.id) + '" style="flex:0 0 auto">Clear</button>' : '');
   const where = x => x.rm ? roomLabel(x.rm) + (x.sq ? ', square ' + x.sq : '') : (x.sq ? 'Square ' + x.sq : '') + (x.pt ? (x.sq ? ', ' : '') + 'grid ' + fmtPt(x.pt).split(' ').slice(2).join(' ') : '') || 'No set location';
   const time = x => x.end != null ? 'Respond by ' + hhmm(x.end) : x.q.win ? 'Clock starts when props are placed' : x.until != null ? 'Gone at ' + hhmm(x.until) : 'Sent ' + hhmm(x.q.sent);
-  const dist = x => x.d != null ? ', about ' + x.d + ' m from you' : '';
   let html = '';
   if (cur){
     const read = cur.scene || cur.oc;
-    html += '<div class="ocinj-cur' + (cur.near ? ' here' : '') + '" data-ocinjcur="' + esc(cur.id) + '">' + (cur.near ? '<div class="ocinj-here" role="alert">Your team is here. GPS puts you about ' + cur.d + ' m from it.</div>' : '<div class="ocinj-manual">Opened by you, not by GPS</div>') + '<div class="ocinj-head"><b>' + esc(cur.q.label) + '</b><span class="small">' + esc(where(cur) + dist(cur)) + '</span><span class="small">' + esc(time(cur)) + '</span></div>' +
+    html += '<div class="ocinj-cur' + (cur.near ? ' here' : '') + '" data-ocinjcur="' + esc(cur.id) + '">' + (cur.near ? '<div class="ocinj-here" role="alert">Your team is here. GPS puts you about ' + cur.d + ' m from it.</div>' : '<div class="ocinj-manual">Opened by you, not by GPS</div>') + '<div class="ocinj-head"><b>' + esc(cur.q.label) + '</b><span class="small">' + esc(where(cur)) + '</span><span class="small">' + esc(time(cur)) + '</span></div>' + dline(cur) +
       (cur.scene ? '<div class="ocinj-read"><span class="small muted">Read aloud to the team</span><p>“' + esc(cur.scene) + '”</p></div>' : '') +
       (cur.oc ? '<div class="ocinj-sec"><span class="small muted">' + (cur.scene ? 'Your notes' : 'What you do and say') + '</span><p>' + esc(cur.oc) + '</p></div>' : '') +
       (!read ? '<div class="ocinj-sec"><span class="small muted">The scenario (what the team’s C2 received)</span><p>' + esc(cur.text) + '</p></div>' : '') +
       (cur.needs ? '<div class="ocinj-sec"><span class="small muted">The team needs</span><p>' + esc(cur.needs) + '</p></div>' : '') +
       (read ? '<details class="ocinj-sec"><summary class="small">What the team’s C2 received</summary><p>' + esc(cur.text) + '</p></details>' : '') +
-      '<div class="row" style="justify-content:flex-start">' + (cur.q.win ? '<button type="button" class="btn-side" data-ocinjcall="' + esc(cur.id) + '" style="flex:0 0 auto">Make a call for this inject</button>' : '') + '<button type="button" data-ocinjclose style="flex:0 0 auto">Close</button></div></div>';
+      '<div class="row" style="justify-content:flex-start">' + (cur.q.win ? '<button type="button" class="btn-side" data-ocinjcall="' + esc(cur.id) + '" style="flex:0 0 auto">Make a call for this inject</button>' : '') + xbtn(cur) + '<button type="button" data-ocinjclose style="flex:0 0 auto">Close</button></div></div>';
   }
   const rest = list.filter(x => x !== cur);
-  html += rest.length ? '<div class="list">' + rest.map(x => '<div class="li' + (x.near ? ' warnrow' : '') + '"><div class="grow">' + (x.near ? '<span class="ocinj-tag">Team is here (GPS)</span> ' : '') + '<b>' + esc(x.q.label) + '</b> <span class="small muted">' + esc(where(x) + dist(x)) + '. ' + esc(time(x)) + '.</span></div><button type="button" data-ocinjopen="' + esc(x.id) + '" style="flex:0 0 auto">' + (cur ? 'Switch to this one' : 'We’re at this one') + '</button></div>').join('') + '</div>'
-    : !cur ? '<div class="empty">No injects are out for your team right now. When one comes in it shows here, with what to read and do.</div>' : '';
+  html += rest.length ? '<div class="list">' + rest.map(x => '<div class="li' + (x.near ? ' warnrow' : '') + '"><div class="grow">' + (x.near ? '<span class="ocinj-tag">Team is here (GPS)</span> ' : '') + '<b>' + esc(x.q.label) + '</b> <span class="small muted">' + esc(where(x)) + '. ' + esc(time(x)) + '.</span>' + dline(x) + '</div><div class="ocinj-btns"><button type="button" data-ocinjopen="' + esc(x.id) + '" style="flex:0 0 auto">' + (cur ? 'Switch to this one' : 'We’re at this one') + '</button>' + xbtn(x) + '</div></div>').join('') + '</div>'
+    : !cur ? '<div class="empty">' + (hid.length ? 'Nothing left on your screen. ' : 'No injects are out for your team right now. When one comes in it shows here, with what to read and do.') + '</div>' : '';
+  if (hid.length) html += '<div class="ocinj-clr"><button type="button" class="linkbtn" data-occlrshow>' + (app.ocClrShow ? 'Hide cleared injects' : 'Show cleared (' + hid.length + ')') + '</button>' + (app.ocClrShow ? '<div class="list">' + hid.map(x => '<div class="li"><div class="grow"><b>' + esc(x.q.label) + '</b> <span class="small muted">' + esc(where(x)) + '. ' + esc(time(x)) + '.</span></div><button type="button" data-ocunclr="' + esc(x.id) + '" style="flex:0 0 auto">Bring back</button></div>').join('') + '</div>' : '') + '</div>';
   const el = $('[data-ocinjs]', v); if (el.dataset.h !== html){ const op = cur ? !!$('[data-ocinjcur] details[open]', el) : false; el.dataset.h = html; el.innerHTML = html; if (op){ const d = $('[data-ocinjcur] details', el); if (d) d.open = true; } }
-  $('[data-ocinjn]', v).textContent = list.length ? list.length + ' out now' : '';
+  $('[data-ocinjn]', v).textContent = list.length ? list.length + ' out now' : hid.length ? hid.length + ' cleared' : '';
   if (app.ocJump){ app.ocJump = false; const tb = $('[data-ptab="now"]', v); if (tb && v.dataset.ptab !== 'now' && v.dataset.ptab !== 'all') tb.click(); setTimeout(() => { const nv = $('.ptabs', v), off = nv ? nv.getBoundingClientRect().height + 8 : 8; window.scrollTo({ top:window.scrollY + box.getBoundingClientRect().top - off, behavior:'smooth' }); }, 120); }
 }
 function renderOCChatWhite(S, v){
@@ -5581,7 +5618,7 @@ function sideTimelineHTML(S, side, full){
   const started = S.clock.started, g = started ? Math.min(S.g, END_G) : START_G, f = full ? (app.stlf || { mode:'all', id:'' }) : { mode:'all', id:'' };
   const intel = allProblems(S).map(P => ({ P, o:intelOpen(S, P.id, side) })).filter(x => x.o).map(x => ({ id:'p:' + x.P.id, n:pkgNum(S, x.P, side), title:fillT(x.P.title), a:x.o.g, b:x.o.due, done:!!x.o.done, st:x.P.stmt ? stmtDue(S, side, { pkg:x.P }) : null }));
   intel.forEach(x => { x.tip = 'Intel ' + x.n + ': ' + x.title + ' - ' + hhmm(x.a) + ' to ' + hhmm(x.b); });
-  const wq = full ? (S.injq || []).filter(q => q.win && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).map(q => { const a = q.ws != null ? q.ws : q.sent, b = injEnd(q) != null ? injEnd(q) : Math.max(a + q.win, g), r = q.res && q.res[side]; return { id:'q:' + q.qid, a, b, q, r, done:q.closed != null || !!r, tip:q.label + ' | respond by ' + hhmm(b) + (r ? ' | ' + INJ_ST[r.st][1] : q.closed != null ? ' | closed' : '') }; }) : [];
+  const wq = full ? (S.injq || []).filter(q => !q.spoof && q.win && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).map(q => { const a = q.ws != null ? q.ws : q.sent, b = injEnd(q) != null ? injEnd(q) : Math.max(a + q.win, g), r = q.res && q.res[side]; return { id:'q:' + q.qid, a, b, q, r, done:q.closed != null || !!r, tip:q.label + ' | respond by ' + hhmm(b) + (r ? ' | ' + INJ_ST[r.st][1] : q.closed != null ? ' | closed' : '') }; }) : [];
   const one = f.id ? intel.concat(wq).find(x => x.id === f.id) || null : null;
   let lo = START_G, hi = END_G;
   if (one){ lo = Math.max(START_G, one.a - 10); hi = Math.min(END_G, one.b + 10); }
@@ -5610,7 +5647,7 @@ function sideTimelineHTML(S, side, full){
 function sideTlCtl(S, side, v){
   const box = $('[data-fptlctl]', v); if (!box) return;
   const f = app.stlf || (app.stlf = { mode:'all', id:'' });
-  const opts = allProblems(S).map(P => ({ P, o:intelOpen(S, P.id, side) })).filter(x => x.o).map(x => ['p:' + x.P.id, 'Intel ' + pkgNum(S, x.P, side) + ': ' + fillT(x.P.title), x.o.g]).concat((S.injq || []).filter(q => q.win && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).map(q => ['q:' + q.qid, 'Inject: ' + q.label, q.ws != null ? q.ws : q.sent])).sort((a, b) => a[2] - b[2]);
+  const opts = allProblems(S).map(P => ({ P, o:intelOpen(S, P.id, side) })).filter(x => x.o).map(x => ['p:' + x.P.id, 'Intel ' + pkgNum(S, x.P, side) + ': ' + fillT(x.P.title), x.o.g]).concat((S.injq || []).filter(q => !q.spoof && q.win && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).map(q => ['q:' + q.qid, 'Inject: ' + q.label, q.ws != null ? q.ws : q.sent])).sort((a, b) => a[2] - b[2]);
   if (f.id && !opts.some(o => o[0] === f.id)) f.id = '';
   const key = f.mode + '|' + f.id + '|' + opts.map(o => o[0]).join();
   if (box.dataset.k === key) return; box.dataset.k = key;
@@ -5723,7 +5760,7 @@ function sideDue(S, side){
     if (P.stmt && !S.statements[side + ':pkg:' + P.id]){ const d = stmtDue(S, side, { pkg:P }); if (d >= S.g) due.push({ t:d, h:'<b>Public statement</b> on intel ' + pkgNum(S, P, side) }); } });
   S.incidents.forEach(i => { if (!S.statements[side + ':' + i.id]){ const d = stmtDue(S, side, { inc:i }); if (d >= S.g) due.push({ t:d, h:'<b>Public statement</b> on the ' + esc(i.grid) + ' explosion' }); } });
   { const a = aidOf(S, side); if (a.on && a.due != null) due.push({ t:a.due, h:'<b>Aid package ' + a.n + '</b> to the town office' }); }
-  (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && !(q.res || {})[side] && (q.to === 'both' || q.to === 'public' || q.to === side)).forEach(q => due.push({ t:injEnd(q), h:'<b>' + esc(q.label) + '</b> (inject)' }));
+  (S.injq || []).filter(q => !q.spoof && q.win && q.sent != null && q.closed == null && injEnd(q) != null && !(q.res || {})[side] && (q.to === 'both' || q.to === 'public' || q.to === side)).forEach(q => due.push({ t:injEnd(q), h:'<b>' + esc(q.label) + '</b> (inject)' }));
   { const cb = cubOpen(S, side); if (cb) due.push({ t:rhythmAt(cb), h:'<b>' + esc(cb.label) + '</b> to the AOC' }); RHYTHM.filter(x => x.kind === 'coc' && rhythmAt(x) >= S.g && rhythmAt(x) - S.g <= 20).forEach(x => due.push({ t:rhythmAt(x), h:'<b>' + esc(x.label) + '</b>' })); }
   SITE_KEYS.forEach(k => { const st = S.sites[k]; if (st && st.contestBy && st.contestUntil > S.g && (st.contestBy === side || st.holder === side)) due.push({ t:st.contestUntil, h:'<b>Contention</b> at ' + esc(SITES[k].name) + (st.contestBy === side ? ' (yours)' : ' (against you)') }); });
   return due.sort((a, b) => a.t - b.t);
@@ -5751,7 +5788,7 @@ function renderForcePic(S, side, v){
   const openI = mine.filter(x => !x.o.done);
   let out = openI.map(({ P, o }) => { const tot = Math.max(1, o.due - o.g), pct = Math.max(0, Math.min(100, (S.g - o.g) / tot * 100)), rem = Math.max(0, Math.ceil(o.due - S.g)), lk = S.intel[side][P.id];
     return '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Intel ' + pkgNum(S, P, side) + '</span><b>' + esc(fillT(P.title)) + '</b></div><div class="pic-meta"><span>Out ' + hhmm(o.g) + '</span><span class="' + (rem <= 3 && !lk ? 'warn' : '') + '">' + (lk ? 'Locked in' : 'Due ' + hhmm(o.due) + ' | ' + rem + ' min left') + '</span></div><div class="pic-mini"><i style="width:' + pct.toFixed(1) + '%"></i></div></div>'; }).join('');
-  const myW = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && !(q.res || {})[side] && (q.to === 'both' || q.to === 'public' || q.to === side)).sort((x, y) => injEnd(x) - injEnd(y));
+  const myW = (S.injq || []).filter(q => !q.spoof && q.win && q.sent != null && q.closed == null && injEnd(q) != null && !(q.res || {})[side] && (q.to === 'both' || q.to === 'public' || q.to === side)).sort((x, y) => injEnd(x) - injEnd(y));
   out += myW.map(q => { const end = injEnd(q), pct = Math.max(0, Math.min(100, (S.g - q.ws) / Math.max(1, q.win) * 100)), rem = Math.max(0, Math.ceil(end - S.g)); return '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Inject</span><b>' + esc(q.label) + '</b></div><div class="pic-meta"><span>Out ' + hhmm(q.ws) + '</span><span class="' + (rem <= 3 ? 'warn' : '') + '">Respond by ' + hhmm(end) + ' | ' + rem + ' min left</span></div><div class="pic-mini"><i style="width:' + pct.toFixed(1) + '%"></i></div></div>'; }).join('');
   out += injs.filter(f => !myW.some(q => q.sent === f.g && q.label === f.title)).map(f => '<div class="pic-item"><div class="pic-it"><span class="pic-tag">Inject</span><b>' + esc(String(f.text).slice(0, 110)) + (String(f.text).length > 110 ? '…' : '') + '</b></div><div class="pic-meta"><span>' + hhmm(f.g) + '</span><span>' + picAgo(S.g - f.g) + '</span></div></div>').join('');
   if (!out) out = '<div class="pic-empty">' + (started ? 'Nothing out right now.' : 'Nothing is out before STARTEX.') + '</div>';
@@ -6374,7 +6411,7 @@ const INJ_ST = { done:['ok', 'Done'], miss:['no', 'Missed'], na:['', 'Closed: th
 function renderForceInj(S, side, v){
   { const L = refList(S, side), h = '<option value="">Choose one</option><option value="none">No</option><option value="unk">I don’t know</option>' + L.map(([k, n]) => '<option value="' + esc(k) + '">' + esc(n) + '</option>').join(''); $$('[data-forref]', v).forEach(sel => { if (document.activeElement !== sel && sel.dataset.h !== h){ sel.dataset.h = h; keepSelect(sel, h); } }); }
   const box = $('[data-cinj]', v); if (!box) return;
-  const qs = (S.injq || []).filter(q => q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).sort((a, b) => b.sent - a.sent);
+  const qs = (S.injq || []).filter(q => !q.spoof && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === side)).sort((a, b) => b.sent - a.sent);
   let open = 0;
   const h = qs.map(q => { const r = q.res && q.res[side], end = q.win ? injEnd(q) : null; let st, bar = '';
     if (!q.win) st = '<span class="chip">Information</span>';
@@ -6631,6 +6668,7 @@ function buildProps(){
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <label class="chk"><input type="checkbox" data-msgsound checked> Sound for messages and schedule changes</label></div>
     <div class="panel stack" data-prnav hidden></div>
+    <div class="pr-next" data-prnext hidden></div>
     <div class="row pr-aor" style="align-items:end"><label>Show props for<select data-praor><option value="">Everyone</option><option value="west">My area: west and south half</option><option value="north">My area: north and east half</option><option value="me">Only what I claimed</option></select></label><span class="small muted" data-praorn style="flex:1 1 160px"></span></div>
     <div class="panel stack"><div class="act-head"><h2>To place</h2><span class="small muted" data-prtodon></span></div><div class="stack pr-scroll" data-prtodo></div><div class="small muted pr-more" data-prtodomore hidden></div></div>
     <div class="panel stack"><div class="act-head"><h2>In the field</h2><span class="small muted" data-proutn></span></div><div class="stack pr-scroll" data-prout></div><div class="small muted pr-more" data-proutmore hidden></div></div>
@@ -6667,6 +6705,22 @@ function propCap(box, more, what){
   const h = cards[1].offsetTop + cards[1].offsetHeight - box.offsetTop + 4; if (h > 40) box.style.maxHeight = h + 'px';
   more.hidden = false; more.textContent = 'Scroll this list for ' + (cards.length - 2) + ' more ' + what;
 }
+function propAlerts(S, me, rows, v, recT, due){
+  const box = $('[data-prnext]', v), on = S.clock.started && !S.endex;
+  const key = 'marala-pral-' + (app.gid || 'local') + '-' + me.id;
+  if (!app.prAl || app.prAlK !== key){ app.prAlK = key; let a = []; try { a = JSON.parse(localStorage.getItem(key) || '[]') || []; } catch(e){ a = []; } app.prAl = new Set(a); }
+  const nm = r => r.prop.name + (r.u.label ? ' - ' + r.u.label : ''), items = [];
+  if (on) rows.forEach(r => {
+    if (r.state === 'todo' && r.placeBy != null){ const m = r.placeBy - S.g, lvl = m <= 0 ? 'late' : m <= 3 ? '3' : m <= 10 ? '10' : null; if (lvl) items.push({ r, k:r.u.id + ':p' + lvl, t:r.placeBy, late:m <= 0, txt:(m <= 0 ? 'Late to place: ' : 'Place soon: ') + nm(r) + '. ' + due(r) + '.' + (r.claim ? '' : ' Not claimed.') }); }
+    if (r.state === 'out'){ const now = r.recNow || (r.recAfter != null && S.g >= r.recAfter), soon = !now && r.recAfter != null && r.recAfter - S.g <= 5; if (now || soon) items.push({ r, k:r.u.id + ':r' + (now ? 'now' : '5'), t:r.recNow ? S.g - 100 : r.recAfter, late:now, txt:nm(r) + ': ' + recT(r) + '.' + (r.claim ? '' : ' Not claimed.') }); }
+  });
+  items.sort((a, b) => (b.late - a.late) || (a.t - b.t));
+  const fresh = items.filter(x => !app.prAl.has(x.k));
+  if (fresh.length){ fresh.forEach(x => app.prAl.add(x.k)); try { localStorage.setItem(key, JSON.stringify([...app.prAl].slice(-300))); } catch(e){} msgSound(); try { navigator.vibrate && navigator.vibrate([250, 120, 250]); } catch(e){} toast(fresh.length === 1 ? fresh[0].txt : fresh.length + ' props need you now. First: ' + fresh[0].txt); }
+  if (!box) return;
+  const top = items[0], h = !top ? '' : '<div class="pr-next-in' + (top.late ? ' late' : '') + '"><div class="grow"><span class="small">Next for you' + (items.length > 1 ? ' (' + items.length + ' need attention)' : '') + '</span><b>' + esc(top.txt) + '</b></div><button type="button" data-prgo="' + esc(top.r.u.id) + '" style="flex:0 0 auto">Show on map</button></div>';
+  box.hidden = !h; if (box.dataset.h !== h){ box.dataset.h = h; box.innerHTML = h; }
+}
 function renderProps(S){
   const v = $('#vProps'), me = propsMe();
   if (!me){ const rj = $('[data-prrejoin]', v); if (rj){ const list = Object.values(S.ocs).filter(o => !o.removed && o.props), h = list.length ? list.map(o => '<div class="li"><div class="grow"><b>' + esc(o.name) + '</b></div><button type="button" data-prrejoinid="' + esc(o.id) + '" data-name="' + esc(o.name) + '" style="flex:0 0 auto">This is me</button></div>').join('') : '<div class="empty">No props and logistics members have signed in yet.</div>'; if (rj.dataset.h !== h){ rj.dataset.h = h; rj.innerHTML = h; } } return; }
@@ -6689,17 +6743,23 @@ function renderProps(S){
   const todo = rows.filter(r => r.state === 'todo'), out = rows.filter(r => r.state === 'out'), done = rows.filter(r => r.state === 'done');
   const due = r => r.placeBy == null ? 'On call' : 'Place by ' + hhmm(r.placeBy) + (S.clock.started ? (S.g > r.placeBy ? ' - late' : ' - in ' + Math.ceil(r.placeBy - S.g) + ' min') : '');
   const cls = r => r.placeBy == null || !S.clock.started ? '' : S.g > r.placeBy ? ' late' : r.placeBy - S.g <= 10 ? ' soon' : '';
-  const claimH = r => r.claim ? '<div class="pr-claim ' + (r.claim.oc === me.id ? 'me">Claimed by you' : 'other">Claimed by ' + esc(r.claim.name)) + ' at ' + hhmm(r.claim.g) + '</div>' : '<div class="pr-claim">Not claimed</div>';
+  if (!ROOMS_LIVE && navigator.geolocation && app.prDistWatch == null){ try { app.prDistWatch = navigator.geolocation.watchPosition(p => { app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.role === 'L' && (!app.prDistPt || Date.now() - app.prDistPt.t >= 15000)) refresh(true); }, () => {}, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){ app.prDistWatch = false; } }
+  { const hs = app.propSelf && Date.now() - app.propSelf.t < 120000 ? app.propSelf : null; if (!hs) app.prDistPt = null; else if (!app.prDistPt || Date.now() - app.prDistPt.t >= 15000) app.prDistPt = { pt:hs.pt, t:Date.now(), g:S.g }; }
+  const distH = pt => ROOMS_LIVE || !propOk(pt) ? '' : app.prDistPt ? '<div class="pr-dist"><b>' + ocDist(distM(app.prDistPt.pt, pt)) + '</b> <span class="small muted">updated ' + hhmm(app.prDistPt.g) + '</span></div>' : '<div class="pr-dist small muted">No GPS on this phone yet, so no distance.</div>';
+  const urgent = r => S.clock.started && !S.endex && (r.state === 'todo' ? r.placeBy != null && r.placeBy - S.g <= 10 : r.state === 'out' && (r.recNow || (r.recAfter != null && r.recAfter - S.g <= 5)));
+  const recT = r => r.recNow ? 'Recover now: the inject closed at ' + hhmm(r.it.closed) : r.recAfter == null ? 'Recover when told' : !S.clock.started ? 'Recover at ' + hhmm(r.recAfter) : S.g >= r.recAfter ? 'Recover now: due since ' + hhmm(r.recAfter) : 'Recover at ' + hhmm(r.recAfter) + ' - in ' + Math.ceil(r.recAfter - S.g) + ' min';
+  const claimH = r => r.claim ? '<div class="pr-claim ' + (r.claim.oc === me.id ? 'me">Claimed by you' : 'other">Claimed by ' + esc(r.claim.name)) + ' at ' + hhmm(r.claim.g) + '</div>' : '<div class="pr-claim' + (urgent(r) ? ' warn">Not claimed. Claim it so the team knows who has it.' : '">Not claimed') + '</div>';
   const claimB = r => r.claim && r.claim.oc === me.id ? '<button type="button" data-prclaim="' + esc(r.u.id) + '" data-release="1">Release</button>' : '<button type="button" data-prclaim="' + esc(r.u.id) + '">' + (r.claim ? 'Take over' : 'Claim') + '</button>';
   const goB = (r, pt) => '<button type="button" data-prgo="' + esc(r.u.id) + '" aria-pressed="' + (app.propNav === r.u.id) + '"' + (pt ? '' : ' disabled') + '>' + (app.propNav === r.u.id ? 'Hide on map' : 'Show on map') + '</button>';
-  const card = r => '<div class="pr-card' + cls(r) + '" data-prcard><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span><b>' + esc(due(r)) + '</b></span><span>For ' + esc(r.it ? r.it.label : '?') + (r.useAt != null ? ' at ' + hhmm(r.useAt) : '') + '</span></div><div class="small">Where: ' + esc(propWhere(S, r)) + '</div>' + (r.u.note ? '<div class="small">Note: ' + esc(r.u.note) + '</div>' : '') + (r.clash ? '<div class="small pr-clash">Still out for ' + esc(r.clash.it ? r.clash.it.label : 'another use') + ' until ' + hhmm(r.clash.recAfter) + '. Recover it first.</div>' : '') + (r.prop.home ? '<div class="small muted">Stored at ' + esc(r.prop.home) + '</div>' : '') + claimH(r) + '<input data-prnote maxlength="200" placeholder="Note (optional): where exactly, any problem">' + '<div class="pr-btns">' + claimB(r) + goB(r, r.u.pt) + '</div><button type="button" class="btn-side team-big" data-prplace="' + esc(r.u.id) + '">Placed</button></div>';
-  const oc = r => '<div class="pr-card' + (r.recAfter != null && S.g > r.recAfter ? ' soon' : '') + '"><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span>Placed ' + hhmm(r.st.placed) + (r.st.acc ? ' - GPS ±' + r.st.acc + ' m' : '') + '</span><span>' + (r.recNow ? '<b>Recover now: the inject closed at ' + hhmm(r.it.closed) + '</b>' : r.recAfter != null ? 'Recover after ' + hhmm(r.recAfter) : 'Recover when told') + '</span></div><div class="small">For ' + esc(r.it ? r.it.label : '?') + (r.st.name ? ' - placed by ' + esc(r.st.name) : '') + '</div>' + claimH(r) + '<div class="pr-btns">' + claimB(r) + goB(r, r.st.pt || r.u.pt) + '</div><button type="button" class="btn-side team-big" data-prrec="' + esc(r.u.id) + '">Recovered</button></div>';
+  const card = r => '<div class="pr-card' + cls(r) + '" data-prcard><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span><b>' + esc(due(r)) + '</b></span><span>For ' + esc(r.it ? r.it.label : '?') + (r.useAt != null ? ' at ' + hhmm(r.useAt) : '') + '</span></div><div class="small">Where: ' + esc(propWhere(S, r)) + '</div>' + distH(r.u.pt) + (r.u.note ? '<div class="small">Note: ' + esc(r.u.note) + '</div>' : '') + (r.clash ? '<div class="small pr-clash">Still out for ' + esc(r.clash.it ? r.clash.it.label : 'another use') + ' until ' + hhmm(r.clash.recAfter) + '. Recover it first.</div>' : '') + (r.prop.home ? '<div class="small muted">Stored at ' + esc(r.prop.home) + '</div>' : '') + claimH(r) + '<input data-prnote maxlength="200" placeholder="Note (optional): where exactly, any problem">' + '<div class="pr-btns">' + claimB(r) + goB(r, r.u.pt) + '</div><button type="button" class="btn-side team-big" data-prplace="' + esc(r.u.id) + '">Placed</button></div>';
+  const oc = r => '<div class="pr-card' + (S.clock.started && (r.recNow || (r.recAfter != null && S.g >= r.recAfter)) ? (r.recNow || S.g >= r.recAfter + 10 ? ' late' : ' soon') : '') + '"><div class="pr-what">' + esc(r.prop.name) + (r.u.label ? ' - ' + esc(r.u.label) : '') + '</div><div class="pr-meta"><span>Placed ' + hhmm(r.st.placed) + (r.st.acc ? ' - GPS ±' + r.st.acc + ' m' : '') + '</span></div><div class="pr-rec"><b>' + esc(recT(r)) + '</b></div><div class="small">For ' + esc(r.it ? r.it.label : '?') + (r.st.name ? ' - placed by ' + esc(r.st.name) : '') + '</div>' + distH(r.st.pt || r.u.pt) + claimH(r) + '<div class="pr-btns">' + claimB(r) + goB(r, r.st.pt || r.u.pt) + '</div><button type="button" class="btn-side team-big" data-prrec="' + esc(r.u.id) + '">Recovered</button></div>';
   const tb = $('[data-prtodo]', v), th = todo.length ? todo.map(card).join('') : '<div class="empty">Nothing left to place.</div>';
   if (tb.dataset.h !== th && !typingIn(tb)){ tb.dataset.h = th; tb.innerHTML = th; }
   $('[data-prtodon]', v).textContent = todo.length ? todo.length + ' to go' : '';
   { const ob = $('[data-prout]', v), oh = out.length ? out.map(oc).join('') : '<div class="empty">No props in the field.</div>'; if (ob.dataset.h !== oh){ ob.dataset.h = oh; ob.innerHTML = oh; } $('[data-proutn]', v).textContent = out.length ? out.length + ' out' : ''; }
   { const cat = (S.propOrder || []).map(k => S.props[k]).filter(Boolean), ch = cat.length ? cat.map(c => { const o = out.find(r => r.u.prop === c.id), nx = todo.find(r => r.u.prop === c.id); return '<div class="li"><div class="grow"><b>' + esc(c.name) + '</b><div class="small">' + (o ? 'In the field for ' + esc(o.it ? o.it.label : '?') : 'Available' + (c.home ? ' at ' + esc(c.home) : '')) + (nx ? ' - next: ' + esc(due(nx)) : '') + '</div></div></div>'; }).join('') : '<div class="empty">No props in the catalog.</div>', el = $('[data-prcat]', v); if (el.dataset.h !== ch){ el.dataset.h = ch; el.innerHTML = ch; } }
   { const dh = done.length ? done.slice().reverse().map(r => '<div class="li"><div class="grow"><b>' + esc(r.prop.name) + '</b> <span class="small muted">' + hhmm(r.st.placed) + ' to ' + hhmm(r.st.rec) + '</span><div class="small">' + esc(r.it ? r.it.label : '') + '</div></div></div>').join('') : '<div class="empty">Nothing recovered yet.</div>', el = $('[data-prdone]', v); if (el.dataset.h !== dh){ el.dataset.h = dh; el.innerHTML = dh; } $('[data-prdonen]', v).textContent = done.length ? '(' + done.length + ')' : ''; }
+  propAlerts(S, me, rows.filter(r => !r.claim || r.claim.oc === me.id), v, recT, due);
   propCap($('[data-prtodo]', v), $('[data-prtodomore]', v), 'to place'); propCap($('[data-prout]', v), $('[data-proutmore]', v), 'in the field');
   wakeShow(); propNavText();
   const mEl = $('[data-prmap]', v), real = renderMapInto(mEl, S, null); { const lg = (real ? realLegend() : legendHTML(null)) + mapKeyHTML(true), le = $('[data-prlegend]', v); if (le.dataset.h !== lg){ le.dataset.h = lg; le.innerHTML = lg; } }
@@ -6866,7 +6926,7 @@ function aiState(S, sd){
   const sites = SITE_KEYS.map(k => { const s = S.sites[k]; return SITES[k].name + ' (' + siteSquare(S, k) + '): ' + (s.holder === sd ? 'ours' : s.holder ? SIDES[s.holder].name : 'neutral') + (s.contestBy ? ', contested by ' + SIDES[s.contestBy].name + ' until ' + hhmm(s.contestUntil) : ''); }).join('; ');
   const teams = liveTeams(S, sd).map(t => 'fireteam ' + (t.num ? '#' + t.num + ' ' : '') + t.name + ' at ' + (t.last && t.last.gps ? 'square ' + sq(t.last.gps) : 'unknown position') + (/^bot-/.test(t.id) ? ', ' + botTask(S, sd, t.id) : '')).join('; ');
   const seen = S.contacts.filter(c => c.side === sd && c.kind === 'team' && S.g - (c.seenG != null ? c.seenG : c.g) < 15).slice(-3).map(c => 'grid ' + c.grid + ' at ' + (c.seen || hhmm(c.g))).join(', ');
-  const inj = (S.injq || []).filter(q => q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === sd)).slice(-3).map(q => q.label).join('; ');
+  const inj = (S.injq || []).filter(q => !q.spoof && q.sent != null && (q.to === 'both' || q.to === 'public' || q.to === sd)).slice(-3).map(q => q.label).join('; ');
   const feed = S.feed.filter(f => f.to === sd || f.to === 'both').slice(-4).map(f => hhmm(f.g) + ' ' + String(f.text).slice(0, 110)).join(' | ');
   const roe = roeNow(S, sd), wh = Object.keys(HOLD_CAPS).filter(k => held(S, sd, k)).map(k => HOLD_CAPS[k]);
   return 'Time ' + hhmm(S.g) + ' (game runs 0600 to 0750). You are ' + SIDES[sd].name + '. Commander’s intent: ' + String(intentOf(S, sd)).replace(/\s+/g, ' ').slice(0, 420) + ' PIRs: ' + pirsOf(S, sd).map((x, i) => (i + 1) + ') ' + x).join(' ').slice(0, 420) + ' ROE: ' + (roe ? roe.level + ' until ' + hhmm(roe.until) : 'standard') + (wh.length ? '; withheld by the AOC: ' + wh.join(', ') : '') + '. Escalation ' + S.esc + ' of 100 (' + LEVELS[levelIndex(S.esc)].name + '). Sites: ' + sites + '. Our fireteams: ' + (teams || 'none signed in') + '. ' + SIDES[other].name + ' reported by your teams in the last 15 minutes: ' + (seen || 'none') + '. Recent injects: ' + (inj || 'none') + '. Recent traffic: ' + (feed || 'none') + '.';
