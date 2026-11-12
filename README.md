@@ -21,7 +21,7 @@ READ ALL SUPPORTING DOCUMENTS PROVIDED BY EXERCISES PRIOR TO USE
 2. When it works, upload the same file to the main top folder and commit. 
 3. Live in about a minute. Check **Actions** for the green check, then hard-refresh (Ctrl+Shift+R).
 
-## After-action report (generates automatically at ENDEX
+## After-action report (generates automatically at ENDEX and can open PDF at the end)
 
 One-time setup: install Python (tick **Add to PATH**), then run `pip install matplotlib`.
 
