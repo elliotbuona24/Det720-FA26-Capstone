@@ -577,7 +577,7 @@ body.paused-bar .wnav{top:var(--pbh,40px)}
 .hidden-sm{}
 @media (max-width:560px){.hidden-sm{display:none}}
 :root[data-theme="light"]{color-scheme:light}
-.help-dlg{width:min(640px,calc(100vw - 24px));max-height:min(86vh,900px);padding:0;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden}.help-dlg[open]{display:flex;flex-direction:column}.help-dlg::backdrop{background:rgba(0,0,0,.45)}
+.help-dlg{width:min(640px,calc(100vw - 24px));max-height:min(86vh,900px);padding:0;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden}.help-dlg[open]{display:flex;flex-direction:column}.help-dlg::backdrop{background:rgba(0,0,0,.45)}.help-dlg.fb{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9500;margin:0}
 .help-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--line)}.help-head h2{margin:0;font-size:20px}.help-head button{flex:0 0 auto}
 .help-body{overflow:auto;padding:4px 16px 16px;line-height:1.45;overscroll-behavior:contain}.help-body h3{margin:16px 0 6px;font-size:16px}.help-body ol,.help-body ul{margin:0;padding-left:22px;display:grid;gap:5px}.help-bluf{margin:12px 0 4px;font-weight:600}
 .disp{position:relative}.disp>summary{list-style:none;cursor:pointer;border:1.5px solid var(--line);border-radius:8px;padding:6px 11px;background:var(--panel)}.disp>summary::-webkit-details-marker{display:none}
@@ -653,6 +653,7 @@ body.paused-bar .wnav{top:var(--pbh,40px)}
   </div>
   <dialog id="helpDlg" class="help-dlg" aria-labelledby="helpTtl"><div class="help-head"><h2 id="helpTtl">Help</h2><button type="button" id="helpX">Close</button></div><div id="helpBody" class="help-body"></div></dialog>
   <div id="connBanner" class="banner" hidden></div>
+  <div id="clockBanner" class="banner" hidden></div>
 
   <section id="gate" class="gate" hidden>
     <div class="stack">
@@ -3426,6 +3427,16 @@ function localPull(){
   return true;
 }
 
+let clockAt = 0;
+async function clockCheck(){
+  if (!/^https?:$/.test(location.protocol) || !navigator.onLine || Date.now() - clockAt < 600000) return; clockAt = Date.now();
+  try { const t0 = Date.now(), r = await fetch(location.href.split('#')[0], { method:'HEAD', cache:'no-store' }), t1 = Date.now(), d = Date.parse(r.headers.get('date') || ''); if (!Number.isFinite(d) || t1 - t0 > 10000) return;
+    const off = Math.round(((t0 + t1) / 2 - d) / 1000), b = $('#clockBanner'), bad = Math.abs(off) > 90; b.hidden = !bad;
+    b.textContent = bad ? 'This device’s clock is about ' + Math.round(Math.abs(off) / 60) + ' min ' + (off > 0 ? 'fast' : 'slow') + '. Board times and alerts here will be wrong. Turn on automatic date and time in this device’s settings, then reload the page.' : '';
+  } catch(e){ clockAt = 0; }
+}
+setTimeout(clockCheck, 4000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') clockCheck(); });
 function setBanner(text){ const b = $('#connBanner'); b.hidden = !text; b.textContent = text || ''; }
 let offlineTimer = null, offlineShown = false;
 function setOffline(on){
@@ -3732,11 +3743,11 @@ const HELP = {
     ["Reporting up", 0, ["Send each Commander’s Update Brief from the AOC tab on time. Be specific: squares or grids, times, fireteams, casualties (or NONE), next 30 minutes.", "Answer each PERSTAT inject with Send PERSTAT to the AOC.", "Ask the AOC for support only with a reason. Support is limited."]],
     ["Escalation", 0, ["Escalation is shared by both forces. Contention, shows of force, UAV launches and strikes raise it.", "At War (100) both scores are cut in half. Escalate on purpose."]]] },
   A:{ t:"AOC", b:"You are the higher headquarters over both wings. You run the battle rhythm, set the ROE, and grant or decline support. Your decisions are on the Command tab; the desks are read-only.", s:[
-    ["Tabs", 0, ["Picture: both forces, escalation and the timeline. AOC Priorities: Send priorities sets what the AOC wants now. Return to standing priority clears it.", "Command: everything waiting on the AOC, plus briefs, capabilities and ROE, ISR and support, and intent and PIRs.", "White Force: messages with the White Force and its decisions.", "Upcoming: injects and intel packages still to come.", "Blue desk and Red desk: read-only view of one force. Open Blue Force in Command (or Red Force) jumps to its decisions.", "Map views: All (no fog of war), Blue Force view or Red Force view."]],
+    ["Tabs", 0, ["Picture: both forces, escalation and the timeline. AOC Priorities: Send priorities sets what the AOC wants now. Return to standing priority clears it.", "Command: everything waiting on the AOC, plus briefs, capabilities and ROE, ISR and support, and intent and PIRs.", "White Force: messages with the White Force and its decisions.", "Upcoming: injects and intel packages still to come.", "Blue desk and Red desk: read-only view of one force. Open Blue Force in Command (or Red Force) jumps to its decisions.", "Map views: All (no fog of war), Blue Force view or Red Force view. Show POCs puts POCs on the Picture map; uncheck POC names to show only their symbols."]],
     ["Command tab, in order", 1, ["Waiting on the AOC: read each item. Approve, Ask for more info (name what is missing), or Deny.", "Briefs: approve a brief only when every line is specific: squares or grids, times, fireteams, accountability that adds up, casualties stated, and a next 30 minutes with a decision point.", "PERSTATs: check that the numbers add up.", "Capabilities and ROE: Withhold a capability, Require AOC approval for it, or Set ROE. The force sees each change.", "ISR and support: retask ISR or send support. Support is limited for each force. Make them say why.", "Intent and PIRs: send the commander’s intent and PIRs."]],
     ["Battle rhythm", 0, ["Brief 1 due 0615. Brief 2 due 0645. Change of command 0700; deputies confirm to the AOC by 0705. Brief 3 due 0725. Final SITREP due 0745.", "A brief is on time from 5 minutes before to 5 minutes after its due time."]]] },
   W:{ t:"White Force", b:"You run the clock, send injects and intel, and approve or deny every POC call. Check Queue first, then Send, every few minutes.", s:[
-    ["Start", 1, ["Map: check Show POCs to see POC and props positions.", "At 0600, Clock and setup: tap Start the game (0600)."]],
+    ["Start", 1, ["Map: check Show POCs to see POC and props positions. Uncheck POC names to show only their symbols; tap a symbol to see who it is.", "At 0600, Clock and setup: tap Start the game (0600)."]],
     ["Every few minutes", 0, ["Queue: work everything under Waiting on you. Approve or Deny calls, Mark stalemate or Not a stalemate, answer POC messages.", "Send: the run sheet in time order. Tap Send when an item is due, or Edit, then send to change the text first. Intel packages use Deploy to both, Deploy to Blue Force or Deploy to Red Force.", "Response Windows: injects with a respond-by clock. A window closes on its own when time runs out.", "Picture: the overall situation for both forces."]],
     ["Injects that need props", 0, ["A prop inject reads Props not placed until Props taps Placed.", "Props late: message them (Queue, POC messages) or use the LMR.", "Send anyway sends it now. Its response clock still starts only when the prop is placed."]],
     ["POCs and props", 0, ["Queue, Manage POCs: Locate asks that phone for a fresh position. Remove takes off a wrong sign-in.", "Queue: Send announcement reaches every POC.", "Fireteams: Ping asks a team’s phone for its position."]],
@@ -3749,7 +3760,7 @@ function helpOpen(){
   const k = helpKey(), h = HELP[k], d = $('#helpDlg');
   $('#helpTtl').textContent = k === 'C2' ? SIDES[app.role].name + ' C2' : h.t;
   $('#helpBody').innerHTML = '<p class="help-bluf">' + esc(h.b) + '</p>' + h.s.map(([hd, ord, it]) => '<h3>' + esc(hd) + '</h3><' + (ord ? 'ol' : 'ul') + '>' + it.map(x => '<li>' + esc(x) + '</li>').join('') + '</' + (ord ? 'ol' : 'ul') + '>').join('');
-  if (d.open) return; if (typeof d.showModal === 'function') d.showModal(); else d.setAttribute('open', ''); $('#helpBody').scrollTop = 0;
+  if (d.open) return; if (typeof d.showModal === 'function') d.showModal(); else { d.classList.add('fb'); d.setAttribute('open', ''); } $('#helpBody').scrollTop = 0;
 }
 function helpClose(){ const d = $('#helpDlg'); if (typeof d.close === 'function') d.close(); else d.removeAttribute('open'); }
 $('#helpBtn').onclick = helpOpen;
@@ -4651,17 +4662,18 @@ function mapPins(S){
   const now = Date.now(), out = [];
   if (app.role === 'L' && app.propSelf && now - app.propSelf.t < PIN_LIFE) out.push({ pt:app.propSelf.pt, acc:app.propSelf.acc, t:app.propSelf.t, color:'#00b8d4', label:'You - ' + new Date(app.propSelf.t).toTimeString().slice(0, 5) });
   if (app.role === 'OC' && app.ocSelf && now - app.ocSelf.t < PIN_LIFE) out.push({ pt:app.ocSelf.pt, acc:app.ocSelf.acc, t:app.ocSelf.t, label:'You - ' + new Date(app.ocSelf.t).toTimeString().slice(0, 5) });
-  if ((app.role === 'W' || app.role === 'A') && S.ocPos && pref.get('marala-mappoc', '1') === '1') Object.entries(S.ocPos).forEach(([id, x]) => { const o = S.ocs[id]; if (!o || o.removed || now - x.ts >= Math.max(PIN_LIFE, PIC_POC_LIFE * 60000) || (app.ocPinHide && app.ocPinHide.has(id + ':' + x.ts))) return; out.push({ pt:x.pt, acc:x.acc, t:x.ts, color:o.props ? '#00b8d4' : null, label:(o.props ? 'Props ' : 'POC ') + o.name + (o.props ? '' : ' - ' + ocWhere(S, o)) + ' - ' + new Date(x.ts).toTimeString().slice(0, 5) }); });
+  if ((app.role === 'W' || app.role === 'A') && S.ocPos && pref.get('marala-mappoc', '1') === '1') Object.entries(S.ocPos).forEach(([id, x]) => { const o = S.ocs[id]; if (!o || o.removed || now - x.ts >= Math.max(PIN_LIFE, PIC_POC_LIFE * 60000) || (app.ocPinHide && app.ocPinHide.has(id + ':' + x.ts))) return; out.push({ pt:x.pt, acc:x.acc, t:x.ts, poc:true, color:o.props ? '#00b8d4' : null, label:(o.props ? 'Props ' : 'POC ') + o.name + (o.props ? '' : ' - ' + ocWhere(S, o)) + ' - ' + new Date(x.ts).toTimeString().slice(0, 5) }); });
   return out;
 }
 function drawPins(st, S){
   if (!st.pins) st.pins = L.layerGroup().addTo(st.map);
   st.pins.clearLayers();
+  const lbl = pref.get('marala-poclbl', '1') === '1';
   mapPins(S).forEach(pn => {
     const op = Math.max(.15, 1 - (Date.now() - pn.t) / PIN_LIFE);
     const pc = pn.color || '#e040fb';
     if (pn.acc) L.circle(pn.pt, { radius:Math.min(pn.acc, 100), color:pc, weight:1, opacity:op * .6, fillColor:pc, fillOpacity:op * .12, interactive:false }).addTo(st.pins);
-    L.circleMarker(pn.pt, { radius:9, color:'#ffffff', weight:3, opacity:op, fillColor:pc, fillOpacity:op }).bindTooltip(esc(pn.label) + (pn.acc ? ' - ±' + pn.acc + ' m' : '') + '<br>' + esc(fmtPt(pn.pt)), { permanent:true, direction:'right', className:'sitelbl', offset:[12, 0], opacity:op }).addTo(st.pins);
+    L.circleMarker(pn.pt, { radius:9, color:'#ffffff', weight:3, opacity:op, fillColor:pc, fillOpacity:op }).bindTooltip(esc(pn.label) + (pn.acc ? ' - ±' + pn.acc + ' m' : '') + '<br>' + esc(fmtPt(pn.pt)), { permanent:!pn.poc || lbl, direction:'right', className:'sitelbl', offset:[12, 0], opacity:op }).addTo(st.pins);
   });
 }
 function drawDyn(st, S, side, opts){
@@ -6085,11 +6097,11 @@ function renderPic(S, v){
   $('[data-picesc]', v).innerHTML = '<span class="lvl lvl-' + lvl + '">' + LEVELS[lvl].name + '</span> <span class="mono">' + S.esc + '</span>';
   { const e = $('[data-picescby]', v); if (e){ const n = { B:S.escBy.B || 0, R:S.escBy.R || 0 }, sum = n.B + n.R; ['B', 'R'].forEach(sd => { $('[data-escn="' + sd + '"]', e).textContent = n[sd]; $('[data-escn2="' + sd + '"]', e).textContent = n[sd]; $('[data-escw="' + sd + '"]', e).style.width = (sum ? n[sd] / sum * 100 : 50).toFixed(1) + '%'; }); e.classList.toggle('none', !sum); } }
   $('[data-picsb]', v).textContent = score(S, 'B').total; $('[data-picsr]', v).textContent = score(S, 'R').total;
-  const fv = fogSide(S), mapEl = $('[data-picmap]', v), pocBox = $('[data-picpoc]', v), showPoc = pocBox.checked && !fv, now = Date.now(); pocBox.disabled = !!fv;
+  const fv = fogSide(S), mapEl = $('[data-picmap]', v), pocBox = $('[data-picpoc]', v), showPoc = pocBox.checked && !fv, lblOn = pref.get('marala-poclbl', '1') === '1', now = Date.now(); pocBox.disabled = !!fv;
   const pocs = Object.entries(S.ocPos || {}).map(([id, x]) => ({ o:S.ocs[id], x, age:(now - x.ts) / 60000 })).filter(r => r.o && !r.o.removed && r.age < PIC_POC_LIFE);
   $('[data-picpocn]', v).textContent = fv ? fogNote(S, fv) : pocs.length + ' of ' + Object.values(S.ocs).filter(o => !o.removed).length + ' POCs located in the last ' + PIC_POC_LIFE + ' min';
   if (renderMapInto(mapEl, S, fv, { noPins:true, deployedOnly:true }) && mapEl._lm){ const st = mapEl._lm; if (!st.picPoc) st.picPoc = L.layerGroup().addTo(st.map); st.picPoc.clearLayers();
-    if (showPoc) pocs.forEach(r => { const op = r.age < 5 ? 1 : .45; L.circleMarker(r.x.pt, { radius:8, color:'#ffffff', weight:2.5, opacity:op, fillColor:r.o.props ? '#00b8d4' : '#e040fb', fillOpacity:op }).bindTooltip(esc((r.o.props ? 'Props: ' : '') + r.o.name + (r.o.props ? '' : ' - ' + ocWhere(S, r.o)) + ' - ' + new Date(r.x.ts).toTimeString().slice(0, 5)), { permanent:r.age < 5, direction:'right', className:'teamlbl', offset:[10, 0], opacity:op }).addTo(st.picPoc); }); }
+    if (showPoc) pocs.forEach(r => { const op = r.age < 5 ? 1 : .45; L.circleMarker(r.x.pt, { radius:8, color:'#ffffff', weight:2.5, opacity:op, fillColor:r.o.props ? '#00b8d4' : '#e040fb', fillOpacity:op }).bindTooltip(esc((r.o.props ? 'Props: ' : '') + r.o.name + (r.o.props ? '' : ' - ' + ocWhere(S, r.o)) + ' - ' + new Date(r.x.ts).toTimeString().slice(0, 5)), { permanent:r.age < 5 && lblOn, direction:'right', className:'teamlbl', offset:[10, 0], opacity:op }).addTo(st.picPoc); }); }
   { const e = $('[data-pickey]', v); if (e && !e.dataset.h){ e.dataset.h = '1'; e.innerHTML = mapKeyHTML(true); } }
   const intel = []; allProblems(S).forEach((P, i) => { const oB = intelOpen(S, P.id, 'B'), oR = intelOpen(S, P.id, 'R'), os = [oB, oR].filter(Boolean); if (!os.length) return;
     intel.push({ id:P.id, n:i + 1, title:fillT(P.title), a:Math.min(...os.map(o => o.g)), b:Math.max(...os.map(o => o.due)), done:os.every(o => o.done), to:oB && oR ? 'both' : oB ? 'B' : 'R' }); });
@@ -7383,7 +7395,7 @@ function buildWhite(){
         </div>
         <div class="pic-main">
           <div class="pic-card pic-mapcard">
-            <div class="pic-tools"><button type="button" class="btn-side" data-picping>Ping all devices</button><label class="chk"><input type="checkbox" data-picpoc> Show POCs</label><span class="small muted" data-picpocn></span><div class="fogseg" role="group" aria-label="Map view" data-fogctl><button type="button" data-fogv="" aria-pressed="true">All (no fog of war)</button><button type="button" data-fogv="B" aria-pressed="false">Blue Force view</button><button type="button" data-fogv="R" aria-pressed="false">Red Force view</button></div><button type="button" data-picfull class="pic-push">Full screen</button></div>
+            <div class="pic-tools"><button type="button" class="btn-side" data-picping>Ping all devices</button><label class="chk"><input type="checkbox" data-picpoc> Show POCs</label><label class="chk"><input type="checkbox" data-poclbl> POC names</label><span class="small muted" data-picpocn></span><div class="fogseg" role="group" aria-label="Map view" data-fogctl><button type="button" data-fogv="" aria-pressed="true">All (no fog of war)</button><button type="button" data-fogv="B" aria-pressed="false">Blue Force view</button><button type="button" data-fogv="R" aria-pressed="false">Red Force view</button></div><button type="button" data-picfull class="pic-push">Full screen</button></div>
             <div class="pic-map" data-picmap></div>
             <div data-pickey></div>
             <div class="pic-legend"><span><i style="background:#3d7dff"></i>Blue Force</span><span><i style="background:#ff4d42"></i>Red Force</span><span><i style="background:#e040fb"></i>POC</span><span><i style="background:#00b8d4"></i>Props</span><span><i class="hol"></i>Site not held</span><span class="muted">Fireteams and POCs show their last reported position.</span></div>
@@ -7411,7 +7423,7 @@ function buildWhite(){
         <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Hover any bar or mark for details</span></div><div class="row tl-ctl" data-tlctl></div><div class="pic-tl" data-pictl></div></div>
       </section>
       <div class="panel" data-sec="map create">
-        <div class="map-head"><h2 data-wmaptitle>White Force map</h2><div class="fogseg" role="group" aria-label="Map view" data-fogctl><button type="button" data-fogv="" aria-pressed="true">All (no fog of war)</button><button type="button" data-fogv="B" aria-pressed="false">Blue Force view</button><button type="button" data-fogv="R" aria-pressed="false">Red Force view</button></div><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-mappoc> Show POCs</label><button type="button" data-fullmap>Full screen map</button></div>
+        <div class="map-head"><h2 data-wmaptitle>White Force map</h2><div class="fogseg" role="group" aria-label="Map view" data-fogctl><button type="button" data-fogv="" aria-pressed="true">All (no fog of war)</button><button type="button" data-fogv="B" aria-pressed="false">Blue Force view</button><button type="button" data-fogv="R" aria-pressed="false">Red Force view</button></div><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-mappoc> Show POCs</label><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-poclbl> POC names</label><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
         <div class="sitectl" data-sitectl data-aoc-off></div>
@@ -7653,6 +7665,7 @@ function buildWhite(){
     if (u){ useTpl(q); writeEvent('injq_del', null, { qid:q.qid }); toast('Moved to the message box. Edit it, then press Send.'); }
   });
   $('[data-fullmap]', v).onclick = () => openFullMap(fogSide(app.S));
+  { const lb = $$('[data-poclbl]', v), sync = () => { const on = pref.get('marala-poclbl', '1') === '1'; lb.forEach(x => x.checked = on); }; sync(); lb.forEach(x => x.onchange = () => { pref.set('marala-poclbl', x.checked ? '1' : '0'); sync(); const st = $('[data-map]', v) && $('[data-map]', v)._lm; if (st && app.S) drawPins(st, app.S); const fm = app.fsEl && app.fsEl._lm; if (fm && app.S) drawPins(fm, app.S); refresh(true); }); }
   { const mp = $('[data-mappoc]', v); mp.checked = pref.get('marala-mappoc', '1') === '1'; mp.onchange = () => { pref.set('marala-mappoc', mp.checked ? '1' : '0'); const st = $('[data-map]', v)._lm; if (st) drawPins(st, app.S); refresh(true); }; }
   { const pc = $('[data-picpoc]', v); pc.checked = pref.get('marala-picpoc', '1') === '1'; pc.onchange = () => { pref.set('marala-picpoc', pc.checked ? '1' : '0'); refresh(true); }; }
   $('[data-picfull]', v).onclick = () => openFullMap(fogSide(app.S));
