@@ -3725,6 +3725,7 @@ $('#setupForm').addEventListener('submit', async ev => {
   if (app.multi){
     const gpin = $('#sGamePin').value;
     if (!normPin(gpin)){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'Enter a game PIN.'; return; }
+    if (!pinOk(gpin)) return;
     try { await adminCreate(cfg, mapEv ? [mapEv] : [], gpin, $('#sListed').checked); $('#setupForm').reset(); app.wantSetup = false; app.wantAdmin = true; toast('Game created: ' + cfg.name + '.'); route(); }
     catch(err){ $('#setupErr').hidden = false; $('#setupErr').textContent = 'The game was not created (' + ((err && err.code) || err.message || 'error') + '). Check that you are signed in as admin.'; }
     return;
@@ -3786,6 +3787,7 @@ $('#adNewFile').onclick = () => { $('#adFile').hidden = false; $('#adFile').scro
 $('#adFileCancel').onclick = () => { $('#adFile').reset(); $('#adFile').hidden = true; };
 async function writeAll(paths){ for (let i = 0; i < paths.length; i += 25) await Promise.all(paths.slice(i, i + 25).map(([p, d]) => app.db.doc(p).set(d))); }
 async function delAll(paths){ for (let i = 0; i < paths.length; i += 25) await Promise.all(paths.slice(i, i + 25).map(p => app.db.doc(p).del())); }
+function pinOk(p){ return normPin(p).length >= 8 || confirm('Game PINs shorter than 8 characters can be guessed by someone outside the exercise who finds the game list. Use 8 or more letters and numbers, like 1947-K7RQ. Use this short PIN anyway?'); }
 async function adminCreate(cfg, events, pin, listed){
   if (!ad.user) throw new Error('not signed in');
   const gid = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), key = await gameKey(gid, pin), now = Date.now();
@@ -3806,6 +3808,7 @@ $('#adFile').addEventListener('submit', ev => {
     const cfg = JSON.parse(JSON.stringify(d.cfg)); cfg.name = $('#adFileName').value.trim() || cfg.name || 'Game';
     const w = $('#adFileW').value.trim(); if (w) cfg.pins = Object.assign({}, cfg.pins, { W:secret(cfg.salt, w) });
     msg('Uploading ' + d.events.length + ' events\u2026');
+    if (!pinOk($('#adFilePin').value)){ msg(''); return; }
     try { await adminCreate(cfg, d.events, $('#adFilePin').value, $('#adFileListed').checked); msg(''); $('#adFile').reset(); $('#adFile').hidden = true; toast('Game created: ' + cfg.name + '.'); }
     catch(e){ msg('Failed (' + (e.code || e.message || 'error') + ').'); }
   };
@@ -3833,6 +3836,7 @@ $('#adEdit').addEventListener('submit', async ev => {
   ev.preventDefault(); const g = ad.editing; if (!g || !g.key || !g.cfg) return; const msg = t => $('#adEMsg').textContent = t;
   const name = $('#adEName').value.trim() || 'Game', pin = normPin($('#adEPin').value), listed = $('#adEListed').checked, blank = !$('#adEStarter').checked;
   if (!pin){ msg('Enter a game PIN.'); return; }
+  if (pin !== normPin(g.pin) && !pinOk(pin)) return;
   const cfg = JSON.parse(JSON.stringify(g.cfg)); cfg.name = name; cfg.blank = blank; { const bo = $('#adEBots').checked; cfg.practice = { bots:bo, ai:bo && $('#adEAi').checked }; }
   { const was = !!(g.cfg.indoor && g.cfg.indoor.on), on = $('#adEIn').checked, rooms = adRoomsRead(); if (on && !rooms.length){ msg('Add at least one room for the indoor plan.'); return; } if (on !== was && !confirm(on ? 'Switch this game to the indoor plan? Every phone stops using GPS and fireteams check in to rooms.' : 'Switch this game back to outdoors? Every phone goes back to GPS.')) return; cfg.indoor = { on, rooms }; }
   const np = { W:'#adPW', A:'#adPA', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC', D:'#adPD', L:'#adPL' };
@@ -3875,6 +3879,7 @@ $('#adEDelete').onclick = async () => {
 $('#adLGo').onclick = async () => {
   const msg = t => $('#adLMsg').textContent = t, pin = $('#adLPin').value;
   if (!normPin(pin)){ msg('Enter a game PIN for the copy.'); return; }
+  if (!pinOk(pin)) return;
   try { msg('Looking for the old game\u2026');
     const m = await app.db.doc('meta/current').get(), gid = m.exists ? (m.data() || {}).gameId : null; if (!gid){ msg('No old live game was found.'); return; }
     const c = await app.db.doc('games/' + gid).get(); if (!c.exists){ msg('The old game\u2019s settings were not found.'); return; }
