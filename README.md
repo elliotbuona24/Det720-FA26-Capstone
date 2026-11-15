@@ -14,6 +14,8 @@ READ ALL SUPPORTING DOCUMENTS PROVIDED BY EXERCISES PRIOR TO USE
 | `index.html` | The game board (this is the website) |
 | `dev/index.html` | Test copy of the board. Upload new versions here first. |
 | `marala_aar.py` | Turns a white force backup into a printable after-action report |
+| `firestore.rules` | Database security rules to paste into the Firebase console |
+| `HANDOFF.md` | How the board works, who owns what, and how to run a new exercise |
 
 ## Updating the board
 
