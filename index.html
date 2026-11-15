@@ -3607,7 +3607,7 @@ function toast(msg, bad){
 }
 
 /* ---------- routing ---------- */
-function freshView(sel){ const old = $(sel); $$('.lmap', old).forEach(el => { if (el._lm){ try { el._lm.map.remove(); } catch(e){} el._lm = null; } }); const v = old.cloneNode(false); old.replaceWith(v); return v; }
+function freshView(sel){ ['ocRosterKey', 'occKey', 'winKey', 'injqKey', 'tplKey', 'mapKey', 'wpKey'].forEach(k => { app[k] = null; }); app.sig = ''; const old = $(sel); $$('.lmap', old).forEach(el => { if (el._lm){ try { el._lm.map.remove(); } catch(e){} el._lm = null; } }); const v = old.cloneNode(false); old.replaceWith(v); return v; }
 function clearGameOverlays(){
   ['#endexOv', '#endexPill', '#phaseOv', '#pauseBar'].forEach(q => { const el = $(q); if (el) el.remove(); });
   document.body.classList.remove('paused-bar'); document.documentElement.style.removeProperty('--pbh');
@@ -3769,17 +3769,17 @@ function doNowOC(S){
   }
   const team = o.team && S.teams[o.side] && S.teams[o.side][o.team], tn = team ? team.name : 'your team';
   if (o.team){
-    S.nines.filter(n => n.status === 'open' && n.side === o.side && n.team === o.team).forEach(n => add('now', 'Strike 9-line from ' + n.name + ' sent ' + hhmm(n.g) + '. Have them read it to you, then tap Correct, send to C2 or Not right (Now tab).'));
-    S.requests.filter(r => r.kind === 'show' && r.side === OTHER[o.side] && r.center && r.status === 'open').forEach(r => { const t = r.teams && r.teams[o.team], st = t ? t.st : null; if (st !== 'left' && st !== 'stayed') add('now', 'Show of force: ' + tn + ' must leave the circle by ' + hhmm(r.until) + '. Then tap Team left or Team stayed (Now tab).'); });
+    S.nines.filter(n => n.status === 'open' && n.side === o.side && n.team === o.team).forEach(n => add('now', 'Strike 9-line from ' + n.name + ' (' + hhmm(n.g) + ') is waiting. Have the team read it to you, then tap Correct, send to C2 or Not right on the Now tab.'));
+    S.requests.filter(r => r.kind === 'show' && r.side === OTHER[o.side] && r.center && r.status === 'open').forEach(r => { const t = r.teams && r.teams[o.team], st = t ? t.st : null; if (st !== 'left' && st !== 'stayed') add('now', 'Show of force: ' + tn + ' must leave the circle by ' + hhmm(r.until) + '. Then tap Team left or Team stayed on the Now tab.'); });
     const items = ocInjItems(S, o), clr = ocClr(), live = items.filter(x => !clr.has(x.id));
-    live.filter(x => x.q.spoof).forEach(x => add('now', 'Your team received a fake order (' + x.q.label + '). Say nothing. Watch whether they question it or tap Report as fake.'));
+    live.filter(x => x.q.spoof).forEach(x => add('now', 'Your team received a fake order at ' + hhmm(x.q.sent) + '. Say nothing. Watch whether they question it or tap Report as fake, and report what they did.'));
     const cur = live.find(x => x.id === app.ocInj && !x.q.spoof);
-    if (cur) add('now', 'At ' + cur.q.label + ': read the scene to the team, then ' + (cur.q.win ? 'tap Make a call for this inject when they finish' + (cur.end != null ? ' (respond by ' + hhmm(cur.end) + ')' : '') : 'send the matching call') + '.');
+    if (cur) add('now', 'Your team is at ' + cur.q.label + '. Read the scene to the team, then ' + (cur.q.win ? 'tap Make a call for this inject when they finish' + (cur.end != null ? ' (respond by ' + hhmm(cur.end) + ')' : '') : 'send the matching call on the Calls tab') + '.');
     const rest = live.filter(x => x !== cur && !x.q.spoof);
-    if (rest.length){ const first = rest[0]; add('next', rest.length + (rest.length === 1 ? ' inject is' : ' injects are') + ' out for your team' + (first.end != null ? '. Soonest: ' + first.q.label + ', respond by ' + hhmm(first.end) : '') + '. When your team reaches one, tap We’re at this one (Now tab).'); }
-    (S.injq || []).filter(q => q.sent == null && q.at != null && !q.spoof && q.at > S.g && q.at - S.g <= 10 && (q.to === 'both' || q.to === o.side)).sort((a, b) => a.at - b.at).slice(0, 2).forEach(q => add('next', 'Coming about ' + hhmm(q.at) + ': ' + q.label + '.'));
+    if (rest.length){ const first = rest[0]; add('next', rest.length + (rest.length === 1 ? ' inject is' : ' injects are') + ' out for your team' + (first.end != null ? '. Soonest: ' + first.q.label + ', respond by ' + hhmm(first.end) : '') + '. When your team reaches one, tap We’re at this one on the Now tab.'); }
+    (S.injq || []).filter(q => q.sent == null && q.at != null && !q.spoof && q.at > S.g && q.at - S.g <= 10 && (q.to === 'both' || q.to === o.side)).sort((a, b) => a.at - b.at).slice(0, 2).forEach(q => add('next', 'About ' + hhmm(q.at) + ': ' + q.label + '.'));
   } else if (!o.mayor && S.g - START_G < 15) add('next', 'Not attached. If you walk with a fireteam, tap your name at the top and pick it under Attached to.');
-  S.ocReqs.filter(r => r.oc === me.id && r.status === 'open' && S.g - r.g >= 5).slice(-1).forEach(r => add('next', 'Your call from ' + hhmm(r.g) + ' is still waiting on the White Force. Message them if it matters now.'));
+  S.ocReqs.filter(r => r.oc === me.id && r.status === 'open' && S.g - r.g >= 5).slice(-1).forEach(r => add('next', 'Your ' + hhmm(r.g) + ' call is still waiting on the White Force. If it is urgent, message them or use the LMR.'));
   RHYTHM.filter(x => x.kind === 'coc').forEach(x => { const t = rhythmAt(x); if (o.team && S.g >= t - 5 && S.g < t + 5) add('next', hhmm(t) + ' change of command. You may change the fireteam leader now.'); });
   return out;
 }
@@ -3788,13 +3788,13 @@ function doNowAOC(S){
   if (!S.clock.started || S.endex) return out;
   ['B', 'R'].forEach(s => {
     const nm = SIDES[s].name;
-    (S.cubs || []).filter(c => c.side === s && c.status === 'sent').forEach(c => add('now', nm + ' ' + cubOf(c.n).label + ' is waiting for your answer (Command tab).'));
-    (S.accts || []).forEach(a => { const r = a.reps[s]; if (r && r.status === 'aoc') add('now', nm + ' PERSTAT (' + a.label + ') is waiting for your check (Command tab).'); });
-    (S.aocReqs || []).filter(r => r.side === s && r.status === 'open').forEach(r => add('now', nm + ' asks: ' + AOC_WANT[r.want] + ' (Command tab).'));
-    S.requests.filter(r => r.side === s && r.kind === 'strike' && r.status === 'nom').forEach(r => add('now', nm + ' strike nomination is waiting for approval (Command tab).'));
+    (S.cubs || []).filter(c => c.side === s && c.status === 'sent').forEach(c => add('now', nm + ' ' + cubOf(c.n).label + ' is waiting for your answer on the Command tab.'));
+    (S.accts || []).forEach(a => { const r = a.reps[s]; if (r && r.status === 'aoc') add('now', nm + ' ' + a.label + ' is waiting for your check on the Command tab.'); });
+    (S.aocReqs || []).filter(r => r.side === s && r.status === 'open').forEach(r => add('now', nm + ' support request: ' + AOC_WANT[r.want] + '. Answer it on the Command tab.'));
+    S.requests.filter(r => r.side === s && r.kind === 'strike' && r.status === 'nom').forEach(r => add('now', nm + ' strike nomination is waiting for your approval on the Command tab.'));
     const cb = cubOpen(S, s), c = cb && (S.cubs || []).find(q => q.side === s && q.n === cb.n);
-    if (cb && !c){ const t = rhythmAt(cb); if (S.g > t + CUB_LATE) add('now', nm + ' ' + cb.label + ' is late (due ' + hhmm(t) + '). Ask for it.'); else if (S.g >= t - CUB_EARLY) add('next', nm + ' ' + cb.label + ' due ' + hhmm(t) + ', not sent yet.'); }
-    else if (c && c.status === 'returned') add('next', nm + ' is updating ' + cubOf(c.n).label + ' after your request for more.');
+    if (cb && !c){ const t = rhythmAt(cb); if (S.g > t + CUB_LATE) add('now', nm + ' ' + cb.label + ' is late (due ' + hhmm(t) + '). Ask ' + nm + ' for it.'); else if (S.g >= t - CUB_EARLY) add('next', nm + ' ' + cb.label + ' is due ' + hhmm(t) + ' and not sent yet.'); }
+    else if (c && c.status === 'returned') add('next', nm + ' is updating ' + cubOf(c.n).label + ' after you asked for more.');
   });
   RHYTHM.filter(x => x.kind === 'coc').forEach(x => { const t = rhythmAt(x); if (S.g >= t - 5 && S.g < t + 5) add('next', hhmm(t) + ' change of command. New JFACCs confirm to the AOC by ' + hhmm(t + 5) + '.'); });
   return out;
@@ -3814,7 +3814,7 @@ function propsGuide(S, me, rows){
   const mine = r => r.claim && r.claim.oc === me.id, nm = r => r.prop.name + (r.u.loc ? ' at ' + r.u.loc : '');
   if (S.endex){ const o = rows.filter(r => r.state === 'out'); return { t:o.length ? 'ENDEX: recover ' + o.length + (o.length === 1 ? ' prop' : ' props') + ' still in the field, then report the kit complete to the White Force.' : 'ENDEX: none of your props are in the field. Report the kit complete to the White Force.', r:o[0] || null }; }
   const todo = rows.filter(r => r.state === 'todo' && r.placeBy != null).sort((a, b) => a.placeBy - b.placeBy), un = todo.filter(r => !r.claim);
-  if (!S.clock.started && un.length) return { t:'Before STARTEX: tap Claim on every card you own. ' + un.length + ' in your view ' + (un.length === 1 ? 'is' : 'are') + ' not claimed.', r:null };
+  if (!S.clock.started && un.length) return { t:'Before STARTEX: tap Claim on every card you own. ' + un.length + (un.length === 1 ? ' card' : ' cards') + ' in your view ' + (un.length === 1 ? 'is' : 'are') + ' not claimed.', r:null };
   const nx = todo.find(mine) || todo[0], rc = rows.filter(r => r.state === 'out' && r.recAfter != null && !r.recNow).sort((a, b) => a.recAfter - b.recAfter)[0];
   const tPl = nx ? nx.placeBy - 8 : Infinity, tRc = rc ? rc.recAfter : Infinity;
   if (rc && tRc <= tPl) return { t:'Next: recover ' + nm(rc) + ' at ' + hhmm(rc.recAfter) + '.', r:rc };
