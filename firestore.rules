@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() in ['ADMIN_EMAIL_HERE'];
+    }
+
+    function validEvent(gameKey, eventId) {
+      let d = request.resource.data;
+      return exists(/databases/$(database)/documents/vault/$(gameKey))
+        && d.keys().hasOnly(['id', 'ts', 'type', 'side', 'p', 'by'])
+        && d.keys().hasAll(['id', 'ts', 'type', 'p'])
+        && d.id == eventId
+        && eventId.size() <= 40
+        && d.ts is number
+        && d.type is string && d.type.size() > 0 && d.type.size() <= 40
+        && d.p is map
+        && (!('side' in d) || d.side == null || (d.side is string && d.side.size() <= 12))
+        && (!('by' in d) || d.by == null || (d.by is string && d.by.size() <= 12));
+    }
+
+    match /lobby/{gameId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /keys/{gameId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /vault/{gameKey} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow write: if isAdmin();
+
+      match /events/{eventId} {
+        allow get, list: if true;
+        allow create: if isAdmin() || validEvent(gameKey, eventId);
+        allow update: if isAdmin() || request.resource.data == resource.data;
+        allow delete: if isAdmin();
+      }
+    }
+
+    match /games/{rest=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /meta/{rest=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

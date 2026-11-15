@@ -577,7 +577,8 @@ body.paused-bar .wnav{top:var(--pbh,40px)}
 .hidden-sm{}
 @media (max-width:560px){.hidden-sm{display:none}}
 :root[data-theme="light"]{color-scheme:light}
-.help-dlg{width:min(640px,calc(100vw - 24px));max-height:min(86vh,900px);padding:0;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden}.help-dlg[open]{display:flex;flex-direction:column}.help-dlg::backdrop{background:rgba(0,0,0,.45)}.help-dlg.fb{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9500;margin:0}
+.help-dlg{width:min(640px,calc(100vw - 24px));max-height:min(86vh,900px);padding:0;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden}.help-dlg[open]{display:flex;flex-direction:column}.help-dlg::backdrop{background:rgba(0,0,0,.45)}.donow .dn-in{display:flex;gap:10px;align-items:flex-start;padding:8px 10px 8px 12px;border:1.5px solid var(--line);border-left:5px solid var(--focus);border-radius:8px;background:var(--panel)}.donow .dn-in.now{border-left-color:var(--warn)}.donow .grow{display:grid;gap:2px;min-width:0}.donow b{font-size:15px;overflow-wrap:anywhere}.donow .dn-k{color:var(--muted)}.donow details summary{cursor:pointer;color:var(--muted)}.donow ul{margin:4px 0 0;padding-left:18px;display:grid;gap:3px;font-size:14px}.dn-x{flex:0 0 auto;padding:2px 9px;font-size:16px;line-height:1.2}.pr-next-in.calm{border-color:var(--focus)}.help-dn{margin:10px 0 0}
+.help-dlg.fb{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9500;margin:0}
 .help-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--line)}.help-head h2{margin:0;font-size:20px}.help-head button{flex:0 0 auto}
 .help-body{overflow:auto;padding:4px 16px 16px;line-height:1.45;overscroll-behavior:contain}.help-body h3{margin:16px 0 6px;font-size:16px}.help-body ol,.help-body ul{margin:0;padding-left:22px;display:grid;gap:5px}.help-bluf{margin:12px 0 4px;font-weight:600}
 .disp{position:relative}.disp>summary{list-style:none;cursor:pointer;border:1.5px solid var(--line);border-radius:8px;padding:6px 11px;background:var(--panel)}.disp>summary::-webkit-details-marker{display:none}
@@ -654,6 +655,7 @@ body.paused-bar .wnav{top:var(--pbh,40px)}
   <dialog id="helpDlg" class="help-dlg" aria-labelledby="helpTtl"><div class="help-head"><h2 id="helpTtl">Help</h2><button type="button" id="helpX">Close</button></div><div id="helpBody" class="help-body"></div></dialog>
   <div id="connBanner" class="banner" hidden></div>
   <div id="clockBanner" class="banner" hidden></div>
+  <div id="doNow" class="donow" hidden aria-live="polite"></div>
 
   <section id="gate" class="gate" hidden>
     <div class="stack">
@@ -3615,7 +3617,7 @@ function stopGameLocal(){
   app.defMin = {}; app.defSeen = {}; app.ocInj = null; app.ocNear = {}; app.stlf = null; app.tlf = null;
   clearGameOverlays();
 }
-function show(id){ setTimeout(() => { const vw = ['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].includes(id) && app.role; viewIcon(vw ? app.role : 'base'); if (!vw) document.title = BASE_TITLE; else if (app.role !== 'W') document.title = viewTitle(); }, 0); if (!['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].includes(id)) clearGameOverlays(); ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone' && id !== '#vProps') closeFullMap(); if (id !== '#vProps') propNavStop(); }
+function show(id){ { const dn = $('#doNow'); if (dn){ dn.hidden = true; dn.dataset.h = ''; } } setTimeout(() => { const vw = ['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].includes(id) && app.role; viewIcon(vw ? app.role : 'base'); if (!vw) document.title = BASE_TITLE; else if (app.role !== 'W') document.title = viewTitle(); }, 0); if (!['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].includes(id)) clearGameOverlays(); ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone' && id !== '#vProps') closeFullMap(); if (id !== '#vProps') propNavStop(); }
 function roleLabel(r){ return r === 'OC' ? 'POC O/C' : r === 'D' ? 'Drone operator' : r === 'L' ? 'Props and logistics' : r === 'W' ? 'White Force' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
@@ -3755,16 +3757,81 @@ const HELP = {
     ["Backups", 0, ["Clock and setup: Download backup at about 0630, 0700 and right after ENDEX.", "If cell service fails for more than about 10 minutes, open the offline board and load the newest backup."]]] },
   P:{ t:"Public screen", b:"Display only. Nothing here needs input.", s:[] }
 };
+function doNowOn(){ return pref.get('marala-donow', '1') === '1'; }
+function doNowOC(S){
+  const me = ocGet(), o = me && S.ocs[me.id]; if (!o || o.removed) return [];
+  const out = [], add = (lvl, t) => out.push({ lvl, t });
+  if (S.endex){ add('now', 'ENDEX. Hold your team in place until the White Force releases it. Account for every cadet, LMR and training rifle.'); return out; }
+  if (!S.clock.started){
+    if (!(S.occhats || []).some(m => m.oc === me.id && m.from === 'oc')) add('now', 'Before STARTEX: send the White Force a test message (Messages tab) and tap Find my position once (Map tab).');
+    if (!o.team && !o.mayor) add('next', 'Not attached. If you walk with a fireteam, tap your name at the top and pick it under Attached to.');
+    return out;
+  }
+  const team = o.team && S.teams[o.side] && S.teams[o.side][o.team], tn = team ? team.name : 'your team';
+  if (o.team){
+    S.nines.filter(n => n.status === 'open' && n.side === o.side && n.team === o.team).forEach(n => add('now', 'Strike 9-line from ' + n.name + ' sent ' + hhmm(n.g) + '. Have them read it to you, then tap Correct, send to C2 or Not right (Now tab).'));
+    S.requests.filter(r => r.kind === 'show' && r.side === OTHER[o.side] && r.center && r.status === 'open').forEach(r => { const t = r.teams && r.teams[o.team], st = t ? t.st : null; if (st !== 'left' && st !== 'stayed') add('now', 'Show of force: ' + tn + ' must leave the circle by ' + hhmm(r.until) + '. Then tap Team left or Team stayed (Now tab).'); });
+    const items = ocInjItems(S, o), clr = ocClr(), live = items.filter(x => !clr.has(x.id));
+    live.filter(x => x.q.spoof).forEach(x => add('now', 'Your team received a fake order (' + x.q.label + '). Say nothing. Watch whether they question it or tap Report as fake.'));
+    const cur = live.find(x => x.id === app.ocInj && !x.q.spoof);
+    if (cur) add('now', 'At ' + cur.q.label + ': read the scene to the team, then ' + (cur.q.win ? 'tap Make a call for this inject when they finish' + (cur.end != null ? ' (respond by ' + hhmm(cur.end) + ')' : '') : 'send the matching call') + '.');
+    const rest = live.filter(x => x !== cur && !x.q.spoof);
+    if (rest.length){ const first = rest[0]; add('next', rest.length + (rest.length === 1 ? ' inject is' : ' injects are') + ' out for your team' + (first.end != null ? '. Soonest: ' + first.q.label + ', respond by ' + hhmm(first.end) : '') + '. When your team reaches one, tap We’re at this one (Now tab).'); }
+    (S.injq || []).filter(q => q.sent == null && q.at != null && !q.spoof && q.at > S.g && q.at - S.g <= 10 && (q.to === 'both' || q.to === o.side)).sort((a, b) => a.at - b.at).slice(0, 2).forEach(q => add('next', 'Coming about ' + hhmm(q.at) + ': ' + q.label + '.'));
+  } else if (!o.mayor && S.g - START_G < 15) add('next', 'Not attached. If you walk with a fireteam, tap your name at the top and pick it under Attached to.');
+  S.ocReqs.filter(r => r.oc === me.id && r.status === 'open' && S.g - r.g >= 5).slice(-1).forEach(r => add('next', 'Your call from ' + hhmm(r.g) + ' is still waiting on the White Force. Message them if it matters now.'));
+  RHYTHM.filter(x => x.kind === 'coc').forEach(x => { const t = rhythmAt(x); if (o.team && S.g >= t - 5 && S.g < t + 5) add('next', hhmm(t) + ' change of command. You may change the fireteam leader now.'); });
+  return out;
+}
+function doNowAOC(S){
+  const out = [], add = (lvl, t) => out.push({ lvl, t });
+  if (!S.clock.started || S.endex) return out;
+  ['B', 'R'].forEach(s => {
+    const nm = SIDES[s].name;
+    (S.cubs || []).filter(c => c.side === s && c.status === 'sent').forEach(c => add('now', nm + ' ' + cubOf(c.n).label + ' is waiting for your answer (Command tab).'));
+    (S.accts || []).forEach(a => { const r = a.reps[s]; if (r && r.status === 'aoc') add('now', nm + ' PERSTAT (' + a.label + ') is waiting for your check (Command tab).'); });
+    (S.aocReqs || []).filter(r => r.side === s && r.status === 'open').forEach(r => add('now', nm + ' asks: ' + AOC_WANT[r.want] + ' (Command tab).'));
+    S.requests.filter(r => r.side === s && r.kind === 'strike' && r.status === 'nom').forEach(r => add('now', nm + ' strike nomination is waiting for approval (Command tab).'));
+    const cb = cubOpen(S, s), c = cb && (S.cubs || []).find(q => q.side === s && q.n === cb.n);
+    if (cb && !c){ const t = rhythmAt(cb); if (S.g > t + CUB_LATE) add('now', nm + ' ' + cb.label + ' is late (due ' + hhmm(t) + '). Ask for it.'); else if (S.g >= t - CUB_EARLY) add('next', nm + ' ' + cb.label + ' due ' + hhmm(t) + ', not sent yet.'); }
+    else if (c && c.status === 'returned') add('next', nm + ' is updating ' + cubOf(c.n).label + ' after your request for more.');
+  });
+  RHYTHM.filter(x => x.kind === 'coc').forEach(x => { const t = rhythmAt(x); if (S.g >= t - 5 && S.g < t + 5) add('next', hhmm(t) + ' change of command. New JFACCs confirm to the AOC by ' + hhmm(t + 5) + '.'); });
+  return out;
+}
+function doNowRender(S){
+  const box = $('#doNow'); if (!box) return;
+  const r = app.role, items = !doNowOn() || !S ? [] : r === 'OC' ? doNowOC(S) : r === 'A' ? doNowAOC(S) : [];
+  if (!items.length){ if (!box.hidden){ box.hidden = true; box.dataset.h = ''; } return; }
+  items.sort((a, b) => (a.lvl === 'now' ? 0 : 1) - (b.lvl === 'now' ? 0 : 1));
+  const top = items[0], more = items.slice(1);
+  const h = '<div class="dn-in' + (top.lvl === 'now' ? ' now' : '') + '"><div class="grow"><span class="small dn-k">' + (top.lvl === 'now' ? 'Do this now' : 'Coming up') + '</span><b>' + esc(top.t) + '</b>' + (more.length ? '<details data-dnmore' + (app.dnOpen ? ' open' : '') + '><summary class="small">' + more.length + ' more</summary><ul>' + more.map(x => '<li>' + esc(x.t) + '</li>').join('') + '</ul></details>' : '') + '</div><button type="button" class="dn-x" data-dnx aria-label="Hide Do this now" title="Hide Do this now">×</button></div>';
+  box.hidden = false; if (box.dataset.h !== h){ box.dataset.h = h; box.innerHTML = h; }
+}
+document.addEventListener('click', ev => { if (!ev.target.closest('[data-dnx]')) return; pref.set('marala-donow', '0'); refresh(true); toast('Do this now is off. Turn it back on under Help.'); });
+$('#doNow').addEventListener('toggle', ev => { if (ev.target.matches('[data-dnmore]')) app.dnOpen = ev.target.open; }, true);
+function propsGuide(S, me, rows){
+  const mine = r => r.claim && r.claim.oc === me.id, nm = r => r.prop.name + (r.u.loc ? ' at ' + r.u.loc : '');
+  if (S.endex){ const o = rows.filter(r => r.state === 'out'); return { t:o.length ? 'ENDEX: recover ' + o.length + (o.length === 1 ? ' prop' : ' props') + ' still in the field, then report the kit complete to the White Force.' : 'ENDEX: none of your props are in the field. Report the kit complete to the White Force.', r:o[0] || null }; }
+  const todo = rows.filter(r => r.state === 'todo' && r.placeBy != null).sort((a, b) => a.placeBy - b.placeBy), un = todo.filter(r => !r.claim);
+  if (!S.clock.started && un.length) return { t:'Before STARTEX: tap Claim on every card you own. ' + un.length + ' in your view ' + (un.length === 1 ? 'is' : 'are') + ' not claimed.', r:null };
+  const nx = todo.find(mine) || todo[0], rc = rows.filter(r => r.state === 'out' && r.recAfter != null && !r.recNow).sort((a, b) => a.recAfter - b.recAfter)[0];
+  const tPl = nx ? nx.placeBy - 8 : Infinity, tRc = rc ? rc.recAfter : Infinity;
+  if (rc && tRc <= tPl) return { t:'Next: recover ' + nm(rc) + ' at ' + hhmm(rc.recAfter) + '.', r:rc };
+  if (nx){ const lv = nx.placeBy - 8; return { t:'Next: ' + nm(nx) + ' by ' + hhmm(nx.placeBy) + '. Leave the kit ' + (S.clock.started && lv <= S.g ? 'now' : 'about ' + hhmm(lv)) + '.' + (nx.claim ? '' : ' Not claimed yet.'), r:nx }; }
+  return null;
+}
 function helpKey(){ const r = app.role, on = r && app.cfg && !app.wantSetup && !app.wantAdmin && !$('#gate').offsetParent; if (!on) return 'gate'; return r === 'B' || r === 'R' ? 'C2' : r[0] === 'T' ? 'T' : HELP[r] ? r : 'gate'; }
 function helpOpen(){
   const k = helpKey(), h = HELP[k], d = $('#helpDlg');
   $('#helpTtl').textContent = k === 'C2' ? SIDES[app.role].name + ' C2' : h.t;
-  $('#helpBody').innerHTML = '<p class="help-bluf">' + esc(h.b) + '</p>' + h.s.map(([hd, ord, it]) => '<h3>' + esc(hd) + '</h3><' + (ord ? 'ol' : 'ul') + '>' + it.map(x => '<li>' + esc(x) + '</li>').join('') + '</' + (ord ? 'ol' : 'ul') + '>').join('');
+  $('#helpBody').innerHTML = '<p class="help-bluf">' + esc(h.b) + '</p>' + (['OC', 'L', 'A'].includes(k) ? '<label class="chk help-dn"><input type="checkbox" data-dnon' + (doNowOn() ? ' checked' : '') + '> Show the Do this now box (what to do next, from the live game)</label>' : '') + h.s.map(([hd, ord, it]) => '<h3>' + esc(hd) + '</h3><' + (ord ? 'ol' : 'ul') + '>' + it.map(x => '<li>' + esc(x) + '</li>').join('') + '</' + (ord ? 'ol' : 'ul') + '>').join('');
   if (d.open) return; if (typeof d.showModal === 'function') d.showModal(); else { d.classList.add('fb'); d.setAttribute('open', ''); } $('#helpBody').scrollTop = 0;
 }
 function helpClose(){ const d = $('#helpDlg'); if (typeof d.close === 'function') d.close(); else d.removeAttribute('open'); }
 $('#helpBtn').onclick = helpOpen;
 $('#helpX').onclick = helpClose;
+$('#helpBody').addEventListener('change', ev => { if (!ev.target.matches('[data-dnon]')) return; pref.set('marala-donow', ev.target.checked ? '1' : '0'); refresh(true); });
 $('#helpDlg').addEventListener('click', ev => { if (ev.target === ev.currentTarget) helpClose(); });
 $('#gotoSetup').onclick = () => { app.wantSetup = true; route(); };
 $('#setupCancel').onclick = () => { app.wantSetup = false; if (app.multi) app.wantAdmin = true; route(); };
@@ -6809,7 +6876,7 @@ function propAlerts(S, me, rows, v, recT, due){
   const fresh = items.filter(x => !app.prAl.has(x.k));
   if (fresh.length){ fresh.forEach(x => app.prAl.add(x.k)); try { localStorage.setItem(key, JSON.stringify([...app.prAl].slice(-300))); } catch(e){} msgSound(); try { navigator.vibrate && navigator.vibrate([250, 120, 250]); } catch(e){} toast(fresh.length === 1 ? fresh[0].txt : fresh.length + ' props need you now. First: ' + fresh[0].txt); }
   if (!box) return;
-  const top = items[0], h = !top ? '' : '<div class="pr-next-in' + (top.late ? ' late' : '') + '"><div class="grow"><span class="small">Next for you' + (items.length > 1 ? ' (' + items.length + ' need attention)' : '') + '</span><b>' + esc(top.txt) + '</b></div><button type="button" data-prgo="' + esc(top.r.u.id) + '" style="flex:0 0 auto">Show on map</button></div>';
+  const top = items[0], gd = !top && doNowOn() ? propsGuide(S, me, rows) : null, h = top ? '<div class="pr-next-in' + (top.late ? ' late' : '') + '"><div class="grow"><span class="small">Next for you' + (items.length > 1 ? ' (' + items.length + ' need attention)' : '') + '</span><b>' + esc(top.txt) + '</b></div><button type="button" data-prgo="' + esc(top.r.u.id) + '" style="flex:0 0 auto">Show on map</button></div>' : gd ? '<div class="pr-next-in calm"><div class="grow"><span class="small">' + (/^Next/.test(gd.t) ? 'Coming up' : 'Do this now') + '</span><b>' + esc(gd.t) + '</b></div>' + (gd.r ? '<button type="button" data-prgo="' + esc(gd.r.u.id) + '" style="flex:0 0 auto">Show on map</button>' : '') + '<button type="button" class="dn-x" data-dnx aria-label="Hide Do this now" title="Hide Do this now">×</button></div>' : '';
   box.hidden = !h; if (box.dataset.h !== h){ box.dataset.h = h; box.innerHTML = h; }
 }
 function renderProps(S){
@@ -8521,6 +8588,7 @@ function refresh(force){
     else if (app.role === 'L') renderProps(S);
     else if (app.role[0] === 'T') renderTeam(S, app.role[1]);
     else renderWing(S, app.role, now);
+    doNowRender(S);
     if (app.fsEl && app.fsEl._lm && mapCfg(S)) drawDyn(app.fsEl._lm, S, app.fsSide);
   }
   if (app.role[0] === 'T') teamTick(S, app.role[1], now);
