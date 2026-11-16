@@ -585,6 +585,12 @@ body.paused-bar .wnav{top:var(--pbh,40px)}
 @media (pointer:coarse){.gridtog select{font-size:16px}}
 .gate:has(#pinForm:not([hidden])) #gateRoles,.gate:has(#pinForm:not([hidden])) .lede,.gate:has(#pinForm:not([hidden])) h1,.gate:has(#gamePinForm:not([hidden])) h1,#gameMenu:has(#gamePinForm:not([hidden]))>.panel:first-child,#gameMenu:has(#gamePinForm:not([hidden]))>.row,.gate:has(#gamePinForm:not([hidden])) .lede{display:none}
 @media (max-height:700px){.ip-full{overflow:auto}.ip-full>.ip-items{overflow:visible;flex:none}}
+.rgrip[hidden]{display:none}.rgrip{position:relative;height:14px;margin:-4px 0 -2px;cursor:ns-resize;touch-action:none;user-select:none;-webkit-user-select:none;display:flex;align-items:center;justify-content:center;flex:0 0 auto;outline:none}.rgrip::before{content:"";width:44px;height:4px;border-radius:3px;background:var(--line);transition:background .12s}.rgrip:hover::before,.rgrip:focus-visible::before,.rgrip.on::before{background:var(--focus);width:64px}
+.rg-map{position:absolute;left:50%;bottom:0;width:140px;transform:translateX(-50%);margin:0;height:18px;z-index:1000;border-radius:8px 8px 0 0;background:rgba(0,0,0,.35)}.rg-map::before{background:rgba(255,255,255,.85);box-shadow:0 0 2px rgba(0,0,0,.6)}
+body.rg-drag,body.rg-drag *{cursor:ns-resize!important;user-select:none!important}
+.ip-full>.ip-top{order:1;flex:0 0 auto;min-height:0;max-height:42%;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:6px}.ip-top>*{flex:0 0 auto}.ip-top>.ip-q{margin:0}.ip-full>.ip-split{order:2;margin:0;height:18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel-2)}.ip-full>.ip-split::before{width:72px;height:5px}
+body.paused-bar .ip-full{top:var(--pbh,0px)}
+@media (max-width:800px),(max-height:700px){.ip-full>.ip-top{max-height:none!important;overflow:visible}.ip-full>.ip-split{display:none}}
 .help-dlg.fb{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9500;margin:0}
 .help-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--line)}.help-head h2{margin:0;font-size:20px}.help-head button{flex:0 0 auto}
 .help-body{overflow:auto;padding:4px 16px 16px;line-height:1.45;overscroll-behavior:contain}.help-body h3{margin:16px 0 6px;font-size:16px}.help-body ol,.help-body ul{margin:0;padding-left:22px;display:grid;gap:5px}.help-bluf{margin:12px 0 4px;font-weight:600}
@@ -3759,7 +3765,7 @@ const HELP = {
     ["Answering a request", 1, ["A new request sounds and shows under Drone requests with the force and its question.", "Fly or check the area. Type only what the drone actually sees in Answer.", "If the drone sees a militia target in the area asked about, pick it under This flight fixes a militia target. Otherwise leave No.", "Tap Send answer to the force. Only that force gets the answer.", "Set Ready for tasking again when the drone is back."]],
     ["Rules", 0, ["The Map shows everything with no fog of war. Tell a force only what its question covers."]]] },
   C2:{ t:"C2", b:"You run your force from this screen and the LMR: orders to fireteams, site claims, intel answers, actions, and reports to the AOC.", s:[
-    ["Tabs", 0, ["Picture: your situation, Due next and Out now.", "Map: your picture of Marala and your reports of the enemy.", "Intel: intel packages. Each has at least one false or misleading piece. One submission per package. A− and A+ change the report text size. On a tablet or laptop, Columns 1, 2 or 3 puts the reports side by side.", "Injects: every inject your force received and its respond-by time. A missed time is recorded as missed.", "Actions: drone, UAV, public statement, aid packages, pressure options, show of force, jam, strike. Each shows its cost before you commit.", "AOC: update briefs, battle rhythm, support requests, strikes, intent and PIRs.", "Reports and claims: report activity, start contention, claim a site.", "Fireteams: your teams, their positions and messages, and Send an order.", "Liaison: the other wing, and Offer handover of a site.", "Requests: Request a waypoint from the White Force.", "Settings: sounds, alarms and Keep the screen awake for this device."]],
+    ["Tabs", 0, ["Picture: your situation, Due next and Out now.", "Map: your picture of Marala and your reports of the enemy. Drag the tab at the bottom of the map to resize it.", "Intel: intel packages. Each has at least one false or misleading piece. One submission per package. A− and A+ change the report text size. On a tablet or laptop, Columns 1, 2 or 3 puts the reports side by side. In full screen, drag the bar under the answers up to give the reports more room.", "Injects: every inject your force received and its respond-by time. A missed time is recorded as missed.", "Actions: drone, UAV, public statement, aid packages, pressure options, show of force, jam, strike. Each shows its cost before you commit.", "AOC: update briefs, battle rhythm, support requests, strikes, intent and PIRs.", "Reports and claims: report activity, start contention, claim a site.", "Fireteams: your teams, their positions and messages, and Send an order.", "Liaison: the other wing, and Offer handover of a site.", "Requests: Request a waypoint from the White Force.", "Settings: sounds, alarms and Keep the screen awake for this device."]],
     ["Claiming a site", 1, ["Your fireteam earns the capture code word at the site and passes it to you.", "Reports and claims, Claim a site: pick the site, type the code word exactly, tap Claim.", "Each code word works once. Never type a code word in a message."]],
     ["Contention", 0, ["Fireteam requests show under Contention requests from fireteams. Tap Start contention or Decline.", "Contention raises escalation. The cost shows before you commit.", "Attacking: your team must earn the capture code word, and you must enter it before the site timer runs out.", "Defending: enter a defense code word with Defend before the attacker claims. The attackers then pull back 100 m."]],
     ["Orders", 1, ["Fireteams tab, Send an order: pick one team or all teams.", "Write who, where, what, by when, and when to report. Tap Send order.", "If a team reports an order as fake, you and the White Force see it. Confirm real orders on the LMR."]],
@@ -3770,7 +3776,7 @@ const HELP = {
     ["Command tab, in order", 1, ["Waiting on the AOC: read each item. Approve, Ask for more info (name what is missing), or Deny.", "Briefs: approve a brief only when every line is specific: squares or grids, times, fireteams, accountability that adds up, casualties stated, and a next 30 minutes with a decision point.", "PERSTATs: check that the numbers add up.", "Capabilities and ROE: Withhold a capability, Require AOC approval for it, or Set ROE. The force sees each change.", "ISR and support: retask ISR or send support. Support is limited for each force. Make them say why.", "Intent and PIRs: send the commander’s intent and PIRs."]],
     ["Battle rhythm", 0, ["Brief 1 due 0615. Brief 2 due 0645. Change of command 0700; deputies confirm to the AOC by 0705. Brief 3 due 0725. Final SITREP due 0745.", "A brief is on time from 5 minutes before to 5 minutes after its due time."]]] },
   W:{ t:"White Force", b:"You run the clock, send injects and intel, and approve or deny every POC call. Check Queue first, then Send, every few minutes.", s:[
-    ["Start", 1, ["Map: check Show POCs to see POC and props positions. Uncheck POC names to show only their symbols; tap a symbol to see who it is.", "At 0600, Clock and setup: tap Start the game (0600)."]],
+    ["Start", 1, ["Map: check Show POCs to see POC and props positions. Uncheck POC names to show only their symbols; tap a symbol to see who it is. Drag the tab at the bottom of a map, or the bar under a long list, to resize it. Double-click it to reset.", "At 0600, Clock and setup: tap Start the game (0600)."]],
     ["Every few minutes", 0, ["Queue: work everything under Waiting on you. Approve or Deny calls, Mark stalemate or Not a stalemate, answer POC messages.", "Send: the run sheet in time order. Tap Send when an item is due, or Edit, then send to change the text first. Intel packages use Deploy to both, Deploy to Blue Force or Deploy to Red Force.", "Response Windows: injects with a respond-by clock. A window closes on its own when time runs out.", "Picture: the overall situation for both forces."]],
     ["Injects that need props", 0, ["A prop inject reads Props not placed until Props taps Placed.", "Props late: message them (Queue, POC messages) or use the LMR.", "Send anyway sends it now. Its response clock still starts only when the prop is placed."]],
     ["POCs and props", 0, ["Queue, Manage POCs: Locate asks that phone for a fresh position. Remove takes off a wrong sign-in.", "Queue: Send announcement reaches every POC.", "Fireteams: Ping asks a team’s phone for its position."]],
@@ -4626,6 +4632,7 @@ function lmapEnsure(el, M){
     const contours = new ContourLayer('', { pane:'contour-pane', tileSize:512, zoomOffset:-1, maxZoom:20, maxNativeZoom:18, minZoom:12, updateWhenIdle:true, keepBuffer:3, attribution:'Contours: USGS 3DEP' });
     st = el._lm = { map, base:null, baseKey:null, contours, gPlay:L.layerGroup(), gBound:L.layerGroup(), gMgrs:L.layerGroup(), gFine:L.layerGroup(), dyn:L.layerGroup().addTo(map), lay:{ sites:L.layerGroup(), teams:L.layerGroup(), reports:L.layerGroup(), uav:L.layerGroup(), blasts:L.layerGroup(), poi:L.layerGroup(), tips:L.layerGroup(), mt:L.layerGroup(), show:L.layerGroup(), wc:L.layerGroup(), wp:L.layerGroup(), wpB:L.layerGroup(), wpR:L.layerGroup(), wpq:L.layerGroup(), props:L.layerGroup() }, key:null };
     applyGridPref(st);
+    mapGrip(el, map);
     const tog = L.control({ position:'topright' });
     tog.onAdd = () => {
       const d = L.DomUtil.create('div', 'gridtog'); const pr = gridPref();
@@ -5844,11 +5851,67 @@ function mapKeyHTML(staff){
   h += '<h4>Waypoints and markers</h4>' + Object.keys(WP_SYMS).map(k => row(wpSvg(k, 22), esc(WP_SYMS[k]))).join('');
   return h + '</div></details>';
 }
+function rgDrag(grip, getH, setH, done, reset){
+  grip.addEventListener('pointerdown', ev => {
+    if (ev.button > 0) return; ev.preventDefault(); ev.stopPropagation();
+    const y0 = ev.clientY, h0 = getH(); let raf = 0, y = y0; try { grip.setPointerCapture(ev.pointerId); } catch(e){} grip.classList.add('on'); document.body.classList.add('rg-drag');
+    const mv = e => { y = e.clientY; if (!raf) raf = requestAnimationFrame(() => { raf = 0; setH(h0 + y - y0); }); };
+    const up = () => { grip.removeEventListener('pointermove', mv); grip.removeEventListener('pointerup', up); grip.removeEventListener('pointercancel', up); if (raf){ cancelAnimationFrame(raf); raf = 0; setH(h0 + y - y0); } grip.classList.remove('on'); document.body.classList.remove('rg-drag'); done(); };
+    grip.addEventListener('pointermove', mv); grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up);
+  });
+  grip.addEventListener('dblclick', ev => { ev.preventDefault(); ev.stopPropagation(); reset(); });
+  grip.addEventListener('keydown', ev => { if (ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown') return; ev.preventDefault(); setH(getH() + (ev.key === 'ArrowDown' ? 40 : -40)); done(); });
+  ['mousedown', 'touchstart', 'click', 'wheel'].forEach(t => grip.addEventListener(t, e => e.stopPropagation(), t === 'touchstart' || t === 'wheel' ? { passive:true } : false));
+}
+function rgNew(cls){ const g = document.createElement('div'); g.className = 'rgrip ' + cls; g.setAttribute('role', 'separator'); g.setAttribute('aria-orientation', 'horizontal'); g.setAttribute('aria-label', 'Resize'); g.tabIndex = 0; g.title = 'Drag to resize. Double-click to reset.'; return g; }
+function ipSplit(card, on){
+  const head = $('.act-head', card), items = $('.ip-items', card); if (!head || !items) return;
+  let top = $(':scope > .ip-top', card), bar = $(':scope > .ip-split', card);
+  const parts = ['[data-ipbadges]', '.ip-q', 'form', '.ip-status', '[data-iptask]'].map(q => $(q, card)).filter(Boolean);
+  if (on){
+    if (!top){ top = document.createElement('div'); top.className = 'ip-top'; head.after(top); }
+    parts.forEach(x => top.appendChild(x));
+    if (!bar){
+      bar = rgNew('ip-split'); top.after(bar);
+      const maxH = () => Math.max(0, card.clientHeight - head.offsetHeight - 120);
+      rgDrag(bar, () => top.getBoundingClientRect().height, h => { top.style.maxHeight = Math.round(Math.max(0, Math.min(maxH(), h))) + 'px'; }, () => { if (card.clientHeight) pref.set('marala-iptop', String(Math.round(top.getBoundingClientRect().height / card.clientHeight * 1000) / 1000)); }, () => { top.style.maxHeight = ''; pref.set('marala-iptop', ''); });
+    }
+    const fr = Number(pref.get('marala-iptop', '')); top.style.maxHeight = fr > 0 || pref.get('marala-iptop', '') === '0' ? Math.round(fr * 1000) / 10 + '%' : '';
+    bar.after(items);
+  } else {
+    const [bd, q, f, st, tk] = ['[data-ipbadges]', '.ip-q', 'form', '.ip-status', '[data-iptask]'].map(x => $(x, card));
+    let at = head; [bd, tk, items, q, f, st].forEach(x => { if (x){ at.after(x); at = x; } });
+    if (top) top.remove(); if (bar) bar.remove();
+  }
+}
+function rgKey(el){ const sec = el.closest('[data-sec],[data-pane],[data-wsec],section'); const tag = sec ? (sec.dataset.sec || sec.dataset.pane || sec.dataset.wsec || sec.id || '') : ''; return (app.role || '') + '|' + tag + '|' + String(el.className).split(' ')[0] + '|' + Object.keys(el.dataset).filter(k => k !== 'h' && k !== 'k').join(','); }
+function mapGrip(el, map){
+  if (el.closest('.mapfs') || el.hasAttribute('data-fsmap') || el.hasAttribute('data-fullmap') || $(':scope > .rg-map', el)) return;
+  const key = 'marala-rs-map|' + (app.role || '') + '|' + (Object.keys(el.dataset).find(k => /map$/.test(k)) || 'map'), g = rgNew('rg-map'); el.appendChild(g);
+  const sv = Number(pref.get(key, '')); if (sv > 0) el.style.height = sv + 'px';
+  const fit = () => { try { map.invalidateSize({ debounceMoveend:true }); } catch(e){} };
+  rgDrag(g, () => el.getBoundingClientRect().height, h => { el.style.height = Math.round(Math.max(180, Math.min(window.innerHeight * 0.92, h))) + 'px'; fit(); }, () => { pref.set(key, String(Math.round(el.getBoundingClientRect().height))); fit(); }, () => { el.style.height = ''; pref.set(key, ''); fit(); });
+}
+const RG_LISTS = '.feed, .chatlog, .scrolllist, .wfsec .pic-list, .dsk .pic-list, .dsk-logs';
+function rgSweep(){
+  $$('.rgrip.rg-list').forEach(g => { if (!g._t || !g._t.isConnected || g.previousElementSibling !== g._t) g.remove(); });
+  $$(RG_LISTS).forEach(el => {
+    if (el.nextElementSibling && el.nextElementSibling._t === el){ const g = el.nextElementSibling, sh = !!el.style.maxHeight || el.scrollHeight > 160; if (g.hidden === sh) g.hidden = !sh; return; }
+    const par = el.parentElement; if (!par) return; const cs = getComputedStyle(par);
+    if (/flex/.test(cs.display) && !/column/.test(cs.flexDirection)) return;
+    if (/grid/.test(cs.display) && cs.gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length > 1) return;
+    const key = 'marala-rs-' + rgKey(el), g = rgNew('rg-list'); g._t = el; el.after(g);
+    const sv = Number(pref.get(key, '')); if (sv > 0) el.style.maxHeight = sv + 'px';
+    g.hidden = !(sv > 0 || el.scrollHeight > 160);
+    rgDrag(g, () => el.getBoundingClientRect().height, h => { el.style.maxHeight = Math.round(Math.max(100, Math.min(window.innerHeight * 0.9, h))) + 'px'; }, () => { pref.set(key, String(Math.round(parseFloat(el.style.maxHeight) || el.getBoundingClientRect().height))); }, () => { el.style.maxHeight = ''; pref.set(key, ''); });
+  });
+}
+document.addEventListener('click', ev => { if (ev.target.closest('[role="tab"],[data-wtab],[data-ctab],[data-ptab],[data-ttab],[data-aocf],summary')) setTimeout(rgSweep, 80); });
 function ipPreview(P){
   const S = app.S; $$('.ip-prev').forEach(x => x.remove());
   const d = document.createElement('div'); d.className = 'act ip-card ip-full ip-prev';
   d.innerHTML = '<div class="act-head"><b>' + esc(fillT(P.title)) + '</b><span class="cost">Preview: what the forces see' + (P.only ? ' (' + SIDES[P.only].name + ' only)' : '') + '</span>' + ipColsHTML() + '<button type="button" class="btn-side" data-ipclose style="flex:0 0 auto;padding:3px 10px">Close preview</button></div><div data-ipbadges>' + ipBadgesHTML(S, P, null) + '</div><div data-iptask>' + ipTaskHTML(S, P, null) + '</div><div class="ip-items">' + P.items.map(it => ipItemHTML(S, it)).join('') + '</div><p class="ip-q">' + esc(fillT(P.q)) + '</p><form class="stack"><div class="ip-row"><fieldset class="ip-set"><legend>Answers</legend>' + P.opts.map(o => '<label><input type="checkbox" disabled>' + esc(fillT(o)) + '</label>').join('') + '</fieldset><fieldset class="ip-set"><legend>False pieces</legend>' + P.items.map(it => '<label><input type="checkbox" disabled>' + it.k + ' - ' + esc(it.disc) + '</label>').join('') + '</fieldset></div></form>';
-  document.body.appendChild(d); document.body.classList.add('ip-fs');
+  document.body.appendChild(d); document.body.classList.add('ip-fs'); ipSplit(d, true);
   $('[data-ipclose]', d).onclick = () => { d.remove(); if (!$('.ip-full')) document.body.classList.remove('ip-fs'); };
 }
 document.addEventListener('click', ev => {
@@ -5877,7 +5940,7 @@ function renderIntel(S, side, v){
         '<fieldset class="ip-set"><legend>Select the false pieces of information. There may be more than one.</legend>' + P.items.map(it => '<label><input type="checkbox" name="f" value="' + it.k + '">' + it.k + ' - ' + esc(it.disc) + '</label>').join('') + '</fieldset>' +
         '</div><div><button class="btn-side" type="submit">Lock in answer</button></div></form><div class="ip-status" data-ipstatus></div>';
       box.prepend(card);
-      $('[data-ipfs]', card).onclick = () => { const on = !card.classList.contains('ip-full'); $$('.ip-full').forEach(c => { c.classList.remove('ip-full'); const bt = $('[data-ipfs]', c); if (bt) bt.textContent = 'Full screen'; }); card.classList.toggle('ip-full', on); document.body.classList.toggle('ip-fs', on); $('[data-ipfs]', card).textContent = on ? 'Exit full screen' : 'Full screen'; if (on){ card.classList.remove('ip-min'); card.classList.add('ip-open'); const it = $('.ip-items', card); if (it) it.scrollTop = 0; } };
+      $('[data-ipfs]', card).onclick = () => { const on = !card.classList.contains('ip-full'); $$('.ip-full').forEach(c => { ipSplit(c, false); c.classList.remove('ip-full'); const bt = $('[data-ipfs]', c); if (bt) bt.textContent = 'Full screen'; }); card.classList.toggle('ip-full', on); ipSplit(card, on); document.body.classList.toggle('ip-fs', on); $('[data-ipfs]', card).textContent = on ? 'Exit full screen' : 'Full screen'; if (on){ card.classList.remove('ip-min'); card.classList.add('ip-open'); const it = $('.ip-items', card); if (it) it.scrollTop = 0; } };
       $('[data-ipmin]', card).onclick = () => { const set = ipMinSet(side), m = !card.classList.contains('ip-min'); card.classList.toggle('ip-min', m); if (m) set.add(P.id); else set.delete(P.id); ipMinSave(side, set); $('[data-ipmin]', card).textContent = m ? 'Open' : 'Minimize'; };
       if (ipMinSet(side).has(P.id)){ card.classList.add('ip-min'); $('[data-ipmin]', card).textContent = 'Open'; }
       $('[data-ipexp]', card).onclick = () => { const o = card.classList.toggle('ip-open'); $('[data-ipexp]', card).textContent = o ? 'Hide intel' : 'Show intel'; };
@@ -8610,6 +8673,7 @@ function refresh(force){
     else if (app.role[0] === 'T') renderTeam(S, app.role[1]);
     else renderWing(S, app.role, now);
     doNowRender(S);
+    rgSweep();
     if (app.fsEl && app.fsEl._lm && mapCfg(S)) drawDyn(app.fsEl._lm, S, app.fsSide);
   }
   if (app.role[0] === 'T') teamTick(S, app.role[1], now);
