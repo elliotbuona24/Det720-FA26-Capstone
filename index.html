@@ -4838,12 +4838,13 @@ function drawDyn(st, S, side, opts){
   }
 }
 const MAP_QUIET = new Set(['msg', 'tchat', 'occhat', 'aoc_msg', 'aoc_req', 'cub', 'cub_reply', 'cub_draft', 'perstat', 'perstat_aoc', 'perstat_wf', 'order', 'bot_radio', 'act_statement', 'ocann', 'guess_ack', 'oob_ack', 'aoc_pri', 'aoc_pri_ack', 'inj_claim_res', 'tpl_save', 'tpl_del', 'injq_add', 'prop_save', 'intel_custom']);
+function mapSelfKey(){ const f = x => x ? x.pt.map(v => v.toFixed(4)).join(',') + ':' + Math.floor(x.t / 60000) : ''; return app.role === 'L' ? (app.propNav || '') + ':' + f(app.propSelf) : app.role === 'OC' ? f(app.ocSelf) : ''; }
 function renderMapInto(el, S, side, opts){
   const M = (app.role === 'W' && app.previewMap) || mapCfg(S);
   if (M && window.L){
     const st = lmapEnsure(el, M);
     if (!M.preview){
-      const k = [side, JSON.stringify(opts || null), JSON.stringify(gridPref()), Math.floor(S.g), S.reveal, S.endex, app.gid, app.role].join('|'), evs = app.events || [];
+      const k = [side, JSON.stringify(opts || null), JSON.stringify(gridPref()), Math.floor(S.g), S.reveal, S.endex, app.gid, app.role, mapSelfKey()].join('|'), evs = app.events || [];
       const quiet = st.dk === k && st.seen && evs.every(e => st.seen.has(e.id) || MAP_QUIET.has(e.type));
       if (!quiet){ st.want = [S, side, opts, k]; if (!st.tmr) st.tmr = setTimeout(() => { st.tmr = null; const w = st.want; if (!w || !st.map || !document.body.contains(el)) return; drawDyn(st, w[0], w[1], w[2]); st.dk = w[3]; st.drawnAt = Date.now(); }, st.drawnAt ? Math.max(30, 700 - (Date.now() - st.drawnAt)) : 0); }
       st.seen = new Set(evs.map(e => e.id));
@@ -6832,7 +6833,7 @@ function drawProps(layer, S, pr, opts, st){
   if (st && st.propFocus) st.propFocus.clearLayers();
   if (app.role === 'L' && app.propNav){ if (st){ if (!st.propFocus) st.propFocus = L.layerGroup().addTo(st.map); layer = st.propFocus; } const r = propSched(S).find(x => x.u.id === app.propNav), tgt = r && (r.state === 'out' ? (r.st.pt || r.u.pt) : r.u.pt);
     if (tgt){ L.marker(tgt, { icon:L.divIcon({ className:'', html:'<div class="mk-target"></div>', iconSize:[26, 26], iconAnchor:[13, 13] }), zIndexOffset:2000 }).bindTooltip(esc((r.state === 'out' ? 'Recover: ' : 'Put it here: ') + r.prop.name + (r.u.label ? ' - ' + r.u.label : '')), { permanent:true, direction:'top', className:'sitelbl', offset:[0, -14] }).addTo(layer);
-      if (app.propSelf) L.polyline([app.propSelf.pt, tgt], { color:'#ff9800', weight:4, dashArray:'8 6' }).addTo(layer); }
+      if (app.propSelf && Date.now() - app.propSelf.t < 120000) L.polyline([app.propSelf.pt, tgt], { color:'#ff9800', weight:4, dashArray:'8 6' }).addTo(layer); }
     return; }
   propSched(S).forEach(r => {
     if (!r.it || r.state === 'done' || (opts && opts.deployedOnly && r.state !== 'out')) return;
@@ -6904,7 +6905,7 @@ function gpsStop(){ geoBanner(); propNavStop(); const g = navigator.geolocation;
 function propNavStop(){ if (propWatch != null && navigator.geolocation){ navigator.geolocation.clearWatch(propWatch); } propWatch = null; app.propNav = null; }
 function propNavStart(id){
   app.propNav = id; app.propNavErr = false;
-  if (propWatch == null && !ROOMS_LIVE && navigator.geolocation) propWatch = navigator.geolocation.watchPosition(p => { if (app.role !== 'L'){ propNavStop(); return; } app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; propNavText(); if (app.S && Date.now() - (app.propMapAt || 0) > 5000){ app.propMapAt = Date.now(); refresh(true); } }, e => { if (app.propNavErr) return; app.propNavErr = true; toast(e && e.code === 1 ? 'Location is blocked. Allow location for this site in the phone’s settings.' : 'No GPS fix yet. Keep the page open outdoors.', true); }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
+  if (propWatch == null && !ROOMS_LIVE && navigator.geolocation) propWatch = navigator.geolocation.watchPosition(p => { if (app.role !== 'L'){ propNavStop(); return; } app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; propNavText(); if (app.S && !app.propMapTmr){ const w = Math.max(0, 5000 - (Date.now() - (app.propMapAt || 0))); app.propMapTmr = setTimeout(() => { app.propMapTmr = null; app.propMapAt = Date.now(); if (app.role === 'L' && app.propNav) refresh(true); }, w); } }, e => { if (app.propNavErr) return; app.propNavErr = true; toast(e && e.code === 1 ? 'Location is blocked. Allow location for this site in the phone’s settings.' : 'No GPS fix yet. Keep the page open outdoors.', true); }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
   propNavText(); app.propFitFor = null; refresh(true);
   const mp = $('[data-prmap]'); if (mp) setTimeout(() => mp.scrollIntoView({ behavior:'smooth', block:'center' }), 60);
 }
