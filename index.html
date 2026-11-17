@@ -95,6 +95,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 .brand h1{font-size:22px;text-transform:uppercase;letter-spacing:.06em}
 .brand .tag{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .banner{border:1px dashed var(--warn);color:var(--ink);background:var(--panel-2);padding:8px 12px;border-radius:8px;font-size:13px}
+.geo-banner{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.geo-banner[hidden]{display:none}.geo-banner span{flex:1 1 220px}.geo-banner button{flex:0 0 auto}
 .panel{background:var(--panel);border:1.5px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.02);border-radius:10px;padding:14px;display:grid;gap:10px;min-width:0;align-content:start}
 .side-B{--side:var(--blu);--side-soft:var(--blu-soft)}
 .side-R{--side:var(--red);--side-soft:var(--red-soft)}
@@ -668,6 +669,7 @@ body.paused-bar .ip-full{top:var(--pbh,0px)}
   <dialog id="helpDlg" class="help-dlg" aria-labelledby="helpTtl"><div class="help-head"><h2 id="helpTtl">Help</h2><button type="button" id="helpX">Close</button></div><div id="helpBody" class="help-body"></div></dialog>
   <div id="connBanner" class="banner" hidden></div>
   <div id="clockBanner" class="banner" hidden></div>
+  <div id="geoBanner" class="banner geo-banner" hidden></div>
   <div id="doNow" class="donow" hidden aria-live="polite"></div>
 
   <section id="gate" class="gate" hidden>
@@ -3465,7 +3467,7 @@ async function clockCheck(){
   } catch(e){ clockAt = 0; }
 }
 setTimeout(clockCheck, 4000);
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') clockCheck(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible'){ clockCheck(); if (app.cfg && app.role) refresh(true); } });
 function setBanner(text){ const b = $('#connBanner'); b.hidden = !text; b.textContent = text || ''; }
 let offlineTimer = null, offlineShown = false;
 function setOffline(on){
@@ -3669,7 +3671,7 @@ function route(){
   refresh(true);
 }
 function renderMenu(){
-  show('#gate'); $('#switchRole').hidden = true; $('#roleBadge').innerHTML = '';
+  gpsStop(); show('#gate'); $('#switchRole').hidden = true; $('#roleBadge').innerHTML = '';
   $('#gameMenu').hidden = false; $('#gateNoGame').hidden = true; $('#gateAdmin').hidden = true; $('#gateRoles').innerHTML = ''; $('#pinForm').hidden = true;
   const list = (app.lobby || []).filter(g => g.listed !== false).sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.name).localeCompare(String(b.name)));
   const box = $('#gameList'), html = app.lobby == null ? '<div class="empty">Loading games\u2026</div>' : list.length ? list.map(g => '<button type="button" class="gamebtn" data-game="' + esc(g.gid) + '"><span class="grow"><b>' + esc(g.name || 'Game') + '</b>' + (g.note ? '<br><span class="small muted">' + esc(g.note) + '</span>' : '') + '</span><span class="small muted" style="flex:0 0 auto">Game PIN required</span></button>').join('') : '<div class="empty">No games are open right now. The exercises officers open games from the admin page.</div>';
@@ -3690,7 +3692,7 @@ $('#gamePinForm').addEventListener('submit', async ev => {
 $('#switchGame').onclick = () => { if (confirm('Leave this game and return to the game menu?')) leaveGame(); };
 $('#adminOpen').onclick = () => { app.wantAdmin = true; route(); };
 function renderGate(){
-  show('#gate'); $('#switchRole').hidden = true; $('#roleBadge').innerHTML = ''; $('#gameMenu').hidden = true;
+  gpsStop(); show('#gate'); $('#switchRole').hidden = true; $('#roleBadge').innerHTML = ''; $('#gameMenu').hidden = true;
   $('#gateNoGame').hidden = !!app.cfg || !!app.multi;
   $('#gateAdmin').hidden = !app.cfg || !!app.multi; $('#adminErr').hidden = true; $('#adminInput').value = '';
   const roles = $('#gateRoles');
@@ -3730,7 +3732,7 @@ $('#pinForm').addEventListener('submit', ev => {
   setRole(r);
 });
 $('#pinCancel').onclick = () => { $('#pinForm').hidden = true; pendingRole = null; };
-$('#switchRole').onclick = () => { LS.del('marala-role-' + (app.gid || 'none')); app.role = null; app.built = null; route(); };
+$('#switchRole').onclick = () => { gpsStop(); LS.del('marala-role-' + (app.gid || 'none')); app.role = null; app.built = null; route(); };
 const HELP = {
   gate:{ t:"Signing in", b:"Pick your role, enter the PIN you were given in person, then follow the screen.", s:[
     ["Sign in", 1, ["If a game list shows, tap your game and enter the game PIN.", "Tap your role.", "Enter the role PIN. PINs are given in person. Do not write them down or say them on the radio.", "Finish sign-in on the next screen. Fireteams create or join a fireteam. POCs type their name."]],
@@ -3742,7 +3744,7 @@ const HELP = {
     ["Orders", 0, ["New orders show under Orders from your C2 on the Alerts tab.", "If an order does not sound like your C2, confirm it on the LMR.", "If your C2 did not send it, tap Report as fake. Your C2 and the White Force see the report."]],
     ["Contention request", 1, ["Requests tab: pick the Site and tap Request contention. Confirm.", "Nothing starts until your C2 approves. The status reads With your C2, Started or Declined."]],
     ["Strike 9-line", 1, ["Read the full 9-line out loud to your POC O/C.", "Requests tab: pick the Target, type the target grid, tap Send 9-line for checking.", "Your POC O/C or the White Force checks it. Only a correct 9-line reaches your C2."]],
-    ["If something goes wrong", 0, ["No signal: keep working. Anything you send is saved and goes out when signal returns. Do not sign out.", "Map reads Datalink jammed: the other force jammed you. Wait for the time shown.", "Wrong name: tap Rename. Wrong team: tap Leave this fireteam, then join the right one.", "Never say a code word, PIN or real name on the radio."]]] },
+    ["If something goes wrong", 0, ["No signal: keep working. Anything you send is saved and goes out when signal returns. Do not sign out.", "Yellow box says location is off: tap Turn on location, then Allow. If it says blocked, allow location for this site in the phone’s settings and reload. Keep the board open on screen so the White Force can locate you.", "Map reads Datalink jammed: the other force jammed you. Wait for the time shown.", "Wrong name: tap Rename. Wrong team: tap Leave this fireteam, then join the right one.", "Never say a code word, PIN or real name on the radio."]]] },
   OC:{ t:"POC O/C", b:"You walk with one fireteam, read injects to them, check their 9-lines, and send calls to the White Force. A call takes effect only after the White Force approves it.", s:[
     ["Sign in", 1, ["Type Your name, pick your fireteam under Attached to, tap Sign in.", "Signed in before: tap This is me next to your name.", "Site station POCs and HQ support: leave Attached to on Not attached. The mayor picks Mayor (Marala Town).", "Tap your name at the top to change Attached to, sign out, or set Keep screen on and Sound for new messages. Turn both on."]],
     ["Tabs", 0, ["Now: injects for your team and strike 9-lines to check.", "Calls: calls to the White Force, Stalemate, At a site, and Your requests.", "Messages: text the White Force.", "Map: the White Force map. Find my position puts a marker on your map for 5 minutes."]],
@@ -3751,14 +3753,14 @@ const HELP = {
     ["Making a call", 1, ["Calls tab: check Force.", "Ask the team which inject or intel package this is for. Pick it under Ask the team. If they do not know, pick The team doesn’t know.", "Optional: type a Note.", "Tap the button that matches what happened (example: Real IED cleared). Confirm.", "Nothing fits: open Something else, describe it, suggest the effect, tap Send to the White Force.", "Your requests shows waiting, approved or denied, and any White Force reply."]],
     ["Strike 9-lines", 1, ["The team reads the full 9-line to you out loud.", "Correct: tap Correct, send to C2 on the Now tab. Wrong: tap Not right and tell the team why."]],
     ["Stalemate and show of force", 0, ["Stalemate: both forces at the same neutral site before either started the activity. Calls tab, pick the Site, tap Report stalemate. Not used during contention.", "Show of force on your team’s wing: after the deadline, tap Team left or Team stayed."]],
-    ["If something goes wrong", 0, ["No signal: keep going. Calls are saved and sent when signal returns. Do not sign out.", "Your fireteam was removed: the screen tells you. Pick the team you are with now under Attached to.", "Anything unsafe: stop the activity and call the White Force on the LMR. Do not wait for the board."]]] },
+    ["If something goes wrong", 0, ["No signal: keep going. Calls are saved and sent when signal returns. Do not sign out.", "Yellow box says location is off: tap Turn on location, then Allow. If it says blocked, allow location for this site in the phone’s settings and reload. Keep the board open on screen so the White Force can locate you.", "Your fireteam was removed: the screen tells you. Pick the team you are with now under Attached to.", "Anything unsafe: stop the activity and call the White Force on the LMR. Do not wait for the board."]]] },
   L:{ t:"Props and logistics", b:"Place each prop at its spot by its place-by time, tap Placed at the spot, and recover it when the card says Recover now. A prop inject’s response clock does not start until you tap Placed.", s:[
     ["Sign in", 1, ["Type Your name and tap Sign in. Signed in before: tap This is me next to your name.", "Check Keep screen on and Sound for messages and schedule changes.", "Set Show props for: your area, or Only what I claimed."]],
     ["Before STARTEX", 1, ["Under To place, tap Claim on every card you own. The card then reads Claimed by you, and the rest of the team sees it is yours.", "Props due before STARTEX do not alert. Place them on your run sheet times."]],
     ["Placing a prop", 1, ["Watch the bar at the top. Next for you shows what is due. Place soon starts 10 minutes before the place-by time. Late to place means you are past it.", "Tap Show on map. A dashed diamond marks the spot. The card shows how far you are from it.", "Set the prop at the spot. If a team is there, set it 5 to 10 m away out of their view and type where in Note.", "Standing at the spot, tap Placed and confirm. The phone sends your GPS to the White Force.", "The card moves to In the field."]],
     ["Recovering a prop", 1, ["In the field shows Recover at a time. When it reads Recover now, go get the prop.", "Tap Recovered when you have it.", "A prop used twice: tapping Placed at its next spot also marks it recovered from its last use."]],
     ["Handing off", 0, ["You cannot make a time: tap Release on the card and tell the White Force in Messages or on the LMR.", "Taking someone else’s task: tap Take over. They see the change.", "Find my position shows you to the White Force and AOC for 5 minutes."]],
-    ["If something goes wrong", 0, ["Running late: message the White Force. The inject waits for your Placed.", "Prop lost or broken: use the spare and type it in Note.", "No signal: tap Placed or Recovered anyway. It is saved and sent when signal returns. Do not sign out.", "Do not tell teams what a prop is or what it is for."]]] },
+    ["If something goes wrong", 0, ["Running late: message the White Force. The inject waits for your Placed.", "Prop lost or broken: use the spare and type it in Note.", "No signal: tap Placed or Recovered anyway. It is saved and sent when signal returns. Do not sign out.", "Yellow box says location is off: tap Turn on location, then Allow. If it says blocked, allow location for this site in the phone’s settings and reload. Keep the board open on screen so the White Force can locate you.", "Do not tell teams what a prop is or what it is for."]]] },
   D:{ t:"Drone operator", b:"You answer drone flight requests from both forces and tell the board whether the drone can fly.", s:[
     ["Setup", 1, ["Check Keep screen on and Sound for new drone requests.", "Tap Ready for tasking when the drone can fly."]],
     ["Readiness", 0, ["Ready for tasking: the forces can request a flight.", "Not ready (in use): tap it while the drone is flying or down. The forces see “Routine maintenance. Not ready for tasking.” and cannot request.", "The line under the buttons shows when each force may fly next."]],
@@ -5131,13 +5133,13 @@ function ocScenes(S, v, o){
   const box = $('[data-ocinjbox]', v); if (!box) return;
   const all = ocInjItems(S, o), clr = ocClr(), list = all.filter(x => !clr.has(x.id)), hid = all.filter(x => clr.has(x.id)), located = list.some(x => x.pt);
   if (ROOMS_LIVE && app.ocWatch != null){ try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; }
-  if (located && !ROOMS_LIVE && !app.ocWatch && navigator.geolocation){ try { app.ocWatch = navigator.geolocation.watchPosition(p => { app.ocHere = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); else { try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; } }, () => { app.ocHere = null; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); }, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){} }
+  if (located && !ROOMS_LIVE && !app.ocWatch && navigator.geolocation){ try { app.ocWatch = navigator.geolocation.watchPosition(p => { app.ocHere = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); else { try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; } }, e => { if (e && e.code === 1){ app.ocHere = null; app.geoDenied = true; geoBanner(); } if (app.S && app.role === 'OC' && $('#vOC [data-ocinjbox]')) ocScenes(app.S, $('#vOC'), (app.S.ocs || {})[(ocGet() || {}).id]); }, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){} }
   if (!located && app.ocWatch != null){ try { navigator.geolocation.clearWatch(app.ocWatch); } catch(e){} app.ocWatch = null; }
   const tmF = ROOMS_LIVE && o && o.team && S.teams[o.side] && S.teams[o.side][o.team] ? S.teams[o.side][o.team].last : null, inRm = ROOMS_LIVE ? (tmF && tmF.room ? roomFind(tmF.room) : null) || myRoom() : null;
   const here = ROOMS_LIVE ? (inRm ? { room:inRm, pt:inRm.pt, acc:0 } : null) : app.ocHere && Date.now() - app.ocHere.t < 120000 ? app.ocHere : null;
   $('[data-ocscenegps]', v).textContent = ROOMS_LIVE ? (inRm ? 'Your team: ' + roomLabel(inRm) : 'Your team has not checked in to a room') : here ? 'GPS ±' + here.acc + ' m' : located ? 'No GPS: tap the inject your team is at' : '';
   if (!app.ocNear) app.ocNear = {};
-  list.forEach(x => { x.rm = ROOMS_LIVE ? injRoomOf(S, x.q.tid, x.pt) : null; x.d = !ROOMS_LIVE && here && x.pt ? distM(here.pt, x.pt) : null; x.near = ROOMS_LIVE ? !!(here && x.rm && x.rm === here.room) : x.d != null && x.d <= 60 + Math.min(here.acc, 40);
+  list.forEach(x => { x.rm = ROOMS_LIVE ? injRoomOf(S, x.q.tid, x.pt) : null; x.d = !ROOMS_LIVE && here && x.pt ? distM(here.pt, x.pt) : null; x.near = ROOMS_LIVE ? !!(here && x.rm && x.rm === here.room) : x.d != null && here.acc <= 150 && x.d <= 60 + Math.min(here.acc, 40);
     if (x.near && !app.ocNear[x.id]){ app.ocNear[x.id] = true; x.fresh = true; } });
   { const curNear = list.some(y => y.id === app.ocInj && y.near), hit = list.find(x => x.fresh);
     if (hit){ if (!curNear){ app.ocInj = hit.id; app.ocInjAuto = true; } app.ocJump = true; msgSound(); try { navigator.vibrate && navigator.vibrate([300, 150, 300, 150, 300]); } catch(e){} toast('GPS: your team is at ' + hit.q.label + '. ' + (curNear ? 'Tap Switch to this one when ready.' : hit.scene ? 'Read the scene to the team now.' : 'Its card is open on the Now tab.')); } }
@@ -5220,11 +5222,11 @@ const pingDone = new Set();
 function answerOcPing(S, me){
   if (!me || !S.ocPings || !S.ocPings.length || document.visibilityState !== 'visible') return;
   const pg = S.ocPings.filter(x => x.oc === me.id).pop(); if (!pg || pingDone.has(pg.id)) return;
-  const k = 'marala-ocping-' + app.gid + '-' + me.id;
+  const k = 'marala-ocping-' + app.gid + '-' + me.id, role0 = app.role;
   if ((S.ocPos && S.ocPos[me.id] && S.ocPos[me.id].ping === pg.id) || Date.now() - pg.ts > 15 * 60000){ pingDone.add(pg.id); return; }
   try { if ((localStorage.getItem(k) || '') === pg.id){ pingDone.add(pg.id); return; } } catch(e){}
   pingDone.add(pg.id);
-  getGPS().then(g => { if (!g) return; try { localStorage.setItem(k, pg.id); } catch(e){} writeEvent('oc_pos', null, { oc:me.id, pt:g.pt, acc:g.acc, ping:pg.id }); });
+  getGPS().then(g => { if (!g){ setTimeout(() => { pingDone.delete(pg.id); if (app.S && app.role === role0) answerOcPing(app.S, me); }, 30000); return; } try { localStorage.setItem(k, pg.id); } catch(e){} writeEvent('oc_pos', null, { oc:me.id, pt:g.pt, acc:g.acc, ping:pg.id }); });
 }
 function answerPings(S, side){
   const me = teamGet(side); if (!me || !S.clock.started || S.endex || document.visibilityState !== 'visible') return;
@@ -5233,7 +5235,7 @@ function answerPings(S, side){
   if ((t && t.pingFix && t.pingFix.ping === pg.id) || Date.now() - pg.ts > 15 * 60000){ pingDone.add(pg.id); return; }
   try { if ((localStorage.getItem(k) || '') === pg.id){ pingDone.add(pg.id); return; } } catch(e){}
   pingDone.add(pg.id);
-  getGPS().then(g => { if (!g) return; try { localStorage.setItem(k, pg.id); } catch(e){} writeEvent('pos', side, { team:me.id, name:me.name, gps:g.pt, acc:g.acc, room:g.room || null, ping:pg.id }); });
+  getGPS().then(g => { if (!g){ setTimeout(() => { pingDone.delete(pg.id); if (app.S && app.role === 'T' + side) answerPings(app.S, side); }, 30000); return; } try { localStorage.setItem(k, pg.id); } catch(e){} writeEvent('pos', side, { team:me.id, name:me.name, gps:g.pt, acc:g.acc, room:g.room || null, ping:pg.id }); });
 }
 function roomLS(){ return 'marala-room-' + (app.gid || 'none'); }
 function myRoom(){ if (!ROOMS_LIVE) return null; let id = null; try { id = localStorage.getItem(roomLS()); } catch(e){} return id ? roomFind(id) : null; }
@@ -5258,11 +5260,25 @@ function roomArrive(S){
   if (sd && teamGet(sd) && S.clock.started && !S.endex) sendTeamPos(sd, { gpsOnly:true, silent:true }).then(() => { toast('Checked in: ' + roomFull(S, r, sd) + '.'); refresh(true); });
   else { toast('You are in ' + roomFull(S, r, sd) + '.' + (sd && !S.clock.started ? ' Check in again once the game starts.' : '')); refresh(true); }
 }
+let geoPerm = null, geoKey = '';
+try { navigator.permissions.query({ name:'geolocation' }).then(st => { geoPerm = st.state; st.onchange = () => { geoPerm = st.state; if (geoPerm === 'granted') app.geoDenied = false; geoBanner(); }; geoBanner(); }, () => {}); } catch(e){}
+function geoBanner(){
+  const b = $('#geoBanner'); if (!b) return; const r = app.role;
+  const on = !ROOMS_LIVE && (r === 'TB' || r === 'TR' || r === 'OC' || r === 'L');
+  const st = !on ? '' : !navigator.geolocation ? 'none' : geoPerm === 'denied' || app.geoDenied ? 'denied' : geoPerm === 'prompt' && !app.geoOk ? 'prompt' : '';
+  if (st === geoKey) return; geoKey = st; b.hidden = !st;
+  b.innerHTML = st === 'denied' ? '<span>Location is blocked for this site, so the White Force cannot see where you are. Allow location for this site in the phone’s settings, then reload the page.</span>'
+    : st === 'prompt' ? '<span>Location is not on yet. The White Force uses it to find you during the game.</span><button type="button" data-geoask>Turn on location</button>'
+    : st === 'none' ? '<span>This browser cannot share location. Open the board in Safari or Chrome.</span>' : '';
+  const k = $('[data-geoask]', b); if (k) k.onclick = () => { k.disabled = true; k.textContent = 'Waiting for the phone…'; navigator.geolocation.getCurrentPosition(() => { app.geoOk = true; app.geoDenied = false; geoBanner(); toast('Location is on.'); }, e => { if (e && e.code === 1) app.geoDenied = true; else app.geoOk = true; geoKey = '-'; geoBanner(); if (!e || e.code !== 1) toast('Location is allowed. The phone has no GPS fix yet; go outdoors.', true); }, { enableHighAccuracy:true, timeout:15000, maximumAge:60000 }); };
+}
 function getGPS(){
   if (ROOMS_LIVE){ const r = myRoom(); return Promise.resolve(r && r.pt ? { pt:roomJit(r.pt), acc:5, room:r.id } : null); }
   return new Promise(res => {
     if (!navigator.geolocation){ res(null); return; }
-    navigator.geolocation.getCurrentPosition(p => res({ pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy) }), () => res(null), { enableHighAccuracy:true, timeout:12000, maximumAge:10000 });
+    const w = [app.ocHere, app.propSelf].find(x => x && Date.now() - x.t < 10000); if (w){ res({ pt:w.pt, acc:w.acc }); return; }
+    const ok = p => { app.geoOk = true; if (app.geoDenied){ app.geoDenied = false; geoBanner(); } res({ pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy) }); };
+    navigator.geolocation.getCurrentPosition(ok, e => { if (e && e.code === 1){ app.geoDenied = true; geoBanner(); res(null); return; } navigator.geolocation.getCurrentPosition(ok, () => res(null), { enableHighAccuracy:false, timeout:8000, maximumAge:60000 }); }, { enableHighAccuracy:true, timeout:12000, maximumAge:10000 });
   });
 }
 async function sendTeamPos(side, opts){
@@ -6880,10 +6896,11 @@ function propsKey(){ return 'marala-props-' + (app.gid || 'none'); }
 function propsMe(){ try { return JSON.parse(localStorage.getItem(propsKey()) || 'null'); } catch(e){ return null; } }
 function propsSet(v){ try { if (v) localStorage.setItem(propsKey(), JSON.stringify(v)); else localStorage.removeItem(propsKey()); } catch(e){} }
 let propWatch = null;
+function gpsStop(){ geoBanner(); propNavStop(); const g = navigator.geolocation; if (!g) return; [app.ocWatch, app.prDistWatch].forEach(w => { if (w != null && w !== false){ try { g.clearWatch(w); } catch(e){} } }); app.ocWatch = null; app.prDistWatch = null; }
 function propNavStop(){ if (propWatch != null && navigator.geolocation){ navigator.geolocation.clearWatch(propWatch); } propWatch = null; app.propNav = null; }
 function propNavStart(id){
-  app.propNav = id;
-  if (propWatch == null && !ROOMS_LIVE && navigator.geolocation) propWatch = navigator.geolocation.watchPosition(p => { app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; propNavText(); if (app.S && Date.now() - (app.propMapAt || 0) > 5000){ app.propMapAt = Date.now(); refresh(true); } }, () => toast('Location unavailable. Allow location for this site.', true), { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
+  app.propNav = id; app.propNavErr = false;
+  if (propWatch == null && !ROOMS_LIVE && navigator.geolocation) propWatch = navigator.geolocation.watchPosition(p => { if (app.role !== 'L'){ propNavStop(); return; } app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; propNavText(); if (app.S && Date.now() - (app.propMapAt || 0) > 5000){ app.propMapAt = Date.now(); refresh(true); } }, e => { if (app.propNavErr) return; app.propNavErr = true; toast(e && e.code === 1 ? 'Location is blocked. Allow location for this site in the phone’s settings.' : 'No GPS fix yet. Keep the page open outdoors.', true); }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
   propNavText(); app.propFitFor = null; refresh(true);
   const mp = $('[data-prmap]'); if (mp) setTimeout(() => mp.scrollIntoView({ behavior:'smooth', block:'center' }), 60);
 }
@@ -6985,7 +7002,7 @@ function renderProps(S){
   const todo = rows.filter(r => r.state === 'todo'), out = rows.filter(r => r.state === 'out'), done = rows.filter(r => r.state === 'done');
   const due = r => r.placeBy == null ? 'On call' : 'Place by ' + hhmm(r.placeBy) + (S.clock.started ? (S.g > r.placeBy ? ' - late' : ' - in ' + Math.ceil(r.placeBy - S.g) + ' min') : '');
   const cls = r => r.placeBy == null || !S.clock.started ? '' : S.g > r.placeBy ? ' late' : r.placeBy - S.g <= 10 ? ' soon' : '';
-  if (!ROOMS_LIVE && navigator.geolocation && app.prDistWatch == null){ try { app.prDistWatch = navigator.geolocation.watchPosition(p => { app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.role === 'L' && (!app.prDistPt || Date.now() - app.prDistPt.t >= 15000)) refresh(true); }, () => {}, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){ app.prDistWatch = false; } }
+  if (!ROOMS_LIVE && navigator.geolocation && app.prDistWatch == null){ try { app.prDistWatch = navigator.geolocation.watchPosition(p => { if (app.role !== 'L'){ try { navigator.geolocation.clearWatch(app.prDistWatch); } catch(e){} app.prDistWatch = null; return; } app.propSelf = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.role === 'L' && (!app.prDistPt || Date.now() - app.prDistPt.t >= 15000)) refresh(true); }, () => {}, { enableHighAccuracy:true, maximumAge:15000, timeout:20000 }); } catch(e){ app.prDistWatch = false; } }
   { const hs = app.propSelf && Date.now() - app.propSelf.t < 120000 ? app.propSelf : null; if (!hs) app.prDistPt = null; else if (!app.prDistPt || Date.now() - app.prDistPt.t >= 15000) app.prDistPt = { pt:hs.pt, t:Date.now(), g:S.g }; }
   const distH = pt => ROOMS_LIVE || !propOk(pt) ? '' : app.prDistPt ? '<div class="pr-dist"><b>' + ocDist(distM(app.prDistPt.pt, pt)) + '</b> <span class="small muted">updated ' + hhmm(app.prDistPt.g) + '</span></div>' : '<div class="pr-dist small muted">No GPS on this phone yet, so no distance.</div>';
   const urgent = r => S.clock.started && !S.endex && (r.state === 'todo' ? r.placeBy != null && r.placeBy - S.g <= 10 : r.state === 'out' && (r.recNow || (r.recAfter != null && r.recAfter - S.g <= 5)));
@@ -8652,6 +8669,7 @@ function qrTabCard(){
 }
 document.addEventListener('submit', ev => { const f = ev.target && ev.target.closest && ev.target.closest('[data-g2r]'); if (!f) return; ev.preventDefault(); const t = f.g.value.trim(), out = $('[data-g2rout]', f), S = app.S; if (!t || !S) return; const sd = app.role === 'B' || app.role === 'R' ? app.role : app.role && app.role[0] === 'T' ? app.role[1] : null, p = gridPoint(mapCfg(S), t), r = p && roomOf(p.pt); out.textContent = r ? t + ' is in ' + roomFull(S, r, sd) + '.' : 'The board cannot read that grid. Use MGRS, for example 59643 21955.'; });
 function refresh(force){
+  geoBanner();
   if (!app.cfg || !app.role) return;
   const now = Date.now();
   if (!force && app.mapBusy && now - app.mapBusy < 4000){ app.mapDeferred = true; $$('[data-clock]').forEach(el => el.textContent = app.S ? clockText(app.S, now) : el.textContent); return; }
