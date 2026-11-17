@@ -3245,8 +3245,10 @@ function stepEvent(S, e, cfg, byId, step){
   runTicks(S, g);
   S.g = Math.max(S.g, Math.min(g, END_G));
   if (e.type === 'void'){ const t = byId.get(e.p.target); if (t.type === 'void') voidNotice(S, byId.get(t.p && t.p.target), e, true); else voidNotice(S, t, e, false); if (step) step(S, e); return; }
-  if (S.endex && e.by !== 'W' && e.by !== 'white' && /^act_|^contact|^claim/.test(e.type)){ pushLog(S, SIDES[e.side].name + ' action after ENDEX ignored', e.side, e, 'rejected'); return; }
-  apply(S, e, cfg); aidSync(S);
+  try {
+    if (S.endex && e.by !== 'W' && e.by !== 'white' && /^act_|^contact|^claim/.test(e.type)){ pushLog(S, SIDES[e.side].name + ' action after ENDEX ignored', e.side, e, 'rejected'); return; }
+    apply(S, e, cfg); aidSync(S);
+  } catch(err){ pushLog(S, 'Event skipped: the board could not read it (' + String(e.type).slice(0, 40) + ')', null, e, 'rejected'); }
   if (step) step(S, e);
 }
 function replayCached(cache, cfg, events, now){
@@ -3458,12 +3460,14 @@ function kbFit(){
   if (Math.abs(dy) > 4) window.scrollBy(0, dy);
 }
 { let kt = null; const kb = () => { const vv = window.visualViewport; if (vv && window.matchMedia('(pointer:coarse)').matches){ const gap = window.innerHeight - vv.height - vv.offsetTop; document.body.style.paddingBottom = gap > 120 ? gap + 'px' : ''; } clearTimeout(kt); kt = setTimeout(kbFit, 120); }; if (window.visualViewport) window.visualViewport.addEventListener('resize', kb); document.addEventListener('focusin', () => setTimeout(kb, 320)); }
+const realNow = Date.now.bind(Date);
 let clockAt = 0;
 async function clockCheck(){
-  if (!/^https?:$/.test(location.protocol) || !navigator.onLine || Date.now() - clockAt < 600000) return; clockAt = Date.now();
-  try { const t0 = Date.now(), r = await fetch(location.href.split('#')[0], { method:'HEAD', cache:'no-store' }), t1 = Date.now(), d = Date.parse(r.headers.get('date') || ''); if (!Number.isFinite(d) || t1 - t0 > 10000) return;
+  if (!/^https?:$/.test(location.protocol) || !navigator.onLine || realNow() - clockAt < 600000) return; clockAt = realNow();
+  try { const t0 = realNow(), r = await fetch(location.href.split('#')[0], { method:'HEAD', cache:'no-store' }), t1 = realNow(), d = Date.parse(r.headers.get('date') || ''); if (!Number.isFinite(d) || t1 - t0 > 10000) return;
     const off = Math.round(((t0 + t1) / 2 - d) / 1000), b = $('#clockBanner'), bad = Math.abs(off) > 90; b.hidden = !bad;
-    b.textContent = bad ? 'This device’s clock is about ' + Math.round(Math.abs(off) / 60) + ' min ' + (off > 0 ? 'fast' : 'slow') + '. Board times and alerts here will be wrong. Turn on automatic date and time in this device’s settings, then reload the page.' : '';
+    const fix = bad ? off * 1000 : 0; if (Math.abs(fix - (app.clockFix || 0)) > 5000){ app.clockFix = fix; Date.now = fix ? () => realNow() - fix : realNow; lastTs = 0; if (app.cfg && app.role) refresh(true); }
+    b.textContent = bad ? 'This device’s clock is about ' + Math.round(Math.abs(off) / 60) + ' min ' + (off > 0 ? 'fast' : 'slow') + '. The board is correcting for it on this page. Turn on automatic date and time in this device’s settings when you can.' : '';
   } catch(e){ clockAt = 0; }
 }
 setTimeout(clockCheck, 4000);
@@ -3558,7 +3562,7 @@ function subscribeGame(){
     if (sig === app.evSig && app.online === 'firebase') return;
     const same = s.docs.length === app.events.length && (() => { const have = new Set(app.events.map(e => e.id)); return s.docs.every(d => have.has(d.id)); })();
     app.evSig = sig; if (same) return;
-    app.events = s.docs.map(d => d.data()); refresh(true);
+    const lim = Date.now() + 120000; app.events = s.docs.map(d => d.data()).filter(e => !(e.ts > lim)); refresh(true);
   }, err => setBanner('Live updates stopped (' + (err && err.code) + '). Reload the page.')));
 }
 let lastTs = 0;
@@ -3740,7 +3744,7 @@ const HELP = {
   T:{ t:"Fireteam phone", b:"This phone gets your C2’s orders and sends your position, contention requests and strike 9-lines. The LMR is still your main radio.", s:[
     ["Start", 1, ["First phone on the team: type the fireteam name and tap the Create fireteam button. Every other phone on the team: tap Join next to your fireteam.", "Map tab: check Keep screen on and Sound for new messages.", "Keep this page open and the phone charged."]],
     ["Tabs", 0, ["Alerts: UAV sightings, warnings and Orders from your C2.", "Messages: text your C2. One message every 15 minutes. Use the LMR for anything urgent.", "Map: opens for 45 seconds, once every 10 minutes. It does not show your own position.", "Requests: contention requests and strike 9-lines.", "All: every section on one page."]],
-    ["Report your position", 1, ["Map tab: type your grid from the map in the MGRS box (example: 5892 2345).", "Pick your Status.", "Tap Send position. The phone adds its GPS fix for your C2.", "Optional: check Also send GPS by itself every 10 minutes. It works only while this page is on screen."]],
+    ["Report your position", 1, ["Map tab: type your grid from the map in the MGRS box (example: 5892 2345).", "Pick your Status.", "Tap Send position. The phone adds its GPS fix for your C2.", "Also send GPS by itself every 10 minutes is on when you sign in. Leave it checked. It works only while this page is on screen."]],
     ["Orders", 0, ["New orders show under Orders from your C2 on the Alerts tab.", "If an order does not sound like your C2, confirm it on the LMR.", "If your C2 did not send it, tap Report as fake. Your C2 and the White Force see the report."]],
     ["Contention request", 1, ["Requests tab: pick the Site and tap Request contention. Confirm.", "Nothing starts until your C2 approves. The status reads With your C2, Started or Declined."]],
     ["Strike 9-line", 1, ["Read the full 9-line out loud to your POC O/C.", "Requests tab: pick the Target, type the target grid, tap Send 9-line for checking.", "Your POC O/C or the White Force checks it. Only a correct 9-line reaches your C2."]],
@@ -5373,7 +5377,7 @@ function buildTeam(side){
     writeEvent('team_map', side, { team:me.id, name:me.name });
   };
   const auto = $('[data-auto]', v);
-  try { auto.checked = localStorage.getItem(teamIdKey(side) + '-auto') === '1'; } catch(e){}
+  try { auto.checked = localStorage.getItem(teamIdKey(side) + '-auto') !== '0'; } catch(e){ auto.checked = true; }
   const arm = () => { clearInterval(teamAutoTimer); teamAutoTimer = null; if (auto.checked) teamAutoTimer = setInterval(() => { if (document.visibilityState === 'visible' && app.role === 'T' + side) sendTeamPos(side, { gpsOnly:true, silent:true }); }, 600000); };
   auto.onchange = () => { try { localStorage.setItem(teamIdKey(side) + '-auto', auto.checked ? '1' : '0'); } catch(e){} arm(); };
   arm();

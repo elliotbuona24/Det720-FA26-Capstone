@@ -27,7 +27,7 @@ READ ALL SUPPORTING DOCUMENTS PROVIDED BY EXERCISES PRIOR TO USE
 
 One-time setup: install Python (tick **Add to PATH**), then run `pip install matplotlib`.
 
-Each game: download the backup from the game's **white cell** (Game panel), put it in a folder with `marala_aar.py`, open a terminal there and run:
+Each game: download the backup from the game's **White Force** screen (Clock and setup tab), put it in a folder with `marala_aar.py`, open a terminal there and run:
 
 ```
 python marala_aar.py "backup file name.json"
