@@ -1,0 +1,2140 @@
+{
+ "app": "marala-board",
+ "gid": "gmw9q8xdj",
+ "cfg": {
+  "name": "Capstone 19 Nov 2026",
+  "blank": false,
+  "indoor": {
+   "on": false,
+   "rooms": [
+    {
+     "id": "Warrior Room",
+     "floor": "1",
+     "places": [
+      "wc"
+     ],
+     "use": "AOC and White Force",
+     "alias": [
+      "warrior"
+     ]
+    },
+    {
+     "id": "Detachment area",
+     "floor": "1",
+     "places": [
+      "town"
+     ],
+     "use": "Town office and the mayors in the Guard Room",
+     "alias": [
+      "guard room",
+      "guard",
+      "town",
+      "marala town",
+      "detachment"
+     ]
+    },
+    {
+     "id": "105",
+     "floor": "1",
+     "places": [
+      "lzB"
+     ]
+    },
+    {
+     "id": "115",
+     "floor": "1",
+     "places": [
+      "poi-0-0"
+     ]
+    },
+    {
+     "id": "115A",
+     "floor": "1",
+     "places": [
+      "poi-0-1"
+     ]
+    },
+    {
+     "id": "118",
+     "floor": "1",
+     "places": [
+      "harbor"
+     ]
+    },
+    {
+     "id": "Armory",
+     "floor": "Ground",
+     "places": [
+      "airstrip",
+      "poi-0-7"
+     ],
+     "alias": [
+      "gym"
+     ]
+    },
+    {
+     "id": "201",
+     "floor": "2",
+     "places": [
+      "radar"
+     ]
+    },
+    {
+     "id": "214",
+     "floor": "2",
+     "places": [
+      "fuel"
+     ]
+    },
+    {
+     "id": "303",
+     "floor": "3",
+     "places": [
+      "poi-0-3"
+     ]
+    },
+    {
+     "id": "304",
+     "floor": "3",
+     "places": [
+      "poi-0-2"
+     ]
+    },
+    {
+     "id": "305",
+     "floor": "3",
+     "places": [
+      "poi-0-4"
+     ]
+    },
+    {
+     "id": "316",
+     "floor": "3",
+     "places": [
+      "poi-0-5"
+     ]
+    },
+    {
+     "id": "317",
+     "floor": "3",
+     "places": [
+      "poi-0-6",
+      "poi-0-8"
+     ]
+    },
+    {
+     "id": "320",
+     "floor": "3",
+     "places": [
+      "lzR"
+     ]
+    }
+   ]
+  },
+  "salt": "y7qv3inq",
+  "createdAt": 1794256926966,
+  "startG": 0,
+  "lengthMin": 110,
+  "pins": {
+   "W": "2akv3b9oy9w",
+   "A": "g61pluo1z0",
+   "B": "ab122gnfy9",
+   "R": "28fnm0o8x4x",
+   "TB": "1u48o8hlytq",
+   "TR": "1qiwci79mur",
+   "OC": "66m4i8htub",
+   "D": "3643ivdq3q",
+   "L": "yxwpvgsdtj"
+  },
+  "codes": {
+   "harbor": {
+    "cap": [
+     "8w26v38uab",
+     "2ffpw4sc4nm",
+     "cks2ffxjo5",
+     "pnwzvqce13",
+     "1zx9jth7mcg",
+     "ofk53xlpjn"
+    ],
+    "def": [
+     "14hvq3gecw0",
+     "9mel7kvggw",
+     "17jp1svqggl",
+     "e4yi0u3fak",
+     "2fx8bx2awep",
+     "1oehpootmfs"
+    ]
+   },
+   "fuel": {
+    "cap": [
+     "1ire619nz2n",
+     "1jkfl5p8enj",
+     "8l0otw8v0h",
+     "1e9p6prwbhv",
+     "1j7nex5aowu",
+     "1honvz4npk2"
+    ],
+    "def": [
+     "advcwofgx5",
+     "1x13ba8m2rw",
+     "e1djqvxcgy",
+     "1uv6qryq4we",
+     "207lhmmd0ze",
+     "zyh7ph7heg"
+    ]
+   },
+   "radar": {
+    "cap": [
+     "1kmncw4gd4a",
+     "1dl8kdn13z",
+     "5fk66smq1k",
+     "23ywjvyqaqp",
+     "21h30t7qjmk",
+     "2bz802vs7nz"
+    ],
+    "def": [
+     "1cuw1j55jh7",
+     "1p3k3ojeng1",
+     "1c8ylcgzqao",
+     "9athfs29xe",
+     "29pskjjlu1e",
+     "127n5joe3n7"
+    ]
+   },
+   "airstrip": {
+    "cap": [
+     "8nwnpsquoo",
+     "1sqm8900s89",
+     "274lj7aqrwy",
+     "v25epws3so",
+     "25p3v4jdjxc",
+     "1o0cjtf1qc8"
+    ],
+    "def": [
+     "wnz6ahobve",
+     "mpvx90j2ij",
+     "u705rbxheh",
+     "7j1qqeihon",
+     "118tzmm8cn1",
+     "1mpb1p70kpu"
+    ]
+   },
+   "town": {
+    "cap": [
+     "s8y4gzd93i",
+     "14avbf688qy",
+     "2nozfpwjn4"
+    ]
+   }
+  }
+ },
+ "events": [
+  {
+   "id": "mw9q90w8-p0qyv1g",
+   "ts": 1794256931528,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-00",
+     "label": "STARTEX: orders and battle rhythm",
+     "to": "both",
+     "from": "AOC",
+     "text": "STARTEX. Your commander’s intent, PIRs and the ROE are on the AOC tab of your board. Read them before you move. The Marala First Front is active across the island: report every suspected device with an IED 9-line and every enemy team with a SALUTE. Battle rhythm: commander’s update briefs to the AOC at {+15}, {+45} and {+85}, change of command at {+60}, final SITREP at {+105}. Authenticate any unexpected order on your LMR net with your challenge and password. Escalation is your commander’s decision; avoid incidents.",
+     "at": 0,
+     "lvl": null,
+     "note": "Send at STARTEX. No POC action. Check that both JFACCs open the AOC tab.",
+     "phase": "Phase 1"
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90wj-h6i1t48",
+   "ts": 1794256931539,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-01",
+     "label": "Command wire on the radar road",
+     "to": "B",
+     "from": "Patrol report (HUMINT)",
+     "text": "A Coalition patrol reports a canvas bag at grid 18T TL 59643 21955 (40.81344, -77.84974), play square C3, on the approach to Radar Ridge, with a thin wire running from it into the grass. Treat it as a live device. Keep every cadet at least 25 m away, cordon it, keep civilians out, and send an IED 9-line through your POC. Your POC confirms the 9-line before it is reported. Report within 20 minutes.",
+     "at": 4,
+     "lvl": null,
+     "note": "IED-C (bag with a 10 m wire) at X6 before STARTEX. Correct cordon and 9-line: POC reports Real IED cleared (+2, diplomatic +5). A team that walks onto the prop without a cordon: Hit by an IED.",
+     "phase": "Phase 1",
+     "win": 20,
+     "who": "each",
+     "done": "ied",
+     "miss": {
+      "pts": 2,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90wn-pjkfv0r",
+   "ts": 1794256931543,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-02",
+     "label": "Pressure plate north of the airstrip",
+     "to": "R",
+     "from": "Local shepherd (HUMINT)",
+     "text": "A shepherd says his dog would not go near a flat board half buried at grid 18T TL 59708 22077 (40.81455, -77.84901), play square C2, north of the airstrip. He saw a man bury it at dawn and walk away fast. Treat it as a live device. Keep every cadet at least 25 m away, cordon it, keep civilians out, and send an IED 9-line through your POC. Your POC confirms the 9-line before it is reported. Report within 20 minutes.",
+     "at": 6,
+     "lvl": null,
+     "note": "IED-D (flat board with wires) at X4 before STARTEX. Correct cordon and 9-line: Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED.",
+     "phase": "Phase 1",
+     "win": 20,
+     "who": "each",
+     "done": "ied",
+     "miss": {
+      "pts": 2,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90wt-ipdhald",
+   "ts": 1794256931549,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-03",
+     "label": "The mayor’s invitation",
+     "to": "both",
+     "from": "Marala Town",
+     "text": "The mayor invites each force to Town Hall at grid 18T TL 59724 21852 (40.81254, -77.84874), play square D5. Blue Force: one team between {+22} and {+32}. Red Force: one team between {+34} and {+44}. Weapons stay outside the hall entrance. The mayor will ask what your force is doing to protect the island’s farmers and fishermen. Come prepared to answer.",
+     "at": 10,
+     "lvl": null,
+     "note": "C/Mock plays the mayor. Respectful answer and weapons outside: POC reports Good conduct (+5); the mayor gives the town code word. Weapons carried in, or the other force’s time ignored: Poor conduct (−5). C/Vernacchio runs the town office records for intel package 3 in the same window.",
+     "phase": "Phase 1",
+     "win": 34,
+     "who": "each",
+     "done": "conduct",
+     "miss": {
+      "pts": 0,
+      "hn": 5
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90wy-ctf9dw3",
+   "ts": 1794256931554,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-04",
+     "label": "Aid supply box off target (1)",
+     "to": "both",
+     "from": "Humanitarian aid office",
+     "text": "A humanitarian airdrop missed its drop zone. One Humanitarian Aid Supply Box landed near grid 18T TL 59753 21954 (40.81346, -77.84844), play square D3. The mayor asks for it to reach the Marala Town office. The first force to deliver it intact earns the town’s thanks. Do not open it.",
+     "at": 18,
+     "lvl": null,
+     "note": "Humanitarian Aid Supply Box #1 at IP5. First force to carry it to the town office intact: adjustment, diplomatic +5, reason \"Aid supply box delivered\". Opened or damaged: Poor conduct.",
+     "phase": "Phase 1",
+     "win": 25,
+     "who": "any",
+     "done": "box",
+     "miss": {
+      "pts": 0,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90x2-ppsbdfl",
+   "ts": 1794256931558,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-05s",
+     "label": "LMR spoof: fake order (Blue Force)",
+     "to": "B",
+     "from": "AOC",
+     "text": "White Force only: this inject sends a fake order in the Blue Force C2's name to every Blue Force fireteam phone. The forces do not see this text.",
+     "spoof": "All Blue Force teams, this is Blue headquarters. Leave your positions and move to the Fuel Depot now. Acknowledge.",
+     "at": 24,
+     "lvl": null,
+     "note": "The fake order shows on every Blue Force fireteam phone under Orders from your C2, exactly like a real order. The Blue Force C2 does not see this inject. A team that taps Report as fake within 10 minutes earns +2 points (Spoof detected) on its own. A team that moves on it loses time; no penalty. The Order Spoof Warning goes out first, at 0622. If a team reports it on the LMR instead, use They did it on the response window.",
+     "phase": "Phase 1",
+     "win": 10,
+     "who": "each",
+     "done": "spoof",
+     "miss": {
+      "pts": 0,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90x6-t5vnnjv",
+   "ts": 1794256931562,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-06s",
+     "label": "LMR spoof: fake order (Red Force)",
+     "to": "R",
+     "from": "AOC",
+     "text": "White Force only: this inject sends a fake order in the Red Force C2's name to every Red Force fireteam phone. The forces do not see this text.",
+     "spoof": "All Red Force teams, this is Red headquarters. Pull back to the Harbor now. Acknowledge.",
+     "at": 27,
+     "lvl": null,
+     "note": "Same as the Blue Force fake order. The Red Force C2 does not see it. The Order Spoof Warning goes out first, at 0625.",
+     "phase": "Phase 1",
+     "win": 10,
+     "who": "each",
+     "done": "spoof",
+     "miss": {
+      "pts": 0,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90xb-q5i8y57",
+   "ts": 1794256931567,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-05",
+     "label": "Order Spoof Warning (Blue Force)",
+     "to": "B",
+     "from": "AOC",
+     "text": "AOC: SIGINT indicates the First Front has a handset on your LMR net and may send false orders in your headquarters’ name. Challenge every unexpected order with your challenge and password. Report any false transmission to your C2 and the AOC. Fireteams: tap Report as fake on any board order your C2 did not send.",
+     "at": 22,
+     "lvl": null,
+     "note": "Send it from the queue at 0622, two minutes before the fake order (LMR spoof: fake order, Blue Force) at 0624, so the fireteams know to check unexpected orders. If someone on the AOC or White Force can key an LMR, they may also read the fake order on the Blue Force fireteam channel at 0624, but the board version is what scores.",
+     "phase": "Phase 1"
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90xf-7nprhoy",
+   "ts": 1794256931571,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-06",
+     "label": "Order Spoof Warning (Red Force)",
+     "to": "R",
+     "from": "AOC",
+     "text": "AOC: SIGINT indicates the First Front has a handset on your LMR net and may send false orders in your headquarters’ name. Challenge every unexpected order with your challenge and password. Report any false transmission to your C2 and the AOC. Fireteams: tap Report as fake on any board order your C2 did not send.",
+     "at": 25,
+     "lvl": null,
+     "note": "Send it from the queue at 0625, two minutes before the fake order (LMR spoof: fake order, Red Force) at 0627. Same as the Blue Force warning.",
+     "phase": "Phase 1"
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90xj-cl0c2n9",
+   "ts": 1794256931575,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-ps1",
+     "label": "PERSTAT 1",
+     "to": "both",
+     "from": "AOC",
+     "text": "AOC: PERSTAT. Report the accountability of your whole force now on the AOC tab: force totals (accounted for and unaccounted for, and who is unaccounted for and why), then every fireteam’s grid, headcount and status. A 6-digit MGRS grid is enough; a more precise grid is fine. Get the grids from your teams over the LMR net; do not guess. The AOC checks the report against where your teams actually are and returns any report that does not match. On time and accepted: +5 points. Not sent: −5.",
+     "at": 30,
+     "lvl": null,
+     "note": "No props. +5 points when the force sends it on time and the White Force Director approves it; −5 if nothing is sent by the deadline; sent late: 0. When a force sends its PERSTAT the board sends a silent position request to every fireteam of that force. The White Force Director checks each team’s reported grid against its GPS fix, approves it to the AOC or returns it with a note. The AOC then acknowledges it.",
+     "phase": "Phase 1",
+     "win": 15,
+     "who": "each",
+     "done": "acct",
+     "miss": {
+      "pts": 5,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90xo-h21gyl7",
+   "ts": 1794256931580,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-07",
+     "label": "Personnel recovery: VIPER 21",
+     "to": "B",
+     "from": "Personnel recovery cell",
+     "text": "PERSONNEL RECOVERY. An F-16, call sign VIPER 21, went down north of the island. The pilot ejected; his beacon places him near grid 18T TL 59760 22102 (40.81480, -77.84841), play square D1, on the Red Force side. He is injured and cannot walk. Your force HQ has a litter. Bring it to him and move him safely. Treat him, send a MEDEVAC 9-line, then bring him to your casualty collection point (Team HQ). Avoid contact with Red Force.",
+     "at": 34,
+     "lvl": null,
+     "note": "Rescue dummy at IP8 from 0630. It is the only dummy: C/Capt Pascal collects it when this window closes (0704) and lays it at X1 by 0713 for ROTOR 3. Recovered to Blue Force HQ after a correct MEDEVAC 9-line: adjustment +3 points (reason \"Personnel recovery\"). No MEDEVAC 9-line: no points. If Red Force reaches him first, see the Red Force sighting. Each force HQ has one litter from STARTEX.",
+     "phase": "Phase 1",
+     "oc": "VIPER 21 (dummy at IP8). Check that the team keeps security out while it moves him safely, and sends a MEDEVAC 9-line. A Red Force team that finds him decides: leave him, report him, detain him, or escort him to the mayor.",
+     "win": 30,
+     "who": "each",
+     "done": "pr",
+     "miss": {
+      "pts": 3,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90xs-ksczzm3",
+   "ts": 1794256931584,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-08",
+     "label": "Parachute sighting",
+     "to": "R",
+     "from": "Local herder (HUMINT)",
+     "text": "A herder saw a parachute come down near grid 18T TL 59760 22102 (40.81480, -77.84841), play square D1 a few minutes ago. A man in a flight suit is lying in the grass and not moving much. He is likely a Coalition pilot. Your commander decides: leave him, observe and report, or detain him. Detaining a foreign service member will raise tension. Carrying him unharmed to the mayor at Marala Town would be seen as a humanitarian act.",
+     "at": 36,
+     "lvl": null,
+     "note": "Detained and taken to Red Force HQ: escalation +10 to Red Force (adjustment, reason \"Detained Coalition pilot\"). Carried unharmed to the town office and handed to the mayor: Red Force diplomatic +10 (adjustment); Blue Force may collect him there. Observed and reported only: SALUTE +1.",
+     "phase": "Phase 1"
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90xw-3yrtpsd",
+   "ts": 1794256931588,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-09",
+     "label": "Militia mortar team",
+     "to": "B",
+     "from": "Counter-battery radar (AOC)",
+     "text": "Two mortar rounds landed in the open 150 m from your Radar Ridge position. No one was hurt. Counter-battery radar puts the firing point near grid 18T TL 59681 21999 (40.81384, -77.84931). The team is expected to fire again and move within 25 minutes. Find it and fix it with your UAV, a drone flight or a team’s SALUTE or activity report within about 80 m of that grid, then strike it with a correct strike 9-line within 10 minutes of the fix. It is marked on your map as a militia target.",
+     "at": 42,
+     "lvl": null,
+     "note": "No props. The target is on the board: it shows faintly on the Blue Force map until fixed. A UAV launch fixes it automatically; the drone operator can fix it when answering a drone flight over that grid; a Blue Force SALUTE or activity report within about 80 m of the grid also fixes it. Strike approved by the White Force on a correct 9-line: +3 points, diplomatic +2 (−10 if the force says civilians are near). Gone at 0707 if not struck.",
+     "phase": "Phase 2",
+     "oc": "Militia mortar team (C3, IP3). If your Blue Force team reaches IP3 before 0707 and the target is not destroyed, read: \"A shallow pit with a mortar base plate, fresh blast marks and three sets of footprints heading north. The crew left minutes ago.\" The team should send a SALUTE or activity report with the grid where it is standing; that fixes the target for its C2.",
+     "mt": {
+      "label": "Militia mortar team",
+      "pt": [
+       40.8138447,
+       -77.84931
+      ],
+      "grid": "C3",
+      "life": 25
+     },
+     "win": 25,
+     "who": "each",
+     "done": "mt",
+     "miss": {
+      "pts": 0,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90y1-23gpmmx",
+   "ts": 1794256931593,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-10",
+     "label": "Militia rocket launch site",
+     "to": "R",
+     "from": "Air defense radar (AOC)",
+     "text": "A small rocket was fired over the Fuel Depot from the east and landed in the water. No one was hurt. Air defense radar puts the launch point near grid 18T TL 59854 21940 (40.81336, -77.84723). The crew is expected to fire again and move within 25 minutes. Find it and fix it with your UAV, a drone flight or a team’s SALUTE or activity report within about 80 m of that grid, then strike it with a correct strike 9-line within 10 minutes of the fix. It is marked on your map as a militia target.",
+     "at": 44,
+     "lvl": null,
+     "note": "No props. Same rules as the Blue Force mortar team: fixed by UAV, a drone flight answered with the fix, or a Red Force report within about 80 m of the grid. Strike approved on a correct 9-line: +3 points, diplomatic +2 (−10 if civilians are near). Gone at 0709 if not struck.",
+     "phase": "Phase 2",
+     "oc": "Militia rocket launch site (E3, IP6). If your Red Force team reaches IP6 before 0709 and the target is not destroyed, read: \"A launch rail made of pipe, scorched grass and a cut wire. Two men on a motorbike left toward the road a few minutes ago.\" The team should send a SALUTE or activity report with the grid where it is standing; that fixes the target for its C2.",
+     "mt": {
+      "label": "Militia rocket launch site",
+      "pt": [
+       40.813361,
+       -77.847228
+      ],
+      "grid": "E3",
+      "life": 25
+     },
+     "win": 25,
+     "who": "each",
+     "done": "mt",
+     "miss": {
+      "pts": 0,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90y6-sxbyehc",
+   "ts": 1794256931598,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-13",
+     "label": "Change of command",
+     "to": "both",
+     "from": "AOC",
+     "text": "CHANGE OF COMMAND. Effective now, in every unit the deputy assumes the lead role and the outgoing leader becomes the deputy. Brief your replacement: site status, teams out and their tasks, PIR progress, pending reports, statements and aid packages. The new JFACC confirms assumption of command to the AOC by {+65} (AOC tab, Ask the AOC, Something else).",
+     "at": 60,
+     "lvl": null,
+     "note": "Send at 0700. The AOC checks that both new JFACCs confirm by 0705. Form 2 evaluators stay with the same role and evaluate the new leader from 0700.",
+     "phase": "Phase 2",
+     "win": 5,
+     "who": "each",
+     "done": "aoc",
+     "miss": {
+      "pts": 0,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90ya-a8xrwx3",
+   "ts": 1794256931602,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-14",
+     "label": "Militia weapons cache",
+     "to": "both",
+     "from": "Intercepted call (SIGINT)",
+     "text": "An intercepted call places a First Front weapons cache at grid 18T TL 59761 21896 (40.81294, -77.84832), play square D4, between Marala Town and the Fuel Depot. The caller said the cache is \"watched and wired.\" The first force to remove it, either by clearing it on foot with a cordon and an IED 9-line for any device found, or by destroying it with a correct strike 9-line and a cache strike, takes it out of play. A strike this close to the town will be watched by everyone: say honestly whether civilians are near.",
+     "at": 64,
+     "lvl": null,
+     "note": "Cache crate at X5 from 0655. Cleared on foot with a cordon: POC reports Militia cache cleared (+5, diplomatic +5). Walked in without a cordon: Hit by an IED. Strike: correct strike 9-line and the force’s cache strike; the White Force rules it destroyed. One clearance only.",
+     "phase": "Phase 2",
+     "win": 45,
+     "who": "any",
+     "done": "cache",
+     "miss": {
+      "pts": 0,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90ye-riu7liw",
+   "ts": 1794256931606,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-ps2",
+     "label": "PERSTAT 2 (new commander)",
+     "to": "both",
+     "from": "AOC",
+     "text": "AOC: PERSTAT. The new commander reports the accountability of the whole force now on the AOC tab: force totals, then every fireteam’s grid, headcount and status, gathered over the LMR net. Account for every cadet who changed role or team at the Change of Command.",
+     "at": 68,
+     "lvl": null,
+     "note": "Same check as PERSTAT 1. This one tests the new commander’s grip on the force eight minutes after taking command.",
+     "phase": "Phase 2",
+     "win": 15,
+     "who": "each",
+     "done": "acct",
+     "miss": {
+      "pts": 5,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90yi-bfxrk2r",
+   "ts": 1794256931610,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-15",
+     "label": "Aid supply box off target (2)",
+     "to": "both",
+     "from": "Humanitarian aid office",
+     "text": "A second Humanitarian Aid Supply Box came down off target near grid 18T TL 59757 21813 (40.81219, -77.84833), play square D5. The first force to deliver it intact to the Marala Town office earns the town’s thanks. Do not open it.",
+     "at": 70,
+     "lvl": null,
+     "note": "Humanitarian Aid Supply Box #2 at X3. First force to deliver it intact: adjustment, diplomatic +5, reason \"Aid supply box delivered\".",
+     "phase": "Phase 2",
+     "win": 25,
+     "who": "any",
+     "done": "box",
+     "miss": {
+      "pts": 0,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90ym-dbgh0kq",
+   "ts": 1794256931614,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-16b",
+     "label": "Militia technical on the move",
+     "to": "both",
+     "from": "AOC",
+     "text": "AOC: a First Front pickup with a heavy machine gun in the bed has stopped near grid 18T TL 59643 21955 (40.81344, -77.84974), between Radar Ridge and the Airstrip. It is expected to move within 15 minutes. Either force may fix it with a UAV, a drone flight or a SALUTE or activity report within about 80 m of that grid, then strike it with a correct strike 9-line within 10 minutes of the fix. Only the first strike counts. Coordinate on the liaison channel so you do not strike each other’s teams.",
+     "at": 76,
+     "lvl": null,
+     "note": "No props. Shared militia target for both forces. First force to strike it on a correct 9-line: +3 points, diplomatic +2 (−10 if civilians are near). Gone at 0731 if not struck. Watch for a force striking near the other force’s team: crowding is a Provocation call.",
+     "phase": "Phase 2",
+     "oc": "Militia technical (C3, X6). If your team reaches X6 before it is destroyed, read: \"A dark pickup with a mounted gun under a tarp, engine running, two men smoking beside it. They have not seen you.\" The team should stay hidden and send a SALUTE with the grid where it is standing.",
+     "mt": {
+      "label": "Militia technical (armed pickup)",
+      "pt": [
+       40.81344,
+       -77.84974
+      ],
+      "grid": "C3",
+      "life": 15
+     },
+     "win": 15,
+     "who": "any",
+     "done": "mt",
+     "miss": {
+      "pts": 0,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90yr-pet20wo",
+   "ts": 1794256931619,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-11",
+     "label": "Personnel recovery: ROTOR 3",
+     "to": "R",
+     "from": "Personnel recovery cell",
+     "text": "PERSONNEL RECOVERY. A Red Force helicopter, call sign ROTOR 3, made a hard landing south of the island. A crewman with a head injury is near grid 18T TL 59596 21786 (40.81190, -77.85023), play square B6, on the Blue Force side. Your force HQ has a litter. Bring it to him and move him safely. Treat him, send a MEDEVAC 9-line, then bring him to your casualty collection point (Team HQ). Avoid contact with Blue Force.",
+     "at": 78,
+     "lvl": null,
+     "note": "Rescue dummy at X1 from 0713, the same dummy as VIPER 21 (C/Capt Pascal moves it after 0704). Recovered to Red Force HQ after a correct MEDEVAC 9-line: adjustment +3 points (reason \"Personnel recovery\"). The carry is long: about 15 minutes. Each force HQ has one litter from STARTEX.",
+     "phase": "Phase 2",
+     "oc": "ROTOR 3 (dummy at X1). Same checks as VIPER 21: a safe carry, security out, MEDEVAC 9-line. A Blue Force team that finds him decides: leave, report, detain or escort to the mayor.",
+     "win": 30,
+     "who": "each",
+     "done": "pr",
+     "miss": {
+      "pts": 3,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90yv-99w7e12",
+   "ts": 1794256931623,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-17",
+     "label": "Mass casualty at the C6 cooperative",
+     "to": "both",
+     "from": "Marala Town",
+     "text": "The C6 farm cooperative at grid 18T TL 59668 21758 (40.81167, -77.84937), play square C6 reports several civilians hurt by the explosion near its fuel store. The manager asks any force for help. A second device is possible: keep 25 m from the blast seat. Your POC will describe the casualties when your team arrives. Triage, treat and send one MEDEVAC 9-line. If both forces arrive, coordinate on the liaison channel.",
+     "at": 79,
+     "lvl": null,
+     "note": "Send right after intel package 12 (HARVEST SMOKE) deploys. No props: the fireteam POC reads the casualty brief on its board. Correct triage order and a correct MEDEVAC 9-line: POC reports Helped a civilian (+5). Teams of both forces crowding each other: Provocation.",
+     "phase": "Phase 2",
+     "oc": "Read when your team arrives at C6. Three casualties near the fuel store. Casualty 1: man about 40, heavy bleeding from the left thigh, conscious and shouting (Urgent: tourniquet first). Casualty 2: woman about 25, burns to both hands and her face, breathing fast but talking (Priority). Casualty 3: farm worker about 60, walking around confused, small cut on the forehead (Routine). Check that the team stays 25 m from the blast seat, treats casualty 1 first, and sends one correct MEDEVAC 9-line. Then call Helped a civilian.",
+     "win": 15,
+     "who": "any",
+     "done": "civaid",
+     "miss": {
+      "pts": 0,
+      "hn": 5
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90z0-ex84zz2",
+   "ts": 1794256931628,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-18",
+     "label": "New key site: Pump Station",
+     "to": "both",
+     "from": "AOC",
+     "text": "The island’s water pump station at grid 18T TL 59657 22050 (40.81430, -77.84961), play square C2 is now a key site. Whoever holds it controls the town’s water supply. It can be captured with a code word earned at the site, like the other sites.",
+     "at": 80,
+     "lvl": null,
+     "note": "Before sending: Map tab, waypoint queue, Interest Point / Potential Mid Game New Site #4, Make site. Name it Pump Station, timer 15, and enter the Pump Station capture and defense words from the Station Keys. The station POCs must already be in place with the Pump Station cards and a tarp.",
+     "phase": "Phase 3"
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90z6-iba1ml4",
+   "ts": 1794256931634,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-12",
+     "label": "Helicopter down nearby",
+     "to": "B",
+     "from": "Local farmer (HUMINT)",
+     "text": "A farmer heard a helicopter come down hard south of the island. A man in a dark flight suit is lying near grid 18T TL 59596 21786 (40.81190, -77.85023), play square B6, holding his head. He is likely a Red Force crewman. Your commander decides: leave him, observe and report, or detain him. Detaining a foreign service member will raise tension. Carrying him unharmed to the mayor would be seen as a humanitarian act.",
+     "at": 81,
+     "lvl": null,
+     "note": "Detained and taken to Blue Force HQ: escalation +10 to Blue Force (adjustment, reason \"Detained Red Force crewman\"). Carried unharmed to the mayor: Blue Force diplomatic +10 (adjustment). Observed and reported only: SALUTE +1.",
+     "phase": "Phase 3"
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90zc-potghf8",
+   "ts": 1794256931640,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-19",
+     "label": "They came back to the footbridge",
+     "to": "B",
+     "from": "Local farmer (HUMINT)",
+     "text": "The farmer who watches the D6 footbridge says two men came back at first light and pushed a paint can under the near end at grid 18T TL 59719 21792 (40.81199, -77.84877), play square D6, then ran a wire into the reeds. Treat it as a live device. Keep every cadet at least 25 m away, cordon it, keep civilians out, and send an IED 9-line through your POC. Your POC confirms the 9-line before it is reported. Report within 15 minutes.",
+     "at": 92,
+     "lvl": null,
+     "note": "IED-C (reused after X6) at IP2 from 0725. Ties to the footbridge tip (intel package 6): the device that was taken away came back. Correct 9-line: Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED.",
+     "phase": "Phase 3",
+     "win": 15,
+     "who": "each",
+     "done": "ied",
+     "miss": {
+      "pts": 2,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90zi-i1n8oei",
+   "ts": 1794256931646,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-20",
+     "label": "They came back to the footbridge",
+     "to": "R",
+     "from": "Local farmer (HUMINT)",
+     "text": "A farmer near the E2 footbridge says two men came back at first light and pushed a box under the near end at grid 18T TL 59840 22017 (40.81405, -77.84743), play square E2, then ran a wire into the reeds. Treat it as a live device. Keep every cadet at least 25 m away, cordon it, keep civilians out, and send an IED 9-line through your POC. Your POC confirms the 9-line before it is reported. Report within 15 minutes.",
+     "at": 94,
+     "lvl": null,
+     "note": "IED-D (reused after X4) at IP7 from 0727. Ties to the footbridge tip (intel package 6). Correct 9-line: Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED.",
+     "phase": "Phase 3",
+     "win": 15,
+     "who": "each",
+     "done": "ied",
+     "miss": {
+      "pts": 2,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90zn-j8887c4",
+   "ts": 1794256931651,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-21",
+     "label": "Aid supply box off target (3)",
+     "to": "both",
+     "from": "Humanitarian aid office",
+     "text": "The last Humanitarian Aid Supply Box of the morning landed off target. The aircrew only has a grid: 18T TL 59681 21999. It is not marked on any map. The first force to find it by land navigation and deliver it intact to the Marala Town office earns the town’s thanks. Do not open it.",
+     "at": 95,
+     "lvl": null,
+     "note": "Humanitarian Aid Supply Box #3 at IP3 from 0732. Land navigation test: the grid is not marked on the board. First force to deliver it intact: adjustment, diplomatic +5. Counts only if it reaches the town before ENDEX.",
+     "phase": "Phase 3",
+     "win": 15,
+     "who": "any",
+     "done": "box",
+     "miss": {
+      "pts": 0,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90zs-oa5wmad",
+   "ts": 1794256931656,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-ps3",
+     "label": "PERSTAT 3 (before ENDEX)",
+     "to": "both",
+     "from": "AOC",
+     "text": "AOC: PERSTAT before ENDEX. Report the accountability of the whole force now on the AOC tab: force totals, every fireteam’s grid, headcount and status, and any cadet away from a fireteam (casualty collection point (Team HQ), liaison). Remarks must list any LMR, phone or training rifle not accounted for.",
+     "at": 95,
+     "lvl": null,
+     "note": "Same check as PERSTAT 1. Missing equipment named here should be recovered before the teams walk back at ENDEX.",
+     "phase": "Phase 3",
+     "win": 15,
+     "who": "each",
+     "done": "acct",
+     "miss": {
+      "pts": 5,
+      "hn": 0
+     }
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q90zx-epj30hm",
+   "ts": 1794256931661,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-22",
+     "label": "ENDEX warning and final SITREP",
+     "to": "both",
+     "from": "AOC",
+     "text": "ENDEX in 10 minutes. Finish current tasks and start no new contention. Your final SITREP to the AOC is due at {+105} on the AOC tab: sites held, PIRs answered, casualties and incidents, open issues. At ENDEX, hold in place and account for every cadet, LMR and training rifle.",
+     "at": 100,
+     "lvl": null,
+     "note": "Send at 0740. No POC action.",
+     "phase": "Phase 3"
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q9102-wpv02ru",
+   "ts": 1794256931666,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-c0",
+     "label": "The mayor’s warning",
+     "to": "both",
+     "from": "Marala Town",
+     "text": "The mayor is alarmed by the incidents of the last half hour. He warns both forces: one more act of provocation and he will close his office to the force responsible.",
+     "at": null,
+     "lvl": 1,
+     "note": "Send when escalation reaches Tension. No scoring; the warning is real: use the town office override if a force provokes again.",
+     "phase": "Contingency"
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q9108-btt62c9",
+   "ts": 1794256931672,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-c1",
+     "label": "AOC restraint",
+     "to": "both",
+     "from": "AOC",
+     "text": "AOC: both national commands are concerned about a wider conflict. The ROE are restrictive for the next 10 minutes. Start no new contention, show of force, jamming or strike. Keep fireteams at least 50 m from the other force and use the liaison channel before any move toward a held site.",
+     "at": null,
+     "lvl": 2,
+     "note": "Send when escalation reaches Crisis. AOC: set the ROE to Restrictive, 10 minutes, both forces, on the Command tab. The board then refuses those actions.",
+     "phase": "Contingency"
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q910d-bgpc0qu",
+   "ts": 1794256931677,
+   "type": "tpl_save",
+   "side": null,
+   "p": {
+    "tpl": {
+     "id": "tx-c2",
+     "label": "Operational pause",
+     "to": "both",
+     "from": "AOC",
+     "text": "OPERATIONAL PAUSE. Both governments have agreed to a 5-minute pause. All fireteams halt in place. Commanders exchange at least one liaison message proposing a way to lower tension before movement resumes.",
+     "at": null,
+     "lvl": 3,
+     "note": "Send at Brink. AOC: set the ROE to Operational pause, 5 minutes, both forces, on the Command tab. Resume after both forces send a liaison message.",
+     "phase": "Contingency"
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92ty-9cbdbv1",
+   "ts": 1794256934038,
+   "type": "prop_save",
+   "side": null,
+   "p": {
+    "prop": {
+     "id": "pr-ied-a",
+     "name": "IED-A",
+     "home": "Props kit (west and south props lead)",
+     "note": "Paint can with wires. Used only for the real IED tip in intel package 9 (Blue Force, Interest Point #1)."
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92u4-nd7dwjo",
+   "ts": 1794256934044,
+   "type": "prop_save",
+   "side": null,
+   "p": {
+    "prop": {
+     "id": "pr-ied-b",
+     "name": "IED-B",
+     "home": "Props kit (north and east props lead)",
+     "note": "Small box with wires. Used only for the real IED tip in intel package 9 (Red Force, Interest Point #9)."
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92u9-yxhj7mn",
+   "ts": 1794256934049,
+   "type": "prop_save",
+   "side": null,
+   "p": {
+    "prop": {
+     "id": "pr-ied-c",
+     "name": "IED-C",
+     "home": "Props kit (west and south props lead)",
+     "note": "Bag with a 10 m wire. Used at Point X6 (0600), then Interest Point #2 (0732)."
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92ue-szsv6as",
+   "ts": 1794256934054,
+   "type": "prop_save",
+   "side": null,
+   "p": {
+    "prop": {
+     "id": "pr-ied-d",
+     "name": "IED-D",
+     "home": "Props kit (north and east props lead)",
+     "note": "Flat board with wires. Used at Point X4 (0600), then Interest Point #7 (0734)."
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92uj-fdayg4r",
+   "ts": 1794256934059,
+   "type": "prop_save",
+   "side": null,
+   "p": {
+    "prop": {
+     "id": "pr-cache",
+     "name": "Cache crate",
+     "home": "Props kit (C/Capt Pascal)",
+     "note": "Crate with training weapons. Stays out until ENDEX."
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92uo-i36ke50",
+   "ts": 1794256934064,
+   "type": "prop_save",
+   "side": null,
+   "p": {
+    "prop": {
+     "id": "pr-aid-1",
+     "name": "Humanitarian Aid Supply Box #1",
+     "home": "Props kit (C/Capt Pascal)",
+     "note": "Teams carry it to the town office."
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92us-o0duxvd",
+   "ts": 1794256934068,
+   "type": "prop_save",
+   "side": null,
+   "p": {
+    "prop": {
+     "id": "pr-aid-2",
+     "name": "Humanitarian Aid Supply Box #2",
+     "home": "Props kit (west and south props lead)",
+     "note": "Teams carry it to the town office."
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92ux-f5911ur",
+   "ts": 1794256934073,
+   "type": "prop_save",
+   "side": null,
+   "p": {
+    "prop": {
+     "id": "pr-aid-3",
+     "name": "Humanitarian Aid Supply Box #3",
+     "home": "Props kit (north and east props lead)",
+     "note": "Teams carry it to the town office."
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92v2-0vxocii",
+   "ts": 1794256934078,
+   "type": "prop_save",
+   "side": null,
+   "p": {
+    "prop": {
+     "id": "pr-spare-ied",
+     "name": "Spare IED prop",
+     "home": "Props kit (north and east props lead)",
+     "note": "Use if an IED prop is missing or moved."
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92v7-elexi5v",
+   "ts": 1794256934083,
+   "type": "prop_save",
+   "side": null,
+   "p": {
+    "prop": {
+     "id": "pr-dummy-v21",
+     "name": "Rescue dummy",
+     "home": "Props kit (C/Capt Pascal)",
+     "note": "About 25 lb: a duffel or sandbags in a flight suit, helmet on. The only one: VIPER 21 first, then moved to X1 for ROTOR 3."
+    }
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92vd-asu1bhb",
+   "ts": 1794256934089,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "pkg",
+    "item": "c26-09b",
+    "uses": [
+     {
+      "id": "u-ied-a-tip09b",
+      "prop": "pr-ied-a",
+      "kind": "pkg",
+      "item": "c26-09b",
+      "label": "Real IED tip: the C5 roadside wall",
+      "loc": "Interest Point #1",
+      "pt": [
+       40.8120257,
+       -77.8497737
+      ],
+      "lead": 10,
+      "keep": 25,
+      "note": "Paint can at the base of the wall with a wire into the grass."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92vn-ck447f3",
+   "ts": 1794256934099,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "pkg",
+    "item": "c26-09r",
+    "uses": [
+     {
+      "id": "u-ied-b-tip09r",
+      "prop": "pr-ied-b",
+      "kind": "pkg",
+      "item": "c26-09r",
+      "label": "Real IED tip: the E2 roadside wall",
+      "loc": "Interest Point #9",
+      "pt": [
+       40.8144889,
+       -77.8471931
+      ],
+      "lead": 10,
+      "keep": 25,
+      "note": "Paint can at the base of the wall with a wire into the grass."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92vt-vw2jrkb",
+   "ts": 1794256934105,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "tpl",
+    "item": "tx-01",
+    "uses": [
+     {
+      "kind": "tpl",
+      "id": "u-ied-c-x6",
+      "prop": "pr-ied-c",
+      "item": "tx-01",
+      "label": "Command wire on the radar road",
+      "loc": "Point X6",
+      "pt": [
+       40.81344,
+       -77.84974
+      ],
+      "lead": 10,
+      "keep": 21,
+      "note": "Bag on the ground with the wire laid out into the grass. Leave before 0600."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92vy-cmggtc9",
+   "ts": 1794256934110,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "tpl",
+    "item": "tx-02",
+    "uses": [
+     {
+      "kind": "tpl",
+      "id": "u-ied-d-x4",
+      "prop": "pr-ied-d",
+      "item": "tx-02",
+      "label": "Pressure plate north of the airstrip",
+      "loc": "Point X4",
+      "pt": [
+       40.81455,
+       -77.84901
+      ],
+      "lead": 10,
+      "keep": 21,
+      "note": "Flat board half buried, wires showing. Leave before 0600."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92w3-gy8b8b8",
+   "ts": 1794256934115,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "tpl",
+    "item": "tx-04",
+    "uses": [
+     {
+      "kind": "tpl",
+      "id": "u-aid-1-ip5",
+      "prop": "pr-aid-1",
+      "item": "tx-04",
+      "label": "Supply box off target",
+      "loc": "Interest Point #5",
+      "pt": [
+       40.813461,
+       -77.8484354
+      ],
+      "lead": 8,
+      "keep": 97,
+      "note": "Visible from 20 m. Teams carry it to the town office; recover it there or at ENDEX."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92wd-p5td6hl",
+   "ts": 1794256934125,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "tpl",
+    "item": "tx-07",
+    "uses": [
+     {
+      "kind": "tpl",
+      "id": "u-dummy-v21-ip8",
+      "prop": "pr-dummy-v21",
+      "item": "tx-07",
+      "label": "VIPER 21 survivor",
+      "loc": "Interest Point #8",
+      "pt": [
+       40.8147961,
+       -77.8484056
+      ],
+      "lead": 5,
+      "keep": 40,
+      "note": "Lay him in the grass, helmet on. At 0704 C/Capt Pascal collects him from wherever he ends up (IP8, either HQ or the town office) and lays him at X1 by 0713 for ROTOR 3."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92ws-eokvp4l",
+   "ts": 1794256934140,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "tpl",
+    "item": "tx-11",
+    "uses": [
+     {
+      "kind": "tpl",
+      "id": "u-dummy-r3-x1",
+      "prop": "pr-dummy-v21",
+      "item": "tx-11",
+      "label": "ROTOR 3 survivor",
+      "loc": "Point X1",
+      "pt": [
+       40.8119016,
+       -77.8502342
+      ],
+      "lead": 5,
+      "keep": 40,
+      "note": "The same dummy as VIPER 21: C/Capt Pascal collects it after 0704 from wherever VIPER 21 ended up and lays it here by 0713, then releases this card. Lay him in the grass. Still here at ENDEX: C/1 Lt Jellison recovers him."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92wx-tpfx1eh",
+   "ts": 1794256934145,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "tpl",
+    "item": "tx-14",
+    "uses": [
+     {
+      "kind": "tpl",
+      "id": "u-cache-x5",
+      "prop": "pr-cache",
+      "item": "tx-14",
+      "label": "Militia weapons cache",
+      "loc": "Point X5",
+      "pt": [
+       40.81294,
+       -77.84832
+      ],
+      "lead": 9,
+      "keep": 51,
+      "note": "Leave it until ENDEX, even after a team clears it. C/Capt Pascal places it; C/Capt Nadeau recovers it at ENDEX."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92x4-6uasi6p",
+   "ts": 1794256934152,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "tpl",
+    "item": "tx-15",
+    "uses": [
+     {
+      "kind": "tpl",
+      "id": "u-aid-2-x3",
+      "prop": "pr-aid-2",
+      "item": "tx-15",
+      "label": "Supply box off target",
+      "loc": "Point X3",
+      "pt": [
+       40.81219,
+       -77.84833
+      ],
+      "lead": 8,
+      "keep": 45,
+      "note": "Visible from 20 m. Recover at ENDEX if no one delivered it."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92x9-bs5flwa",
+   "ts": 1794256934157,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "tpl",
+    "item": "tx-19",
+    "uses": [
+     {
+      "kind": "tpl",
+      "id": "u-ied-c-ip2",
+      "prop": "pr-ied-c",
+      "item": "tx-19",
+      "label": "Device back at the D6 footbridge",
+      "loc": "Interest Point #2",
+      "pt": [
+       40.8119932,
+       -77.8487706
+      ],
+      "lead": 7,
+      "keep": 16,
+      "note": "Under the near end of the footbridge, wire into the reeds. The footbridge tip closes at 0705, so the spot is clear."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92xd-kirkvg4",
+   "ts": 1794256934161,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "tpl",
+    "item": "tx-20",
+    "uses": [
+     {
+      "kind": "tpl",
+      "id": "u-ied-d-ip7",
+      "prop": "pr-ied-d",
+      "item": "tx-20",
+      "label": "Device back at the E2 footbridge",
+      "loc": "Interest Point #7",
+      "pt": [
+       40.814048,
+       -77.8474303
+      ],
+      "lead": 7,
+      "keep": 16,
+      "note": "Under the near end of the footbridge, wire into the reeds."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q92xj-f3g5jcf",
+   "ts": 1794256934167,
+   "type": "prop_uses",
+   "side": null,
+   "p": {
+    "kind": "tpl",
+    "item": "tx-21",
+    "uses": [
+     {
+      "kind": "tpl",
+      "id": "u-aid-3-ip3",
+      "prop": "pr-aid-3",
+      "item": "tx-21",
+      "label": "Supply box off target",
+      "loc": "Interest Point #3",
+      "pt": [
+       40.8138447,
+       -77.84931
+      ],
+      "lead": 6,
+      "keep": 12,
+      "note": "Hidden in the grass at the grid, visible from about 10 m. The grid is given to the forces without a map marker."
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "mw9q94rm-zgn4ejg",
+   "ts": 1794256936546,
+   "type": "injq_add",
+   "side": null,
+   "p": {
+    "items": [
+     {
+      "qid": "qmw9q94rl-vd26w0u",
+      "tpl": {
+       "id": "tx-00",
+       "label": "STARTEX: orders and battle rhythm",
+       "text": "STARTEX. Your commander’s intent, PIRs and the ROE are on the AOC tab of your board. Read them before you move. The Marala First Front is active across the island: report every suspected device with an IED 9-line and every enemy team with a SALUTE. Battle rhythm: commander’s update briefs to the AOC at {+15}, {+45} and {+85}, change of command at {+60}, final SITREP at {+105}. Authenticate any unexpected order on your LMR net with your challenge and password. Escalation is your commander’s decision; avoid incidents.",
+       "to": "both",
+       "from": "AOC",
+       "at": 0,
+       "lvl": null,
+       "note": "Send at STARTEX. No POC action. Check that both JFACCs open the AOC tab.",
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rl-ip6x184",
+      "tpl": {
+       "id": "tx-01",
+       "label": "Command wire on the radar road",
+       "text": "A Coalition patrol reports a canvas bag at grid 18T TL 59643 21955 (40.81344, -77.84974), play square C3, on the approach to Radar Ridge, with a thin wire running from it into the grass. Treat it as a live device. Keep every cadet at least 25 m away, cordon it, keep civilians out, and send an IED 9-line through your POC. Your POC confirms the 9-line before it is reported. Report within 20 minutes.",
+       "to": "B",
+       "from": "Patrol report (HUMINT)",
+       "at": 4,
+       "lvl": null,
+       "note": "IED-C (bag with a 10 m wire) at X6 before STARTEX. Correct cordon and 9-line: POC reports Real IED cleared (+2, diplomatic +5). A team that walks onto the prop without a cordon: Hit by an IED.",
+       "win": 20,
+       "who": "each",
+       "done": "ied",
+       "miss": {
+        "pts": 2,
+        "hn": 0
+       },
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-4t144y2",
+      "tpl": {
+       "id": "tx-02",
+       "label": "Pressure plate north of the airstrip",
+       "text": "A shepherd says his dog would not go near a flat board half buried at grid 18T TL 59708 22077 (40.81455, -77.84901), play square C2, north of the airstrip. He saw a man bury it at dawn and walk away fast. Treat it as a live device. Keep every cadet at least 25 m away, cordon it, keep civilians out, and send an IED 9-line through your POC. Your POC confirms the 9-line before it is reported. Report within 20 minutes.",
+       "to": "R",
+       "from": "Local shepherd (HUMINT)",
+       "at": 6,
+       "lvl": null,
+       "note": "IED-D (flat board with wires) at X4 before STARTEX. Correct cordon and 9-line: Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED.",
+       "win": 20,
+       "who": "each",
+       "done": "ied",
+       "miss": {
+        "pts": 2,
+        "hn": 0
+       },
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-cximoce",
+      "tpl": {
+       "id": "tx-03",
+       "label": "The mayor’s invitation",
+       "text": "The mayor invites each force to Town Hall at grid 18T TL 59724 21852 (40.81254, -77.84874), play square D5. Blue Force: one team between {+22} and {+32}. Red Force: one team between {+34} and {+44}. Weapons stay outside the hall entrance. The mayor will ask what your force is doing to protect the island’s farmers and fishermen. Come prepared to answer.",
+       "to": "both",
+       "from": "Marala Town",
+       "at": 10,
+       "lvl": null,
+       "note": "C/Mock plays the mayor. Respectful answer and weapons outside: POC reports Good conduct (+5); the mayor gives the town code word. Weapons carried in, or the other force’s time ignored: Poor conduct (−5). C/Vernacchio runs the town office records for intel package 3 in the same window.",
+       "win": 34,
+       "who": "each",
+       "done": "conduct",
+       "miss": {
+        "pts": 0,
+        "hn": 5
+       },
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-j8v620x",
+      "tpl": {
+       "id": "tx-04",
+       "label": "Aid supply box off target (1)",
+       "text": "A humanitarian airdrop missed its drop zone. One Humanitarian Aid Supply Box landed near grid 18T TL 59753 21954 (40.81346, -77.84844), play square D3. The mayor asks for it to reach the Marala Town office. The first force to deliver it intact earns the town’s thanks. Do not open it.",
+       "to": "both",
+       "from": "Humanitarian aid office",
+       "at": 18,
+       "lvl": null,
+       "note": "Humanitarian Aid Supply Box #1 at IP5. First force to carry it to the town office intact: adjustment, diplomatic +5, reason \"Aid supply box delivered\". Opened or damaged: Poor conduct.",
+       "win": 25,
+       "who": "any",
+       "done": "box",
+       "miss": {
+        "pts": 0,
+        "hn": 0
+       },
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-59xfwq6",
+      "tpl": {
+       "id": "tx-05s",
+       "label": "LMR spoof: fake order (Blue Force)",
+       "text": "White Force only: this inject sends a fake order in the Blue Force C2's name to every Blue Force fireteam phone. The forces do not see this text.",
+       "to": "B",
+       "from": "AOC",
+       "at": 24,
+       "lvl": null,
+       "note": "The fake order shows on every Blue Force fireteam phone under Orders from your C2, exactly like a real order. The Blue Force C2 does not see this inject. A team that taps Report as fake within 10 minutes earns +2 points (Spoof detected) on its own. A team that moves on it loses time; no penalty. The Order Spoof Warning goes out first, at 0622. If a team reports it on the LMR instead, use They did it on the response window.",
+       "win": 10,
+       "who": "each",
+       "done": "spoof",
+       "miss": {
+        "pts": 0,
+        "hn": 0
+       },
+       "spoof": "All Blue Force teams, this is Blue headquarters. Leave your positions and move to the Fuel Depot now. Acknowledge.",
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-zl54x35",
+      "tpl": {
+       "id": "tx-06s",
+       "label": "LMR spoof: fake order (Red Force)",
+       "text": "White Force only: this inject sends a fake order in the Red Force C2's name to every Red Force fireteam phone. The forces do not see this text.",
+       "to": "R",
+       "from": "AOC",
+       "at": 27,
+       "lvl": null,
+       "note": "Same as the Blue Force fake order. The Red Force C2 does not see it. The Order Spoof Warning goes out first, at 0625.",
+       "win": 10,
+       "who": "each",
+       "done": "spoof",
+       "miss": {
+        "pts": 0,
+        "hn": 0
+       },
+       "spoof": "All Red Force teams, this is Red headquarters. Pull back to the Harbor now. Acknowledge.",
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-f36v2ng",
+      "tpl": {
+       "id": "tx-05",
+       "label": "Order Spoof Warning (Blue Force)",
+       "text": "AOC: SIGINT indicates the First Front has a handset on your LMR net and may send false orders in your headquarters’ name. Challenge every unexpected order with your challenge and password. Report any false transmission to your C2 and the AOC. Fireteams: tap Report as fake on any board order your C2 did not send.",
+       "to": "B",
+       "from": "AOC",
+       "at": 22,
+       "lvl": null,
+       "note": "Send it from the queue at 0622, two minutes before the fake order (LMR spoof: fake order, Blue Force) at 0624, so the fireteams know to check unexpected orders. If someone on the AOC or White Force can key an LMR, they may also read the fake order on the Blue Force fireteam channel at 0624, but the board version is what scores.",
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-ekfuj0g",
+      "tpl": {
+       "id": "tx-06",
+       "label": "Order Spoof Warning (Red Force)",
+       "text": "AOC: SIGINT indicates the First Front has a handset on your LMR net and may send false orders in your headquarters’ name. Challenge every unexpected order with your challenge and password. Report any false transmission to your C2 and the AOC. Fireteams: tap Report as fake on any board order your C2 did not send.",
+       "to": "R",
+       "from": "AOC",
+       "at": 25,
+       "lvl": null,
+       "note": "Send it from the queue at 0625, two minutes before the fake order (LMR spoof: fake order, Red Force) at 0627. Same as the Blue Force warning.",
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-cyiseuv",
+      "tpl": {
+       "id": "tx-ps1",
+       "label": "PERSTAT 1",
+       "text": "AOC: PERSTAT. Report the accountability of your whole force now on the AOC tab: force totals (accounted for and unaccounted for, and who is unaccounted for and why), then every fireteam’s grid, headcount and status. A 6-digit MGRS grid is enough; a more precise grid is fine. Get the grids from your teams over the LMR net; do not guess. The AOC checks the report against where your teams actually are and returns any report that does not match. On time and accepted: +5 points. Not sent: −5.",
+       "to": "both",
+       "from": "AOC",
+       "at": 30,
+       "lvl": null,
+       "note": "No props. +5 points when the force sends it on time and the White Force Director approves it; −5 if nothing is sent by the deadline; sent late: 0. When a force sends its PERSTAT the board sends a silent position request to every fireteam of that force. The White Force Director checks each team’s reported grid against its GPS fix, approves it to the AOC or returns it with a note. The AOC then acknowledges it.",
+       "win": 15,
+       "who": "each",
+       "done": "acct",
+       "miss": {
+        "pts": 5,
+        "hn": 0
+       },
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-my134r3",
+      "tpl": {
+       "id": "tx-07",
+       "label": "Personnel recovery: VIPER 21",
+       "text": "PERSONNEL RECOVERY. An F-16, call sign VIPER 21, went down north of the island. The pilot ejected; his beacon places him near grid 18T TL 59760 22102 (40.81480, -77.84841), play square D1, on the Red Force side. He is injured and cannot walk. Your force HQ has a litter. Bring it to him and move him safely. Treat him, send a MEDEVAC 9-line, then bring him to your casualty collection point (Team HQ). Avoid contact with Red Force.",
+       "to": "B",
+       "from": "Personnel recovery cell",
+       "at": 34,
+       "lvl": null,
+       "note": "Rescue dummy at IP8 from 0630. It is the only dummy: C/Capt Pascal collects it when this window closes (0704) and lays it at X1 by 0713 for ROTOR 3. Recovered to Blue Force HQ after a correct MEDEVAC 9-line: adjustment +3 points (reason \"Personnel recovery\"). No MEDEVAC 9-line: no points. If Red Force reaches him first, see the Red Force sighting. Each force HQ has one litter from STARTEX.",
+       "oc": "VIPER 21 (dummy at IP8). Check that the team keeps security out while it moves him safely, and sends a MEDEVAC 9-line. A Red Force team that finds him decides: leave him, report him, detain him, or escort him to the mayor.",
+       "win": 30,
+       "who": "each",
+       "done": "pr",
+       "miss": {
+        "pts": 3,
+        "hn": 0
+       },
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-vx8vqsl",
+      "tpl": {
+       "id": "tx-08",
+       "label": "Parachute sighting",
+       "text": "A herder saw a parachute come down near grid 18T TL 59760 22102 (40.81480, -77.84841), play square D1 a few minutes ago. A man in a flight suit is lying in the grass and not moving much. He is likely a Coalition pilot. Your commander decides: leave him, observe and report, or detain him. Detaining a foreign service member will raise tension. Carrying him unharmed to the mayor at Marala Town would be seen as a humanitarian act.",
+       "to": "R",
+       "from": "Local herder (HUMINT)",
+       "at": 36,
+       "lvl": null,
+       "note": "Detained and taken to Red Force HQ: escalation +10 to Red Force (adjustment, reason \"Detained Coalition pilot\"). Carried unharmed to the town office and handed to the mayor: Red Force diplomatic +10 (adjustment); Blue Force may collect him there. Observed and reported only: SALUTE +1.",
+       "phase": "Phase 1"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-rrykvic",
+      "tpl": {
+       "id": "tx-09",
+       "label": "Militia mortar team",
+       "text": "Two mortar rounds landed in the open 150 m from your Radar Ridge position. No one was hurt. Counter-battery radar puts the firing point near grid 18T TL 59681 21999 (40.81384, -77.84931). The team is expected to fire again and move within 25 minutes. Find it and fix it with your UAV, a drone flight or a team’s SALUTE or activity report within about 80 m of that grid, then strike it with a correct strike 9-line within 10 minutes of the fix. It is marked on your map as a militia target.",
+       "to": "B",
+       "from": "Counter-battery radar (AOC)",
+       "at": 42,
+       "lvl": null,
+       "note": "No props. The target is on the board: it shows faintly on the Blue Force map until fixed. A UAV launch fixes it automatically; the drone operator can fix it when answering a drone flight over that grid; a Blue Force SALUTE or activity report within about 80 m of the grid also fixes it. Strike approved by the White Force on a correct 9-line: +3 points, diplomatic +2 (−10 if the force says civilians are near). Gone at 0707 if not struck.",
+       "oc": "Militia mortar team (C3, IP3). If your Blue Force team reaches IP3 before 0707 and the target is not destroyed, read: \"A shallow pit with a mortar base plate, fresh blast marks and three sets of footprints heading north. The crew left minutes ago.\" The team should send a SALUTE or activity report with the grid where it is standing; that fixes the target for its C2.",
+       "mt": {
+        "label": "Militia mortar team",
+        "pt": [
+         40.8138447,
+         -77.84931
+        ],
+        "life": 25,
+        "grid": "C3"
+       },
+       "win": 25,
+       "who": "each",
+       "done": "mt",
+       "miss": {
+        "pts": 0,
+        "hn": 0
+       },
+       "phase": "Phase 2"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-411js96",
+      "tpl": {
+       "id": "tx-10",
+       "label": "Militia rocket launch site",
+       "text": "A small rocket was fired over the Fuel Depot from the east and landed in the water. No one was hurt. Air defense radar puts the launch point near grid 18T TL 59854 21940 (40.81336, -77.84723). The crew is expected to fire again and move within 25 minutes. Find it and fix it with your UAV, a drone flight or a team’s SALUTE or activity report within about 80 m of that grid, then strike it with a correct strike 9-line within 10 minutes of the fix. It is marked on your map as a militia target.",
+       "to": "R",
+       "from": "Air defense radar (AOC)",
+       "at": 44,
+       "lvl": null,
+       "note": "No props. Same rules as the Blue Force mortar team: fixed by UAV, a drone flight answered with the fix, or a Red Force report within about 80 m of the grid. Strike approved on a correct 9-line: +3 points, diplomatic +2 (−10 if civilians are near). Gone at 0709 if not struck.",
+       "oc": "Militia rocket launch site (E3, IP6). If your Red Force team reaches IP6 before 0709 and the target is not destroyed, read: \"A launch rail made of pipe, scorched grass and a cut wire. Two men on a motorbike left toward the road a few minutes ago.\" The team should send a SALUTE or activity report with the grid where it is standing; that fixes the target for its C2.",
+       "mt": {
+        "label": "Militia rocket launch site",
+        "pt": [
+         40.813361,
+         -77.847228
+        ],
+        "life": 25,
+        "grid": "E3"
+       },
+       "win": 25,
+       "who": "each",
+       "done": "mt",
+       "miss": {
+        "pts": 0,
+        "hn": 0
+       },
+       "phase": "Phase 2"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-dnchwfi",
+      "tpl": {
+       "id": "tx-13",
+       "label": "Change of command",
+       "text": "CHANGE OF COMMAND. Effective now, in every unit the deputy assumes the lead role and the outgoing leader becomes the deputy. Brief your replacement: site status, teams out and their tasks, PIR progress, pending reports, statements and aid packages. The new JFACC confirms assumption of command to the AOC by {+65} (AOC tab, Ask the AOC, Something else).",
+       "to": "both",
+       "from": "AOC",
+       "at": 60,
+       "lvl": null,
+       "note": "Send at 0700. The AOC checks that both new JFACCs confirm by 0705. Form 2 evaluators stay with the same role and evaluate the new leader from 0700.",
+       "win": 5,
+       "who": "each",
+       "done": "aoc",
+       "miss": {
+        "pts": 0,
+        "hn": 0
+       },
+       "phase": "Phase 2"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-5rmbp5e",
+      "tpl": {
+       "id": "tx-14",
+       "label": "Militia weapons cache",
+       "text": "An intercepted call places a First Front weapons cache at grid 18T TL 59761 21896 (40.81294, -77.84832), play square D4, between Marala Town and the Fuel Depot. The caller said the cache is \"watched and wired.\" The first force to remove it, either by clearing it on foot with a cordon and an IED 9-line for any device found, or by destroying it with a correct strike 9-line and a cache strike, takes it out of play. A strike this close to the town will be watched by everyone: say honestly whether civilians are near.",
+       "to": "both",
+       "from": "Intercepted call (SIGINT)",
+       "at": 64,
+       "lvl": null,
+       "note": "Cache crate at X5 from 0655. Cleared on foot with a cordon: POC reports Militia cache cleared (+5, diplomatic +5). Walked in without a cordon: Hit by an IED. Strike: correct strike 9-line and the force’s cache strike; the White Force rules it destroyed. One clearance only.",
+       "win": 45,
+       "who": "any",
+       "done": "cache",
+       "miss": {
+        "pts": 0,
+        "hn": 0
+       },
+       "phase": "Phase 2"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-d4yrb0g",
+      "tpl": {
+       "id": "tx-ps2",
+       "label": "PERSTAT 2 (new commander)",
+       "text": "AOC: PERSTAT. The new commander reports the accountability of the whole force now on the AOC tab: force totals, then every fireteam’s grid, headcount and status, gathered over the LMR net. Account for every cadet who changed role or team at the Change of Command.",
+       "to": "both",
+       "from": "AOC",
+       "at": 68,
+       "lvl": null,
+       "note": "Same check as PERSTAT 1. This one tests the new commander’s grip on the force eight minutes after taking command.",
+       "win": 15,
+       "who": "each",
+       "done": "acct",
+       "miss": {
+        "pts": 5,
+        "hn": 0
+       },
+       "phase": "Phase 2"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-jjd2pwi",
+      "tpl": {
+       "id": "tx-15",
+       "label": "Aid supply box off target (2)",
+       "text": "A second Humanitarian Aid Supply Box came down off target near grid 18T TL 59757 21813 (40.81219, -77.84833), play square D5. The first force to deliver it intact to the Marala Town office earns the town’s thanks. Do not open it.",
+       "to": "both",
+       "from": "Humanitarian aid office",
+       "at": 70,
+       "lvl": null,
+       "note": "Humanitarian Aid Supply Box #2 at X3. First force to deliver it intact: adjustment, diplomatic +5, reason \"Aid supply box delivered\".",
+       "win": 25,
+       "who": "any",
+       "done": "box",
+       "miss": {
+        "pts": 0,
+        "hn": 0
+       },
+       "phase": "Phase 2"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-dtgnngk",
+      "tpl": {
+       "id": "tx-16b",
+       "label": "Militia technical on the move",
+       "text": "AOC: a First Front pickup with a heavy machine gun in the bed has stopped near grid 18T TL 59643 21955 (40.81344, -77.84974), between Radar Ridge and the Airstrip. It is expected to move within 15 minutes. Either force may fix it with a UAV, a drone flight or a SALUTE or activity report within about 80 m of that grid, then strike it with a correct strike 9-line within 10 minutes of the fix. Only the first strike counts. Coordinate on the liaison channel so you do not strike each other’s teams.",
+       "to": "both",
+       "from": "AOC",
+       "at": 76,
+       "lvl": null,
+       "note": "No props. Shared militia target for both forces. First force to strike it on a correct 9-line: +3 points, diplomatic +2 (−10 if civilians are near). Gone at 0731 if not struck. Watch for a force striking near the other force’s team: crowding is a Provocation call.",
+       "oc": "Militia technical (C3, X6). If your team reaches X6 before it is destroyed, read: \"A dark pickup with a mounted gun under a tarp, engine running, two men smoking beside it. They have not seen you.\" The team should stay hidden and send a SALUTE with the grid where it is standing.",
+       "mt": {
+        "label": "Militia technical (armed pickup)",
+        "pt": [
+         40.81344,
+         -77.84974
+        ],
+        "life": 15,
+        "grid": "C3"
+       },
+       "win": 15,
+       "who": "any",
+       "done": "mt",
+       "miss": {
+        "pts": 0,
+        "hn": 0
+       },
+       "phase": "Phase 2"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-vdc2urt",
+      "tpl": {
+       "id": "tx-11",
+       "label": "Personnel recovery: ROTOR 3",
+       "text": "PERSONNEL RECOVERY. A Red Force helicopter, call sign ROTOR 3, made a hard landing south of the island. A crewman with a head injury is near grid 18T TL 59596 21786 (40.81190, -77.85023), play square B6, on the Blue Force side. Your force HQ has a litter. Bring it to him and move him safely. Treat him, send a MEDEVAC 9-line, then bring him to your casualty collection point (Team HQ). Avoid contact with Blue Force.",
+       "to": "R",
+       "from": "Personnel recovery cell",
+       "at": 78,
+       "lvl": null,
+       "note": "Rescue dummy at X1 from 0713, the same dummy as VIPER 21 (C/Capt Pascal moves it after 0704). Recovered to Red Force HQ after a correct MEDEVAC 9-line: adjustment +3 points (reason \"Personnel recovery\"). The carry is long: about 15 minutes. Each force HQ has one litter from STARTEX.",
+       "oc": "ROTOR 3 (dummy at X1). Same checks as VIPER 21: a safe carry, security out, MEDEVAC 9-line. A Blue Force team that finds him decides: leave, report, detain or escort to the mayor.",
+       "win": 30,
+       "who": "each",
+       "done": "pr",
+       "miss": {
+        "pts": 3,
+        "hn": 0
+       },
+       "phase": "Phase 2"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-0ge7zrk",
+      "tpl": {
+       "id": "tx-17",
+       "label": "Mass casualty at the C6 cooperative",
+       "text": "The C6 farm cooperative at grid 18T TL 59668 21758 (40.81167, -77.84937), play square C6 reports several civilians hurt by the explosion near its fuel store. The manager asks any force for help. A second device is possible: keep 25 m from the blast seat. Your POC will describe the casualties when your team arrives. Triage, treat and send one MEDEVAC 9-line. If both forces arrive, coordinate on the liaison channel.",
+       "to": "both",
+       "from": "Marala Town",
+       "at": 79,
+       "lvl": null,
+       "note": "Send right after intel package 12 (HARVEST SMOKE) deploys. No props: the fireteam POC reads the casualty brief on its board. Correct triage order and a correct MEDEVAC 9-line: POC reports Helped a civilian (+5). Teams of both forces crowding each other: Provocation.",
+       "oc": "Read when your team arrives at C6. Three casualties near the fuel store. Casualty 1: man about 40, heavy bleeding from the left thigh, conscious and shouting (Urgent: tourniquet first). Casualty 2: woman about 25, burns to both hands and her face, breathing fast but talking (Priority). Casualty 3: farm worker about 60, walking around confused, small cut on the forehead (Routine). Check that the team stays 25 m from the blast seat, treats casualty 1 first, and sends one correct MEDEVAC 9-line. Then call Helped a civilian.",
+       "win": 15,
+       "who": "any",
+       "done": "civaid",
+       "miss": {
+        "pts": 0,
+        "hn": 5
+       },
+       "phase": "Phase 2"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-qyr2v8i",
+      "tpl": {
+       "id": "tx-18",
+       "label": "New key site: Pump Station",
+       "text": "The island’s water pump station at grid 18T TL 59657 22050 (40.81430, -77.84961), play square C2 is now a key site. Whoever holds it controls the town’s water supply. It can be captured with a code word earned at the site, like the other sites.",
+       "to": "both",
+       "from": "AOC",
+       "at": 80,
+       "lvl": null,
+       "note": "Before sending: Map tab, waypoint queue, Interest Point / Potential Mid Game New Site #4, Make site. Name it Pump Station, timer 15, and enter the Pump Station capture and defense words from the Station Keys. The station POCs must already be in place with the Pump Station cards and a tarp.",
+       "phase": "Phase 3"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-3bx577x",
+      "tpl": {
+       "id": "tx-12",
+       "label": "Helicopter down nearby",
+       "text": "A farmer heard a helicopter come down hard south of the island. A man in a dark flight suit is lying near grid 18T TL 59596 21786 (40.81190, -77.85023), play square B6, holding his head. He is likely a Red Force crewman. Your commander decides: leave him, observe and report, or detain him. Detaining a foreign service member will raise tension. Carrying him unharmed to the mayor would be seen as a humanitarian act.",
+       "to": "B",
+       "from": "Local farmer (HUMINT)",
+       "at": 81,
+       "lvl": null,
+       "note": "Detained and taken to Blue Force HQ: escalation +10 to Blue Force (adjustment, reason \"Detained Red Force crewman\"). Carried unharmed to the mayor: Blue Force diplomatic +10 (adjustment). Observed and reported only: SALUTE +1.",
+       "phase": "Phase 3"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-y22cxgz",
+      "tpl": {
+       "id": "tx-19",
+       "label": "They came back to the footbridge",
+       "text": "The farmer who watches the D6 footbridge says two men came back at first light and pushed a paint can under the near end at grid 18T TL 59719 21792 (40.81199, -77.84877), play square D6, then ran a wire into the reeds. Treat it as a live device. Keep every cadet at least 25 m away, cordon it, keep civilians out, and send an IED 9-line through your POC. Your POC confirms the 9-line before it is reported. Report within 15 minutes.",
+       "to": "B",
+       "from": "Local farmer (HUMINT)",
+       "at": 92,
+       "lvl": null,
+       "note": "IED-C (reused after X6) at IP2 from 0725. Ties to the footbridge tip (intel package 6): the device that was taken away came back. Correct 9-line: Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED.",
+       "win": 15,
+       "who": "each",
+       "done": "ied",
+       "miss": {
+        "pts": 2,
+        "hn": 0
+       },
+       "phase": "Phase 3"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-fikzl5y",
+      "tpl": {
+       "id": "tx-20",
+       "label": "They came back to the footbridge",
+       "text": "A farmer near the E2 footbridge says two men came back at first light and pushed a box under the near end at grid 18T TL 59840 22017 (40.81405, -77.84743), play square E2, then ran a wire into the reeds. Treat it as a live device. Keep every cadet at least 25 m away, cordon it, keep civilians out, and send an IED 9-line through your POC. Your POC confirms the 9-line before it is reported. Report within 15 minutes.",
+       "to": "R",
+       "from": "Local farmer (HUMINT)",
+       "at": 94,
+       "lvl": null,
+       "note": "IED-D (reused after X4) at IP7 from 0727. Ties to the footbridge tip (intel package 6). Correct 9-line: Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED.",
+       "win": 15,
+       "who": "each",
+       "done": "ied",
+       "miss": {
+        "pts": 2,
+        "hn": 0
+       },
+       "phase": "Phase 3"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-dusozjv",
+      "tpl": {
+       "id": "tx-21",
+       "label": "Aid supply box off target (3)",
+       "text": "The last Humanitarian Aid Supply Box of the morning landed off target. The aircrew only has a grid: 18T TL 59681 21999. It is not marked on any map. The first force to find it by land navigation and deliver it intact to the Marala Town office earns the town’s thanks. Do not open it.",
+       "to": "both",
+       "from": "Humanitarian aid office",
+       "at": 95,
+       "lvl": null,
+       "note": "Humanitarian Aid Supply Box #3 at IP3 from 0732. Land navigation test: the grid is not marked on the board. First force to deliver it intact: adjustment, diplomatic +5. Counts only if it reaches the town before ENDEX.",
+       "win": 15,
+       "who": "any",
+       "done": "box",
+       "miss": {
+        "pts": 0,
+        "hn": 0
+       },
+       "phase": "Phase 3"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-i6ilvx8",
+      "tpl": {
+       "id": "tx-ps3",
+       "label": "PERSTAT 3 (before ENDEX)",
+       "text": "AOC: PERSTAT before ENDEX. Report the accountability of the whole force now on the AOC tab: force totals, every fireteam’s grid, headcount and status, and any cadet away from a fireteam (casualty collection point (Team HQ), liaison). Remarks must list any LMR, phone or training rifle not accounted for.",
+       "to": "both",
+       "from": "AOC",
+       "at": 95,
+       "lvl": null,
+       "note": "Same check as PERSTAT 1. Missing equipment named here should be recovered before the teams walk back at ENDEX.",
+       "win": 15,
+       "who": "each",
+       "done": "acct",
+       "miss": {
+        "pts": 5,
+        "hn": 0
+       },
+       "phase": "Phase 3"
+      }
+     },
+     {
+      "qid": "qmw9q94rm-pten40y",
+      "tpl": {
+       "id": "tx-22",
+       "label": "ENDEX warning and final SITREP",
+       "text": "ENDEX in 10 minutes. Finish current tasks and start no new contention. Your final SITREP to the AOC is due at {+105} on the AOC tab: sites held, PIRs answered, casualties and incidents, open issues. At ENDEX, hold in place and account for every cadet, LMR and training rifle.",
+       "to": "both",
+       "from": "AOC",
+       "at": 100,
+       "lvl": null,
+       "note": "Send at 0740. No POC action.",
+       "phase": "Phase 3"
+      }
+     }
+    ]
+   },
+   "by": "W"
+  },
+  {
+   "id": "pumpplan-mw9q94rm",
+   "ts": 1794256936547,
+   "type": "site_plan",
+   "side": null,
+   "by": "W",
+   "p": {
+    "k": "xpumpstation",
+    "name": "Pump Station",
+    "pt": [
+     40.8143,
+     -77.84961
+    ],
+    "grid": "59657 22050",
+    "square": "C2",
+    "col": 2,
+    "row": 1,
+    "cap": [
+     "1le9scmq8g1",
+     "1312xxz27ba",
+     "1gxt4od813t",
+     "h202k6fsiz"
+    ],
+    "def": [
+     "1j5bkkxftvd",
+     "1cozx6rjll0",
+     "m3p2fney0w"
+    ],
+    "min": 15,
+    "from": "poi-0-3",
+    "tid": "tx-18"
+   }
+  }
+ ],
+ "aar": null
+}
