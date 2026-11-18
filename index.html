@@ -521,6 +521,8 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .ocinj-here,:root:not([data-theme="light"]) .ocinj-tag{color:#0f1f15}}
 .ocinj-head{display:flex;flex-direction:column;gap:2px}
 .ocinj-head b{font-size:17px}
+.ocinj-read{border-left:5px solid var(--good);background:var(--panel-2);padding:8px 10px;border-radius:6px}
+.ocinj-read .ocinj-rl{font-size:14px;font-weight:700}
 .ocinj-read p{font-size:18px;line-height:1.45;margin:4px 0 0}
 .ocinj-sec p{margin:4px 0 0}
 .ocinj-cur details summary{cursor:pointer}
@@ -5159,8 +5161,8 @@ function ocScenes(S, v, o){
   let html = '';
   if (cur){
     const read = cur.scene || cur.oc;
-    html += '<div class="ocinj-cur' + (cur.near ? ' here' : '') + '" data-ocinjcur="' + esc(cur.id) + '">' + (cur.near ? '<div class="ocinj-here" role="alert">Your team is here. GPS puts you about ' + cur.d + ' m from it.</div>' : '<div class="ocinj-manual">Opened by you, not by GPS</div>') + (cur.q.spoof ? '<div class="ocinj-here" role="note">Do not tell the team. Watch whether they question this order or tap Report as fake. The fake order they got: “' + esc(fillT(cur.q.spoof)) + '”</div>' : '') + '<div class="ocinj-head"><b>' + esc(cur.q.label) + '</b><span class="small">' + esc(where(cur)) + '</span><span class="small">' + esc(time(cur)) + '</span></div>' + dline(cur) +
-      (cur.scene ? '<div class="ocinj-read"><span class="small muted">Read aloud to the team</span><p>“' + esc(cur.scene) + '”</p></div>' : '') +
+    html += '<div class="ocinj-cur' + (cur.near ? ' here' : '') + '" data-ocinjcur="' + esc(cur.id) + '">' + (cur.near ? '<div class="ocinj-here" role="alert">Your team is here. GPS puts you about ' + cur.d + ' m from it.</div>' : '<div class="ocinj-manual">Opened by you, not by GPS</div>') + (cur.q.spoof ? '<div class="ocinj-here" role="note">Do not tell the team. Watch whether they question this order or tap Report as fake. The fake order they got: “' + esc(fillT(cur.q.spoof)) + '”</div>' : '') + '<div class="ocinj-head"><b>' + esc(cur.q.label) + '</b><span class="small">' + esc(where(cur)) + '</span><span class="small">' + esc(time(cur)) + '</span></div>' + (cur.near ? '' : dline(cur)) +
+      (cur.scene ? '<div class="ocinj-read"><span class="ocinj-rl">Read aloud to the team</span><p>“' + esc(cur.scene) + '”</p></div>' : '') +
       (cur.oc ? '<div class="ocinj-sec"><span class="small muted">' + (cur.scene ? 'Your notes' : 'What you do and say') + '</span><p>' + esc(cur.oc) + '</p></div>' : '') +
       (!read ? '<div class="ocinj-sec"><span class="small muted">The scenario (what the team’s C2 received)</span><p>' + esc(cur.text) + '</p></div>' : '') +
       (cur.needs ? '<div class="ocinj-sec"><span class="small muted">The team needs</span><p>' + esc(cur.needs) + '</p></div>' : '') +
