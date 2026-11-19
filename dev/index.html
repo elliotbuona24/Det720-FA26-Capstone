@@ -530,6 +530,27 @@ table.score tr.total td{font-weight:700;border-bottom:none;font-size:15px}
 .aibox summary{cursor:pointer}
 .ocinj-dist{margin-top:4px;font-size:14px}.ocinj-dist b{font-weight:700}
 .ocinj-btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;flex:0 1 auto}
+.octm h3{font-size:15px;margin:0 0 4px}
+.octm-sec+.octm-sec{border-top:1px solid var(--line);padding-top:8px}
+.octm-row{display:flex;gap:8px;align-items:flex-start;padding:6px 0}
+.octm-row+.octm-row{border-top:1px dashed var(--line)}
+.octm-row .grow{min-width:0}
+.octm-where{font-size:16px;font-weight:700;line-height:1.3}
+.octm-next{border-left:5px solid var(--warn);padding-left:8px}
+.octm-done{color:var(--muted)}
+.octm-done b{color:var(--ink)}
+.ocinj-calls{border:1px solid var(--line);border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:8px}
+.ocinj-calls .evgrid button{font-size:15px;padding:10px 12px;min-height:48px}
+.ocinj-calls .evgrid button[disabled]{opacity:1;border-style:dashed;background:var(--panel-2);color:var(--muted)}
+.ocinj-nocall{border-left:5px solid var(--muted);background:var(--panel-2);padding:8px 10px;border-radius:6px;font-size:15px}
+.ninechk{display:flex;flex-direction:column;gap:2px}
+.ninechk label.chk{font-size:15px;padding:6px 4px;border-radius:4px;margin:0}
+.ninechk label.chk input{width:22px;height:22px}
+.ninechk-n{font-weight:700}
+.oc-guide{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.oc-guide ul{margin:4px 0 0 18px;padding:0}.oc-guide li{margin:2px 0}
+@container (max-width:420px){.oc-guide{grid-template-columns:1fr}}
+@media (max-width:480px){.oc-guide{grid-template-columns:1fr}}
 .ocinj-clr{margin-top:8px}
 .ocfocus span{display:block;width:34px;height:34px;border-radius:50%;border:3px solid #ffd400;background:rgba(255,212,0,.25);box-shadow:0 0 0 2px #000;animation:ocpulse 1.6s ease-out infinite}
 @keyframes ocpulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.4);opacity:.35}}
@@ -2068,6 +2089,26 @@ const OC_CALLS = {
   custom:{ ev:'custom', p:{}, name:'Something else', sub:'Described by the POC' }
 };
 const CALL_DONE = { ied:['ied_real', 'iedhit'], civaid:['civaid'], conduct:['good', 'poor'], cache:['cache'], pr:['prok', 'prpart'], box:['box'] };
+const NINE_LINES = {
+  ied:{ name:'IED 9-line', lines:['Date-time group found', 'Reporting unit and location (MGRS)', 'Contact method (LMR channel, call sign)', 'Type of device', 'CBRN contamination', 'Resources threatened', 'Impact on mission', 'Protective measures (cordon, distance)', 'Recommended priority'] },
+  medevac:{ name:'MEDEVAC 9-line', lines:['Pickup site location (MGRS)', 'Radio frequency, call sign', 'Patients by precedence', 'Special equipment', 'Patients by type (litter, ambulatory)', 'Security at the pickup site', 'Marking of the pickup site', 'Patient nationality and status', 'CBRN contamination'] },
+  strike:{ name:'Strike 9-line', lines:['Initial point or battle position', 'Heading', 'Distance', 'Target elevation', 'Target description', 'Target location (MGRS)', 'Type of mark', 'Location of friendlies', 'Egress'] }
+};
+const OC_INJ_GUIDE = {
+  ied:{ calls:['ied_real', 'iedhit'], unlock:'ied_real', nine:'ied', tip:'Team cordons the device and reads you the IED 9-line: Real IED cleared. Team walks onto it with no cordon: Hit by an IED.' },
+  pr:{ calls:['prok', 'prpart'], unlock:'prok', nine:'medevac', tip:'Team authenticates him (ISOPREP), reads you the MEDEVAC 9-line and carries him to its Team HQ: Personnel recovered. Moved without the 9-line: Recovered, procedure missed.' },
+  civaid:{ calls:['civaid'], unlock:'civaid', nine:'medevac', tip:'Team treats the casualties in the right order and reads you the MEDEVAC 9-line: Helped a civilian.' },
+  box:{ calls:['box', 'poor'], tip:'Team carries the box intact to the Marala Town office: Supply box delivered. Opened or damaged: Poor conduct.' },
+  conduct:{ calls:['good', 'poor'], tip:'Respectful with the mayor and locals: Good conduct. Rude or careless: Poor conduct.' },
+  cache:{ calls:['cache'], unlock:'cache', nine:'ied', tip:'Team cordons the cache, clears it on foot and reads you the IED 9-line: Militia cache cleared. A strike on the cache comes to you as a strike 9-line instead.' },
+  mt:{ none:'No call. The team sends a strike 9-line from its phone. Check it under Strike 9-lines on this tab.' },
+  spoof:{ none:'No call. The board records it if the team taps Report as fake. If the team challenged the order another way, send one line with Something else.' },
+  acct:{ none:'No call. The C2 sends the PERSTAT on the board.' },
+  aoc:{ none:'No call. The C2 handles this on the board.' }
+};
+function ocGuide(q){ return (q && OC_INJ_GUIDE[q.done]) || { none:'Information only. No call needed.' }; }
+function dirWord(a, b){ const r = Math.PI / 180, y = Math.sin((b[1] - a[1]) * r) * Math.cos(b[0] * r), x = Math.cos(a[0] * r) * Math.sin(b[0] * r) - Math.sin(a[0] * r) * Math.cos(b[0] * r) * Math.cos((b[1] - a[1]) * r), d = (Math.atan2(y, x) / r + 360) % 360; return ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest'][Math.round(d / 45) % 8]; }
+function injResText(S, q, side){ const r = q.res && q.res[side]; if (r && r.st === 'done') return 'Done by ' + SIDES[side].name + ' at ' + hhmm(r.g); if (r && r.st === 'na') return SIDES[OTHER[side]].name + ' got it first'; if (r && r.st === 'miss') return 'Time ran out at ' + hhmm(r.g); if (r && r.st === 'exc') return 'Excused by the White Force'; return q.closed != null ? 'Closed at ' + hhmm(q.closed) : ''; }
 function adjClean(a){ const c = v => Math.max(-30, Math.min(30, Math.round(+v || 0))); a = a || {}; return { pts:c(a.pts), hn:c(a.hn), esc:c(a.esc) }; }
 function adjText(a){ return [a.pts ? (a.pts > 0 ? '+' : '') + a.pts + ' points' : '', a.hn ? 'diplomatic points ' + (a.hn > 0 ? '+' : '') + a.hn : '', a.esc ? 'escalation ' + (a.esc > 0 ? '+' : '') + a.esc : ''].filter(Boolean).join(', ') || 'no score change'; }
 function callInjFor(S, side, call){ const keys = Object.keys(CALL_DONE).filter(k => CALL_DONE[k].includes(call)); if (!keys.length) return null; const q = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && keys.includes(q.done) && injSides(q).includes(side) && !(q.res || {})[side]).sort((a, b) => b.sent - a.sent)[0]; return q ? q.qid : null; }
@@ -3746,7 +3787,7 @@ const HELP = {
     ["If something is wrong", 0, ["Wrong role: tap Switch view at the top to come back here.", "Page frozen or blank: reload the page. You stay signed in.", "Hard to read: open Display at the top and change Theme, Style or Brightness. This changes only this device."]]] },
   T:{ t:"Fireteam phone", b:"This phone gets your C2’s orders and sends your position, contention requests and strike 9-lines. The LMR is still your main radio.", s:[
     ["Start", 1, ["First phone on the team: type the fireteam name and tap the Create fireteam button. Every other phone on the team: tap Join next to your fireteam.", "Map tab: check Keep screen on and Sound for new messages.", "Keep this page open and the phone charged."]],
-    ["Tabs", 0, ["Alerts: UAV sightings, warnings and Orders from your C2.", "Messages: text your C2. One message every 15 minutes. Use the LMR for anything urgent.", "Map: opens for 45 seconds, once every 10 minutes. It does not show your own position.", "Requests: contention requests and strike 9-lines.", "All: every section on one page."]],
+    ["Tabs", 0, ["Alerts: UAV sightings, warnings, Orders from your C2, and Open injects for your force with the respond-by time. Your C2 gives you the location on the LMR. At the spot the phone buzzes and your POC O/C reads the scene.", "Messages: text your C2. One message every 15 minutes. Use the LMR for anything urgent.", "Map: opens for 45 seconds, once every 10 minutes. It does not show your own position.", "Requests: contention requests and strike 9-lines.", "All: every section on one page."]],
     ["Report your position", 1, ["Map tab: type your grid from the map in the MGRS box (example: 5892 2345).", "Pick your Status.", "Tap Send position. The phone adds its GPS fix for your C2.", "Also send GPS by itself every 10 minutes is on when you sign in. Leave it checked. It works only while this page is on screen."]],
     ["Orders", 0, ["New orders show under Orders from your C2 on the Alerts tab.", "If an order does not sound like your C2, confirm it on the LMR.", "If your C2 did not send it, tap Report as fake. Your C2 and the White Force see the report."]],
     ["Contention request", 1, ["Requests tab: pick the Site and tap Request contention. Confirm.", "Nothing starts until your C2 approves. The status reads With your C2, Started or Declined."]],
@@ -3754,11 +3795,13 @@ const HELP = {
     ["If something goes wrong", 0, ["No signal: keep working. Anything you send is saved and goes out when signal returns. Do not sign out.", "Yellow box says location is off: tap Turn on location, then Allow. If it says blocked, allow location for this site in the phone’s settings and reload. Keep the board open on screen so the White Force can locate you.", "Map reads Datalink jammed: the other force jammed you. Wait for the time shown.", "Wrong name: tap Rename. Wrong team: tap Leave this fireteam, then join the right one.", "Never say a code word, PIN or real name on the radio."]]] },
   OC:{ t:"POC O/C", b:"You walk with one fireteam, read injects to them, check their 9-lines, and send calls to the White Force. A call takes effect only after the White Force approves it.", s:[
     ["Sign in", 1, ["Type Your name, pick your fireteam under Attached to, tap Sign in.", "Signed in before: tap This is me next to your name.", "Site station POCs and HQ support: leave Attached to on Not attached. The mayor picks Mayor (Marala Town).", "Tap your name at the top to change Attached to, sign out, or set Keep screen on and Sound for new messages. Turn both on."]],
-    ["Tabs", 0, ["Now: injects for your team and strike 9-lines to check.", "Calls: calls to the White Force, Stalemate, At a site, and Your requests.", "Messages: text the White Force.", "Map: the White Force map. Find my position puts a marker on your map for 5 minutes."]],
-    ["Running an inject", 1, ["New injects show on the Now tab. When GPS puts your team at one, the phone buzzes and the card opens.", "If GPS does not open it, tap We’re at this one.", "Read the Read aloud to the team text word for word. Follow Your notes. Do not coach the team.", "When the team finishes or time runs out, tap Make a call for this inject and send the result.", "Show on map shows where the inject is. Clear hides it on this phone only. Show cleared brings it back."]],
+    ["Where to be", 1, ["Your team, at the top of the Now tab, lists every inject your team must be at: square, grid, distance and direction from you, and respond-by time. The top one says Go here next.", "Walk your team to that grid before the respond-by time. An inject is only scored if your team is there.", "Open card shows what to read. Show on map shows the spot."]],
+    ["Tabs", 0, ["Now: where your team should be, injects for your team, and strike 9-lines to check.", "Calls: calls to the White Force, Stalemate, At a site, and Your requests.", "Messages: text the White Force.", "Map: the White Force map. Find my position puts a marker on your map for 5 minutes."]],
+    ["Running an inject", 1, ["New injects show on the Now tab. When GPS puts your team at one, the phone buzzes and the card opens.", "If GPS does not open it, tap We’re at this one.", "Read the Read aloud to the team text word for word. Follow Your notes. Do not coach the team.", "The card says What to report for this inject and shows only the calls that fit. Tap the one that matches, then confirm. It is already matched to the inject.", "IED, recovered person or civilian: tick each 9-line line as the team reads it. The success call unlocks at 9 of 9.", "A card that says No call: do not send anything. The board records it.", "Show on map shows where the inject is. Clear hides it on this phone only. Show cleared brings it back."]],
     ["Do not tell the team", 0, ["A card marked Do not tell the team means your team got a fake order. Say nothing. Watch whether they question it or tap Report as fake, and report what they did."]],
-    ["Making a call", 1, ["Calls tab: check Force.", "Ask the team which inject or intel package this is for. Pick it under Ask the team. If they do not know, pick The team doesn’t know.", "Optional: type a Note.", "Tap the button that matches what happened (example: Real IED cleared). Confirm.", "Nothing fits: open Something else, describe it, suggest the effect, tap Send to the White Force.", "Your requests shows waiting, approved or denied, and any White Force reply."]],
-    ["Strike 9-lines", 1, ["The team reads the full 9-line to you out loud.", "Correct: tap Correct, send to C2 on the Now tab. Wrong: tap Not right and tell the team why."]],
+    ["What not to report", 1, ["Captures, contention, SALUTE and contact reports, CUBs, PERSTATs and strike 9-lines are already on the board. They show under Already on the board on the Now tab.", "Closed injects show under Closed. They can’t be scored, so send nothing for them.", "The Calls tab has the full Report it and Don’t report it list."]],
+    ["Making a call", 0, ["Use this only for calls not on an inject card. Calls tab: check Force.", "Ask the team which inject or intel package this is for. Pick it under Ask the team. If they do not know, pick The team doesn’t know.", "Optional: type a Note.", "Tap the button that matches what happened (example: Real IED cleared). Confirm.", "Nothing fits: open Something else, describe it, suggest the effect, tap Send to the White Force.", "Your requests shows waiting, approved or denied, and any White Force reply."]],
+    ["Strike 9-lines", 1, ["The team reads the full 9-line to you out loud. Tick each line as you hear it.", "Correct, send to C2 unlocks at 9 of 9. Wrong: tap Not right and tell the team why."]],
     ["Stalemate and show of force", 0, ["Stalemate: both forces at the same neutral site before either started the activity. Calls tab, pick the Site, tap Report stalemate. Not used during contention.", "Show of force on your team’s wing: after the deadline, tap Team left or Team stayed."]],
     ["If something goes wrong", 0, ["No signal: keep going. Calls are saved and sent when signal returns. Do not sign out.", "Yellow box says location is off: tap Turn on location, then Allow. If it says blocked, allow location for this site in the phone’s settings and reload. Keep the board open on screen so the White Force can locate you.", "Your fireteam was removed: the screen tells you. Pick the team you are with now under Attached to.", "Anything unsafe: stop the activity and call the White Force on the LMR. Do not wait for the board."]]] },
   L:{ t:"Props and logistics", b:"Place each prop at its spot by its place-by time, tap Placed at the spot, and recover it when the card says Recover now. A prop inject’s response clock does not start until you tap Placed.", s:[
@@ -4971,9 +5014,14 @@ function buildOC(){
       <label class="chk"><input type="checkbox" data-wake> Keep screen on</label><div class="small muted" data-wakestate></div>
       <label class="chk"><input type="checkbox" data-msgsound checked> Sound for new messages</label></div></details>
     <div class="ip-status" data-ocwarn hidden style="color:var(--bad);font-weight:600"></div>
+    <div class="panel stack octm" data-ps="now" data-octeam></div>
     <div class="panel stack" data-ps="now" data-ocshowbox hidden><h2>Show of force on your team's wing</h2><p class="small muted" style="margin:0">Report whether your team left the area. The board also checks GPS at the deadline; your report settles it if the phone does not answer.</p><div class="list" data-ocshows></div></div>
     <div class="panel stack" data-ps="now" data-ocinjbox><div class="act-head"><h2>Injects for your team</h2><span class="small muted" data-ocinjn></span></div><p class="small muted" style="margin:0">Everything out for your team right now. When GPS puts your team at one, it opens by itself and this phone buzzes. If GPS isn’t working, tap We’re at this one to open what to read and do. <b data-ocscenegps></b></p><div class="stack" data-ocinjs></div></div>
     <div class="panel stack" data-ps="now"><h2>Strike 9-lines to check</h2><p class="small muted" style="margin:0">Confirm only after the team reads the full 9-line correctly. Confirmed 9-lines go to the team's C2.</p><div class="list" data-ocnines></div></div>
+    <details class="panel" data-ps="calls" data-ocguide open><summary><b>What to report and what not to</b></summary><div class="oc-guide" style="margin-top:8px">
+      <div><b>Report it (a call)</b><ul class="small"><li>IED: cordoned and 9-line read to you, or walked onto it</li><li>Recovered person: 9-line read and carried to its Team HQ</li><li>Helped a civilian (MEDEVAC 9-line)</li><li>Supply box carried intact to the town office</li><li>Militia cache cleared on foot</li><li>Good or poor conduct with locals or the mayor</li><li>Aimed at, crowded, or fired on the other force</li><li>Detained someone or handed them to the mayor</li></ul></div>
+      <div><b>Don’t report it (the board already has it)</b><ul class="small"><li>Site captures and contention (code words)</li><li>SALUTE and contact reports</li><li>CUBs, PERSTATs, orders</li><li>Strike 9-lines (check them on the Now tab)</li><li>Fake orders the team reported</li><li>Any inject under Closed on the Now tab: it can’t be scored</li></ul></div>
+    </div><p class="small muted" style="margin:6px 0 0">Fastest way: open the inject card on the Now tab and tap the call there. It is already matched to the inject.</p></details>
     <div class="panel stack" data-ps="calls"><h2>Calls for the White Force</h2><p class="small muted" style="margin:0">Calls take effect only after White Force approval.</p>
       <div class="row"><label>Force<select data-ocside><option value="B">Blue Force</option><option value="R">Red Force</option></select></label><label>Note (optional)<input data-ocnote maxlength="120" placeholder="Example: Helped a farmer at the culvert"></label></div>
       <label>Ask the team: which inject or intel package is this for?<select data-ocinj><option value="">Choose one</option><option value="none">Not for an inject or package</option><option value="unk">The team doesn’t know</option></select></label>
@@ -5005,6 +5053,8 @@ function buildOC(){
   </div>`;
   ptabs(v, 'marala-octab', [['now', 'Now'], ['calls', 'Calls'], ['msg', 'Messages'], ['map', 'Map'], ['all', 'All']], 'now', k => { if (k === 'map'){ const d = $('[data-ocmapbox]', v); if (d) d.open = true; } const hd = $('[data-ochead]', v); if (hd){ const o = app.S && app.S.ocs[me.id]; hd.open = k === 'all' || !(o && (o.team || o.mayor)); } });
   $('[data-ocmapbox]', v).addEventListener('toggle', () => refresh(true));
+  v.addEventListener('change', ev => { const c = ev.target.closest('[data-nineline]'); if (!c) return; const key = c.dataset.nineline, a = nineChk(key); a[+c.dataset.i] = c.checked; const box = c.closest('[data-ninebox]'), n = a.filter(Boolean).length, full = n >= 9; if (box){ const t = $('[data-ninen]', box); if (t) t.textContent = 'Heard ' + n + ' of 9'; }
+    const scope = c.closest('[data-ocqbox], [data-ocninerow]'); if (scope) $$('[data-needs9], [data-ocnine][data-ok="1"]', scope).forEach(b => { b.disabled = !full; const sm = b.dataset.ocqcall ? $('small', b) : null; if (sm) sm.textContent = full ? OC_CALLS[b.dataset.ocqcall].sub : 'Tick all 9 lines first'; }); });
   $('[data-occf]', v).addEventListener('submit', async ev => { ev.preventDefault(); const f = ev.currentTarget, tx = f.text.value.trim(); if (!tx) return; if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return; } await writeEvent('occhat', null, { oc:me.id, from:'oc', text:tx }); f.text.value = ''; });
   $('[data-ocfull]', v).onclick = () => openFullMap(null);
   const send = async (p, msg) => { if (!app.S || !app.S.ocs[me.id]){ toast('Still signing you in. Try again in a moment.', true); return false; } await writeEvent('oc_req', null, Object.assign({ oc:me.id }, p)); toast(msg || 'Sent to the White Force.'); return true; };
@@ -5023,8 +5073,10 @@ function buildOC(){
     if (ev.target.closest('[data-ocselfclr]')){ app.ocSelf = null; app.ocMapFocus = null; refresh(true); return; }
     const sh = ev.target.closest('[data-ocshow]');
     if (sh){ const left = sh.dataset.left === '1'; if (!confirm(left ? 'Confirm your team left the area?' : 'Report that your team did not leave? The wing takes +10 escalation.')) return; writeEvent('show_oc', null, { req:sh.dataset.ocshow, oc:me.id, left }); toast('Sent to the board.'); return; }
+    const qc = ev.target.closest('[data-ocqcall]');
+    if (qc){ if (qc.disabled) return; const k = qc.dataset.ocqcall, qid = qc.dataset.q, sd = qc.dataset.side || $('[data-ocside]', v).value; if (!OC_CALLS[k]) return; if (!confirm(OC_CALLS[k].name + ' for ' + SIDES[sd].name + '?')) return; qc.disabled = true; if (await send({ kind:'call', call:k, side:sd, text:'', ref:'q:' + qid }, 'Sent. The White Force approves it.')){ if (app.ocNineChk) delete app.ocNineChk['q:' + qid]; } if (app.S) ocScenes(app.S, v, app.S.ocs[me.id]); return; }
     const n = ev.target.closest('[data-ocnine]');
-    if (n){ const o = app.S && app.S.ocs[me.id]; await writeEvent('nine_res', null, { nine:n.dataset.ocnine, ok:n.dataset.ok === '1', by:(o ? o.name : me.name) }); toast(n.dataset.ok === '1' ? 'Sent to their C2.' : 'Sent back to the team.'); return; }
+    if (n){ if (n.disabled) return; if (n.dataset.ok === '1' && !nineFull('n:' + n.dataset.ocnine)){ toast('Tick all 9 lines as the team reads them first.', true); return; } if (app.ocNineChk) delete app.ocNineChk['n:' + n.dataset.ocnine]; const o = app.S && app.S.ocs[me.id]; await writeEvent('nine_res', null, { nine:n.dataset.ocnine, ok:n.dataset.ok === '1', by:(o ? o.name : me.name) }); toast(n.dataset.ok === '1' ? 'Sent to their C2.' : 'Sent back to the team.'); return; }
     if (ev.target.closest('[data-ocstalesend]')){ const k = $('[data-ocstalesite]', v).value; if (!SITES[k]) return; if (!confirm('Report a stalemate at ' + SITES[k].name + '?')) return; await send({ kind:'stale', site:k }, 'Stalemate reported to the White Force.'); return; }
     if (ev.target.closest('[data-ocsitesend]')){ const who = $('[data-ocwho]', v).value; if (await send({ kind:'site', site:$('[data-ocsite]', v).value, who:who === 'both' ? 'both' : 'one', side:who === 'both' ? null : who, text:$('[data-ocsitenote]', v).value })) $('[data-ocsitenote]', v).value = ''; return; }
   });
@@ -5095,7 +5147,7 @@ function renderOC(S){
   { const sel = $('[data-ocinj]', v), sd = $('[data-ocside]', v).value, h = '<option value="">Choose one</option><option value="none">Not for an inject or package</option><option value="unk">The team doesn’t know</option>' + refList(S, sd).map(([k, n]) => '<option value="' + esc(k) + '">' + esc(n) + '</option>').join('');
     if (document.activeElement !== sel && sel.dataset.h !== h){ sel.dataset.h = h; keepSelect(sel, h); } }
   const mine = S.nines.filter(n => n.status === 'open' && o && n.side === o.side && n.team === o.team);
-  $('[data-ocnines]', v).innerHTML = !o || !o.team ? '<div class="empty">Attach yourself to a fireteam to check its 9-lines.</div>' : mine.length ? mine.map(n => '<div class="li"><div class="grow"><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.g) + '</span><div>' + esc(nineText(n)) + '</div></div><div class="row" style="flex:0 0 auto"><button type="button" class="btn-side" data-ocnine="' + n.id + '" data-ok="1">Correct, send to C2</button><button type="button" data-ocnine="' + n.id + '" data-ok="0">Not right</button></div></div>').join('') : '<div class="empty">Nothing to check right now.</div>';
+  { const nh = !o || !o.team ? '<div class="empty">Attach yourself to a fireteam to check its 9-lines.</div>' : mine.length ? mine.map(n => '<div class="li" data-ocninerow style="flex-direction:column;align-items:stretch"><div><b>' + esc(n.name) + '</b> <span class="small muted">' + hhmm(n.g) + '</span><div>' + esc(nineText(n)) + '</div></div>' + nineBox('n:' + n.id, 'strike') + '<div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-ocnine="' + n.id + '" data-ok="1"' + (nineFull('n:' + n.id) ? '' : ' disabled') + ' style="flex:0 0 auto">Correct, send to C2</button><button type="button" data-ocnine="' + n.id + '" data-ok="0" style="flex:0 0 auto">Not right</button></div></div>').join('') : '<div class="empty">Nothing to check right now.</div>', ne = $('[data-ocnines]', v); if (ne.dataset.h !== nh){ ne.dataset.h = nh; ne.innerHTML = nh; } }
   { const tx = $('[data-ocselftxt]', v), clr = $('[data-ocselfclr]', v), s = app.ocSelf && Date.now() - app.ocSelf.t < PIN_LIFE ? app.ocSelf : null;
     if (!s && app.ocSelf) app.ocSelf = null;
     if (tx){ const M = mapCfg(S), sq = s && squareOf(M, s.pt);
@@ -5139,6 +5191,50 @@ function ocMapFocus(mel){
 function ocClrKey(){ return 'marala-occlr-' + (app.gid || 'local'); }
 function ocClr(){ if (!app.ocClrSet){ let a = []; try { a = JSON.parse(localStorage.getItem(ocClrKey()) || '[]') || []; } catch(e){ a = []; } app.ocClrSet = new Set(Array.isArray(a) ? a : []); app.ocClrGid = app.gid; } else if (app.ocClrGid !== app.gid){ app.ocClrSet = null; return ocClr(); } return app.ocClrSet; }
 function ocClrSave(){ try { localStorage.setItem(ocClrKey(), JSON.stringify([...ocClr()])); } catch(e){} }
+const OCTM_LOG = new Set(['claim', 'act_contend', 'contact', 'cub', 'perstat', 'spoof_rep', 'nine', 'nine_res', 'intel_answer', 'act_strike', 'act_show', 'aid_del', 'act_aid', 'inj_claim', 'inj_claim_res', 'bda', 'act_uav', 'act_drone', 'verdict', 'oc_res', 'show_oc']);
+function ocTeamPanel(S, v, o, items){
+  const el = $('[data-octeam]', v); if (!el) return;
+  const side = o && o.side, tm = side && o.team && S.teams[side] ? S.teams[side][o.team] : null;
+  let h = '<h3>' + (tm ? 'Your team: ' + esc((tm.num ? '#' + tm.num + ' ' : '') + tm.name) + ' (' + SIDES[side].name + ')' : 'Your team') + '</h3>';
+  if (!side){ h += '<div class="empty">Pick the fireteam you are with under your name at the top. This panel then shows where your team needs to be.</div>'; if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } return; }
+  const M = mapCfg(S), here = app.ocDistPt;
+  const go = items.filter(x => (x.q.win || x.mt) && (x.pt || (ROOMS_LIVE && injRoomOf(S, x.q.tid, x.pt)))).map(x => Object.assign({}, x, { rm:ROOMS_LIVE ? injRoomOf(S, x.q.tid, x.pt) : null, by:x.end != null ? x.end : x.until })).sort((a, b) => (a.by == null) - (b.by == null) || (a.by || 0) - (b.by || 0));
+  const nowhere = items.filter(x => x.q.win && !x.pt && !x.q.spoof && !(ROOMS_LIVE && injRoomOf(S, x.q.tid, null)));
+  h += '<div class="octm-sec"><b>Where your team needs to be</b><p class="small muted" style="margin:2px 0 0">Get your team to the grid before the respond-by time, then open the card and read it there. Nothing gets scored if your team is somewhere else.</p>';
+  const full = go.filter(x => x.by != null), more = full.length ? go.filter(x => x.by == null) : go.slice(3), top = full.length ? full : go.slice(0, 3);
+  h += top.length ? top.map((x, i) => {
+    const grid = x.rm ? roomLabel(x.rm) : fmtPt(x.pt), left = x.by != null ? Math.max(0, Math.round(x.by - S.g)) : null;
+    const dist = ROOMS_LIVE || !x.pt ? '' : here ? '<div class="small"><b>' + ocDist(distM(here.pt, x.pt)).replace(' from you', '') + ' ' + dirWord(here.pt, x.pt) + ' of you</b></div>' : '<div class="small muted">No GPS on this phone, so no distance. Use the grid.</div>';
+    return '<div class="octm-row' + (i === 0 ? ' octm-next' : '') + '"><div class="grow">' + (i === 0 ? '<span class="ocinj-tag">Go here next</span> ' : '') + '<b>' + esc(x.q.label) + '</b>' +
+      '<div class="octm-where">' + (x.sq ? 'Square ' + esc(x.sq) + ' | ' : '') + esc(grid) + '</div>' + dist +
+      '<div class="small">' + (x.by != null ? 'Respond by ' + hhmm(x.by) + ' (' + (left < 1 ? 'under a minute left' : left + ' min left') + ')' : 'Clock starts when props are placed') + '</div></div>' +
+      '<div class="ocinj-btns"><button type="button" data-ocinjopen="' + esc(x.id) + '" style="flex:0 0 auto">Open card</button>' + (x.pt ? '<button type="button" data-ocinjmap="' + esc(x.id) + '" style="flex:0 0 auto">Show on map</button>' : '') + '</div></div>'; }).join('')
+    : '<div class="empty">No inject needs your team at a spot right now.</div>';
+  if (more.length) h += '<details class="octm-more"' + (app.ocMoreOpen ? ' open' : '') + '><summary class="small"><b>' + more.length + ' more spot' + (more.length === 1 ? '' : 's') + '</b> (clock not started yet)</summary>' + more.map(x => '<div class="octm-row"><div class="grow small"><b>' + esc(x.q.label) + '</b><br>' + (x.sq ? 'Square ' + esc(x.sq) + ' | ' : '') + esc(x.rm ? roomLabel(x.rm) : fmtPt(x.pt)) + '</div><div class="ocinj-btns"><button type="button" data-ocinjopen="' + esc(x.id) + '" style="flex:0 0 auto">Open card</button></div></div>').join('') + '</details>';
+  if (nowhere.length) h += '<div class="small" style="margin-top:4px">No set spot (handled anywhere or on the board): ' + esc(nowhere.map(x => x.q.label).join(', ')) + '</div>';
+  h += '</div>';
+  const lg = S.log.filter(l => l.side === side && l.status === 'ok' && OCTM_LOG.has(l.type) && S.g - l.g <= 20 + 1e-9).slice(-5).reverse();
+  h += '<div class="octm-sec octm-done"><b>Already on the board (no call needed)</b>' + (lg.length ? lg.map(l => '<div class="octm-row"><span class="small mono" style="flex:0 0 auto">' + hhmm(l.g) + '</span><div class="grow small">' + esc(l.text) + '</div></div>').join('') : '<div class="small">Nothing in the last 20 minutes. Captures, contact reports, CUBs, PERSTATs and strikes show here once the team or C2 sends them.</div>') + '</div>';
+  const cl = (S.injq || []).filter(q => q.win && q.sent != null && injSides(q).includes(side) && (q.to === side || q.to === 'both' || q.to === 'public') && ((q.res && q.res[side]) || q.closed != null)).map(q => ({ q, t:q.res && q.res[side] ? q.res[side].g : q.closed })).filter(x => x.t != null && S.g - x.t <= 30 + 1e-9).sort((a, b) => b.t - a.t).slice(0, 4);
+  if (cl.length) h += '<div class="octm-sec octm-done"><b>Closed (no call needed)</b><p class="small" style="margin:2px 0 0">A closed inject can’t be scored. Don’t send Something else for it.</p>' + cl.map(x => '<div class="octm-row"><div class="grow small"><b>' + esc(x.q.label) + '</b>: ' + esc(injResText(S, x.q, side)) + '</div></div>').join('') + '</div>';
+  if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; const d = $('.octm-more', el); if (d) d.addEventListener('toggle', () => { app.ocMoreOpen = d.open; }); }
+}
+function nineChk(key){ if (!app.ocNineChk) app.ocNineChk = {}; return app.ocNineChk[key] || (app.ocNineChk[key] = []); }
+function nineBox(key, fmt){ const f = NINE_LINES[fmt], c = nineChk(key), n = c.filter(Boolean).length;
+  return '<div class="ninechk" data-ninebox="' + esc(key) + '"><div class="small"><b>' + f.name + ':</b> tick each line as the team reads it to you. <span class="ninechk-n" data-ninen>Heard ' + n + ' of 9</span></div>' + f.lines.map((l, i) => '<label class="chk"><input type="checkbox" data-nineline="' + esc(key) + '" data-i="' + i + '"' + (c[i] ? ' checked' : '') + '> ' + (i + 1) + '. ' + esc(l) + '</label>').join('') + '</div>'; }
+function nineFull(key){ return nineChk(key).filter(Boolean).length >= 9; }
+function ocCallBox(S, cur, o){
+  const q = cur.q, g = ocGuide(q), me = ocGet();
+  if (!q.win) return '<div class="ocinj-nocall">' + esc(cur.mt ? OC_INJ_GUIDE.mt.none : 'Information only. No call needed.') + '</div>';
+  if (g.none) return '<div class="ocinj-nocall"><b>What to report:</b> ' + esc(g.none) + '</div><div><button type="button" class="linkbtn" data-ocinjcall="' + esc(cur.id) + '">Something unusual happened? Other call</button></div>';
+  const sd = o && o.side ? o.side : q.to === 'B' || q.to === 'R' ? q.to : null, key = 'q:' + q.qid;
+  const wait = me && S.ocReqs.some(r => r.oc === me.id && r.kind === 'call' && r.inj === key && r.status === 'open');
+  const full = !g.nine || nineFull(key);
+  return '<div class="ocinj-calls" data-ocqbox="' + esc(q.qid) + '"><div><b>What to report for this inject</b><div class="small">' + esc(g.tip) + '</div></div>' + (g.nine ? nineBox(key, g.nine) : '') +
+    (wait ? '<div class="ocinj-nocall"><b>Sent.</b> Waiting for the White Force. Watch Your requests on the Calls tab.</div>' : '') +
+    '<div class="evgrid">' + g.calls.map(k => { const off = g.unlock === k && !full; return '<button type="button" data-ocqcall="' + k + '" data-q="' + esc(q.qid) + '"' + (sd ? ' data-side="' + sd + '"' : '') + (off ? ' disabled data-needs9' : '') + '>' + esc(OC_CALLS[k].name) + '<small>' + esc(off ? 'Tick all 9 lines first' : OC_CALLS[k].sub) + '</small></button>'; }).join('') + '</div>' +
+    '<div><button type="button" class="linkbtn" data-ocinjcall="' + esc(cur.id) + '">Different call for this inject</button></div></div>';
+}
 function ocDist(m){ return m < 1000 ? 'About ' + Math.max(10, Math.round(m / 10) * 10) + ' m from you' : 'About ' + (m / 1000).toFixed(1) + ' km from you'; }
 function ocScenes(S, v, o){
   const box = $('[data-ocinjbox]', v); if (!box) return;
@@ -5171,7 +5267,8 @@ function ocScenes(S, v, o){
       (!read ? '<div class="ocinj-sec"><span class="small muted">The scenario (what the team’s C2 received)</span><p>' + esc(cur.text) + '</p></div>' : '') +
       (cur.needs ? '<div class="ocinj-sec"><span class="small muted">The team needs</span><p>' + esc(cur.needs) + '</p></div>' : '') +
       (read ? '<details class="ocinj-sec"><summary class="small">What the team’s C2 received</summary><p>' + esc(cur.text) + '</p></details>' : '') +
-      '<div class="row" style="justify-content:flex-start">' + (cur.q.win ? '<button type="button" class="btn-side" data-ocinjcall="' + esc(cur.id) + '" style="flex:0 0 auto">Make a call for this inject</button>' : '') + xbtn(cur) + '<button type="button" data-ocinjclose style="flex:0 0 auto">Close</button></div></div>';
+      ocCallBox(S, cur, o) +
+      '<div class="row" style="justify-content:flex-start">' + xbtn(cur) + '<button type="button" data-ocinjclose style="flex:0 0 auto">Close</button></div></div>';
   }
   const rest = list.filter(x => x !== cur);
   html += rest.length ? '<div class="list">' + rest.map(x => '<div class="li' + (x.near ? ' warnrow' : '') + '"><div class="grow">' + (x.near ? '<span class="ocinj-tag">Team is here (GPS)</span> ' : '') + (x.q.spoof ? '<span class="ocinj-tag">Do not tell the team</span> ' : '') + '<b>' + esc(x.q.label) + '</b> <span class="small muted">' + esc(where(x)) + '. ' + esc(time(x)) + '.</span>' + dline(x) + '</div><div class="ocinj-btns"><button type="button" data-ocinjopen="' + esc(x.id) + '" style="flex:0 0 auto">' + (cur ? 'Switch to this one' : 'We’re at this one') + '</button>' + xbtn(x) + '</div></div>').join('') + '</div>'
@@ -5179,6 +5276,7 @@ function ocScenes(S, v, o){
   if (hid.length) html += '<div class="ocinj-clr"><button type="button" class="linkbtn" data-occlrshow>' + (app.ocClrShow ? 'Hide cleared injects' : 'Show cleared (' + hid.length + ')') + '</button>' + (app.ocClrShow ? '<div class="list">' + hid.map(x => '<div class="li"><div class="grow"><b>' + esc(x.q.label) + '</b> <span class="small muted">' + esc(where(x)) + '. ' + esc(time(x)) + '.</span></div><button type="button" data-ocunclr="' + esc(x.id) + '" style="flex:0 0 auto">Bring back</button></div>').join('') + '</div>' : '') + '</div>';
   const el = $('[data-ocinjs]', v); if (el.dataset.h !== html){ const op = cur ? !!$('[data-ocinjcur] details[open]', el) : false; el.dataset.h = html; el.innerHTML = html; if (op){ const d = $('[data-ocinjcur] details', el); if (d) d.open = true; } }
   $('[data-ocinjn]', v).textContent = list.length ? list.length + ' out now' : hid.length ? hid.length + ' cleared' : '';
+  ocTeamPanel(S, v, o, all);
   if (app.ocJump){ app.ocJump = false; const tb = $('[data-ptab="now"]', v); if (tb && v.dataset.ptab !== 'now' && v.dataset.ptab !== 'all') tb.click(); setTimeout(() => { const nv = $('.ptabs', v), off = nv ? nv.getBoundingClientRect().height + 8 : 8; window.scrollTo({ top:window.scrollY + box.getBoundingClientRect().top - off, behavior:'smooth' }); }, 120); }
 }
 function renderOCChatWhite(S, v){
@@ -5325,6 +5423,7 @@ function buildTeam(side){
     <div class="panel stack" data-indoorbox hidden><div class="act-head"><h2>Your room</h2><span class="small" data-roomnow></span></div><p class="small muted" style="margin:0">Indoor game. Scan the QR code on the door every time you enter a room, or pick the room here and tap Check in.</p><div class="row" style="align-items:end"><label>Room<select data-roomsel></select></label><button type="button" class="btn-side" data-roomgo style="flex:0 0 auto">Check in here</button></div></div>
     <div class="panel stack" data-ps="now"><h2>Alerts</h2><div data-tuav></div><div class="list" data-talerts></div></div>
     <div class="panel" data-ps="now"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
+    <div class="panel stack" data-ps="now"><h2>Open injects for your force</h2><p class="small muted" style="margin:0">What is out for your force and when it is due. Get the location from your C2 on the LMR. When your team reaches the spot, this phone buzzes and your POC reads the scene.</p><div class="list" data-tinjs></div></div>
     <div class="panel stack" data-ps="msg"><div class="act-head"><h2>Messages with C2</h2><span class="small muted">One message every ${TCHAT_EVERY} minutes</span></div><div class="chatlog" data-tclog></div><form class="row" data-tcf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form><div class="small muted" data-tcnext></div></div>
     <div class="panel stack" data-ps="map"><div class="act-head"><h2>Map</h2><span class="small muted" data-tmapstate></span></div>
       <p class="small muted" style="margin:0">Available for 45 seconds, once every 10 minutes. Your own position is not shown.</p>
@@ -5434,9 +5533,24 @@ function renderTeam(S, side){
   if (tm && !tm.hidden && tm._lm) drawDyn(tm._lm, S, side, { team:true });
   const os = S.orders.filter(o => o.side === side && (o.team === 'all' || o.team === me.id));
   { const h = os.length ? os.slice().reverse().map(o => { const r = o.rep && o.rep[me.id] != null; return '<div class="li"><div class="grow"><span class="small muted">' + hhmm(o.g) + (o.team === 'all' ? ' - All teams' : ' - To you') + '</span><div>' + esc(o.text) + '</div></div>' + (r ? '<span class="chip">Reported as fake</span>' : '<button type="button" data-spoofrep="' + esc(o.id) + '" style="flex:0 0 auto" title="Use this if the order did not come from your C2">Report as fake</button>') + '</div>'; }).join('') : '<div class="empty">No orders yet. Your C2 sends them from the board.</div>', el = $('[data-torders]', v); if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
+  { const li = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && !q.spoof && !(q.res || {})[side] && (q.to === side || q.to === 'both' || q.to === 'public')).map(q => { const pt = refLoc(S, 'q:' + q.qid); return { q, pt, end:injEnd(q) }; }).filter(x => x.pt || ROOMS_LIVE).sort((a, b) => (a.end == null) - (b.end == null) || (a.end || 0) - (b.end || 0));
+    teamNear(S, side, li);
+    const at = app.tNearAt || {}, h = li.length ? li.map(x => '<div class="li' + (at[x.q.qid] ? ' warnrow' : '') + '"><div class="grow">' + (at[x.q.qid] ? '<span class="ocinj-tag">You reached it</span> ' : '') + '<b>' + esc(x.q.label) + '</b><div class="small">' + (x.end != null ? 'Respond by ' + hhmm(x.end) : 'Clock starts when props are placed') + '</div></div></div>').join('') : '<div class="empty">No injects are open for your force.</div>', el = $('[data-tinjs]', v); if (el && el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
+
   ptabsBadge(v, { now:$$('[data-talerts] .li, [data-torders] .li', v).length, msg:$$('[data-tclog] .chatmsg:not(.me)', v).length });
 }
 
+function teamNear(S, side, li){
+  const pts = ROOMS_LIVE ? [] : li.filter(x => x.pt);
+  if (!pts.length || !navigator.geolocation){ if (app.tWatch != null){ try { navigator.geolocation.clearWatch(app.tWatch); } catch(e){} app.tWatch = null; } return; }
+  if (app.tWatch == null){ try { app.tWatch = navigator.geolocation.watchPosition(p => { app.tHere = { pt:[p.coords.latitude, p.coords.longitude], acc:Math.round(p.coords.accuracy), t:Date.now() }; if (app.S && app.role && app.role[0] === 'T') renderTeam(app.S, app.role[1]); else { try { navigator.geolocation.clearWatch(app.tWatch); } catch(e){} app.tWatch = null; } }, e => { if (e && e.code === 1){ app.geoDenied = true; geoBanner(); } }, { enableHighAccuracy:true, maximumAge:10000, timeout:20000 }); } catch(e){} }
+  const h = app.tHere && Date.now() - app.tHere.t < 60000 && app.tHere.acc <= 40 ? app.tHere : null; if (!h) return;
+  const k = 'marala-tnear-' + (app.gid || 'local'); if (!app.tNearAt){ try { app.tNearAt = JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch(e){ app.tNearAt = {}; } }
+  const hit = pts.find(x => !app.tNearAt[x.q.qid] && distM(h.pt, x.pt) <= 25); if (!hit) return;
+  app.tNearAt[hit.q.qid] = Date.now(); try { localStorage.setItem(k, JSON.stringify(app.tNearAt)); } catch(e){}
+  msgSound(true); try { navigator.vibrate && navigator.vibrate([400, 150, 400, 150, 400]); } catch(e){}
+  toast('You’re at: ' + hit.q.label + '. Find your POC O/C; they have the scene.', true);
+}
 function teamTick(S, side, now){
   const v = $('#vTeam'), me = teamGet(side), btn = $('[data-tmapbtn]', v); if (!me || !btn) return;
   const t = S.teams[side][me.id], ts = t && t.mapTs;
