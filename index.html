@@ -1575,6 +1575,7 @@ const GEO = (() => {
 })();
 </script>
 <script id="engine">
+if (typeof structuredClone !== 'function'){ const sc = v => { if (v === null || typeof v !== 'object') return v; if (v instanceof Set) return new Set(Array.from(v, sc)); if (v instanceof Map) return new Map(Array.from(v, ([k, x]) => [k, sc(x)])); if (v instanceof Date) return new Date(v.getTime()); if (Array.isArray(v)) return v.map(sc); const o = {}; Object.keys(v).forEach(k => { o[k] = sc(v[k]); }); return o; }; (typeof globalThis !== 'undefined' ? globalThis : window).structuredClone = sc; }
 const SIDES = { B:{key:'B', name:'Blue Force', long:'Blue Force - US-led Coalition'}, R:{key:'R', name:'Red Force', long:'Red Force - North Korea'} };
 const OTHER = { B:'R', R:'B' };
 const SITES = {
