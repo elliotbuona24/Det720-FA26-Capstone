@@ -1638,7 +1638,7 @@ function setWindow(cfg){
 setWindow(null);
 const CONTEST_MIN = 10;
 const ESC_DECAY = 0.15, ESC_DECAY_QUIET = 0.15, ESC_BASE = 1;
-const UAV_EVERY = 40, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 0.75, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 5, UAV_EVERY_FUEL = 30;
+const UAV_EVERY = 40, UAV_ESC = 10, TEAM_MAP_EVERY = 10, TEAM_MAP_OPEN = 0.75, JAM_EVERY = 45, JAM_MIN = 5, DRONE_EVERY = 20, DRONE_EVERY_AIR = 10, CACHE_STRIKES = 6, CONTEND_ESC = 3, UAV_EVERY_FUEL = 30;
 const AID_WAIT = 20, AID_WIN = 15, AID_HN = 5, AID_FIRST = 1, AID_MISS = 10, OFFICE_HN = 1;
 function aidOf(S, side){ if (!S.aid) S.aid = { B:{ on:false, next:null, open:null, due:null, n:0, hold:false, made:0, missed:0 }, R:{ on:false, next:null, open:null, due:null, n:0, hold:false, made:0, missed:0 } }; return S.aid[side]; }
 function aidPending(S, side, a){ return (S.ocReqs || []).some(r => r.kind === 'call' && r.call === 'aid' && r.side === side && r.status === 'open' && a.open != null && r.g >= a.open - 1e-9 && r.g <= a.due + 1e-9); }
@@ -1794,7 +1794,7 @@ function matchFix(S, c, tid, fix){
   const dup = S.contacts.some(o => o !== c && o.side === c.side && o.verdict === 'confirm' && o.match && o.match.team === tid && Math.abs(o.sg - c.sg) <= MATCH_DUP);
   settleReport(S, c, dup ? 'duplicate' : 'confirm', name + (d || b.pt ? ' ' + d + ' m from ' : ' in ') + c.grid + ' at ' + hhmm(fix.g) + (dup ? ', already credited within ' + MATCH_DUP + ' minutes' : ''));
 }
-const SITE_CAP = 10, SITE_DWELL = 20, SITE_OUT = 10, SITE_NEAR = 50, QRF_MIN = 10, DEF_MIN = 10, SITE_TIMER = 20, SITE_HOLD = 1, SITE_END = 5, DUG_IN = 60, CONTEND_DUG = 10;
+const SITE_CAP = 10, SITE_DWELL = 20, SITE_OUT = 10, SITE_NEAR = 50, QRF_MIN = 10, DEF_MIN = 10, SITE_TIMER = 20, SITE_HOLD = 1, SITE_END = 5, DUG_IN = 60, CONTEND_DUG = 5;
 function powered(S, k, side){ const s = S.sites[k]; return !!s && s.holder === side && !s.contested; }
 function uavEvery(S, side){ return powered(S, 'fuel', side) ? UAV_EVERY_FUEL : UAV_EVERY; }
 function dugIn(S, k){ const s = S.sites[k]; return !!s && !!s.holder && s.since != null && S.g - s.since >= DUG_IN - 1e-9; }
@@ -2616,6 +2616,7 @@ function apply(S, e, cfg){
       pushFeed(S, o.side, tn + ' stayed at ' + SITES[p.site].name + ' past ' + SITE_DWELL + ' minutes. The site earns no hold points until the team moves ' + SITE_NEAR + ' m away.', 'alert');
       pushFeed(S, o.side, 'Your team stayed at ' + SITES[p.site].name + ' past ' + SITE_DWELL + ' minutes. The site earns no hold points until you move ' + SITE_NEAR + ' m away.', 'alert', { label:'Site time', team:true, tid:o.team, only:true });
       break; }
+    case 'help_open': { if (!S.helpUse) S.helpUse = {}; const rl = String(p.role || '').slice(0, 20), nm = String(p.name || '').slice(0, 60); if (!rl) break; const k = rl + '|' + nm; const u = S.helpUse[k] || (S.helpUse[k] = { role:rl, name:nm, n:0, first:S.g, last:S.g }); u.n++; u.last = S.g; break; }
     case 'dwell_clr': { const st = S.sites[p.site]; if (!st || !st.over) break; const nmT = st.over.name; st.over = null; S.ver++; pushLog(S, 'White Force cleared the overstay at ' + SITES[p.site].name + ' (' + nmT + ')', null, e); break; }
     case 'show_oc': {
       const r = S.requests.find(x => x.id === p.req && x.kind === 'show'), o = S.ocs[p.oc]; if (!r || r.status !== 'open' || !o || o.removed || !o.team || o.side !== OTHER[r.side]) break;
@@ -3942,6 +3943,16 @@ function helpOpen(){
   $('#helpTtl').textContent = k === 'C2' ? SIDES[app.role].name + ' C2' : h.t;
   $('#helpBody').innerHTML = '<p class="help-bluf">' + esc(h.b) + '</p>' + (['OC', 'L', 'A', 'T'].includes(k) ? '<label class="chk help-dn"><input type="checkbox" data-dnon' + (doNowOn() ? ' checked' : '') + '> Show the Do this now box (what to do next, from the live game)</label>' : '') + h.s.map(([hd, ord, it]) => '<h3>' + esc(hd) + '</h3><' + (ord ? 'ol' : 'ul') + '>' + it.map(x => '<li>' + esc(x) + '</li>').join('') + '</' + (ord ? 'ol' : 'ul') + '>').join('');
   if (d.open) return; if (typeof d.showModal === 'function') d.showModal(); else { d.classList.add('fb'); d.setAttribute('open', ''); } $('#helpBody').scrollTop = 0;
+  helpLog(k);
+}
+function helpLog(k){
+  try {
+    if (!app.cfg || !app.role || k === 'gate') return; const now = Date.now(); if (app.helpLast && now - app.helpLast < 60000) return; app.helpLast = now;
+    const r = app.role, side = r === 'TB' || r === 'TR' ? r[1] : null;
+    const nm = r === 'OC' ? ((ocGet() || {}).name || '') : side ? (((app.S && app.S.teams[side] || {})[(teamGet(side) || {}).id] || {}).name || '') : '';
+    const lbl = r === 'B' || r === 'R' ? SIDES[r].name + ' C2' : side ? SIDES[side].name + ' fireteam' : r === 'OC' ? 'POC O/C' : r === 'A' ? 'AOC' : r === 'W' ? 'White Force' : r === 'L' ? 'Props' : r === 'D' ? 'Drone operator' : r;
+    writeEvent('help_open', null, { role:lbl, name:nm });
+  } catch(e){}
 }
 function helpClose(){ const d = $('#helpDlg'); if (typeof d.close === 'function') d.close(); else d.removeAttribute('open'); }
 $('#helpBtn').onclick = helpOpen;
@@ -4229,7 +4240,8 @@ function aarExtra(S){
       const ts = ch.map(f => f.g), end = Math.min(S.g, END_G), gaps = ts.map((x, i) => (i ? x - ts[i - 1] : x - Math.max(S.indoor.g, START_G))).concat(ts.length ? [end - ts[ts.length - 1]] : []);
       const big = gaps.length ? Math.max(...gaps) : null, at = big == null ? null : gaps.indexOf(big);
       return { side:sd, name:(t.num ? '#' + t.num + ' ' : '') + t.name, n:ch.length, path, gap:big, gapFrom:at == null ? null : at === 0 ? Math.max(S.indoor.g, START_G) : ts[at - 1], over15:gaps.filter(x => x >= 15).length }; })) : [];
-  return { indoor:S.indoor && S.indoor.on ? { g:S.indoor.g, rooms:S.indoor.rooms.length, paths:inPaths } : null, cubs, perstats, injects, aocReqs, ocCalls, ctReqs, nines, props, stmts,
+  const helpUse = Object.values(S.helpUse || {}).sort((a, b) => a.role.localeCompare(b.role) || b.n - a.n);
+  return { helpUse, indoor:S.indoor && S.indoor.on ? { g:S.indoor.g, rooms:S.indoor.rooms.length, paths:inPaths } : null, cubs, perstats, injects, aocReqs, ocCalls, ctReqs, nines, props, stmts,
     aocLog:pick(/^(aoc_roe|aoc_hold|aoc_pri|strike_auth|aoc_intent|aoc_pir)/), contention:S.log.filter(l => l.type === 'act_contend' || l.type === 'ct_res' || (l.type === 'claim' && /Defended|unlocked|Contention|contention/.test(l.text))).map(l => ({ g:l.g, side:l.side, text:l.text, status:l.status })),
     aocChat:{ A:(S.aocChat || []).filter(m => m.from === 'A').length, W:(S.aocChat || []).filter(m => m.from === 'W').length }, ocChat:{ oc:(S.occhats || []).filter(m => m.from === 'oc').length, wc:(S.occhats || []).filter(m => m.from === 'wc').length },
     pocs:Object.values(S.ocs || {}).map(o => ({ name:o.name, props:!!o.props, mayor:!!o.mayor, where:ocWhere(S, o), removed:!!o.removed })) };
@@ -4368,6 +4380,7 @@ function aarReportHTML(aar){
     '<h2>14. Fireteams</h2><table class="data"><thead><tr><th>Force</th><th>Fireteam</th><th class="num">Map looks</th><th class="num">Position reports</th><th class="num">Map-grid checks</th><th class="num">Median error</th><th class="num">Worst</th></tr></thead><tbody>' + tmRows + '</tbody></table>' +
     '<p class="note">A map-grid check is a report where the team typed its grid from the map while the phone also sent GPS; the error is the distance between them.</p><h3>Orders from the C2s</h3><table class="data"><thead><tr><th>Time</th><th>Force</th><th>To</th><th>Order</th></tr></thead><tbody>' + ordRows + '</tbody></table>' +
     (X.indoor && X.indoor.paths ? '<h2>15. Indoor Check-Ins</h2><p>Each fireteam’s rooms in the order it checked in, and how long it went without checking in. Long gaps mean the C2, the AOC and the White Force were working from an old position.</p><table class="data"><thead><tr><th>Force</th><th>Fireteam</th><th class="num">Check-ins</th><th>Longest gap</th><th class="num">Gaps of 15 min or more</th></tr></thead><tbody>' + (X.indoor.paths.length ? X.indoor.paths.map(p => '<tr>' + sc(p.side, NM[p.side]) + '<td>' + h(p.name) + '</td><td class="num">' + p.n + '</td><td>' + (p.gap == null ? '–' : Math.round(p.gap) + ' min from ' + t(p.gapFrom)) + '</td><td class="num">' + p.over15 + '</td></tr>').join('') : none(5, 'No fireteams.')) + '</tbody></table><h3>Room paths</h3><table class="data"><thead><tr><th style="width:1in">Force</th><th style="width:1.4in">Fireteam</th><th>Rooms, with check-in time</th></tr></thead><tbody>' + (X.indoor.paths.length ? X.indoor.paths.map(p => '<tr>' + sc(p.side, NM[p.side]) + '<td>' + h(p.name) + '</td><td>' + (p.path.length ? p.path.map(x => h((/^\d/.test(x.room) ? 'Room ' : '') + x.room) + ' ' + t(x.g)).join(', ') : 'Never checked in') + '</td></tr>').join('') : none(3, 'No fireteams.')) + '</tbody></table><p class="note">Fireteams keep their last 60 position reports, so a very long game may start partway through.</p>' : '') +
+    '<h2>' + (X.indoor && X.indoor.paths ? 16 : 15) + '. Help Use</h2><p>Who opened Help during the game. Repeat opens within a minute count once.</p><table class="data"><thead><tr><th>Role</th><th>Name</th><th class="num">Opens</th><th>First</th><th>Last</th></tr></thead><tbody>' + ((X.helpUse || []).length ? X.helpUse.map(u => '<tr><td>' + h(u.role) + '</td><td>' + h(u.name || '–') + '</td><td class="num">' + u.n + '</td><td>' + t(u.first) + '</td><td>' + t(u.last) + '</td></tr>').join('') : none(5, 'Nobody opened Help.')) + '</tbody></table>' +
     '<h2 class="pb">Annex A. Chronology of Key Events</h2><table class="data"><thead><tr><th style="width:.7in">Time</th><th style="width:1in">Force</th><th>Event</th></tr></thead><tbody>' + aar.log.filter(e => KEY.test(e.type || '')).map(logRow).join('') + '</tbody></table><p class="note">Struck-through entries were refused by the board. Voided entries are left out of every count.</p>' +
     '<h2 class="pb">Annex B. Full Board Log (' + aar.log.length + ' entries)</h2><table class="data"><thead><tr><th style="width:.7in">Time</th><th style="width:1in">Force</th><th>Entry</th></tr></thead><tbody>' + aar.log.map(logRow).join('') + '</tbody></table>' +
     '<div class="foot">Generated by the Marala Island board. Points and meters are computed by the board’s rules.</div></main></body></html>';
@@ -5247,12 +5260,14 @@ function ocTeamPanel(S, v, o, items){
     return '<div class="octm-site' + (tx.lvl === 'now' ? ' now' : tx.lvl === 'next' ? ' warn' : '') + '">' + esc(tx.t) + btn + '</div>'; }).join('');
   const row = x => { const left = x.by != null ? Math.max(0, Math.round(x.by - S.g)) : null, d = ROOMS_LIVE || !x.pt || !here ? '' : ', ' + ocDist(distM(here.pt, x.pt)).replace('About ', '').replace(' from you', '') + ' ' + dirWord(here.pt, x.pt).replace(/north/, 'N').replace(/south/, 'S').replace(/east/, 'E').replace(/west/, 'W');
     return '<div class="octm-row"><div class="grow small"><b>' + esc(x.q.label) + '</b><br>' + (x.sq ? 'Sq ' + esc(x.sq) : x.rm ? esc(roomLabel(x.rm)) : '') + d + ' | ' + (x.by != null ? 'due ' + hhmm(x.by) + ' (' + (left < 1 ? '<1' : left) + ' min)' : 'clock not started') + '</div><button type="button" data-ocinjopen="' + esc(x.id) + '" style="flex:0 0 auto">Card</button></div>'; };
-  let h = dws + '<details class="octm-sec" data-octm="inj"' + op('inj') + '><summary><b>' + (tm ? esc((tm.num ? '#' + tm.num + ' ' : '') + tm.name) + ': ' : '') + go.length + ' open</b>' + (nx ? '<div class="small">Next due: ' + esc(nx.q.label) + ', ' + hhmm(nx.by) + '</div>' : '') + '</summary>' +
+  const mk = 'oc-' + o.team, man = dwellMan(mk), mySites = SITE_KEYS.filter(k => S.sites[k] && (S.sites[k].holder === side || S.sites[k].contestBy === side));
+  const manH = o.team && (mySites.length || man) ? '<details class="octm-sec" data-octm="man"' + op('man') + '><summary><b>Site time</b> <span class="small">' + (man ? (man.site ? 'Manual: at ' + esc(SITES[man.site].name) + ' since ' + hhmm(man.g) : 'Manual: not at a site') : 'Using GPS') + '</span></summary><p class="small muted" style="margin:2px 0 4px">No GPS or a poor fix? Set it by hand. Tap when your team reaches a site and when it leaves (' + SITE_NEAR + ' m).</p><div class="ocinj-btns" style="flex-wrap:wrap;margin-bottom:6px"><select data-ocmansite aria-label="Site" style="flex:1 1 140px">' + SITE_KEYS.filter(k => S.sites[k]).map(k => '<option value="' + k + '"' + ((app.ocManSel || (man && man.site) || mySites[0]) === k ? ' selected' : '') + '>' + esc(SITES[k].name) + '</option>').join('') + '</select><button type="button" data-ocman="at" style="flex:0 0 auto">We’re at this site</button><button type="button" data-ocman="left" style="flex:0 0 auto">We left</button>' + (man ? '<button type="button" class="linkbtn" data-ocman="gps">Use GPS again</button>' : '') + '</div></details>' : '';
+  let h = gpsAccBox(app.ocHere) + dws + manH + '<details class="octm-sec" data-octm="inj"' + op('inj') + '><summary><b>' + (tm ? esc((tm.num ? '#' + tm.num + ' ' : '') + tm.name) + ': ' : '') + go.length + ' open</b>' + (nx ? '<div class="small">Next due: ' + esc(nx.q.label) + ', ' + hhmm(nx.by) + '</div>' : '') + '</summary>' +
     '<p class="small muted" style="margin:2px 0 4px">What your team has open, so you know what it is working on. The team and its C2 decide where to go. Don’t lead them; be there when they arrive.</p>' +
     (go.length ? (app.octmAll ? go : go.slice(0, 4)).map(row).join('') + (go.length > 4 ? '<button type="button" class="linkbtn" data-octmall>' + (app.octmAll ? 'Show fewer' : 'Show all ' + go.length) + '</button>' : '') : '<div class="small muted">Nothing open with a location.</div>') + '</details>';
   h += '<details class="octm-sec octm-done" data-octm="log"' + op('log') + '><summary><b>Already on the board</b> <span class="small">' + (lg.length ? lg.length + ' recent, no call needed' : 'none recent') + '</span></summary>' + (lg.length ? lg.map(l => '<div class="octm-row small"><span class="mono" style="flex:0 0 auto">' + hhmm(l.g) + '</span><div class="grow">' + esc(l.text) + '</div></div>').join('') : '<div class="small muted">Captures, contact reports, CUBs, PERSTATs and strikes show here once sent. No call needed for them.</div>') + '</details>';
   h += '<details class="octm-sec octm-done" data-octm="cl"' + op('cl') + '><summary><b>Closed</b> <span class="small">' + (cl.length ? cl.length + ' recent, can’t be scored' : 'none recent') + '</span></summary>' + cl.map(x => '<div class="octm-row small"><div class="grow"><b>' + esc(x.q.label) + '</b>: ' + esc(injResText(S, x.q, side)) + '</div></div>').join('') + '</details>';
-  if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; $$('details[data-octm]', el).forEach(d => d.addEventListener('toggle', () => { app.octmOpen[d.dataset.octm] = d.open; })); const ab = $('[data-octmall]', el); if (ab) ab.onclick = () => { app.octmAll = !app.octmAll; if (app.S) ocTeamPanel(app.S, v, app.S.ocs[(ocGet() || {}).id], ocInjItems(app.S, app.S.ocs[(ocGet() || {}).id])); }; }
+  if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; $$('details[data-octm]', el).forEach(d => d.addEventListener('toggle', () => { app.octmOpen[d.dataset.octm] = d.open; })); const ms = $('[data-ocmansite]', el); if (ms) ms.onchange = () => { app.ocManSel = ms.value; }; $$('[data-ocman]', el).forEach(b => b.onclick = () => { const a = b.dataset.ocman, cur = app.S; if (!cur) return; const sel = ms ? ms.value : null; if (a === 'gps') dwellMan(mk, null); else if (a === 'at'){ if (!SITES[sel]) return; dwellMan(mk, { site:sel, g:cur.g }); toast('Site time started at ' + SITES[sel].name + '.'); } else dwellMan(mk, { site:null, g:cur.g }); el.dataset.h = ''; ocTeamPanel(cur, v, cur.ocs[(ocGet() || {}).id], ocInjItems(cur, cur.ocs[(ocGet() || {}).id])); doNowRender(cur); }); const ab = $('[data-octmall]', el); if (ab) ab.onclick = () => { app.octmAll = !app.octmAll; if (app.S) ocTeamPanel(app.S, v, app.S.ocs[(ocGet() || {}).id], ocInjItems(app.S, app.S.ocs[(ocGet() || {}).id])); }; }
 }
 function nineChk(key){ if (!app.ocNineChk) app.ocNineChk = {}; return app.ocNineChk[key] || (app.ocNineChk[key] = []); }
 function nineBox(key, fmt){ const f = NINE_LINES[fmt], c = nineChk(key), n = c.filter(Boolean).length;
@@ -5275,12 +5290,14 @@ function dwellTrack(S, side, key, here){
   const lk = 'marala-dwell-' + (app.gid || 'local') + '-' + key; if (!app.dwell) app.dwell = {};
   let st = app.dwell[key]; if (!st){ try { st = JSON.parse(localStorage.getItem(lk) || 'null'); } catch(e){ st = null; } }
   if (!st || typeof st !== 'object') st = { site:null, acc:0, last:null, out:null, arrive:null };
-  const fresh = here && here.pt && Date.now() - here.t < 120000 && (here.acc == null || here.acc <= 40);
+  const man = dwellMan(key);
+  const fresh = man || (here && here.pt && Date.now() - here.t < 120000 && (here.acc == null || here.acc <= 40));
   let at = null;
   if (fresh && S.clock.started && !S.endex && !ROOMS_LIVE){
-    const pts = sitePts(S); let best = Infinity;
-    SITE_KEYS.forEach(k => { if (!pts[k] || !S.sites[k]) return; const d = distM(here.pt, pts[k]); if (d <= SITE_NEAR && d < best){ best = d; at = k; } });
-    const dt = st.last != null ? Math.max(0, Math.min(2, S.g - st.last)) : 0;
+    if (man) at = man.site && S.sites[man.site] ? man.site : null;
+    else { const pts = sitePts(S); let best = Infinity;
+    SITE_KEYS.forEach(k => { if (!pts[k] || !S.sites[k]) return; const d = distM(here.pt, pts[k]); if (d <= SITE_NEAR && d < best){ best = d; at = k; } }); }
+    const dt = st.last != null ? Math.max(0, Math.min(man ? 999 : 2, S.g - st.last)) : 0;
     if (at){
       if (st.site !== at) st = { site:at, acc:0, last:null, out:null, arrive:S.g };
       else if (st.out != null){ const c = S.sites[at]; if (c && c.contestBy && c.contestG != null && st.arrive != null && st.arrive <= c.contestG + 1e-9 && st.out > c.contestG) st.noDef = c.contestG; if (S.g - st.out >= SITE_OUT) st.acc = 0; st.arrive = S.g; st.out = null; }
@@ -5290,6 +5307,16 @@ function dwellTrack(S, side, key, here){
   } else if (st.last != null) st.last = S.g;
   app.dwell[key] = st; try { localStorage.setItem(lk, JSON.stringify(st)); } catch(e){}
   return { at, st };
+}
+function dwellMan(key, set){
+  const lk = 'marala-dwellman-' + (app.gid || 'local');
+  if (!app.dwellManAll){ try { app.dwellManAll = JSON.parse(localStorage.getItem(lk) || '{}') || {}; } catch(e){ app.dwellManAll = {}; } }
+  if (set !== undefined){ if (set === null) delete app.dwellManAll[key]; else app.dwellManAll[key] = set; try { localStorage.setItem(lk, JSON.stringify(app.dwellManAll)); } catch(e){} }
+  return app.dwellManAll[key] || null;
+}
+function gpsAccBox(here){
+  if (!here || !here.pt || Date.now() - here.t > 120000 || here.acc == null || here.acc <= 40) return '';
+  return '<div class="octm-site warn">Location is approximate (about ' + Math.round(here.acc) + ' m), so site time and arrival alerts may not work. Turn on precise location. iPhone: Settings, Privacy &amp; Security, Location Services, your browser, Precise Location on. Android: Settings, Location, App location permissions, your browser, Use precise location on.</div>';
 }
 function dwellInfo(S, side, team, d){
   const out = [];
@@ -5509,6 +5536,7 @@ function buildTeam(side){
     <div class="panel stack" data-indoorbox hidden><div class="act-head"><h2>Your room</h2><span class="small" data-roomnow></span></div><p class="small muted" style="margin:0">Indoor game. Scan the QR code on the door every time you enter a room, or pick the room here and tap Check in.</p><div class="row" style="align-items:end"><label>Room<select data-roomsel></select></label><button type="button" class="btn-side" data-roomgo style="flex:0 0 auto">Check in here</button></div></div>
     <div class="panel stack" data-ps="now"><h2>Alerts</h2><div data-tuav></div><div class="list" data-talerts></div></div>
     <div class="panel" data-ps="now"><h2>Orders from your C2</h2><div class="list" data-torders></div></div>
+    <div data-ps="now" data-tacc></div>
     <div class="panel" data-ps="now" data-tsitebox hidden><h2>Site time</h2><div data-tsite></div></div>
     <div class="panel stack" data-ps="now"><h2>Open injects for your force</h2><p class="small muted" style="margin:0">What is out for your force and when it is due. Get the location from your C2 on the LMR. When your team reaches the spot, this phone buzzes and your POC reads the scene.</p><div class="list" data-tinjs></div></div>
     <div class="panel stack" data-ps="msg"><div class="act-head"><h2>Messages with C2</h2><span class="small muted">One message every ${TCHAT_EVERY} minutes</span></div><div class="chatlog" data-tclog></div><form class="row" data-tcf style="align-items:end"><label>Message<input name="text" maxlength="300" autocomplete="off" required></label><button class="btn-side" type="submit" style="flex:0 0 auto">Send</button></form><div class="small muted" data-tcnext></div></div>
@@ -5623,6 +5651,7 @@ function renderTeam(S, side){
   { const li = (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && !q.spoof && !(q.res || {})[side] && (q.to === side || q.to === 'both' || q.to === 'public')).map(q => { const pt = refLoc(S, 'q:' + q.qid); return { q, pt, end:injEnd(q) }; }).filter(x => x.pt || ROOMS_LIVE).sort((a, b) => (a.end == null) - (b.end == null) || (a.end || 0) - (b.end || 0));
     teamNear(S, side, li);
     { const me2 = teamGet(side), bx = $('[data-tsitebox]', v), d = me2 ? dwellInfo(S, side, me2.id, dwellTrack(S, side, 't-' + me2.id, app.tHere)) : [], hh = d.map(i => { const tx = dwellText(S, side, i, false); return tx ? '<div class="octm-site' + (tx.lvl === 'now' ? ' now' : tx.lvl === 'next' ? ' warn' : '') + '">' + esc(tx.t) + '</div>' : ''; }).join('') + '<p class="small muted" style="margin:4px 0 0">At a site your wing holds: ' + SITE_DWELL + ' min, then move ' + SITE_NEAR + ' m away for ' + SITE_OUT + ' min. To defend, a team must arrive after contention starts.</p>';
+      { const ac = $('[data-tacc]', v), ah = gpsAccBox(app.tHere); if (ac && ac.dataset.h !== ah){ ac.dataset.h = ah; ac.innerHTML = ah; } }
       if (bx){ bx.hidden = !d.length; const el2 = $('[data-tsite]', bx); if (el2.dataset.h !== hh){ el2.dataset.h = hh; el2.innerHTML = hh; } } }
     const at = app.tNearAt || {}, h = li.length ? li.map(x => '<div class="li' + (at[x.q.qid] ? ' warnrow' : '') + '"><div class="grow">' + (at[x.q.qid] ? '<span class="ocinj-tag">You reached it</span> ' : '') + '<b>' + esc(x.q.label) + '</b><div class="small">' + (x.end != null ? 'Respond by ' + hhmm(x.end) : 'Clock starts when props are placed') + '</div></div></div>').join('') : '<div class="empty">No injects are open for your force.</div>', el = $('[data-tinjs]', v); if (el && el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
 
@@ -5792,9 +5821,9 @@ function buildWing(side){
               <label for="ctN-${side}" data-notesal>Notes<input id="ctN-${side}" name="note" maxlength="140" placeholder="Example: Flag on the Radar Ridge mast"></label>
               <label>Is this for an inject or intel package?<select name="ref" data-forref required><option value="">Choose one</option><option value="none">No</option><option value="unk">I don’t know</option></select></label>
               <div><button class="btn-side" type="submit">Post report</button></div></form></div>
-          <div class="act" data-ctbox hidden><div class="act-head"><b>Contention requests from fireteams</b><span class="cost"><span class="esc-up">+5 escalation now (+10 if the site has been held 60 minutes or more) and +5 every 10 minutes if started</span></span></div><div class="list" data-ctreqs></div></div>
-          <div class="act"><div class="act-head"><b>Start contention</b><span class="cost"><span class="esc-up">+5 escalation now (+10 if the site has been held 60 minutes or more) and +5 every 10 minutes</span></span></div>
-            <p class="small muted" style="margin:0">Applies to a site the other wing holds. The attacking team must earn and enter a capture code word before the site's timer expires. The holder may defend with a team that arrives within 10 minutes of the start (teams already there can't defend): if it enters a defense code word first, it keeps the site, the attackers pull back 100 m, and the attacking wing takes +5 escalation. If the timer expires, the holder keeps the site.</p>
+          <div class="act" data-ctbox hidden><div class="act-head"><b>Contention requests from fireteams</b><span class="cost"><span class="esc-up">+${CONTEND_ESC} escalation now (+${CONTEND_DUG} if the site has been held 60 minutes or more) and +${CONTEND_ESC} every 10 minutes if started</span></span></div><div class="list" data-ctreqs></div></div>
+          <div class="act"><div class="act-head"><b>Start contention</b><span class="cost"><span class="esc-up">+${CONTEND_ESC} escalation now (+${CONTEND_DUG} if the site has been held 60 minutes or more) and +${CONTEND_ESC} every 10 minutes</span></span></div>
+            <p class="small muted" style="margin:0">Applies to a site the other wing holds. The attacking team must earn and enter a capture code word before the site's timer expires. The holder may defend with a team that arrives within 10 minutes of the start (teams already there can't defend): if it enters a defense code word first, it keeps the site, the attackers pull back 100 m, and the attacking wing takes +${CONTEND_ESC} escalation. If the timer expires, the holder keeps the site.</p>
             <form class="stack" data-f="contend"><div class="row"><label for="cnS-${side}">Site<select id="cnS-${side}" name="site" data-siteopts>${SITE_KEYS.map(k => '<option value="' + k + '">' + SITES[k].name + '</option>').join('')}</select></label></div><div><button class="btn-side" type="submit">Start contention</button></div></form></div>
           <div class="act"><div class="act-head"><b>Claim a site</b><span class="cost">Capture or defense code word</span></div>
             <p class="small muted" style="margin:0">A capture code word claims a neutral site, or a site under contention. A defense code word keeps a held site under contention. Each code word works once.</p>
