@@ -7386,7 +7386,9 @@ function aocMode(on){
   if (!on && cur && cur.hasAttribute('data-aoc-only')) $('[data-wtab="all"]', v).click();
   else if (cur && cur.dataset.wtab === 'queue') cur.click();
 }
-const BOT = { on:null, timer:null, mem:{}, words:{}, names:{}, nameText:'' };
+const BOT = { on:null, timer:null, mem:{}, words:{}, names:{}, nameText:'', skill:'real' };
+const BOT_SKILL = { sharp:{ name:'Sharp', e:.3 }, real:{ name:'Realistic', e:1 }, sloppy:{ name:'Sloppy', e:2.5 } };
+function botErr(){ return (BOT_SKILL[BOT.skill] || BOT_SKILL.real).e; }
 const AI_PROV = {
   gemini:{ name:'Google Gemini', model:'gemini-flash-lite-latest', keyUrl:'https://aistudio.google.com/apikey' },
   openrouter:{ name:'OpenRouter (free models)', model:'meta-llama/llama-3.3-70b-instruct:free', keyUrl:'https://openrouter.ai/keys' },
@@ -7448,6 +7450,7 @@ function aiOverview(S){
 }
 function botTask(S, sd, id){
   const st = BOT.mem.tm && BOT.mem.tm[id], tg = st && st.tg; if (!tg) return 'no task yet';
+  if (tg.kind === 'aid') return 'carrying an aid package to the Marala Town office';
   const nm = tg.kind === 'patrol' ? String(tg.label || 'a patrol point').replace(/ \/ .*$/, '') : tg.kind === 'town' ? 'Marala Town' : SITES[tg.k] ? SITES[tg.k].name : tg.kind === 'ref' ? refLabel(S, tg.k) || 'an inject spot' : tg.k === 'lz' ? 'its landing zone' : 'its area';
   const at = st.arr != null;
   return tg.kind === 'site' ? (at ? 'at ' + nm + ' doing the station task' : 'moving to ' + nm + ' to capture it') : tg.kind === 'def' ? (at ? 'at ' + nm + ' doing the defense task' : 'moving back to defend ' + nm) : tg.kind === 'town' ? (at ? 'meeting the mayor at Marala Town' : 'moving to Marala Town to meet the mayor') : tg.kind === 'ref' ? (at ? 'at the spot for ' + nm + ', checking it' : 'moving to the spot for ' + nm) : tg.kind === 'patrol' ? (at ? 'observing from ' + nm : 'moving to ' + nm + ' to observe') : at ? 'holding at ' + nm : 'moving to ' + nm;
@@ -7536,27 +7539,48 @@ function botStep(){
         const t = S.teams[sd][id];
         let st = tms[id]; if (!st) st = tms[id] = { p:(t && t.last && t.last.gps) || (sd === 'B' ? M.sites.lzB : M.sites.lzR), g, sp:55 + rnd() * 20, posG:-99 };
         const dt = Math.max(0, Math.min(15, g - st.g)); st.g = g;
-        const defK = Object.keys(S.sites).find(k => live(k) && S.sites[k].holder === sd && S.sites[k].contestBy === OTHER[sd]);
-        if (defK && !busy(defK, id) && (!st.tg || st.tg.kind !== 'def') && rnd() < .5){ st.tg = { kind:'def', k:defK, pt:sitePt(defK), dwell:3 + rnd() * 3 }; st.arr = null; st.done = false; }
-        if (!st.tg || st.done || (st.arr != null && g >= st.arr + st.tg.dwell && !['site', 'town', 'def'].includes(st.tg.kind))){
+        const E = botErr(), dw = st.dw || (st.dw = { k:null, acc:0, out:null });
+        const wasAt = k => { const x = S.sites[k]; return !!x && x.contestG != null && dw.k === k && dw.arrG != null && dw.arrG <= x.contestG + 1e-9 && (dw.out == null || dw.out >= x.contestG); };
+        const defK = Object.keys(S.sites).find(k => { const x = S.sites[k]; return live(k) && x.holder === sd && x.contestBy === OTHER[sd] && x.qrfUntil != null && g <= x.qrfUntil && !wasAt(k) && dist(st.p, sitePt(k)) / st.sp <= x.qrfUntil - g + .5; });
+        if (defK && !busy(defK, id) && (!st.tg || st.tg.kind !== 'def') && rnd() < .7){ st.tg = { kind:'def', k:defK, pt:sitePt(defK), dwell:3 + rnd() * 3 }; st.arr = null; st.done = false; }
+        const shows = S.requests.filter(r => r.kind === 'show' && r.side === OTHER[sd] && r.status === 'open' && g < r.closed && r.center);
+        const inShow = pt => shows.some(r => dist(pt, r.center) <= r.radius + 15);
+        if (st.tg && st.tg.kind === 'ref' && st.arr != null && g >= st.arr + st.tg.dwell) mem['wk' + id + st.tg.k] = g;
+        if (!st.tg || st.done || (st.arr != null && g >= st.arr + st.tg.dwell && !['site', 'town', 'def', 'aid'].includes(st.tg.kind))){
           const c = [];
-          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder !== sd && !busy(k, id) && !blocked(k) && !(g < (mem['told' + sd + k] || -99) + 20) && (S.sites[k].holder == null || (S.esc || 0) < 45)).forEach(k => c.push({ kind:'site', k, pt:sitePt(k), dwell:9 + rnd() * 5, w:(i < 2 ? 3 : 1.5) * (S.sites[k].holder == null ? 1 : .35) }));
+          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder !== sd && !busy(k, id) && !blocked(k) && !(g < (mem['told' + sd + k] || -99) + 20) && (S.sites[k].holder == null || (S.esc || 0) < 65)).forEach(k => c.push({ kind:'site', k, pt:sitePt(k), dwell:9 + rnd() * 5, w:(i < 2 ? 3 : 1.5) * (S.sites[k].holder == null ? 1 : .35) }));
           if (!S.office[sd] && S.access[sd] && !busy('town', id) && !(g < (mem['told' + sd + 'town'] || -99) + 20)) c.push({ kind:'town', k:'town', pt:M.sites.town, dwell:6 + rnd() * 4, w:i === 2 ? 3 : 1 });
           refList(S, sd).forEach(([k]) => { const pt = refLoc(S, k); if (pt && !busy(k, id)) c.push({ kind:'ref', k, pt, dwell:3 + rnd() * 4, w:i >= 2 ? 2.5 : 1 }); });
           if (c.length < 2) (S.wps || []).filter(w => !w.del && w.poi && !busy('wp:' + w.id, id)).forEach(w => c.push({ kind:'patrol', k:'wp:' + w.id, pt:w.pt, label:w.label, dwell:4 + rnd() * 5, w:.5 }));
-          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder === sd && !busy(k, id)).forEach(k => c.push({ kind:'hold', k, pt:sitePt(k), dwell:10 + rnd() * 10, w:i === 3 ? 2 : .6 }));
+          Object.keys(S.sites).filter(k => live(k) && S.sites[k].holder === sd && !busy(k, id) && !(g < (mem['out' + id + k] || -99))).forEach(k => c.push({ kind:'hold', k, pt:sitePt(k), dwell:10 + rnd() * 10, w:i === 3 ? 2 : .6 }));
+          for (let j = c.length - 1; j >= 0; j--) if (inShow(c[j].pt) || (c[j].kind !== 'site' && c[j].kind !== 'def' && S.sites[c[j].k] && S.sites[c[j].k].holder === sd && g < (mem['out' + id + c[j].k] || -99))) c.splice(j, 1);
+          c.forEach(o => { if (o.kind === 'ref' && /^q:/.test(o.k)){ const q = (S.injq || []).find(x => 'q:' + x.qid === o.k), en = q ? injEnd(q) : null; if (en != null) o.w *= en - g < 15 ? 3 : 1.6; } });
           if (c.length){ c.forEach(o => { o.s = o.w * (0.6 + rnd()) / (1 + dist(st.p, o.pt) / 150); }); c.sort((x, y) => y.s - x.s); st.tg = c[0]; } else st.tg = { kind:'hold', k:'lz', pt:sd === 'B' ? M.sites.lzB : M.sites.lzR, dwell:10 };
           if (st.tg.kind === 'site' || st.tg.kind === 'town'){ const n = st.tg.kind === 'town' ? (rnd() < .12 ? 1 : 0) : (rnd() < .7 ? 0 : rnd() < .8 ? 1 : 2); if (n){ st.tg.fail = st.tg.dwell; st.tg.dwell += n * (st.tg.kind === 'town' ? 10 : 8 + rnd() * 4); } }
           st.tg.relay = .8 + rnd() * 2.2; st.tg.cap = 8 + rnd() * 5;
           st.arr = null; st.done = false; st.req = false;
         }
         const radio = (key, tx) => { if (mem['rd' + id + key]) return; mem['rd' + id + key] = true; W('bot_radio', sd, { team:id, name:names[i], text:tx }, 'T' + sd); };
-        const where = st.tg.kind === 'town' ? 'Marala Town' : st.tg.kind === 'patrol' ? String(st.tg.label || 'the patrol point').replace(/ \/ .*$/, '') : S.sites[st.tg.k] && SITES[st.tg.k] ? SITES[st.tg.k].name : st.tg.kind === 'ref' ? refLabel(S, st.tg.k).replace(/^(Inject|Intel package)\s*/i, '') : 'our landing zone';
+        const where = st.tg.kind === 'town' ? 'Marala Town' : st.tg.kind === 'aid' ? 'the Marala Town office' : st.tg.kind === 'patrol' ? String(st.tg.label || 'the patrol point').replace(/ \/ .*$/, '') : S.sites[st.tg.k] && SITES[st.tg.k] ? SITES[st.tg.k].name : st.tg.kind === 'ref' ? refLabel(S, st.tg.k).replace(/^(Inject|Intel package)\s*/i, '') : 'our landing zone';
         if (!st.tg.id) st.tg.id = (mem.tgc = (mem.tgc || 0) + 1); const tkey = 't' + st.tg.id;
         if (st.lastT !== tkey){ st.lastT = tkey; st.told = false; if (st.tg.kind !== 'hold' || st.tg.k === 'lz') radio('mv' + tkey, 'Moving to ' + where + ', grid ' + botGrid(st.tg.pt) + '. ETA ' + (n => n + (n === 1 ? ' minute.' : ' minutes.'))(Math.max(1, Math.round(dist(st.p, st.tg.pt) / st.sp)))); }
         const [np, arr] = step(st.p, st.tg.pt, st.sp * dt * (0.8 + rnd() * 0.4)); st.p = np;
         const nowArr = arr && st.arr == null; if (nowArr) st.arr = g;
         const si = S.sites[st.tg.k];
+        { const hk = SITE_KEYS.filter(k => live(k)).find(k => dist(np, sitePt(k)) <= SITE_NEAR) || null, oc = 'obot-' + id, ocOn = on.OC && S.ocs && S.ocs[oc];
+          if (hk){ if (dw.k !== hk) Object.assign(dw, { k:hk, acc:0, out:null, arrG:g, dec:false, stay:false, rep:false, lim:SITE_DWELL - 1 - rnd() * 3 });
+            else if (dw.out != null){ if (g - dw.out >= SITE_OUT) Object.assign(dw, { acc:0, dec:false, stay:false, lim:SITE_DWELL - 1 - rnd() * 3 }); dw.arrG = g; dw.out = null; }
+            const x = S.sites[hk], counts = x.holder === sd && !x.contested; if (counts) dw.acc += dt;
+            if (counts && dw.acc >= dw.lim && !dw.dec){ dw.dec = true; dw.stay = rnd() < .12 * E; dw.stayTo = g + 5 + rnd() * 10;
+              if (!dw.stay){ mem['out' + id + hk] = g + SITE_OUT + 1; st.done = true; radio('dwl' + hk + Math.floor(g), 'Twenty minutes at ' + SITES[hk].name + '. Moving off 50 m and rotating out for 10.'); } }
+            if (dw.stay && counts && dw.acc >= SITE_DWELL && ocOn && !dw.rep){ dw.rep = true; W('dwell_oc', null, { site:hk, oc, left:false }, 'OC'); }
+            if (dw.stay && g >= dw.stayTo){ dw.stay = false; mem['out' + id + hk] = g + SITE_OUT + 1; st.done = true; }
+          } else if (dw.k){ if (dw.out == null) dw.out = g; if (dw.rep && ocOn){ dw.rep = false; W('dwell_oc', null, { site:dw.k, oc, left:true }, 'OC'); } }
+          shows.forEach(r => { const tm = r.teams && r.teams[id]; if (!tm || tm.st !== 'inside' || mem['sh' + r.id + id]) return; mem['sh' + r.id + id] = true;
+            const stay = rnd() < .1 * E, d = dist(st.p, r.center) || 1, out = (r.radius + 60) / d, away = [r.center[0] + (st.p[0] - r.center[0]) * out, r.center[1] + (st.p[1] - r.center[1]) * out];
+            if (!stay){ st.tg = { kind:'hold', k:'show', pt:away, dwell:Math.max(3, r.closed - g), id:(mem.tgc = (mem.tgc || 0) + 1) }; st.arr = null; st.done = false; radio('sf' + r.id, 'Show of force on us at ' + r.text + '. Moving out of the area now.'); }
+            if (ocOn) W('show_oc', null, { req:r.id, oc, left:!stay }, 'OC'); mem['shs' + r.id + id] = stay; });
+          shows.forEach(r => { if (ocOn && r.checked && mem['shs' + r.id + id] && !mem['shc' + r.id + id]){ mem['shc' + r.id + id] = true; W('show_oc', null, { req:r.id, oc, left:false }, 'OC'); } }); }
         if (st.tg.kind === 'site' && si && st.arr != null && ((si.contested && !si.contestBy) || (si.holder == null && g - st.arr < 1.5 && foeNear(st.tg.k, 60)))){
           radio('sm' + tkey, (si.contested && !si.contestBy ? 'Stalemate at ' + where + '. Pulling off the site.' : SIDES[OTHER[sd]].name + ' is already working ' + where + '. Moving on so we do not cause a stalemate.'));
           mem['told' + sd + st.tg.k] = g; st.done = true;
@@ -7575,10 +7599,10 @@ function botStep(){
           mem['told' + sd + k] = g;
           const hold = () => { st.told = true; st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:6 + rnd() * 10 }; st.arr = g; };
           if (st.tg.kind === 'town'){ const w = botWord('town'); radio('cw' + tkey, 'The mayor gave us the town code word: ' + (w || '?') + '.' + (w ? '' : need)); st.told = true; st.done = true; }
-          else if (st.tg.kind === 'def' && si){ const w = botWord(k, true); radio('cw' + tkey, 'Defense task at ' + where + ' done. Defense code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); }
+          else if (st.tg.kind === 'def' && si){ if (si.contestG != null && st.arr > si.contestG && st.arr <= (si.qrfUntil != null ? si.qrfUntil : si.contestUntil) + 1e-9){ const w = botWord(k, true); radio('cw' + tkey, 'Defense task at ' + where + ' done. Defense code word: ' + (w || '?') + '.' + (w ? '' : need)); } else radio('cwl' + tkey, 'Reached ' + where + ' after the defense window. Cannot defend; holding nearby.'); hold(); }
           else if (st.tg.kind === 'site' && si){
             if (si.holder === sd) hold();
-            else if (si.holder === OTHER[sd]){ if (si.contestBy === sd && g >= (si.contestUntil || g) - (S.siteTimer[k] || SITE_TIMER) + (st.tg.cap || 9)){ const w = botWord(k); radio('cw' + tkey, 'Task at ' + where + ' done. Capture code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); } else if (g > st.arr + st.tg.dwell + 8){ radio('gv' + tkey, 'No contention at ' + where + '. Moving on.'); st.done = true; } }
+            else if (si.holder === OTHER[sd]){ if (si.contestBy === sd && g >= (si.contestG != null ? si.contestG : g) + (st.tg.cap || 9)){ const w = botWord(k); radio('cw' + tkey, 'Task at ' + where + ' done. Capture code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); } else if (g > st.arr + st.tg.dwell + 8){ radio('gv' + tkey, 'No contention at ' + where + '. Moving on.'); st.done = true; } }
             else { const w = botWord(k); radio('cw' + tkey, 'Station task at ' + where + ' done. Capture code word: ' + (w || '?') + '.' + (w ? '' : need)); hold(); }
           }
         }
@@ -7596,20 +7620,27 @@ function botStep(){
     }
     if (on.OC) ids.forEach((id, i) => { const oc = 'obot-' + id; once('join' + oc, () => W('oc_join', null, { oc, name:botName(sd, i, sd === 'B' ? ['C/Capt Wolfe', 'C/1Lt Jowaiszas', 'C/Capt Kroll', 'C/Capt Haribasker', 'C/Capt Kim'] : ['C/1Lt Donahue', 'C/Capt Ponx', 'C/Capt Pulaski', 'C/Capt Luchyk', 'C/Maj Kubulak']), side:sd, team:id }, 'OC')); });
     if (on.OC && on['T' + sd]) (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && injEnd(q) != null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => {
-      const call = q.done === 'ied' ? 'ied_real' : q.done === 'pr' ? 'prok' : q.done === 'box' ? 'box' : q.done === 'civaid' ? 'civaid' : q.done === 'conduct' ? 'good' : null; if (!call) return;
-      const k = 'call' + q.qid + sd; if (!later(k + 't', 3 + rnd() * Math.max(2, q.win - 5))) return;
-      once(k, () => { if (rnd() < .2) return; W('oc_req', null, { oc:'obot-' + ids[Math.floor(rnd() * 4)], kind:'call', call, side:sd, text:({ ied_real:'Team spotted the device, marked it and pulled back 50 m before reporting.', prok:'Team kept their cool, did not return fire and reported up.', box:'Team carried the aid box to the drop point and handed it over.', civaid:'Team gave first aid to the civilian and called it in.', good:'Team was respectful with the locals and kept weapons down.' })[call] || 'Team responded on scene.', ref:rnd() < .7 ? 'q:' + q.qid : 'unk' }, 'OC'); }); });
+      const gd = OC_INJ_GUIDE[q.done]; if (!gd || !gd.calls) return;
+      const tid = ids.find(x => mem['wk' + x + 'q:' + q.qid] != null); if (!tid) return;
+      const oc = 'obot-' + tid; if (!S.ocs || !S.ocs[oc] || mem['cs' + q.qid + sd]) return;
+      once('call' + q.qid + sd, () => {
+        if (q.done === 'cache' && rnd() < .3){ mem['cs' + q.qid + sd] = { tid, g }; return; }
+        const E = botErr(), bad = ({ ied:.15, pr:.2, box:.1, conduct:.15 })[q.done] || 0, fail = rnd() < bad * E;
+        const call = fail ? ({ ied:'iedhit', pr:'prpart', box:'poor', conduct:'poor' })[q.done] : gd.calls[0];
+        const tx = ({ ied_real:'Cordon set 50 m out, full IED 9-line read to me, all 9 lines correct.', iedhit:'Team walked straight onto the device with no cordon.', prok:'Authenticated him, full MEDEVAC 9-line, carried him to Team HQ.', prpart:'Recovered him but skipped the 9-line and authentication.', box:'Carried the box intact to the town office.', poor:'Team was careless with the locals and the property.', good:'Team was respectful with the locals and kept weapons down.', civaid:'Triaged both casualties in order and gave the MEDEVAC 9-line.', cache:'Cordoned and cleared the cache on foot, IED 9-line given.' })[call] || 'Team responded on scene.';
+        W('oc_req', null, { oc, kind:'call', call, side:sd, text:tx, ref:'q:' + q.qid }, 'OC'); });
+    });
     if (on[sd]){
       const codeFor = (k, def) => { const c = (S.siteCodes && S.siteCodes[k]) || (app.cfg && app.cfg.codes ? app.cfg.codes[k] : null); if (!c) return null; const L = typeof c === 'string' ? [c] : Array.isArray(c) ? c : (def && c.def && c.def.length ? c.def : (c.cap || [])); const f = L.filter(x => !(S.usedCodes || {})[k + ':' + x]); return (f.length ? f : L)[Math.floor(rnd() * (f.length || L.length))]; };
-      (S.ctReqs || []).filter(r => r.status === 'open' && r.side === sd).forEach(r => { if (later('ctr' + r.id, .5 + rnd() * 1.5)) once('ctrd' + r.id, () => { const e0 = S.esc || 0; W('ct_res', sd, { req:r.id, ok:rnd() < (e0 < 20 ? .7 : e0 < 40 ? .3 : 0) }, sd); }); });
+      (S.ctReqs || []).filter(r => r.status === 'open' && r.side === sd).forEach(r => { if (later('ctr' + r.id, .5 + rnd() * 1.5)) once('ctrd' + r.id, () => { const e0 = S.esc || 0; W('ct_res', sd, { req:r.id, ok:rnd() < (e0 < 30 ? .8 : e0 < 55 ? .5 : e0 < 70 ? .2 : 0) }, sd); }); });
       if (on['T' + sd] && mem.tm) ids.forEach(id => { const st = mem.tm[id]; if (!st || !st.tg || st.done || st.arr == null || g < st.arr + st.tg.dwell + (st.tg.relay || 0)) return; const k = st.tg.k, si = S.sites[k];
         if (st.tg.kind === 'town'){ if (!S.office[sd] && S.access[sd]){ const cd = codeFor('town'); if (cd) W('claim', sd, { site:'town', code:cd }, sd); } st.done = true; return; }
         if (!si){ st.done = true; return; }
-        if (st.tg.kind === 'def'){ if (si.holder === sd && si.contestBy === OTHER[sd]){ const cd = codeFor(k, true); if (cd) W('claim', sd, { site:k, code:cd }, sd); } st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:8 + rnd() * 8 }; st.arr = g; return; }
+        if (st.tg.kind === 'def'){ if (si.holder === sd && si.contestBy === OTHER[sd] && si.contestG != null && st.arr > si.contestG && st.arr <= (si.qrfUntil != null ? si.qrfUntil : si.contestUntil) + 1e-9){ const cd = codeFor(k, true); if (cd) W('claim', sd, { site:k, code:cd }, sd); } st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:8 + rnd() * 8 }; st.arr = g; return; }
         if (st.tg.kind !== 'site') return;
         if (si.holder === sd){ st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:6 + rnd() * 10 }; st.arr = g; return; }
         if (si.contested && !si.contestBy){ st.done = true; return; }
-        if (si.holder === OTHER[sd]){ if (si.contestBy !== sd){ if (g > st.arr + st.tg.dwell + 8) st.done = true; return; } if (g < (si.contestUntil || g) - (S.siteTimer[k] || SITE_TIMER) + (st.tg.cap || 9)) return; }
+        if (si.holder === OTHER[sd]){ if (si.contestBy !== sd){ if (g > st.arr + st.tg.dwell + 8) st.done = true; return; } if (g < (si.contestG != null ? si.contestG : g) + (st.tg.cap || 9)) return; }
         if (!st.tg.typo && rnd() < .07){ st.tg.typo = true; W('claim', sd, { site:k, code:'typo' + Math.floor(rnd() * 1e6) }, sd); return; }
         const cd = codeFor(k); if (cd) W('claim', sd, { site:k, code:cd }, sd);
         st.tg = { kind:'hold', k, pt:st.tg.pt, dwell:5 + rnd() * 8 }; st.arr = g; });
@@ -7631,10 +7662,10 @@ function botStep(){
           send(f); });
       }
       const a = psOpen(S, sd), psKey = a ? 'ps' + a.id + sd + ((a.reps[sd] || {}).id || '') : '';
-      if (a && later(psKey, 2 + rnd() * 8)){ const ps = note => W('perstat', sd, { aid:a.id, sum:{ acc:tb.length * 3 || 12, una:0 }, teams:liveTeams(S, sd).map(t => ({ id:t.id, n:3, grid:t.last && t.last.gps ? botGrid(t.last.gps) : '', st:t.last && t.last.gps ? 'task' : 'unk' })), note:note || '' }, sd);
+      if (a && later(psKey, 2 + rnd() * 8 + (rnd() < .1 * botErr() ? 12 : 0))){ const ps = note => W('perstat', sd, { aid:a.id, sum:{ acc:tb.length * 3 || 12, una:0 }, teams:liveTeams(S, sd).map(t => ({ id:t.id, n:3, grid:t.last && t.last.gps ? botGrid(t.last.gps) : '', st:t.last && t.last.gps ? 'task' : 'unk' })), note:note || '' }, sd);
         if (!aiReady()) once('psd' + psKey, () => ps('')); else aiJob(psKey, aiState(S, sd) + '\n\nWrite one sentence (under 140 characters) for the remarks line of your PERSTAT to the AOC: where the teams are and anything the AOC should know. Plain text only.', 80, t => { const a2 = app.S && psOpen(app.S, sd); if (a2 && a2.id === a.id && ((a2.reps[sd] || {}).id || '') === ((a.reps[sd] || {}).id || '')) ps(t ? t.replace(/\s+/g, ' ').slice(0, 160) : ''); }); }
       allProblems(S).forEach(P => { const o = intelOpen(S, P.id, sd); if (!o || o.done || S.intel[sd][P.id]) return; if (!later('ia' + P.id + sd, 4 + rnd() * Math.max(2, (o.due - o.g) - 6))) return;
-        once('iad' + P.id + sd, () => { const tr = intelTruth(P), good = rnd() < .6, ak = good ? tr.ak : String(Math.floor(rnd() * P.opts.length)), fk = good ? tr.f : P.items[Math.floor(rnd() * P.items.length)].k; W('intel_answer', sd, { pid:P.id, a:intelKey(P.id, 'a', ak), f:intelKey(P.id, 'f', fk) }, sd); }); });
+        once('iad' + P.id + sd, () => { const tr = intelTruth(P), good = rnd() < Math.max(.2, 1 - .4 * botErr()), ak = good ? tr.ak : String(Math.floor(rnd() * P.opts.length)), fk = good ? tr.f : P.items[Math.floor(rnd() * P.items.length)].k; W('intel_answer', sd, { pid:P.id, a:intelKey(P.id, 'a', ak), f:intelKey(P.id, 'f', fk) }, sd); }); });
       (S.injq || []).filter(q => q.win && q.done === 'aoc' && q.sent != null && q.closed == null && injSides(q).includes(sd) && !(q.res || {})[sd]).forEach(q => { if (!later('aoc' + q.qid + sd, 1 + rnd() * 4)) return; const go = tx => W('aoc_req', sd, { want:'other', text:tx || ('Done as ordered: ' + q.label + '. Team is back on task and we will report any change.'), ref:'q:' + q.qid }, sd);
         if (!aiReady()) once('aocd' + q.qid + sd, () => go('')); else aiJob('aocd' + q.qid + sd, aiState(S, sd) + '\n\nThe AOC sent this inject: "' + String(q.sentText || q.text || '').slice(0, 500) + '"\nWrite the C2’s message to the AOC (one or two sentences, under 250 characters) reporting what you did about it. Plain text only.', 120, t => go(t ? t.replace(/\s+/g, ' ').slice(0, 280) : '')); });
       (S.injq || []).filter(q => q.win && q.sent != null && q.closed == null && q.done !== 'aoc' && injSides(q).includes(sd) && !(q.res || {})[sd] && S.g - q.sent < 20).forEach(q => { if (!later('ord' + q.qid + sd, .5 + rnd() * 2)) return;
@@ -7645,17 +7676,19 @@ function botStep(){
         const pickBlame = truth => { const right = truth == null ? null : ['militia', 'other', 'self', 'deny'].filter(b => stmtCorrect(sd, b, truth)), wrong = ['militia', 'other', 'self', 'deny'].filter(b => !right || !right.includes(b)), r = rnd(); if (!right || !right.length) return 'invest'; return r < .7 ? right[Math.floor(rnd() * right.length)] : r < .9 ? 'invest' : wrong[Math.floor(rnd() * wrong.length)]; };
         incs.forEach(i => { if (later('sti' + i.id + sd, 3 + rnd() * 6)) once('stid' + i.id + sd, () => W('act_statement', sd, { incident:i.id, blame:pickBlame(i.truth) }, sd)); });
         pkgs.forEach(P => { if (later('stp' + P.id + sd, 4 + rnd() * 8)) once('stpd' + P.id + sd, () => W('act_statement', sd, { pkg:P.id, blame:pickBlame(stmtTruth(P)) }, sd)); }); }
-      S.orders.filter(o => o.spoof && o.side === sd && !Object.keys(o.rep || {}).length).forEach(o => { if (!later('spf' + o.id, 2 + rnd() * 5)) return; once('spfd' + o.id, () => { const tl = liveTeams(S, sd); if (tl.length && rnd() < .6) W('spoof_rep', sd, { order:o.id, team:tl[Math.floor(rnd() * tl.length)].id }, 'T' + sd); }); });
+      S.orders.filter(o => o.spoof && o.side === sd && !Object.keys(o.rep || {}).length).forEach(o => { if (!later('spf' + o.id, 2 + rnd() * 5)) return; once('spfd' + o.id, () => { const tl = liveTeams(S, sd); if (tl.length && rnd() < Math.max(.2, 1 - .4 * botErr())) W('spoof_rep', sd, { order:o.id, team:tl[Math.floor(rnd() * tl.length)].id }, 'T' + sd); }); });
       if (S.clock.started && !S.endex){ const ck = 'capg' + sd; if (mem[ck] == null) mem[ck] = g + 10 + rnd() * 10;
         if (g >= mem[ck]){ mem[ck] = g + 12 + rnd() * 10; const foe = OTHER[sd], mine = SITE_KEYS.filter(k => S.sites[k].holder === sd), hot = mine.find(k => S.sites[k].contestBy === foe), opts = [];
-          if (uavReady(S, sd)) opts.push(['act_uav', {}, 3]);
-          if (droneReady(S, sd) && !jammed(S, sd) && !S.droneDown) opts.push(['act_drone', { text:'Where are the ' + SIDES[foe].name + ' fireteams near ' + SITES[hot || mine[0] || SITE_KEYS[0]].name + '?' }, 3]);
+          const mtU = mtFor(S, sd).find(t => !t.done && !mtFixed(S, t, sd));
+          if (uavReady(S, sd)) opts.push(['act_uav', {}, mtU ? 4 : 3]);
+          if (droneReady(S, sd) && !jammed(S, sd) && !S.droneDown) opts.push(['act_drone', { text:mtU ? 'Fix the militia target "' + mtU.label + '": where is it now?' : 'Where are the ' + SIDES[foe].name + ' fireteams near ' + SITES[hot || mine[0] || SITE_KEYS[0]].name + '?' }, mtU ? 12 : 3]);
           if (S.jamLast[sd] == null || g - S.jamLast[sd] >= JAM_EVERY) opts.push(['act_jam', {}, hot ? 4 : 1]);
           if (!(S.indoor && S.indoor.on) && hot) opts.push(['act_show', { site:hot }, 2]);
           if (opts.length && rnd() < .6){ let r = rnd() * opts.reduce((a, o) => a + o[2], 0); const pk = opts.find(o => (r -= o[2]) < 0) || opts[0]; W(pk[0], sd, pk[1], sd); } } }
       if (later('liai' + sd, 8 + rnd() * 10)){ mem['liai' + sd] = g + 10 + rnd() * 10; W('liaison', sd, { text:aiPool(S, sd, 'liaison') || (L => L[Math.floor(rnd() * L.length)])(['Our teams are holding. Call before you cross the town road.', 'We see your team near our site. Keep 50 m clear.', 'Proposal: no contention for the next 15 minutes.', 'Deconfliction: our team is moving through the town road in 5 minutes. Not hostile.', 'Request you pull your team back from our site perimeter. We hold it and are not contesting yours.', 'Proposal: we split the Humanitarian Aid Supply Box drops, you take the north, we take the south.', 'Warning: any show of force at our site will be reported to the AOC.', 'We are pausing contention to keep escalation down. Expect the same from you.', 'Our team is treating a civilian near the town. Keep your teams clear for 10 minutes.', 'Confirm you saw the IED report near the road. Recommend both forces stay 50 m back.']) }, sd); }
     }
   });
+  botMore(S, M, on, mem, g, rnd, W, later, once);
   if (on.L){
     const pb = mem.pb || (mem.pb = [0, 1].map(i => ({ id:'obot-props' + (i + 1), name:botName('L', i, ['C/1Lt Jellison (Props)', 'C/Capt Nadeau (Props)']), p:(M.sites.wc || M.sites.town).slice(), g, sp:65 + rnd() * 15, job:null, posG:-99 })));
     pb.forEach(b => once('pjoin' + b.id, () => W('oc_join', null, { oc:b.id, name:b.name, props:true }, 'L')));
@@ -7700,7 +7733,7 @@ function botStep(){
     if (!aiReady()) go(''); else aiJob(k, aiState(S, sd) + '\n\nYou are fireteam ' + teamLabel(t) + ', now ' + botTask(S, sd, t.id) + '. Your C2 just sent you: "' + String(m.text).slice(0, 300) + '"\nReply on the LMR in one short call, under 110 characters, starting with "' + t.name + ',". Plain text only.', 60, t2 => go(t2 ? t2.replace(/\s+/g, ' ').slice(0, 160) : ''), 'team'); }); });
   if (on.W){ const M2 = mapCfg(S); SITE_KEYS.forEach(k => { const x = S.sites[k], pt = (S.sitePts && S.sitePts[k]) || (M2 && M2.sites && M2.sites[k]); if (!x || !x.contested || x.contestBy || !pt) return; const both = ['B', 'R'].every(sd => liveTeams(S, sd).some(o => o.last && o.last.gps && g - o.last.g < 4 && distM(o.last.gps, pt) < 70)); if (both) { mem['stc' + k] = null; return; } if (later('stc' + k, 1.5)){ mem['stc' + k] = null; W('site_contested', null, { site:k, on:false }, 'W'); } }); }
   if (on.A){
-    if ((S.esc || 0) >= 45 && later('roe', 0)){ mem.roe = g + 20; W('aoc_roe', null, { to:'both', level:'restrictive', min:10, why:'Escalation is too high. No contention or shows of force for 10 minutes. Use liaison.' }, 'A'); }
+    if ((S.esc || 0) >= 70 && later('roe', 0)){ mem.roe = g + 20; W('aoc_roe', null, { to:'both', level:'restrictive', min:10, why:'Escalation is too high. No contention or shows of force for 10 minutes. Use liaison.' }, 'A'); }
     (S.cubs || []).filter(c => c.status === 'sent').forEach(c => { const k = 'acd' + c.id + c.hist.length; if (!later('ac' + c.id + c.hist.length, 1 + rnd() * 2)) return;
       const go = (v, tx) => { const c2 = app.S && (app.S.cubs || []).find(x => x.id === c.id); if (c2 && c2.status === 'sent' && c2.hist.length === c.hist.length) W('cub_reply', null, { id:c.id, verdict:v, text:tx }, 'A'); };
       const pick = L => L[Math.floor(rnd() * L.length)], fb = () => rnd() < .75 ? go('approve', pick(['AOC: Approved. Accountability adds up. Keep the grids and times this specific.', 'AOC: Approved. Good enemy picture. Tie your next decision point to a time.', 'AOC: Approved. Clear and complete. Watch escalation before you contend again.', 'AOC: Approved. Solid brief. Make sure the incoming commander gets the same picture.'])) : go('more', pick(['AOC: Line 9 needs a time for each decision point and which fireteam owns it. Resend.', 'AOC: Enemy line is too thin. Give me grids, times and your assessment of their next move.', 'AOC: Accountability does not show where each fireteam is. Grid for every team, then resend.', 'AOC: Intel line has no evidence. Which report answered which PIR? Resend.']));
@@ -7721,17 +7754,59 @@ function botStep(){
     (S.injClaims || []).filter(c => c.status === 'open').forEach(c => { if (later('cl' + c.id, 1)) once('cld' + c.id, () => W('inj_claim_res', null, { id:c.id, ok:true }, 'W')); });
   }
 }
+function botMore(S, M, on, mem, g, rnd, W, later, once){
+  const E = botErr(), C = Math.cos(M.sites.lzB[0] * Math.PI / 180), dist = (a, b) => Math.hypot((b[1] - a[1]) * 111320 * C, (b[0] - a[0]) * 110950), tms = mem.tm || {};
+  const bots = sd => [1, 2, 3, 4, 5].map(i => 'bot-' + sd.toLowerCase() + i).filter(id => tms[id] && S.teams[sd][id] && !S.teams[sd][id].removed);
+  const ocOf = id => { const oc = 'obot-' + id; return on.OC && S.ocs && S.ocs[oc] && !S.ocs[oc].removed ? S.ocs[oc] : null; };
+  const radio = (sd, id, key, tx) => { if (mem['rd' + id + key]) return; mem['rd' + id + key] = true; W('bot_radio', sd, { team:id, name:S.teams[sd][id].name, text:tx }, 'T' + sd); };
+  const send = (st, pt, kind, k, dwell) => { st.tg = { kind, k, pt, dwell, id:(mem.tgc = (mem.tgc || 0) + 1) }; st.arr = null; st.done = false; };
+  ['B', 'R'].forEach(sd => {
+    const tb = on['T' + sd] ? bots(sd) : [];
+    if (tb.length){
+      const a = aidOf(S, sd), town = M.sites.town;
+      if (a.open != null && a.due != null && g >= a.open && town){ const ak = 'aid' + sd + a.n;
+        if (!mem[ak]){ const id = tb.slice().sort((x, y) => dist(tms[x].p, town) - dist(tms[y].p, town))[0]; mem[ak] = { id, miss:rnd() < .1 * E }; if (!mem[ak].miss){ send(tms[id], town, 'aid', 'aid', 2 + rnd() * 2); radio(sd, id, 'aidmv' + a.n, 'Picking up aid package ' + a.n + ' for the Marala Town office.'); } }
+        const job = mem[ak], st = tms[job.id];
+        if (!job.miss && !job.sent && st && st.tg && st.tg.kind === 'aid' && st.arr != null && g >= st.arr + st.tg.dwell){ job.sent = true; st.done = true; const o = ocOf(job.id); if (o) W('oc_req', null, { oc:o.id, kind:'call', call:'aid', side:sd, text:'Carried aid package ' + a.n + ' to the town office.', ref:'none' }, 'OC'); radio(sd, job.id, 'aidok' + a.n, 'Aid package ' + a.n + ' delivered to the town office.'); } }
+      const nineFor = (tg, loc, id) => { if (mem['n9' + tg + sd]) return; mem['n9' + tg + sd] = { g, bad:rnd() < .15 * E }; const bad = mem['n9' + tg + sd].bad, gr = bad ? loc.replace(/\d(?=\d{0,3}$)/, d => String((+d + 3) % 10)) : loc;
+        W('nine', sd, { team:id, name:S.teams[sd][id].name, target:tg, loc:gr }, 'T' + sd); radio(sd, id, 'n9' + tg, 'Strike 9-line read to our POC and sent for checking. Target grid ' + gr + '.'); };
+      mtFor(S, sd).filter(t => !t.done && g < t.until && t.pt && mtFixed(S, t, sd)).forEach(t => { const id = tb.slice().sort((x, y) => dist(tms[x].p, t.pt) - dist(tms[y].p, t.pt))[0]; if (id && later('mt9' + t.id + sd, 1 + rnd() * 2)) nineFor('mt:' + t.id, botGrid(t.pt), id); });
+      (S.injq || []).forEach(q => { const cs = mem['cs' + q.qid + sd]; if (!cs || cs.done) return; const pt = refLoc(S, 'q:' + q.qid); if (!pt){ cs.done = true; return; } cs.done = true; nineFor('cache', botGrid(pt), cs.tid); });
+      S.nines.filter(n => n.side === sd && n.status === 'open' && tb.includes(n.team)).forEach(n => { const o = ocOf(n.team); if (!o || !later('n9c' + n.id, 1 + rnd() * 2)) return; once('n9d' + n.id, () => { const mk = mem['n9' + (n.mt ? 'mt:' + n.mt : n.target) + sd]; W('nine_res', null, { nine:n.id, ok:!(mk && mk.bad), by:o.name }, 'OC'); if (mk && mk.bad) delete mem['n9' + (n.mt ? 'mt:' + n.mt : n.target) + sd]; }); });
+      if (on.OC && on['T' + OTHER[sd]] && sd === 'B'){ bots('B').forEach(b => bots('R').forEach(r => { const d = dist(tms[b].p, tms[r].p), pk = 'cx' + b + r; if (d > 50 || g < (mem[pk] || -99)) return; mem[pk] = g + 20;
+        if (rnd() >= .05 * E || (mem.cxN || 0) >= Math.max(1, Math.round(2 * E))) return; mem.cxN = (mem.cxN || 0) + 1; const [off, def] = rnd() < .5 ? [['B', b], ['R', r]] : [['R', r], ['B', b]], oo = ocOf(off[1]), od = ocOf(def[1]); if (!oo) return;
+        if (rnd() < .65) W('oc_req', null, { oc:oo.id, kind:'call', call:'provocation', side:off[0], text:'Aimed weapons at a ' + SIDES[def[0]].name + ' team at about ' + Math.round(d) + ' m.', ref:'none' }, 'OC');
+        else { W('oc_req', null, { oc:oo.id, kind:'call', call:'firstfire', side:off[0], text:'Called shots on a ' + SIDES[def[0]].name + ' team first at about ' + Math.round(d) + ' m.', ref:'none' }, 'OC'); if (od && rnd() < .6) W('oc_req', null, { oc:od.id, kind:'call', call:'returnfire', side:def[0], text:'Returned fire after being engaged.', ref:'none' }, 'OC'); } })); }
+    }
+    if (on[sd]){
+      S.nines.filter(n => n.side === sd && n.status === 'ok' && !n.used && !mem['st' + n.id]).forEach(n => { if (!later('stl' + n.id, 1 + rnd() * 2)) return; mem['st' + n.id] = true;
+        if (n.mt){ const t = (S.mtgts || []).find(x => x.id === n.mt); if (t && !t.done && mtFixed(S, t, sd)) W('act_strike', sd, { target:'militia', mt:t.id, nine:n.id, grid:n.loc, civ:rnd() < .1 * E ? 'yes' : 'no' }, sd); }
+        else if (n.target === 'cache') W('act_strike', sd, { target:'cache', nine:n.id, grid:n.loc }, sd); });
+      S.requests.filter(r => r.side === sd && r.kind === 'strike' && r.result === 'hit' && !r.bda).forEach(r => { if (later('bda' + r.id, 2 + rnd() * 4 + (rnd() < .15 * E ? 10 : 0))) once('bdad' + r.id, () => W('bda', sd, { req:r.id, result:rnd() < .85 ? 'destroyed' : 'damaged', text:'Observed by our team after the strike at ' + (r.text || 'the target') + '.' }, sd)); });
+    }
+  });
+  if (on.A) S.requests.filter(r => r.kind === 'strike' && r.status === 'nom').forEach(r => { if (later('nom' + r.id, 1 + rnd() * 2)) once('nomd' + r.id, () => W('aoc_nom', null, { req:r.id, ok:true, text:'Approved. 9-line checked; strike the target.' }, 'A')); });
+  if (on.W){
+    S.requests.filter(r => r.kind === 'strike' && r.status === 'open').forEach(r => { if (later('sr' + r.id, 1 + rnd() * 2)) once('srd' + r.id, () => W('resolve', null, { req:r.id, result:'hit', text:'' }, 'W')); });
+    S.requests.filter(r => r.kind === 'drone' && r.status === 'open').forEach(r => { if (!later('dr' + r.id, 1 + rnd() * 2)) return; once('drd' + r.id, () => {
+      const foe = OTHER[r.side], Mq = mapCfg(S), seen = liveTeams(S, foe).filter(t => t.last && t.last.gps && g - t.last.g < 6).map(t => (squareOf(Mq, t.last.gps) || '?'));
+      const mt = mtFor(S, r.side).find(t => !t.done && g < t.until && /militia|technical|target|fix/i.test(r.text || ''));
+      const tx = mt ? 'Militia target "' + mt.label + '" seen at ' + (mt.grid || botGrid(mt.pt)) + '.' : seen.length ? seen.length + ' ' + SIDES[foe].name + ' fireteam' + (seen.length === 1 ? '' : 's') + ' seen: square' + (seen.length === 1 ? ' ' : 's ') + seen.join(', ') + '.' : 'No ' + SIDES[foe].name + ' fireteams seen in that area.';
+      W('resolve', null, Object.assign({ req:r.id, result:'answer', text:tx }, mt ? { fix:mt.id } : {}), 'W'); }); });
+  }
+}
 function botKey(){ return 'marala-bots-' + (app.gid || 'local'); }
 function botNames(t){ const o = {}; String(t || '').split('\n').forEach(l => { const m = l.match(/^\s*(B|R|L)\s*:(.*)$/i); if (m) o[m[1].toUpperCase()] = m[2].split(',').map(x => x.trim()).filter(Boolean).slice(0, 8); }); return o; }
 function botName(k, i, def){ const L = (BOT.names || {})[k] || []; return (L[i] || def[i] || def[0]).slice(0, 60); }
-function botSave(){ try { if (BOT.on) sessionStorage.setItem(botKey(), JSON.stringify({ on:BOT.on, words:BOT.wordText || '', names:BOT.nameText || '', mem:BOT.mem, at:Date.now() })); else sessionStorage.removeItem(botKey()); } catch(e){} }
+function botSave(){ try { if (BOT.on) sessionStorage.setItem(botKey(), JSON.stringify({ on:BOT.on, words:BOT.wordText || '', names:BOT.nameText || '', skill:BOT.skill, mem:BOT.mem, at:Date.now() })); else sessionStorage.removeItem(botKey()); } catch(e){} }
 function botSet(on){ clearInterval(BOT.timer); BOT.timer = null; BOT.on = on; if (on){ BOT.last = Date.now(); BOT.timer = setInterval(() => { const sp = (app.S && app.S.clock.speed) || 1; if (Date.now() - (BOT.last || 0) < 12000 / sp - 100) return; BOT.last = Date.now(); try { botStep(); } catch(e){ console.warn('bot', e); } botSave(); }, 1500); setTimeout(() => { try { botStep(); } catch(e){} botSave(); }, 500); } botSave(); }
 function botResume(){
   if (BOT.on || app.botTried === app.gid) return; app.botTried = app.gid;
   let d = null; try { d = JSON.parse(sessionStorage.getItem(botKey()) || 'null'); } catch(e){ d = null; }
   if (!d || !d.on || !Object.keys(d.on).length) return;
   if (!practiceOk('bots')){ try { sessionStorage.removeItem(botKey()); } catch(e){} return; }
-  BOT.mem = d.mem && typeof d.mem === 'object' ? d.mem : {}; BOT.wordText = d.words || ''; BOT.words = botWords(BOT.wordText); BOT.nameText = d.names || ''; BOT.names = botNames(BOT.nameText); BOT.pool = {};
+  BOT.mem = d.mem && typeof d.mem === 'object' ? d.mem : {}; BOT.wordText = d.words || ''; BOT.words = botWords(BOT.wordText); BOT.nameText = d.names || ''; BOT.names = botNames(BOT.nameText); BOT.pool = {}; BOT.skill = BOT_SKILL[d.skill] ? d.skill : 'real';
+  { const sk = $('#vWhite [data-botskill]'); if (sk) sk.value = BOT.skill; }
   botSet(d.on);
   const v = $('#vWhite'); if (v){ $$('[data-botrole]', v).forEach(c => c.checked = !!d.on[c.dataset.botrole]); const wi = $('[data-botwords]', v); if (wi && !wi.value) wi.value = BOT.wordText; { const ni = $('[data-botnames]', v); if (ni && !ni.value) ni.value = BOT.nameText; } const go = $('[data-botgo]', v); if (go){ go.textContent = 'Stop bots'; go.disabled = false; } const st = $('[data-botst]', v); if (st) st.textContent = 'Bots are playing: ' + Object.keys(d.on).map(roleLabel).join(', ') + '. Keep this tab open.'; }
   toast('Practice bots picked up where they left off.');
@@ -7999,8 +8074,9 @@ function buildWhite(){
         <p class="small muted" style="margin:0">Upload creation files adds every package and template from the files you choose to this game. Combine files into one merges several teams’ files into a single download without changing this game; use it to review everything before execution day.</p>
       </div>
       <div class="panel stack" data-sec="setup" data-aoc-off><h2>Practice bots</h2><div class="banner" data-botlock hidden></div>
-        <p class="small muted" style="margin:0">For training only. Bots play the roles you tick, using simple rules: fireteams walk at a real pace (about 55 to 75 m a minute) to sites, the town and inject spots, spend time at each station, then their C2 captures the site with a code word, asks for and runs contention on the other force’s sites, and sends a team back to defend. They also post SALUTE reports, answer intel packages and injects, send briefs and PERSTATs, and approve things in the queue. They are not smart; they give every real player something to react to. They run in this browser only, so keep this tab open. Do not use them in the real game.</p>
+        <p class="small muted" style="margin:0">For training only. Bots play the roles you tick, using simple rules: fireteams walk at a real pace (about 55 to 75 m a minute) to sites, the town and inject spots, spend time at each station, then their C2 captures the site with a code word, asks for and runs contention on the other force’s sites, and sends a team that is not already there back to defend within the 10-minute window. They follow the site time limit (rotating out after about 20 minutes), leave show-of-force areas, work injects in person before their POC O/C calls them, carry aid packages, send strike 9-lines on militia targets and the cache, and their POC O/Cs report site time, shows of force, shots and provocations. They also post SALUTE reports, answer intel packages, send briefs, PERSTATs and damage assessments, answer drone flights and approve things in the queue. Bot skill sets how often they make the mistakes real teams make. They give every real player something to react to. They run in this browser only, so keep this tab open. Do not use them in the real game.</p>
         <div class="row" style="flex-wrap:wrap;gap:6px 16px">${[['B', 'Blue Force C2'], ['R', 'Red Force C2'], ['TB', 'Blue Force fireteams'], ['TR', 'Red Force fireteams'], ['OC', 'POC O/Cs'], ['A', 'AOC'], ['L', 'Props and logistics'], ['W', 'White Force (sends injects and approves)']].map(([k, n]) => '<label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-botrole="' + k + '"> ' + n + '</label>').join('')}</div>
+        <label>Bot skill<select data-botskill>${Object.entries(BOT_SKILL).map(([k, o]) => '<option value="' + k + '"' + (k === 'real' ? ' selected' : '') + '>' + o.name + (k === 'sharp' ? ': rare mistakes' : k === 'real' ? ': about what 19 Nov looked like' : ': many mistakes, to stress-test the White Force') + '</option>').join('')}</select></label>
         <label>Code words the bot fireteams may report (optional)<input data-botwords autocomplete="off" placeholder="All of this game's code words, any order: ANCHOR, BARREL, ECHO, MAYOR"></label>
         <p class="small muted" style="margin:0">With these, bot fireteams call their C2 over a practice LMR feed when they finish a station ("Capture code word: ANCHOR") so a real C2 can enter it. The board works out which word belongs to which site. They are kept in this tab only.</p>
         <label>Names for the bot POCs (optional)<textarea data-botnames rows="3" autocomplete="off" placeholder="B: C/1Lt Smith, C/Capt Jones, C/1Lt Lee, C/2Lt Diaz&#10;R: C/1Lt Kim, C/Capt Park, C/2Lt Cruz, C/1Lt Ford&#10;L: C/2Lt Hall, C/2Lt Wood"></textarea></label>
@@ -8262,6 +8338,7 @@ function buildWhite(){
     $('#wcImport').onchange = () => importBackup($('#wcImport').files[0]);
   }
   { const go = $('[data-botgo]', v), st = $('[data-botst]', v); if (go){ const sync = () => { go.textContent = BOT.on ? 'Stop bots' : 'Start bots'; st.textContent = BOT.on ? 'Bots are playing: ' + Object.keys(BOT.on).map(roleLabel).join(', ') + '. Keep this tab open.' : 'Bots are off.'; }; if (BOT.on){ $$('[data-botrole]', v).forEach(c => c.checked = !!BOT.on[c.dataset.botrole]); const wi = $('[data-botwords]', v); if (wi && !wi.value) wi.value = BOT.wordText || ''; } sync();
+    { const sk = $('[data-botskill]', v); if (sk) sk.onchange = () => { BOT.skill = BOT_SKILL[sk.value] ? sk.value : 'real'; botSave(); toast('Bot skill: ' + BOT_SKILL[BOT.skill].name + '.'); }; }
     go.onclick = () => { if (BOT.on){ botSet(null); sync(); toast('Bots stopped.'); return; } if (!practiceOk('bots')){ toast('Practice bots are locked for this game. Unlock them in Admin.', true); return; } const on = {}; $$('[data-botrole]', v).forEach(c => { if (c.checked) on[c.dataset.botrole] = true; }); if (!Object.keys(on).length){ toast('Tick at least one role for the bots.', true); return; } if (!confirm('Start practice bots for: ' + Object.keys(on).map(roleLabel).join(', ') + '?\n\nFor training only. They write real events into this game.')) return; { const ni = $('[data-botnames]', v); BOT.nameText = ni ? ni.value : ''; BOT.names = botNames(BOT.nameText); } { const wi = $('[data-botwords]', v); BOT.wordText = wi ? wi.value : ''; BOT.words = botWords(BOT.wordText); const n = Object.keys(BOT.words).filter(k => BOT.words[k].cap.length || BOT.words[k].def.length).length; if (wi && wi.value.trim() && !n) toast('None of those words match this game’s code words.', true); } botSet(on); sync(); toast('Bots started. They act about every 12 seconds while the clock runs.'); }; } }
   v.addEventListener('click', ev => { if (ev.target.closest('[data-injhideall]')){ const h = injHidden(); (app.S.injq || []).filter(q => q.win && q.sent != null).forEach(q => { if (!h.includes(q.qid)) h.push(q.qid); }); pref.set('marala-injhide-' + (app.gid || 'local'), JSON.stringify(h.slice(-200))); const bx = $('[data-injwin]', v); if (bx) bx.dataset.h = ''; refresh(true); toast('Response windows cleared. They still close and score by themselves.'); return; } const b = ev.target.closest('[data-injhide]'); if (!b) return; const h = injHidden(); if (!h.includes(b.dataset.injhide)) h.push(b.dataset.injhide); pref.set('marala-injhide-' + (app.gid || 'local'), JSON.stringify(h.slice(-200))); refresh(true); });
   { const ab = $('[data-aibox]', v); if (ab){
