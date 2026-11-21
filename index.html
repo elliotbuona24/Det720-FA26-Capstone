@@ -604,6 +604,9 @@ body.paused-bar .wnav{top:var(--pbh,40px)}
 .hidden-sm{}
 @media (max-width:560px){.hidden-sm{display:none}}
 :root[data-theme="light"]{color-scheme:light}
+.help-hint{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-left:5px solid var(--warn);background:var(--panel-2);border-radius:6px;padding:6px 10px;margin:0 0 8px;font-size:15px}
+.help-hint[hidden]{display:none}.help-hint span{flex:1}
+#helpBtn.hint{outline:3px solid var(--warn);outline-offset:1px}
 .help-dlg{width:min(640px,calc(100vw - 24px));max-height:min(86vh,900px);padding:0;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden}.help-dlg[open]{display:flex;flex-direction:column}.help-dlg::backdrop{background:rgba(0,0,0,.45)}.donow .dn-in{display:flex;gap:10px;align-items:flex-start;padding:8px 10px 8px 12px;border:1.5px solid var(--line);border-left:5px solid var(--focus);border-radius:8px;background:var(--panel)}.donow .dn-in.now{border-left-color:var(--warn)}.donow .grow{display:grid;gap:2px;min-width:0}.donow b{font-size:15px;overflow-wrap:anywhere}.donow .dn-k{color:var(--muted)}.donow details summary{cursor:pointer;color:var(--muted)}.donow ul{margin:4px 0 0;padding-left:18px;display:grid;gap:3px;font-size:14px}.dn-x{flex:0 0 auto;padding:2px 9px;font-size:16px;line-height:1.2}.pr-next-in.calm{border-color:var(--focus)}.help-dn{margin:10px 0 0}
 .iptools{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px 14px;flex:0 1 auto}.ipcols,.iptext{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto}.ipcols button,.iptext button{padding:2px 10px;min-width:34px}.iptext output{min-width:42px;text-align:center;font-variant-numeric:tabular-nums}.ipcols button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}.ip-card:not(.ip-full) .act-head .iptools{display:none}.ipr,.ip-q,.ip-set,.ip-task{zoom:var(--ipz,1)}.ip-items{grid-auto-rows:max-content}.ip-panel>.act-head{flex-wrap:wrap}.ip-card,.ip-card>*,.ip-set,.ipr,.ip-row>*{min-width:0;min-inline-size:0}.ipr .ipr-cr{display:inline-block;margin:0 10px 0 14px}.ipr{container-type:inline-size}@container (max-width:300px){.ipr .ipr-hd{grid-template-columns:minmax(0,1fr);gap:0}.ipr .ipr-hd dt{padding-top:6px}.ipr .ipr-cr{display:block;margin:6px 0 0}}.ip-full>.act-head{flex-wrap:wrap}.ipr .ipr-hd{grid-template-columns:max-content minmax(0,1fr)}.ipr .ipr-hd dd{min-width:0;overflow-wrap:anywhere}.ipr p,.ipr-s{overflow-wrap:anywhere}.ip-cell{display:grid;gap:4px;align-content:start;min-width:0}
 :root[data-ipcols="2"] .ip-items,:root[data-ipcols="3"] .ip-items{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}:root[data-ipcols="3"] .ip-items{grid-template-columns:repeat(3,minmax(0,1fr))}:root[data-ipcols="2"] .ip-full>.ip-items,:root[data-ipcols="3"] .ip-full>.ip-items{display:grid!important;align-content:start}
@@ -692,6 +695,7 @@ body.paused-bar .ip-full{top:var(--pbh,0px)}
         <span class="small muted">Saved on this device only.</span></div></details>
     </div>
   </div>
+  <div class="help-hint" id="helpHint" hidden><span>First time on this screen? Tap <b>Help</b> for a short guide to your role.</span><button type="button" id="helpHintX" style="flex:0 0 auto">Got it</button></div>
   <dialog id="helpDlg" class="help-dlg" aria-labelledby="helpTtl"><div class="help-head"><h2 id="helpTtl">Help</h2><button type="button" id="helpX">Close</button></div><div id="helpBody" class="help-body"></div></dialog>
   <div id="connBanner" class="banner" hidden></div>
   <div id="clockBanner" class="banner" hidden></div>
@@ -3943,7 +3947,7 @@ function helpOpen(){
   $('#helpTtl').textContent = k === 'C2' ? SIDES[app.role].name + ' C2' : h.t;
   $('#helpBody').innerHTML = '<p class="help-bluf">' + esc(h.b) + '</p>' + (['OC', 'L', 'A', 'T'].includes(k) ? '<label class="chk help-dn"><input type="checkbox" data-dnon' + (doNowOn() ? ' checked' : '') + '> Show the Do this now box (what to do next, from the live game)</label>' : '') + h.s.map(([hd, ord, it]) => '<h3>' + esc(hd) + '</h3><' + (ord ? 'ol' : 'ul') + '>' + it.map(x => '<li>' + esc(x) + '</li>').join('') + '</' + (ord ? 'ol' : 'ul') + '>').join('');
   if (d.open) return; if (typeof d.showModal === 'function') d.showModal(); else { d.classList.add('fb'); d.setAttribute('open', ''); } $('#helpBody').scrollTop = 0;
-  helpLog(k);
+  helpLog(k); helpSeen(k, true); helpHint();
 }
 function helpLog(k){
   try {
@@ -3956,6 +3960,9 @@ function helpLog(k){
 }
 function helpClose(){ const d = $('#helpDlg'); if (typeof d.close === 'function') d.close(); else d.removeAttribute('open'); }
 $('#helpBtn').onclick = helpOpen;
+function helpSeen(k, set){ const lk = 'marala-helpseen-' + k; if (set){ try { localStorage.setItem(lk, '1'); } catch(e){} app.helpSeen = Object.assign(app.helpSeen || {}, { [k]:1 }); } if (app.helpSeen && app.helpSeen[k]) return true; try { return localStorage.getItem(lk) === '1'; } catch(e){ return false; } }
+function helpHint(){ const k = helpKey(), el = $('#helpHint'), b = $('#helpBtn'); if (!el) return; const show = k !== 'gate' && !!app.role && !helpSeen(k); if (el.hidden === show) el.hidden = !show; b.classList.toggle('hint', show); }
+$('#helpHintX').onclick = () => { helpSeen(helpKey(), true); helpHint(); };
 $('#helpX').onclick = helpClose;
 $('#helpBody').addEventListener('change', ev => { if (!ev.target.matches('[data-dnon]')) return; pref.set('marala-donow', ev.target.checked ? '1' : '0'); refresh(true); });
 $('#helpDlg').addEventListener('click', ev => { if (ev.target === ev.currentTarget) helpClose(); });
@@ -8937,7 +8944,7 @@ function refresh(force){
     else if (app.role === 'L') renderProps(S);
     else if (app.role[0] === 'T') renderTeam(S, app.role[1]);
     else renderWing(S, app.role, now);
-    doNowRender(S);
+    doNowRender(S); helpHint();
     rgSweep();
     if (app.fsEl && app.fsEl._lm && mapCfg(S)) drawDyn(app.fsEl._lm, S, app.fsSide);
   }
