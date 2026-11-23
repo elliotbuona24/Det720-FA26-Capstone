@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <title>Product Management</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS v5.3.8 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous" />
+
+    <link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+
+    <!--Nav Bar -->
+    <header>
+        <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
+            <div class="container">
+                <a class="navbar-brand" href="index.html">Penn State Coding Club</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+                    aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarMenu">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="signup.html">Member Signup</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="resources.html">Coding Resources</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="products.html">Products</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="cart.html">Shopping Cart</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="rsvp.html">Upcoming Events</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="submission.html">Submit Proposal Event</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+    <main>
+        <div class="container">
+
+            <!-- Page heading -->
+            <div class="row justify-content-center py-5">
+                <div class="col-12 col-md-8 text-center">
+                    <h1>Product Management</h1>
+                    <p>Add, edit, and delete club products. Every change is saved to the database.</p>
+                </div>
+            </div>
+
+            <!-- Resource form -->
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="card-title" id="formTitle">Add a Product</h2>
+
+                            <form id="resourceForm" novalidate>
+
+                                <div class="mb-3">
+                                    <label for="resourceId" class="form-label">
+                                        Product ID
+                                    </label>
+                                    <input type="text" class="form-control" id="resourceId" placeholder="P009" required>
+                                    <div class="invalid-feedback" id="resourceIdError"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="resourceTitle" class="form-label">
+                                        Product Title
+                                    </label>
+                                    <input type="text" class="form-control" id="resourceTitle" required>
+                                    <div class="invalid-feedback" id="resourceTitleError"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="category" class="form-label">
+                                        Category / Coding Language
+                                    </label>
+                                    <select class="form-select" id="category" required>
+                                        <option value="">Choose a category</option>
+                                        <option value="Python">Python</option>
+                                        <option value="HTML/CSS">HTML/CSS</option>
+                                        <option value="JavaScript">JavaScript</option>
+                                        <option value="SQL">SQL</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="categoryError"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="format" class="form-label">
+                                        Format
+                                    </label>
+                                    <select class="form-select" id="format" required>
+                                        <option value="">Choose a format</option>
+                                        <option value="Book - each">Book - each</option>
+                                        <option value="PDF - each">PDF - each</option>
+                                        <option value="Printed guide - each">Printed guide - each</option>
+                                        <option value="Workshop - per session">Workshop - per session</option>
+                                        <option value="Membership - per semester">Membership - per semester</option>
+                                        <option value="Merch - each">Merch - each</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="formatError"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="price" class="form-label">
+                                        Price ($)
+                                    </label>
+                                    <input type="number" class="form-control" id="price" min="0" step="0.01" required>
+                                    <div class="form-text">
+                                        Enter 0 for a free resource.
+                                    </div>
+                                    <div class="invalid-feedback" id="priceError"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">
+                                        Additional Information (Optional)
+                                    </label>
+                                    <textarea class="form-control" id="notes" rows="3"></textarea>
+                                </div>
+
+                                <button type="submit" id="saveResource" class="btn btn-primary">
+                                    Add Product
+                                </button>
+                                <button type="button" id="cancelEdit" class="btn btn-outline-secondary ms-2 d-none">
+                                    Cancel
+                                </button>
+
+                                <div id="resourceMessage" class="mt-3" role="status" aria-live="polite"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search resources using jQuery -->
+            <section class="mt-5">
+                <h2>Available Products</h2>
+
+                <label for="resourceSearch" class="form-label">
+                    Search by ID, title, or category
+                </label>
+                <input type="search" id="resourceSearch" class="form-control mb-3" placeholder="Search products...">
+
+                <!-- Resource display -->
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Format</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Notes</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resourceTableBody">
+                            <!-- JavaScript adds resource rows and Edit buttons here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- JSON display and download -->
+            <section class="mt-4">
+                <h2>Product Data (JSON)</h2>
+                <pre id="resourceJson" class="bg-white border rounded p-3">[]</pre>
+
+                <button type="button" id="downloadResources" class="btn btn-primary">
+                    Download JSON
+                </button>
+            </section>
+
+        </div>
+    </main>
+
+
+    <footer>
+        <p class="mb-0">Penn State Coding Club | IST 256 Group 1</p>
+    </footer>
+
+
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+        crossorigin="anonymous"></script>
+
+    <script src="products.js"></script>
+</body>
+
+</html>

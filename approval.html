@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Proposal Approval | Code Club</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+
+        <!--Nav Bar -->
+    <header>
+        <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
+            <div class="container">
+                <a class="navbar-brand" href="index.html">Penn State Coding Club</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+                    aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarMenu">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="signup.html">Member Signup</a></li>
+                        <li class="nav-item"><a class="nav-link" href="resources.html">Coding Resources</a></li>
+                        <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
+                        <li class="nav-item"><a class="nav-link" href="cart.html">Shopping Cart</a></li>
+                        <li class="nav-item"><a class="nav-link" href="rsvp.html">Upcoming Events</a></li>
+                        <li class="nav-item"><a class="nav-link" href="submission.html">Submit Proposal Event</a></li>
+                        <li class="nav-item"><a class="nav-link" href="billing.html">Billing</a></li>
+                        <li class="nav-item"><a class="nav-link" href="returns.html">Returns</a></li>
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="approval.html">Proposed Event Status</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container py-5">
+        <h1>Proposal Approval</h1>
+        <p>Review club activity proposals and update their status.</p>
+        <p class="text-muted">Class demo: moderator login is not implemented.</p>
+
+        <div id="approvalApp">Loading proposals...</div>
+    </main>
+
+    <footer>
+        <p class="mb-0">
+            Penn State Coding Club | IST 256 Group 1
+        </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="approval.js"></script>
+</body>
+</html>
