@@ -3,10 +3,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function signedIn() {
+      return request.auth != null && request.auth.token.email != null;
+    }
+
+    function me() {
+      return request.auth.token.email.lower();
+    }
+
+    function isOwner() {
+      return signedIn() && me() in ['OWNER_EMAIL_HERE'];
+    }
+
+    function adminPath() {
+      return /databases/$(database)/documents/admins/$(me());
+    }
+
     function isAdmin() {
-      return request.auth != null
-        && request.auth.token.email != null
-        && request.auth.token.email.lower() in ['ADMIN_EMAIL_HERE'];
+      return isOwner()
+        || (signedIn()
+          && exists(adminPath())
+          && get(adminPath()).data.active == true
+          && get(adminPath()).data.role in ['admin', 'owner']);
     }
 
     function validEvent(gameKey, eventId) {
@@ -17,10 +35,27 @@ service cloud.firestore {
         && d.id == eventId
         && eventId.size() <= 40
         && d.ts is number
+        && d.ts <= request.time.toMillis() + 120000
         && d.type is string && d.type.size() > 0 && d.type.size() <= 40
         && d.p is map
         && (!('side' in d) || d.side == null || (d.side is string && d.side.size() <= 12))
         && (!('by' in d) || d.by == null || (d.by is string && d.by.size() <= 12));
+    }
+
+    match /admins/{email} {
+      allow read: if isOwner() || (signedIn() && me() == email);
+      allow create: if isOwner()
+        && request.resource.data.email == email
+        && request.resource.data.role in ['admin', 'owner']
+        && request.resource.data.active is bool;
+      allow update: if (isOwner()
+          && request.resource.data.email == email
+          && request.resource.data.role in ['admin', 'owner']
+          && request.resource.data.active is bool)
+        || (signedIn() && me() == email
+          && resource.data.active == true
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastSeen']));
+      allow delete: if isOwner();
     }
 
     match /lobby/{gameId} {

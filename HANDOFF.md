@@ -16,15 +16,16 @@ For the next exercises officer, or anyone reusing the board for another exercise
 | --- | --- | --- |
 | GitHub repository | github.com, repository Settings | Add the new officer as a collaborator, or transfer the repository to a detachment GitHub account |
 | Firebase project | console.firebase.google.com, Project settings, Users and permissions | Add the new officer as Owner. Keep at least two Owners so the project is never locked out |
-| Admin sign-in | Firebase console, Authentication, Users | Create an account for the new officer, add that email to `isAdmin()` in the Firestore rules, then delete accounts that no longer need access |
+| Owner | Firestore rules, `isOwner()` | The owner email in the rules has full control, including managing admins. Change it in the console rules when ownership moves |
+| Admins | Board, Admin, Admins list (owner only) | The owner adds, renames, suspends and removes admins on the board. Each admin also needs a Firebase sign-in: tick "Also create their sign-in now" (needs sign-up turned on) or create it in Firebase console, Authentication, Users |
 | Billing (Blaze plan) | Firebase console, Usage and billing | Keep a budget alert on whoever pays. A full exercise costs well under a dollar |
 
 If you keep ownership yourself, still add a second Owner on Firebase and GitHub so the board survives a lost password.
 
 ## Security setup (one time, and after any account change)
 
-1. **Firestore rules:** paste `firestore.rules` from this repository into Firebase console, Firestore Database, Rules. Replace `ADMIN_EMAIL_HERE` with the admin account emails (lowercase) in the console only; don't commit real emails here. Publish.
-2. **Turn off public sign-up:** Firebase console, Authentication, Settings, User actions: uncheck "Enable create (sign-up)". Admin accounts are made in the Users tab instead.
+1. **Firestore rules:** paste `firestore.rules` from this repository into Firebase console, Firestore Database, Rules. Replace `OWNER_EMAIL_HERE` with the owner's email (lowercase) in the console only; don't commit real emails here. Publish. Other admins are managed on the board, not in the rules. The first time the owner signs in to Admin after publishing, the board adds the owner to the Admins list.
+2. **Sign-up setting:** Firebase console, Authentication, Settings, User actions, "Enable create (sign-up)". Leave it off and create admin sign-ins in the Users tab, or turn it on so the owner can create them from the board. Either way, a sign-in alone gives no access; only the owner's Admins list does.
 3. **Plan:** keep the project on the Blaze (pay as you go) plan with a small budget alert. The free Spark plan allows 50,000 document reads a day, and a full exercise with 50+ devices reads far more than that. On Spark the board stops syncing partway through the exercise.
 4. **API key (optional):** Google Cloud console, APIs and Services, Credentials, the Browser key: add an HTTP referrer restriction for `https://YOUR-USERNAME.github.io/*`. The key in `index.html` is meant to be public; the rules are what protect the data.
 5. **Game PINs:** use 8 or more letters and numbers for real games (the admin page warns on shorter ones). The game list is public, so a short game PIN can be guessed.
@@ -44,7 +45,7 @@ Most content lives in the game file, not the code. The parts below are built int
 
 | Name | What it holds |
 | --- | --- |
-| `SIDES`, `SITES`, `BASE_SITE_KEYS` | Force names, capture sites and their grid squares |
+| `SIDES`, `SITES`, `BASE_SITE_KEYS` | Force labels, capture sites and their grid squares. Who each force is and the four key site names can be changed per game without code: Admin, Edit game, Names in this game |
 | `GEO`, `DEFAULT_POIS` | Area 5 map outline and points of interest |
 | `PROBLEMS` | The built-in intel packages, including their answers. Anyone can read these in the page source, so for a new exercise write new packages or start games with the starter content turned off and load custom packages through the game file |
 | `CUB_STD`, `CUB_LINES`, `RHYTHM` | Update brief lines and battle rhythm |

@@ -293,7 +293,8 @@ input::placeholder,textarea::placeholder{font-style:italic;opacity:.7}
 .jambox{height:340px;border-radius:8px;border:2px dashed var(--bad);display:grid;place-content:center;gap:6px;text-align:center;padding:16px;background:repeating-linear-gradient(45deg,transparent 0 12px,rgba(200,40,40,.06) 12px 24px)}.jambox b{color:var(--bad);letter-spacing:.08em}
 .gridtog{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:4px 6px;font:500 13px/1.3 var(--body);display:grid;gap:4px;max-width:230px}.gridtog .gt-btn{background:transparent;color:#fff;border:0;padding:2px 4px;font:600 13px/1.2 var(--body);cursor:pointer;text-align:right}.gridtog .gt-list{display:grid;gap:4px;padding:4px 6px 2px 2px;max-height:60vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}.gridtog .gt-list[hidden]{display:none}.nato{background:none;border:0}.poi{background:none;border:0}.wpicon{background:none;border:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}.wpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:4px;padding:2px}.wpgrid button{padding:5px 0;display:flex;justify-content:center;align-items:center}.wpgrid button[aria-pressed="true"]{outline:2.5px solid var(--ink);outline-offset:-1px;background:var(--panel-2)}.wpsw{display:flex;gap:4px;flex-wrap:wrap;align-items:center}.wpsw button{width:24px;height:24px;padding:0;border-radius:50%;border:1.5px solid var(--line)}.wpsw input[type=color]{width:34px;height:28px;padding:0 2px}.wcicon{background:none;border:0;filter:drop-shadow(0 0 4px rgba(124,255,107,.9))}.gridtog label{display:flex;gap:6px;align-items:center;cursor:pointer;margin:0;color:#fff;font-size:13px}.gridtog input{margin:0;width:auto}
 .gl{font:600 12px/1 var(--mono);color:#ffd400;text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;white-space:nowrap;text-align:center}
-.gl.m{color:#8fe6ff;font-size:10px}.gl.f{color:#bdf0ff;font-size:9px;font-weight:500}.leaflet-pane.contour-pane{filter:brightness(1.7) saturate(1.3)}.cursor-grid{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:3px 8px;font:600 12px/1.3 var(--mono,monospace);pointer-events:none}.gridtog select{width:100%;font-size:13px;padding:2px 4px;margin:0 0 2px;color:#111;background:#fff}
+.bpanel{order:-2;grid-column:1/-1!important}#vWhite.bmode .white-grid.filtered>[data-sec~="b-map"][data-sec~="c-intel"]{grid-column:span 2}#vWhite.bmode [data-bbody] .li{padding:6px 10px}.cfbar{order:-1;grid-column:1/-1!important;padding:8px 10px}.bsteps,.cfbar .seg{display:flex;flex-wrap:wrap;gap:6px}.bsteps button,.cfbar button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px}.bsteps button[aria-pressed="true"],.cfbar button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}.bnum{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1px solid currentColor;font-size:12px}.bmark{font-size:12px;opacity:.85}.bmark.bad{color:var(--bad);font-weight:600}.bsteps button[aria-pressed="true"] .bmark.bad{color:inherit}.bck{display:inline-grid;place-items:center;flex:0 0 24px;height:24px;border-radius:50%;background:var(--bad);color:#fff;font-weight:700}.bck.ok{background:var(--good, #2e7d32)}
+.draft-corner span{display:block;width:18px;height:18px;border-radius:50%;background:#ff9f1a;border:3px solid #fff;box-shadow:0 0 4px #000;cursor:move}.draft-pt b{display:inline-block;white-space:nowrap;font:600 12px/1.2 system-ui,sans-serif;color:#000;background:#ff9f1a;border:2px solid #fff;border-radius:4px;padding:2px 5px;box-shadow:0 0 3px #000;cursor:move;transform:translate(-50%,-50%)}.gl.m{color:#8fe6ff;font-size:10px}.gl.f{color:#bdf0ff;font-size:9px;font-weight:500}.leaflet-pane.contour-pane{filter:brightness(1.7) saturate(1.3)}.cursor-grid{background:rgba(0,0,0,.75);color:#fff;border-radius:6px;padding:3px 8px;font:600 12px/1.3 var(--mono,monospace);pointer-events:none}.gridtog select{width:100%;font-size:13px;padding:2px 4px;margin:0 0 2px;color:#111;background:#fff}
 .leaflet-tooltip.sitelbl,.leaflet-tooltip.teamlbl{background:rgba(10,14,12,.72);color:#fff;border:0;box-shadow:none;font:600 12px/1.2 var(--body);padding:2px 6px}
 .leaflet-tooltip.sitelbl:before,.leaflet-tooltip.teamlbl:before{display:none}
 .leaflet-container{font-family:var(--body)}
@@ -705,7 +706,7 @@ body.paused-bar .ip-full{top:var(--pbh,0px)}
   <section id="gate" class="gate" hidden>
     <div class="stack">
       <h1>Marala Island Board</h1>
-      <p class="lede">Live game board for the Capstone exercise: Blue Force (US-led Coalition) versus Red Force (North Korea).</p>
+      <p class="lede" id="gateLede">Live game board for the Capstone exercise: Blue Force (US-led Coalition) versus Red Force (North Korea).</p>
     </div>
     <div id="gateNoGame" class="panel" hidden>
       <h2>No game set up yet</h2>
@@ -748,7 +749,17 @@ body.paused-bar .ip-full{top:var(--pbh,0px)}
         <p id="adErr" class="small" style="color:var(--bad);margin:0" hidden></p></form>
       <div id="adWho" class="row" hidden style="justify-content:flex-start;align-items:center"><span class="small" id="adWhoTxt"></span><button type="button" id="adOut" style="flex:0 0 auto">Sign out</button></div>
     </div>
+    <p class="small" id="adRoleNote" hidden style="margin:0"></p>
     <div id="adBody" class="stack" hidden>
+      <div class="panel stack" id="adAdmins" hidden><div class="act-head"><h2>Admins</h2><span class="small muted" id="adACount"></span></div>
+        <p class="small muted" style="margin:0">Admins can create, edit, back up and delete games and change the names used in each game. Only the owner can add, change or remove admins.</p>
+        <div class="list" id="adAList"></div>
+        <form id="adAForm" class="stack" style="border-top:1px solid var(--line);padding-top:10px"><h3 class="small" style="margin:0">Add an admin</h3>
+          <div class="row"><label for="adAEmail">Email<input id="adAEmail" type="email" maxlength="120" required autocomplete="off"></label><label for="adAName">Name<input id="adAName" maxlength="60" autocomplete="off" placeholder="Example: C/Capt Pascal"></label></div>
+          <label class="chk"><input type="checkbox" id="adANew"> Also create their sign-in now (they get an email to set their own password)</label>
+          <div class="row" style="justify-content:flex-start;align-items:center"><button type="submit" class="btn-side side-W" style="flex:0 0 auto">Add admin</button><span class="small muted" id="adAMsg"></span></div>
+        </form>
+      </div>
       <div class="panel stack"><div class="act-head"><h2>Games</h2><span class="small muted" id="adCount"></span></div>
         <div class="list" id="adGames"></div>
         <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side side-W" id="adNew" style="flex:0 0 auto">Create a new game</button><button type="button" id="adNewFile" style="flex:0 0 auto">Create a game from a backup file</button><button type="button" id="adRefresh" style="flex:0 0 auto">Refresh</button></div>
@@ -768,6 +779,14 @@ body.paused-bar .ip-full{top:var(--pbh,0px)}
           <label class="chk"><input type="radio" name="adEVenue" id="adEOut" value="out"> Outdoors in Area 5 (phone GPS)</label>
           <label class="chk"><input type="radio" name="adEVenue" id="adEIn" value="in"> Indoors, bad-weather plan (fireteams check in to rooms instead of GPS)</label>
           <details id="adERoomsBox"><summary class="small">Rooms and what each one holds</summary><p class="small muted" style="margin:6px 0">Each room holds up to two places from the island map. Rename a room or change its floor here. Saved with Save changes.</p><div class="list" id="adERooms"></div><div class="row" style="justify-content:flex-start"><button type="button" id="adERoomAdd" style="flex:0 0 auto">Add a room</button><button type="button" id="adERoomReset" style="flex:0 0 auto">Reset to the standard rooms</button></div></details>
+        </fieldset>
+        <fieldset class="stack" style="border:1px solid var(--line);border-radius:6px;padding:8px 12px"><legend class="small">Names in this game</legend>
+          <p class="small muted" style="margin:0">Blue Force and Red Force keep those labels. Change who each force is and what the four key sites are called. Site powers stay the same. Players see the new names as soon as you save.</p>
+          <div class="row"><label for="adNBF">Blue Force is<input id="adNBF" maxlength="40" placeholder="US-led Coalition"></label><label for="adNBS">Short name in sentences<input id="adNBS" maxlength="30" placeholder="the Coalition"></label></div>
+          <div class="row"><label for="adNRF">Red Force is<input id="adNRF" maxlength="40" placeholder="North Korea"></label><label for="adNRS">Short name in sentences<input id="adNRS" maxlength="30" placeholder="North Korea"></label></div>
+          <div class="row" id="adNSites"></div>
+          <p class="small muted" style="margin:0">The built-in Capstone intel packages are written for the Coalition and North Korea. With other names, turn them off and build your own.</p>
+          <div class="row" style="justify-content:flex-start"><button type="button" id="adNReset" style="flex:0 0 auto">Use the standard names</button></div>
         </fieldset>
         <label class="chk"><input type="checkbox" id="adEBots"> Allow practice bots in this game</label>
         <label class="chk"><input type="checkbox" id="adEAi"> Allow AI for the bots (each White Force uses its own key)</label>
@@ -1614,6 +1633,39 @@ const SITES = {
 };
 const SITE_KEYS = Object.keys(SITES);
 const BASE_SITE_KEYS = SITE_KEYS.slice();
+const SITE_POWERS = { harbor:'lowers the holding wing\u2019s escalation tally', fuel:'UAV every 30 minutes', radar:'shows every site the other wing holds', airstrip:'drone flight every 10 minutes' };
+const NAME_DEFAULTS = { B:{ full:'US-led Coalition', short:'the Coalition' }, R:{ full:'North Korea', short:'North Korea' }, sites:Object.fromEntries(BASE_SITE_KEYS.map(k => [k, SITES[k].name])) };
+let NAMES = cleanNames(null), namesSig = JSON.stringify(NAMES);
+function bareName(t){ return String(t || '').replace(/^the\s+/i, ''); }
+function capFirst(t){ t = String(t || ''); return t.charAt(0).toUpperCase() + t.slice(1); }
+function cleanNames(n){
+  n = n && typeof n === 'object' ? n : {};
+  const t = (v, d, m) => String(v == null ? '' : v).replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, m) || d;
+  const side = k => ({ full:t(n[k] && n[k].full, NAME_DEFAULTS[k].full, 40), short:t(n[k] && n[k].short, NAME_DEFAULTS[k].short, 30) });
+  return { B:side('B'), R:side('R'), sites:Object.fromEntries(BASE_SITE_KEYS.map(k => [k, t(n.sites && n.sites[k], NAME_DEFAULTS.sites[k], 24)])) };
+}
+function namesDefault(n){ return JSON.stringify(cleanNames(n)) === JSON.stringify(cleanNames(null)); }
+function applyNames(cfg){
+  const n = cleanNames(cfg && cfg.names), sig = JSON.stringify(n);
+  if (sig === namesSig) return false;
+  NAMES = n; namesSig = sig;
+  ['B', 'R'].forEach(k => { SIDES[k].long = SIDES[k].name + ' - ' + n[k].full; });
+  BASE_SITE_KEYS.forEach(k => { SITES[k].name = n.sites[k]; SITES[k].letter = n.sites[k].charAt(0).toUpperCase(); });
+  if (typeof MAP_POINTS !== 'undefined') MAP_POINTS.forEach(p => { if (BASE_SITE_KEYS.includes(p[0])) p[1] = n.sites[p[0]]; });
+  return true;
+}
+function natTxt(t){
+  const B = NAMES.B, R = NAMES.R;
+  if (B.full === NAME_DEFAULTS.B.full && B.short === NAME_DEFAULTS.B.short && R.full === NAME_DEFAULTS.R.full && R.short === NAME_DEFAULTS.R.short) return t;
+  return String(t == null ? '' : t).replace(/US-led Coalition|[Tt]he Coalition|Coalition|North Korean|North Korea/g, m => m === 'US-led Coalition' ? B.full : m === 'the Coalition' ? B.short : m === 'The Coalition' ? capFirst(B.short) : m === 'Coalition' ? bareName(B.short) : m === 'North Korean' ? bareName(R.short) : R.short);
+}
+function nameTxt(t){
+  t = natTxt(t);
+  if (BASE_SITE_KEYS.every(k => NAMES.sites[k] === NAME_DEFAULTS.sites[k])) return t;
+  const keys = BASE_SITE_KEYS.slice().sort((a, b) => NAME_DEFAULTS.sites[b].length - NAME_DEFAULTS.sites[a].length);
+  const re = new RegExp(keys.map(k => NAME_DEFAULTS.sites[k].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
+  return String(t).replace(re, m => NAMES.sites[keys.find(k => NAME_DEFAULTS.sites[k] === m)]);
+}
 function siteMake(S, p, e){
   const k = String(p.k || ''), pt = p.pt, name = String(p.name || '').trim().slice(0, 40);
   if (!/^x[\w-]{3,40}$/.test(k) || SITES[k] || !name || !(Array.isArray(pt) && pt.length === 2 && pt.every(Number.isFinite))){ pushLog(S, 'New site refused: incomplete', null, e, 'rejected'); return false; }
@@ -2002,8 +2054,8 @@ function cubNext(S, side){
   const o = cubOpen(S, side); if (o) return o;
   return RHYTHM.find(x => x.kind === 'cub' && rhythmAt(x) <= END_G + 1e-9 && S.g < rhythmAt(x) - CUB_EARLY - 1e-9 && !(S.cubs || []).some(q => q.side === side && q.n === x.n)) || null;
 }
-function intentOf(S, side){ return (S.intent && S.intent[side]) || INTENT_DEFAULT[side]; }
-function pirsOf(S, side){ return (S.pirs && S.pirs[side]) || PIR_DEFAULT[side]; }
+function intentOf(S, side){ return (S.intent && S.intent[side]) || nameTxt(INTENT_DEFAULT[side]); }
+function pirsOf(S, side){ return (S.pirs && S.pirs[side]) || PIR_DEFAULT[side].map(nameTxt); }
 function aocResOf(S, side){ if (!S.aocRes) S.aocRes = { B:Object.assign({}, AOC_RES), R:Object.assign({}, AOC_RES) }; return S.aocRes[side]; }
 function strikeAuth(S, side){ return S.strikeAuth && S.strikeAuth[side] === 'aoc' ? 'aoc' : 'jfacc'; }
 const HOLD_CAPS = { uav:'UAV launches', drone:'Drone flights', jam:'Datalink jamming', show:'Show of force', contend:'Starting contention', cstrike:'Cache and militia strikes' };
@@ -2259,7 +2311,7 @@ function tick(S, g){
   ['B','R'].forEach(side => {
     if (S.escBy[side] > 0){ const d = Math.min(S.escBy[side], Math.max(1, Math.round(S.escBy[side] * (ESC_DECAY + (S.raisedBy[side] ? 0 : ESC_DECAY_QUIET))))); S.escBy[side] -= d; S.decayed[side] += d; }
     S.raisedBy[side] = false;
-    if (powered(S, 'harbor', side) && S.escBy[side] > 0){ S.escBy[side] -= 1; S.decayed[side] += 1; parts[side].push('escalation caused −1 (Harbor)'); }
+    if (powered(S, 'harbor', side) && S.escBy[side] > 0){ S.escBy[side] -= 1; S.decayed[side] += 1; parts[side].push('escalation caused −1 (' + SITES.harbor.name + ')'); }
   });
   { const before = S.esc; lower(S, ESC_BASE + (S.raised ? 0 : ESC.quiet)); if (S.esc !== before){ parts.B.push('escalation −' + (before - S.esc)); parts.R.push('escalation −' + (before - S.esc)); } }
   S.raised = false;
@@ -3576,7 +3628,14 @@ async function firebaseDb(cfg){
     auth: async () => {
       if (authObj) return authObj;
       const Au = await import(FB_SDK + 'firebase-auth.js'), a = Au.getAuth(fapp);
-      authObj = { signIn:(e, pw) => Au.signInWithEmailAndPassword(a, e, pw), signOut:() => Au.signOut(a), onChange:cb => Au.onAuthStateChanged(a, cb), user:() => a.currentUser };
+      authObj = { signIn:(e, pw) => Au.signInWithEmailAndPassword(a, e, pw), signOut:() => Au.signOut(a), onChange:cb => Au.onAuthStateChanged(a, cb), user:() => a.currentUser,
+        reset:e => Au.sendPasswordResetEmail(a, e),
+        create:async e => {
+          const sec = A.getApps().find(x => x.name === 'adminCreate') || A.initializeApp(cfg, 'adminCreate'), a2 = Au.getAuth(sec);
+          const pw = Array.from(crypto.getRandomValues(new Uint8Array(24)), b => b.toString(36)).join('') + 'aA1!';
+          try { await Au.createUserWithEmailAndPassword(a2, e, pw); } finally { try { await Au.signOut(a2); } catch(x){} }
+          await Au.sendPasswordResetEmail(a, e);
+        } };
       return authObj;
     }
   };
@@ -3720,9 +3779,10 @@ function stopGameLocal(){
 function show(id){ { const dn = $('#doNow'); if (dn){ dn.hidden = true; dn.dataset.h = ''; } } setTimeout(() => { const vw = ['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].includes(id) && app.role; viewIcon(vw ? app.role : 'base'); if (!vw) document.title = BASE_TITLE; else if (app.role !== 'W') document.title = viewTitle(); }, 0); if (!['#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].includes(id)) clearGameOverlays(); ['#gate', '#setup', '#admin', '#vWing', '#vWhite', '#vPublic', '#vTeam', '#vOC', '#vDrone', '#vProps'].forEach(s => $(s).hidden = s !== id); $('#switchGame').hidden = !(app.multi && app.gid && id !== '#admin'); if (id !== '#vWing' && id !== '#vWhite' && id !== '#vDrone' && id !== '#vProps') closeFullMap(); if (id !== '#vProps') propNavStop(); }
 function roleLabel(r){ return r === 'OC' ? 'POC O/C' : r === 'D' ? 'Drone operator' : r === 'L' ? 'Props and logistics' : r === 'W' ? 'White Force' : r === 'A' ? 'AOC' : r === 'P' ? 'Public screen' : r && r[0] === 'T' ? SIDES[r[1]].name + ' fireteam' : SIDES[r].long; }
 function route(){
+  applyNames(app.cfg);
   const saved = LS.get('marala-role-' + (app.gid || 'none'));
   if (!app.role && saved && app.cfg) app.role = saved;
-  $('#gameTag').textContent = app.cfg ? (app.cfg.name || 'Game') + ' - Coalition vs North Korea' : 'Capstone - Coalition vs North Korea';
+  $('#gameTag').textContent = natTxt(app.cfg ? (app.cfg.name || 'Game') + ' - Coalition vs North Korea' : 'Capstone - Coalition vs North Korea'); { const ld = $('#gateLede'); if (ld){ ld.dataset.t = ld.dataset.t || ld.textContent; ld.textContent = natTxt(ld.dataset.t); } }
   if (app.wantSetup){ show('#setup'); $('#setupMulti').hidden = !app.multi; $('#sGamePin').required = !!app.multi; return; }
   if (app.wantAdmin){ show('#admin'); adminRender(); return; }
   if (app.multi && !app.gid){ app.role = null; renderMenu(); return; }
@@ -3776,8 +3836,8 @@ function renderGate(){
   const cards = [
     ['A', 'AOC', 'Air Operations Center: the full picture of both forces, the score and the log. Sets priorities for both forces and sends reminders.'],
     ['W', 'White Force', 'Runs the clock, checks reports, sends injects and sees through the fog of war.'],
-    ['B', 'Blue Force - Coalition', 'The US-led Coalition Wing Commander’s board: sites, reports, actions and points.'],
-    ['R', 'Red Force - North Korea', 'The North Korean Wing Commander’s board: sites, reports, actions and points.'],
+    ['B', SIDES.B.long, 'The Blue Force Wing Commander’s board: sites, reports, actions and points.'],
+    ['R', SIDES.R.long, 'The Red Force Wing Commander’s board: sites, reports, actions and points.'],
     ['P', 'Public screen', 'Clock, escalation meter and public news. No PIN needed.'],
     ['TB', 'Blue Force fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
     ['TR', 'Red Force fireteam', 'Phone screen for one fireteam: send your position and get orders from your C2.'],
@@ -3859,7 +3919,8 @@ const HELP = {
     ["Injects that need props", 0, ["A prop inject reads Props not placed until Props taps Placed.", "Props late: message them (Queue, POC messages) or use the LMR.", "Send anyway sends it now. Its response clock still starts only when the prop is placed."]],
     ["POCs and props", 0, ["Queue, Manage POCs: Locate asks that phone for a fresh position. Remove takes off a wrong sign-in.", "Queue: Send announcement reaches every POC.", "Fireteams: Ping asks a team’s phone for its position."]],
     ["Points and mistakes", 0, ["Calls: apply a call yourself when no POC sent it.", "Log/Points: every event and who sent it. Void undoes a wrong entry."]],
-    ["Backups", 0, ["Clock and setup: Download backup at about 0630, 0700 and right after ENDEX.", "If cell service fails for more than about 10 minutes, open the offline board and load the newest backup."]]] },
+    ["Backups", 0, ["Clock and setup: Download backup at about 0630, 0700 and right after ENDEX.", "If cell service fails for more than about 10 minutes, open the offline board and load the newest backup."]],
+    ["Setting up a game", 0, ["Builder: work through the steps in order: Scenario, Map and sites, Intel, Injects, Props, Files. Each step shows only what it needs and what is still to check.", "Map and sites: Draw the play area on the map, click two opposite corners, then drag the corners and the site markers. Save the map when it looks right.", "Check: everything still open before execution day, with Go to jump to it. Practice bots are there to rehearse the game.", "Intel and inject creation: the same tools on one screen, with a filter for Intel packages, Inject templates, Props or Creation files."]]] },
   P:{ t:"Public screen", b:"Display only. Nothing here needs input.", s:[] }
 };
 function doNowOn(){ return pref.get('marala-donow', '1') === '1'; }
@@ -4022,16 +4083,75 @@ $('#setupForm').addEventListener('submit', async ev => {
 });
 
 /* ---------- admin (multi-game) ---------- */
-const ad = { auth:null, user:null, games:[], editing:null, busy:false };
+const ad = { auth:null, user:null, role:undefined, rulesOld:false, admins:[], games:[], editing:null, busy:false };
 async function adminAuth(){
   if (!app.db || !app.db.auth) throw new Error('Admin needs the online board.');
-  if (!ad.auth){ ad.auth = await app.db.auth(); ad.auth.onChange(u => { ad.user = u || null; if (app.wantAdmin) adminRender(); if (u) adminLoad(); }); }
+  if (!ad.auth){ ad.auth = await app.db.auth(); ad.auth.onChange(u => { ad.user = u || null; ad.role = u ? undefined : null; ad.admins = []; if (app.wantAdmin) adminRender(); if (u) adminWho().then(() => { if (app.wantAdmin) adminRender(); if (adOk()){ adminLoad(); if (ad.role === 'owner') adminAdminsLoad(); } }); }); }
   return ad.auth;
 }
+function emKey(e){ return String(e || '').trim().toLowerCase(); }
+function adOk(){ return ad.role === 'owner' || ad.role === 'admin'; }
+async function adminWho(){
+  const em = emKey(ad.user && ad.user.email); ad.rulesOld = false;
+  if (!em){ ad.role = null; return; }
+  const ref = app.db.doc('admins/' + em);
+  try {
+    const s = await ref.get();
+    if (s.exists){ const d = s.data() || {}; ad.role = d.active === false ? 'off' : d.role === 'owner' ? 'owner' : 'admin'; if (ad.role !== 'off') ref.set(Object.assign({}, d, { lastSeen:Date.now() })).catch(() => {}); return; }
+  } catch(e){ if (!/permission/i.test((e && e.code) || '')){ ad.role = 'err'; return; } }
+  try { const now = Date.now(); await ref.set({ email:em, name:'', role:'owner', active:true, addedAt:now, addedBy:em, lastSeen:now }); ad.role = 'owner'; return; } catch(e){}
+  try { await app.db.collection('keys').get(); ad.role = 'admin'; ad.rulesOld = true; } catch(e){ ad.role = null; }
+}
+async function adminAdminsLoad(){
+  if (ad.role !== 'owner') return;
+  try { ad.admins = (await app.db.collection('admins').get()).map(d => Object.assign({ email:d.id }, d.data())); adminAdminsList(); }
+  catch(e){ $('#adAList').innerHTML = '<div class="empty">The admin list could not load (' + esc(e.code || e.message || 'error') + '). If this says permission-denied, publish the new Firestore rules.</div>'; }
+}
+function adminAdminsList(){
+  const me = emKey(ad.user && ad.user.email), d8 = t => t ? new Date(t).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : '';
+  const L = ad.admins.slice().sort((a, b) => (b.role === 'owner') - (a.role === 'owner') || String(a.name || a.email).localeCompare(String(b.name || b.email)));
+  $('#adACount').textContent = L.length + (L.length === 1 ? ' person' : ' people');
+  $('#adAList').innerHTML = L.map(a => {
+    const own = a.role === 'owner', off = a.active === false;
+    const chip = own ? '<span class="chip ok">Owner</span>' : off ? '<span class="chip wait">Suspended</span>' : '<span class="chip ok">Admin</span>';
+    const meta = [a.email, a.addedAt && !own ? 'added ' + d8(a.addedAt) + (a.addedBy ? ' by ' + a.addedBy : '') : '', a.lastSeen ? 'last signed in ' + d8(a.lastSeen) : 'not signed in yet'].filter(Boolean).join(', ');
+    const btns = own ? (a.email === me ? '<span class="small muted">You</span>' : '') : '<button type="button" data-adarename="' + esc(a.email) + '" style="flex:0 0 auto">Rename</button><button type="button" data-adaactive="' + esc(a.email) + '" style="flex:0 0 auto">' + (off ? 'Reactivate' : 'Suspend') + '</button><button type="button" data-adareset="' + esc(a.email) + '" style="flex:0 0 auto">Send password reset</button><button type="button" data-adadel="' + esc(a.email) + '" style="flex:0 0 auto">Remove</button>';
+    return '<div class="li" style="flex-wrap:wrap;gap:6px"><div class="grow"><b>' + esc(a.name || a.email) + '</b> ' + chip + '<div class="small muted">' + esc(meta) + '</div></div>' + btns + '</div>';
+  }).join('') || '<div class="empty">No admins yet.</div>';
+}
+$('#adAForm').addEventListener('submit', async ev => {
+  ev.preventDefault(); const msg = t => $('#adAMsg').textContent = t;
+  const em = emKey($('#adAEmail').value), name = $('#adAName').value.replace(/\s+/g, ' ').trim().slice(0, 60), mk = $('#adANew').checked;
+  if (!/^[^@\s\/]+@[^@\s\/]+\.[^@\s\/]+$/.test(em)){ msg('Enter a valid email.'); return; }
+  if (ad.admins.some(a => a.email === em)){ msg('That email is already on the list.'); return; }
+  msg('Adding\u2026');
+  try { const now = Date.now(); await app.db.doc('admins/' + em).set({ email:em, name, role:'admin', active:true, addedAt:now, addedBy:emKey(ad.user.email) }); }
+  catch(e){ msg('Could not add (' + (e.code || e.message || 'error') + ').'); return; }
+  let note = 'Added. ';
+  if (mk){
+    try { await (await adminAuth()).create(em); note += 'Their sign-in was created and they were emailed a link to set a password.'; }
+    catch(e){ const c = (e && e.code) || ''; note += /email-already-in-use/.test(c) ? 'They already have a sign-in, so nothing was created. Use Send password reset if they need a new password.' : /operation-not-allowed|admin-restricted/.test(c) ? 'Sign-ups are turned off in Firebase, so create their sign-in in the Firebase console under Authentication, Users.' : 'Their sign-in could not be created (' + (c || e.message || 'error') + '). Create it in the Firebase console under Authentication, Users.'; }
+  } else note += 'They need a sign-in for this email. Create one in the Firebase console under Authentication, Users, or tick the box next time.';
+  $('#adAForm').reset(); msg(note); adminAdminsLoad();
+});
+$('#adAList').addEventListener('click', async ev => {
+  const b = ev.target.closest('[data-adarename],[data-adaactive],[data-adareset],[data-adadel]'); if (!b) return;
+  const em = b.dataset.adarename || b.dataset.adaactive || b.dataset.adareset || b.dataset.adadel, a = ad.admins.find(x => x.email === em); if (!a || a.role === 'owner') return;
+  const save = d => app.db.doc('admins/' + em).set(Object.assign({}, a, d));
+  try {
+    if (b.dataset.adarename){ const n = prompt('Name for ' + em, a.name || ''); if (n == null) return; await save({ name:n.replace(/\s+/g, ' ').trim().slice(0, 60) }); toast('Renamed.'); }
+    else if (b.dataset.adaactive){ const off = a.active !== false; if (off && !confirm('Suspend ' + (a.name || em) + '? They lose admin access right away, but stay on the list so you can reactivate them.')) return; await save({ active:!off }); toast(off ? 'Suspended.' : 'Reactivated.'); }
+    else if (b.dataset.adareset){ if (!confirm('Email ' + em + ' a link to set a new password?')) return; await (await adminAuth()).reset(em); toast('Password reset email sent to ' + em + '.'); }
+    else if (b.dataset.adadel){ if (!confirm('Remove ' + (a.name || em) + ' as an admin? They lose access right away. Their Firebase sign-in stays until you delete it in the Firebase console.')) return; await app.db.doc('admins/' + em).del(); toast('Removed.'); }
+    adminAdminsLoad();
+  } catch(e){ toast('That didn\u2019t work (' + (e.code || e.message || 'error') + ').', true); }
+});
 function adminRender(){
-  const signed = !!ad.user;
-  $('#adLogin').hidden = signed; $('#adWho').hidden = !signed; $('#adBody').hidden = !signed;
-  if (signed) $('#adWhoTxt').textContent = 'Signed in as ' + (ad.user.email || 'admin') + '.';
+  const signed = !!ad.user, ok = signed && adOk(), note = $('#adRoleNote');
+  $('#adLogin').hidden = signed; $('#adWho').hidden = !signed; $('#adBody').hidden = !ok; $('#adAdmins').hidden = !(ok && ad.role === 'owner');
+  if (signed) $('#adWhoTxt').textContent = 'Signed in as ' + (ad.user.email || 'admin') + (ad.role === 'owner' ? ' (owner).' : ad.role === 'admin' ? ' (admin).' : '.');
+  const nt = !signed ? '' : ad.role === undefined ? 'Checking your access\u2026' : ad.role === 'off' ? 'Your admin access is suspended. Ask the owner to reactivate it.' : ad.role === 'err' ? 'Your access could not be checked. Check the connection and reload.' : !ok ? 'This account is not an admin of this board. Ask the owner to add you.' : ad.rulesOld ? 'Managing admins needs the new Firestore rules. Publish them in the Firebase console to see the Admins list.' : '';
+  note.hidden = !nt; note.textContent = nt; note.style.color = ok ? '' : 'var(--bad)';
   if (!app.db || !app.db.auth){ $('#adErr').hidden = false; $('#adErr').textContent = 'The admin page needs the online board.'; return; }
   adminAuth().catch(e => { $('#adErr').hidden = false; $('#adErr').textContent = 'Sign-in could not load (' + (e.code || e.message || 'error') + '). Check the connection.'; });
 }
@@ -4041,7 +4161,7 @@ $('#adLogin').addEventListener('submit', async ev => {
   try { const a = await adminAuth(); await a.signIn($('#adEmail').value.trim(), $('#adPass').value); $('#adPass').value = ''; }
   catch(e){ $('#adErr').hidden = false; $('#adErr').textContent = /invalid|wrong|user-not-found|credential/i.test(e.code || '') ? 'That email and password don\u2019t match the admin account.' : 'Sign-in failed (' + (e.code || e.message || 'error') + ').'; }
 });
-$('#adOut').onclick = async () => { try { await (await adminAuth()).signOut(); } catch(e){} ad.games = []; adminRender(); };
+$('#adOut').onclick = async () => { try { await (await adminAuth()).signOut(); } catch(e){} ad.games = []; ad.admins = []; ad.role = null; adminRender(); };
 async function adminLoad(){
   try {
     const [lob, keys] = await Promise.all([app.db.collection('lobby').get(), app.db.collection('keys').get()]);
@@ -4098,9 +4218,17 @@ function adminEdit(g){
   ad.editing = g; const f = $('#adEdit'); f.hidden = false; $('#adEMsg').textContent = '';
   $('#adEditTitle').textContent = 'Edit ' + (g.name || 'game'); $('#adEName').value = g.name || ''; $('#adEPin').value = g.pin || ''; $('#adEListed').checked = g.listed !== false; $('#adEStarter').checked = !(g.cfg && g.cfg.blank); $('#adEStarter').closest('label').hidden = !!(g.cfg && g.cfg.blank); { const pr = (g.cfg && g.cfg.practice) || {}; $('#adEBots').checked = !!pr.bots; $('#adEAi').checked = !!(pr.bots && pr.ai); $('#adEAi').disabled = !pr.bots; }
   { const ind = (g.cfg && g.cfg.indoor) || {}; $('#adEIn').checked = !!ind.on; $('#adEOut').checked = !ind.on; adRoomsShow(indoorRooms(ind.rooms)); $('#adERoomsBox').open = false; }
+  adNamesShow(g.cfg && g.cfg.names);
   ['#adPW', '#adPA', '#adPB', '#adPR', '#adPTB', '#adPTR', '#adPOC', '#adPD', '#adPL'].forEach(s => $(s).value = '');
   f.scrollIntoView({ behavior:'smooth', block:'start' });
 }
+function adNamesShow(n){
+  n = cleanNames(n);
+  $('#adNBF').value = n.B.full; $('#adNBS').value = n.B.short; $('#adNRF').value = n.R.full; $('#adNRS').value = n.R.short;
+  $('#adNSites').innerHTML = BASE_SITE_KEYS.map(k => '<label>' + esc(NAME_DEFAULTS.sites[k]) + ' <span class="muted">(' + esc(SITE_POWERS[k]) + ')</span><input data-adnsite="' + k + '" maxlength="24" value="' + esc(n.sites[k]) + '" placeholder="' + esc(NAME_DEFAULTS.sites[k]) + '"></label>').join('');
+}
+function adNamesRead(){ return cleanNames({ B:{ full:$('#adNBF').value, short:$('#adNBS').value }, R:{ full:$('#adNRF').value, short:$('#adNRS').value }, sites:Object.fromEntries($$('#adNSites [data-adnsite]').map(i => [i.dataset.adnsite, i.value])) }); }
+$('#adNReset').onclick = () => adNamesShow(null);
 const AD_PLACES = () => [['', 'Nothing']].concat(BASE_SITE_KEYS.map(k => [k, SITES[k].name]), [['town', 'Marala Town'], ['lzB', 'Blue Force HQ'], ['lzR', 'Red Force HQ'], ['wc', 'White Force']], (DEFAULT_MAP.pois || []).map((x, i) => ['poi-0-' + i, x.name]));
 function adRoomRow(r){ const sel = v0 => '<select style="flex:1 1 150px">' + AD_PLACES().map(([k, n]) => '<option value="' + esc(k) + '"' + (k === v0 ? ' selected' : '') + '>' + esc(n) + '</option>').join('') + '</select>';
   return '<div class="li" data-adroom style="flex-wrap:wrap;gap:6px" data-use="' + esc(r.use || '') + '" data-alias="' + esc((r.alias || []).join('|')) + '"><input value="' + esc(r.id) + '" maxlength="24" aria-label="Room" style="flex:1 1 120px"><input value="' + esc(r.floor || '') + '" maxlength="12" aria-label="Floor" placeholder="Floor" style="flex:0 1 80px">' + sel(r.places[0] || '') + sel(r.places[1] || '') + '<button type="button" data-adroomdel style="flex:0 0 auto">Remove</button></div>'; }
@@ -4119,6 +4247,10 @@ $('#adEdit').addEventListener('submit', async ev => {
   if (pin !== normPin(g.pin) && !pinOk(pin)) return;
   const cfg = JSON.parse(JSON.stringify(g.cfg)); cfg.name = name; cfg.blank = blank; { const bo = $('#adEBots').checked; cfg.practice = { bots:bo, ai:bo && $('#adEAi').checked }; }
   { const was = !!(g.cfg.indoor && g.cfg.indoor.on), on = $('#adEIn').checked, rooms = adRoomsRead(); if (on && !rooms.length){ msg('Add at least one room for the indoor plan.'); return; } if (on !== was && !confirm(on ? 'Switch this game to the indoor plan? Every phone stops using GPS and fireteams check in to rooms.' : 'Switch this game back to outdoors? Every phone goes back to GPS.')) return; cfg.indoor = { on, rooms }; }
+  { const nm = adNamesRead(), low = BASE_SITE_KEYS.map(k => nm.sites[k].toLowerCase());
+    if (new Set(low).size < low.length){ msg('Give each key site a different name.'); return; }
+    if (nm.B.full.toLowerCase() === nm.R.full.toLowerCase()){ msg('Blue Force and Red Force need different names.'); return; }
+    if (namesDefault(nm)) delete cfg.names; else cfg.names = nm; }
   const np = { W:'#adPW', A:'#adPA', B:'#adPB', R:'#adPR', TB:'#adPTB', TR:'#adPTR', OC:'#adPOC', D:'#adPD', L:'#adPL' };
   const given = Object.entries(np).map(([k, s]) => [k, $(s).value.trim()]).filter(([, v]) => v);
   if (new Set(given.map(([, v]) => v)).size < given.length){ msg('Each new role PIN must be different.'); return; }
@@ -4354,7 +4486,7 @@ function aarReportHTML(aar){
     '@media print{html{background:#fff}.bar{display:none}main{margin:0;padding:0;max-width:none;box-shadow:none}}@media (max-width:700px){main{padding:24px 16px;margin:0}table.data{font-size:9.5pt}}' +
     '</style></head><body><div class="bar"><button type="button" onclick="window.print()">Save as PDF</button><span>In the print window, choose "Save as PDF" as the printer.</span></div><main>' +
     '<div class="banner">* EXERCISE * EXERCISE * EXERCISE * EXERCISE *</div><div class="unit"><b>AFROTC DETACHMENT 720</b><span>Capstone</span></div><h1>AFTER-ACTION REPORT</h1>' +
-    '<p class="meta">' + h(aar.name) + ', ' + h(built) + ', board time ' + t(aar.startG) + ' to ' + t(aar.endG) + (f.endex ? '' : ' (built at ' + t(f.g) + ', before ENDEX)') + '<br>Marala Island: Blue Force (US-led Coalition) and Red Force (North Korea)' + (aar.extra && aar.extra.indoor ? '<br>Played on the indoor plan from ' + t(aar.extra.indoor.g) + ': ' + aar.extra.indoor.rooms + ' rooms, positions from room check-ins instead of GPS' : '') + '</p>' +
+    '<p class="meta">' + h(aar.name) + ', ' + h(built) + ', board time ' + t(aar.startG) + ' to ' + t(aar.endG) + (f.endex ? '' : ' (built at ' + t(f.g) + ', before ENDEX)') + natTxt('<br>Marala Island: Blue Force (US-led Coalition) and Red Force (North Korea)') + (aar.extra && aar.extra.indoor ? '<br>Played on the indoor plan from ' + t(aar.extra.indoor.g) + ': ' + aar.extra.indoor.rooms + ' rooms, positions from room check-ins instead of GPS' : '') + '</p>' +
     '<h2>1. BLUF</h2><div class="bluf"><b>' + h(winner) + '</b> ' + h(war) + '</div><table class="stats"><tr><td class="b"><b>' + b.total + '</b><span>Blue Force points</span></td><td class="r"><b>' + r.total + '</b><span>Red Force points</span></td><td><b>' + f.esc + '</b><span>Final escalation, ' + h(lvl(f.esc)) + '</span></td><td><b>' + f.hn.B + ' / ' + f.hn.R + '</b><span>Diplomatic points B / R</span></td></tr></table>' +
     '<h2>2. Final Score</h2><table class="data"><thead><tr><th>Category</th><th class="num">Blue Force</th><th class="num">Red Force</th></tr></thead><tbody>' + scoreRows + '</tbody></table>' +
     (f.aid ? '<p class="note">Aid packages delivered on time: Blue Force ' + f.aid.B.made + ', Red Force ' + f.aid.R.made + '. Missed: Blue Force ' + f.aid.B.missed + ', Red Force ' + f.aid.R.missed + '.</p>' : '') +
@@ -4762,6 +4894,7 @@ function lmapEnsure(el, M){
     map.on('moveend zoomend', () => { app.mapBusy = 0; if (app.mapDeferred){ app.mapDeferred = false; setTimeout(() => refresh(true), 0); } });
     map.on('click', ev => {
       const pt = [ev.latlng.lat, ev.latlng.lng]; app.lastClick = pt;
+      if (app.role === 'W' && app.mapDraw && mapDrawClick(pt)) return;
       const sq = squareOf((app.role === 'W' && app.previewMap) || mapCfg(app.S), pt);
       L.popup().setLatLng(ev.latlng).setContent('<b class="mono">' + esc(fmtPt(pt)) + '</b>' + (sq ? '<br>Play square ' + sq : '')).openOn(map);
       $$('[data-lastclick]').forEach(x => x.textContent = fmtPt(pt));
@@ -4776,6 +4909,7 @@ function lmapEnsure(el, M){
   st.map.fitBounds(b, { padding:[12, 12] });
   if (!M.preview) st.map.setMaxBounds(b.pad(1.5)); else st.map.setMaxBounds(null);
   drawFine(st);
+  if (app.role === 'W') setTimeout(() => draftDraw(st), 0);
   return st;
 }
 const MAP_LAYERS = [['play', 'Play grid', '#ffd400'], ['bounds', 'Play area boundary', '#ffffff'], ['mgrs', 'MGRS lines', '#6fdcff'], ['fine', '10 m lines when zoomed in', '#bdf0ff'], ['contours', 'Contour lines (USGS)', '#e0a56b'], ['sites', 'Sites, HQ and town', '#fff'], ['sitenames', 'Site names', '#fff'], ['teams', 'Fireteams', '#9fc0ff'], ['names', 'Fireteam names', '#9fc0ff'], ['reports', 'Reported sightings', '#ffb3ad'], ['oldrep', 'Reports older than 20 min', '#ffb3ad'], ['uav', 'UAV sightings', '#ffb3ad'], ['blasts', 'Explosions', '#ffb46b'], ['tips', 'IED tips (unconfirmed devices)', '#ffcf5a'], ['mt', 'Militia targets', '#ff3b30'], ['show', 'Show of force areas', '#ff8f00'], ['poi', 'Interest points', '#ffe9a8'], ['wc', 'White Force location', '#7cff6b'], ['wp', 'Waypoints', '#ffcf5a'], ['wpB', 'Blue Force waypoints', '#5b8cff'], ['wpR', 'Red Force waypoints', '#ff6b6b'], ['wpq', 'Non-deployed waypoints', '#ffe9a8'], ['props', 'Props', '#ff9800']];
@@ -4836,6 +4970,45 @@ function drawGrid(layer, M, mlayer){
     L.marker(GEO.fromUTM(zone, maxE, N, south), { icon:L.divIcon({ className:'gl m', html:lab(N), iconSize:[30, 12], iconAnchor:[-6, 6] }), interactive:false }).addTo(layer);
   }
 }
+function draftForm(){
+  const ms = $('#vWhite [data-mapsetup]'); if (!ms) return null;
+  const get = k => { const i = $('[data-mp="' + k + '"]', ms), t = i ? i.value.trim() : ''; return t ? GEO.parsePoint(t) : null; };
+  const a = get('sw'), b = get('ne');
+  const pts = MAP_POINTS.map(([k, n]) => [k, n, get(k)]).filter(x => x[2]);
+  return { ms, open:ms.open, box:a && b ? { sw:[Math.min(a[0], b[0]), Math.min(a[1], b[1])], ne:[Math.max(a[0], b[0]), Math.max(a[1], b[1])] } : null, cols:+$('[data-mcols]', ms).value || 6, rows:+$('[data-mrows]', ms).value || 5, pts };
+}
+function draftDraw(st){
+  if (!st || !st.map || !window.L) return;
+  if (!st.gDraft) st.gDraft = L.layerGroup().addTo(st.map);
+  st.gDraft.clearLayers();
+  const F = draftForm(); if (!F) return;
+  const sz = $('[data-msize]', F.ms);
+  if (!F.open){ if (sz) sz.textContent = ''; return; }
+  if (F.box){
+    const M = { sw:F.box.sw, ne:F.box.ne, cols:F.cols, rows:F.rows }, { cols, rows } = gridDims(M), s = M.sw[0], w = M.sw[1], n = M.ne[0], e = M.ne[1];
+    const dl = { color:'#ff9f1a', weight:2, opacity:.95, dashArray:'6 5', interactive:false };
+    for (let c = 0; c <= cols; c++){ const x = w + (e - w) * c / cols; L.polyline([[s, x], [n, x]], dl).addTo(st.gDraft); }
+    for (let r = 0; r <= rows; r++){ const y = n - (n - s) * r / rows; L.polyline([[y, w], [y, e]], dl).addTo(st.gDraft); }
+    for (let c = 0; c < cols; c++) L.marker([n, w + (e - w) * (c + .5) / cols], { icon:L.divIcon({ className:'gl', html:COLS_L[c], iconSize:[20, 14], iconAnchor:[10, 18] }), interactive:false }).addTo(st.gDraft);
+    for (let r = 0; r < rows; r++) L.marker([n - (n - s) * (r + .5) / rows, w], { icon:L.divIcon({ className:'gl', html:String(r + 1), iconSize:[20, 14], iconAnchor:[24, 7] }), interactive:false }).addTo(st.gDraft);
+    const corner = (k, pt) => { const m = L.marker(pt, { draggable:true, title:k === 'sw' ? 'Southwest corner' : 'Northeast corner', icon:L.divIcon({ className:'draft-corner', html:'<span></span>', iconSize:[18, 18], iconAnchor:[9, 9] }) }).addTo(st.gDraft); m.on('dragend', () => { const ll = m.getLatLng(); $('[data-mp="' + k + '"]', F.ms).value = fmtPt([ll.lat, ll.lng]); draftAll(); }); };
+    corner('sw', M.sw); corner('ne', M.ne);
+    const wm = distM([s, w], [s, e]), hm = distM([s, w], [n, w]);
+    if (sz) sz.textContent = 'Play area about ' + Math.round(wm) + ' m wide and ' + Math.round(hm) + ' m tall. Each square is about ' + Math.round(wm / cols) + ' m by ' + Math.round(hm / rows) + ' m.';
+  } else if (sz) sz.textContent = '';
+  F.pts.forEach(([k, nm, pt]) => { const m = L.marker(pt, { draggable:true, title:nm, icon:L.divIcon({ className:'draft-pt', html:'<b>' + esc(nm) + '</b>', iconSize:null, iconAnchor:[0, 0] }) }).addTo(st.gDraft); m.on('dragend', () => { const ll = m.getLatLng(); $('[data-mp="' + k + '"]', F.ms).value = fmtPt([ll.lat, ll.lng]); draftAll(); }); });
+}
+function draftAll(){ $$('#vWhite .lmap').forEach(el => { if (el._lm) draftDraw(el._lm); }); }
+function mapDrawClick(pt){
+  const D = app.mapDraw, ms = $('#vWhite [data-mapsetup]'); if (!D || !ms) return false;
+  if (!D.first){ D.first = pt; toast('First corner set. Click the opposite corner.'); return true; }
+  const a = D.first;
+  $('[data-mp="sw"]', ms).value = fmtPt([Math.min(a[0], pt[0]), Math.min(a[1], pt[1])]);
+  $('[data-mp="ne"]', ms).value = fmtPt([Math.max(a[0], pt[0]), Math.max(a[1], pt[1])]);
+  mapDrawStop(); draftAll(); toast('Play area drawn. Adjust columns and rows, drag the corners or sites, then save.');
+  return true;
+}
+function mapDrawStop(){ app.mapDraw = null; $$('#vWhite [data-mdrawoff]').forEach(b => b.hidden = true); $$('#vWhite [data-mdraw]').forEach(b => b.hidden = false); }
 function drawFine(st){
   const g = st.gFine; g.clearLayers();
   const M = st.M, map = st.map; if (!M || !map._loaded || !gridPref().fine) return;
@@ -5773,7 +5946,7 @@ function buildWing(side){
           <button type="button" role="tab" aria-selected="false" data-tab="req">Requests</button>
         </div>
         <div data-pane="act" class="actions">
-          <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> - Every 20 minutes (10 with the Airstrip) - <span class="esc-up">+1 escalation</span></span></div>
+          <div class="act"><div class="act-head"><b>Drone flight</b><span class="cost"><span data-dronecount>Ready</span> - Every 20 minutes (10 with the ${esc(SITES.airstrip.name)}) - <span class="esc-up">+1 escalation</span></span></div>
             <form class="stack" data-f="drone"><label for="drQ-${side}">One question about one square or site<input id="drQ-${side}" name="q" maxlength="160" placeholder="Example: Who holds the Airstrip at B5?" required></label><div><button class="btn-side" type="submit">Send drone</button></div></form></div>
           <div class="act"><div class="act-head"><b>UAV</b><span class="cost"><span data-uavstate>Ready</span> - <span data-uavevery>Once every ${UAV_EVERY} minutes</span> - <span class="esc-up">+10 escalation</span></span></div>
             <p class="small muted" style="margin:0">Shows enemy fireteam positions to you and your fireteams: live for 1 minute, then as last seen for 5 minutes. The enemy wing is not notified.</p>
@@ -6394,7 +6567,7 @@ function renderWing(S, side, now){
   $('[data-esccaused]', v).textContent = S.escBy[side];
   $('[data-pts]', v).textContent = sc.total;
   $('[data-warbar]', v).innerHTML = S.war ? '<div class="warbar">War since ' + hhmm(S.warAt) + ' - Both scores cut in half</div>' : S.reveal ? '<div class="panel"><h2>Fog of war lifted: final points</h2>' + scoreTable(S, ['B', 'R']) + '</div>' : (jammed(S, side) ? '<div class="banner">Datalink jammed until ' + hhmm(S.jam[side]) + ': your live map and drone flights are down. LMRs still work.</div>' : '');
-  $('[data-radar]', v).textContent = S.reveal ? 'Fog of war lifted' : (S.sites.radar.holder === side && !S.sites.radar.contested) ? 'Radar Ridge shows every site the other wing holds' : 'Enemy positions appear only from your reports and UAV launches';
+  $('[data-radar]', v).textContent = S.reveal ? 'Fog of war lifted' : (S.sites.radar.holder === side && !S.sites.radar.contested) ? SITES.radar.name + ' shows every site the other wing holds' : 'Enemy positions appear only from your reports and UAV launches';
   const jm = jammed(S, side), real = jm ? jamMapInto($('[data-map]', v), S, side) : renderMapInto($('[data-map]', v), S, S.reveal ? null : side);
   if (jm && app.fsEl) closeFullMap();
   { const lg = (real ? realLegend() : legendHTML(S.reveal ? null : side)) + mapKeyHTML(false), le = $('[data-legend]', v); if (le.dataset.h !== lg){ le.dataset.h = lg; le.innerHTML = lg; } }
@@ -6436,7 +6609,7 @@ function renderWing(S, side, now){
   const uavN = uavEvery(S, side), uavL = S.uav[side], uavOk = uavReady(S, side);
   $('[data-uavstate]', v).textContent = uavOk ? (uavL && uavL.free ? 'Ready (retasked by the AOC)' : 'Ready') : 'Ready at ' + hhmm(Math.ceil(uavL.g + uavN));
   { const sr = $('[data-shrad]', v); if (sr) sr.textContent = showRadius(S); }
-  $('[data-uavevery]', v).textContent = 'Once every ' + uavN + ' minutes' + (uavN < UAV_EVERY ? ' (Fuel Depot)' : '');
+  $('[data-uavevery]', v).textContent = 'Once every ' + uavN + ' minutes' + (uavN < UAV_EVERY ? ' (' + SITES.fuel.name + ')' : '');
   { const box = $('[data-tchatbox]', v), lg = $('[data-tchatlog]', v), tid = app.chatTeam, t = tid && S.teams[side][tid];
     if (tid && !t){ app.chatTeam = null; box.hidden = true; }
     else if (tid){ const n = S.tchats.filter(m => m.side === side && m.team === tid).length, key = tid + '|' + n; $('[data-tchathead]', v).textContent = 'Messages with ' + teamLabel(t); if (lg.dataset.k !== key){ lg.dataset.k = key; lg.innerHTML = chatHTML(S, side, tid, 'c2'); lg.scrollTop = lg.scrollHeight; } if (!$('[data-pane="teams"]', v).hidden) chatMarkSeen(S, side, tid); }
@@ -7410,13 +7583,13 @@ async function aiCall(prompt, max, role){
   try {
     let r, j, t;
     if (AI.prov === 'gemini'){
-      r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', { method:'POST', signal:ctl.signal, headers:{ 'Content-Type':'application/json', 'x-goog-api-key':AI.key }, body:JSON.stringify({ systemInstruction:{ parts:[{ text:AI_BASE + (AI_ROLE[role] ? '\n\n' + AI_ROLE[role] : '') }] }, contents:[{ role:'user', parts:[{ text:prompt }] }], generationConfig:{ maxOutputTokens:max, temperature:.8 } }) });
+      r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', { method:'POST', signal:ctl.signal, headers:{ 'Content-Type':'application/json', 'x-goog-api-key':AI.key }, body:JSON.stringify({ systemInstruction:{ parts:[{ text:nameTxt(AI_BASE) + (AI_ROLE[role] ? '\n\n' + nameTxt(AI_ROLE[role]) : '') }] }, contents:[{ role:'user', parts:[{ text:prompt }] }], generationConfig:{ maxOutputTokens:max, temperature:.8 } }) });
       j = await r.json().catch(() => null); if (!r.ok) throw new Error((j && j.error && j.error.message) || 'HTTP ' + r.status);
       t = ((((j.candidates || [])[0] || {}).content || {}).parts || []).map(x => x.text || '').join('');
     } else {
       const url = AI.prov === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions', h = { 'Content-Type':'application/json', Authorization:'Bearer ' + AI.key };
       if (AI.prov === 'openrouter'){ h['X-Title'] = 'Marala practice bots'; }
-      r = await fetch(url, { method:'POST', signal:ctl.signal, headers:h, body:JSON.stringify({ model, max_tokens:max, temperature:.8, messages:[{ role:'system', content:AI_BASE + (AI_ROLE[role] ? '\n\n' + AI_ROLE[role] : '') }, { role:'user', content:prompt }] }) });
+      r = await fetch(url, { method:'POST', signal:ctl.signal, headers:h, body:JSON.stringify({ model, max_tokens:max, temperature:.8, messages:[{ role:'system', content:nameTxt(AI_BASE) + (AI_ROLE[role] ? '\n\n' + nameTxt(AI_ROLE[role]) : '') }, { role:'user', content:prompt }] }) });
       j = await r.json().catch(() => null); if (!r.ok) throw new Error((j && j.error && (j.error.message || j.error)) || 'HTTP ' + r.status);
       t = (((j.choices || [])[0] || {}).message || {}).content || '';
     }
@@ -7470,7 +7643,7 @@ function aiPool(S, sd, kind, tid){
 }
 function aiBrief(S, sd, n, lines){
   const L = lines.filter(x => x.kind !== 'pers' && x.kind !== 'rag');
-  return aiState(S, sd) + '\n\nWrite ' + SIDES[sd].name + ' Commander’s Update Brief ' + n + ' to the AOC. Return only a JSON object with these keys. Each value is plain text of at least the minimum length shown; write NONE only where allowed. Write the way a cadet staff officer briefs: facts with squares, times and fireteam numbers, then a one-clause assessment, then the next action. Example of a good Mission progress line: "Holding Radar Ridge (B4) since 0622 with #2 Bravo. #1 Alpha is on the Airstrip station task, code word expected by 0650. On track with intent: two sites held without contention." Do not copy the example; use the real game state.\n' + L.map(x => '"' + x.k + '": ' + x.l + ' (min ' + x.min + ' characters' + (x.none ? ', NONE allowed' : '') + '). ' + x.h).join('\n');
+  return aiState(S, sd) + '\n\nWrite ' + SIDES[sd].name + ' Commander’s Update Brief ' + n + ' to the AOC. Return only a JSON object with these keys. Each value is plain text of at least the minimum length shown; write NONE only where allowed. Write the way a cadet staff officer briefs: facts with squares, times and fireteam numbers, then a one-clause assessment, then the next action. Example of a good Mission progress line: "' + nameTxt('Holding Radar Ridge (B4) since 0622 with #2 Bravo. #1 Alpha is on the Airstrip station task') + ', code word expected by 0650. On track with intent: two sites held without contention." Do not copy the example; use the real game state.\n' + L.map(x => '"' + x.k + '": ' + x.l + ' (min ' + x.min + ' characters' + (x.none ? ', NONE allowed' : '') + '). ' + x.h).join('\n');
 }
 function botLockSync(v){
   if (BOT.on && !practiceOk('bots')){ botSet(null); toast('The admin locked practice bots for this game. Bots stopped.', true); const go = v && $('[data-botgo]', v); if (go) go.textContent = 'Start bots'; const st = v && $('[data-botst]', v); if (st) st.textContent = 'Bots are off.'; }
@@ -7835,7 +8008,7 @@ function buildWhite(){
     </div>`;
   v.innerHTML = `
   <div class="app">
-    <nav class="wnav" data-wnav aria-label="White Force sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['cmd', 'Command', 'data-cmdcnt'], ['wf', 'White Force'], ['plan', 'Upcoming'], ['queue', 'Queue'], ['send', 'Send', 'data-sendcnt'], ['resp', 'Response Windows', 'data-respcnt'], ['bdesk', 'Blue desk', 'data-dskcnt="B"'], ['rdesk', 'Red desk', 'data-dskcnt="R"'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log/Points'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup'], ['set', 'Settings'], ['all', 'All']].map(([k, n, c]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'create', 'setup', 'send', 'resp', 'map'].includes(k) ? ' data-aoc-off' : ['wf', 'plan', 'cmd', 'bdesk', 'rdesk'].includes(k) ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
+    <nav class="wnav" data-wnav aria-label="White Force sections"><div class="wnav-stat"><b class="mono" data-clock>—</b> <span data-wnesc></span></div><div class="wnav-tabs" role="tablist">${[['pic', 'Picture'], ['cmd', 'Command', 'data-cmdcnt'], ['wf', 'White Force'], ['plan', 'Upcoming'], ['queue', 'Queue'], ['send', 'Send', 'data-sendcnt'], ['resp', 'Response Windows', 'data-respcnt'], ['bdesk', 'Blue desk', 'data-dskcnt="B"'], ['rdesk', 'Red desk', 'data-dskcnt="R"'], ['map', 'Map'], ['calls', 'Calls'], ['intel', 'Intel'], ['teams', 'Fireteams'], ['msg', 'Messages'], ['log', 'Log/Points'], ['build', 'Builder'], ['create', 'Intel and inject creation'], ['setup', 'Clock and setup'], ['set', 'Settings'], ['all', 'All']].map(([k, n, c]) => '<button type="button" role="tab" data-wtab="' + k + '"' + (['calls', 'build', 'create', 'setup', 'send', 'resp', 'map'].includes(k) ? ' data-aoc-off' : ['wf', 'plan', 'cmd', 'bdesk', 'rdesk'].includes(k) ? ' data-aoc-only' : '') + '>' + '<span data-wtabname>' + n + '</span>' + (c ? '<span class="cnt" ' + c + ' hidden></span>' : '') + (k === 'queue' ? '<span class="cnt" data-wqcnt hidden></span>' : k === 'wf' ? '<span class="cnt" data-aocun hidden></span><span class="cnt cnt-q" data-wfcnt hidden></span>' : '') + '</button>').join('')}</div></nav>
     <div class="strip" data-sec="setup">
       <div class="stat clock"><span class="k">Board time</span><span class="v" data-clock>—</span><span class="s" data-next></span></div>
       <div class="stat wide"><span class="k">Escalation <span data-esclvl></span></span><span data-ladder></span><span class="s" data-escby></span></div>
@@ -7853,6 +8026,11 @@ function buildWhite(){
     </div>
     <div data-warbar></div>
     <div class="white-grid" data-wgrid>
+      <div class="panel stack bpanel" data-sec="build" data-aoc-off><div class="act-head"><h2>Builder</h2><span class="small muted">Set up the game one step at a time before execution day</span></div>
+        <div class="seg bsteps" role="group" aria-label="Builder steps" data-bsteps>${[['scen', 'Scenario'], ['map', 'Map and sites'], ['intel', 'Intel'], ['inj', 'Injects'], ['props', 'Props'], ['files', 'Files'], ['check', 'Check']].map(([k, n], i) => '<button type="button" data-bstep="' + k + '" aria-pressed="false"><span class="bnum">' + (i + 1) + '</span> ' + n + '<span class="bmark" data-bmark="' + k + '"></span></button>').join('')}</div>
+        <div data-bbody></div>
+      </div>
+      <div class="panel cfbar" data-sec="create" data-aoc-off><div class="seg" role="group" aria-label="Show in creation" data-cfbar>${[['all', 'All'], ['intel', 'Intel packages'], ['inj', 'Inject templates'], ['props', 'Props'], ['files', 'Creation files']].map(([k, n]) => '<button type="button" data-cf="' + k + '" aria-pressed="false">' + n + '</button>').join('')}</div></div>
       <section class="cmdsec" data-sec="cmd" data-cmdsec data-aoc-only>
         <details class="pic-card cmd-rh" data-cmdrhdet><summary class="pic-h"><h3>Battle Rhythm</h3><span class="small" data-cmdrhnext></span></summary><p class="small muted" style="margin:6px 0">Commander’s Update Briefs from each JFACC, the Change of Command and the final SITREP</p><div data-cmdrhythm></div></details>
         <div class="row cmd-filter"><div class="seg pillf" role="group" aria-label="Which force">${[['both', 'Both forces'], ['B', 'Blue Force'], ['R', 'Red Force']].map(([k, n]) => '<button type="button" data-cmdf="' + k + '" aria-pressed="false">' + n + (k !== 'both' ? '<span class="cnt" data-cmdfcnt="' + k + '" hidden></span>' : '') + '</button>').join('')}</div></div>
@@ -7918,7 +8096,7 @@ function buildWhite(){
         </div>
         <div class="pic-card"><div class="pic-h"><h3>Timeline</h3><span>Hover any bar or mark for details</span></div><div class="row tl-ctl" data-tlctl></div><div class="pic-tl" data-pictl></div></div>
       </section>
-      <div class="panel" data-sec="map create">
+      <div class="panel" data-sec="map create b-map c-intel">
         <div class="map-head"><h2 data-wmaptitle>White Force map</h2><div class="fogseg" role="group" aria-label="Map view" data-fogctl><button type="button" data-fogv="" aria-pressed="true">All (no fog of war)</button><button type="button" data-fogv="B" aria-pressed="false">Blue Force view</button><button type="button" data-fogv="R" aria-pressed="false">Red Force view</button></div><span class="small muted" data-mapnote>No fog of war: only this screen sees everything</span><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-mappoc> Show POCs</label><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-poclbl> POC names</label><button type="button" data-fullmap>Full screen map</button></div>
         <div class="map-wrap" data-map></div>
         <div data-legend></div>
@@ -7949,7 +8127,7 @@ function buildWhite(){
           <h3 class="small muted" style="margin:6px 0 0">Deployed</h3><div class="list" data-wplist></div>
         </div>
       </div>
-      <div class="stack" style="gap:14px;min-width:0" data-sec="queue msg send resp">
+      <div class="stack" style="gap:14px;min-width:0" data-sec="queue msg send resp b-inj">
         <div class="panel" data-sec="send" data-aoc-off><div class="act-head"><h2>Run sheet</h2><span class="small muted" data-rsn></span></div>
           <p class="small muted" style="margin:0">Every inject and intel package in planned-time order, with its send button. Rows that are due now are highlighted. Tap a row to read it first.</p>
           <div class="row" style="justify-content:flex-start"><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-rssent> Show what has already gone out</label><button type="button" data-injqall style="flex:0 0 auto">Add any missing timed injects</button></div>
@@ -7968,7 +8146,7 @@ function buildWhite(){
         <div class="panel" data-sec="msg send"><h2>Send a message</h2>
           <form class="stack" data-wf="msg"><div class="row"><label>To<select name="to"><option value="both">Both wings</option><option value="B">Blue Force only</option><option value="R">Red Force only</option><option value="public">Public screen</option></select></label><label>From<input name="label" value="AOC" maxlength="30"></label></div>
             <label>Message<textarea name="text" maxlength="700" required></textarea></label><div><button class="btn-side" type="submit">Send</button></div></form></div>
-        <div class="panel" data-sec="msg"><div class="act-head"><h2>Inject queue</h2><span class="small muted" data-injqn></span></div>
+        <div class="panel" data-sec="msg b-inj"><div class="act-head"><h2>Inject queue</h2><span class="small muted" data-injqn></span></div>
           <p class="small muted" style="margin:0">Queued injects wait here until you send them. Tap a row to read the message and the White Force note.</p>
           <div class="row" style="justify-content:flex-start"><button type="button" data-injqall2 style="flex:0 0 auto">Queue all timed templates</button><label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-injqsent> Show sent</label></div>
           <div class="list scrolllist" data-injq></div></div>
@@ -7986,10 +8164,10 @@ function buildWhite(){
           <p class="small muted" style="margin:6px 0">Use fills the message box so you can edit before sending. Queue adds the template to the inject queue. Highlighted encounter injects apply at the current escalation level.</p>
           <div class="list scrolllist" data-templates></div></details></div>
       </div>
-      <div class="stack" style="gap:14px;min-width:0" data-sec="intel map score">
-      <div class="panel" data-sec="map" data-aoc-off><div class="act-head"><h2>Waypoint queue</h2><span class="small muted" data-wpqn></span></div><div class="list" data-wpqq></div></div>
+      <div class="stack" style="gap:14px;min-width:0" data-sec="intel map score b-map b-intel">
+      <div class="panel" data-sec="map b-map" data-aoc-off><div class="act-head"><h2>Waypoint queue</h2><span class="small muted" data-wpqn></span></div><div class="list" data-wpqq></div></div>
       <div class="panel" data-sec="score"><h2>Points</h2><div data-score></div><div data-ptbox style="margin-top:14px"><h3 style="margin:0 0 4px">Point spread</h3><div data-ptchart></div><div data-pttable></div></div></div>
-      <div class="panel" data-sec="intel"><h2>Intel packages</h2><p class="small muted" style="margin:0">Packages are sent only when deployed. The answer window starts at deployment.</p><div class="list scrolllist" data-intelw></div>
+      <div class="panel" data-sec="intel b-intel"><h2>Intel packages</h2><p class="small muted" style="margin:0">Packages are sent only when deployed. The answer window starts at deployment.</p><div class="list scrolllist" data-intelw></div>
         <h2 data-aoc-off>Explosions</h2>
         <form class="stack" data-wf="detonation" data-aoc-off><div class="row"><label>Explosion at grid<input name="grid" maxlength="8" placeholder="Example: C2" required></label><label>Really caused by<select name="truth"><option value="militia">Militia</option><option value="B">Blue Force</option><option value="R">Red Force</option></select></label></div><label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" name="cas" style="width:auto"> Casualties</label><div><button type="submit">Tell both wings</button></div></form>
       </div>
@@ -8000,19 +8178,21 @@ function buildWhite(){
       <div class="panel" data-sec="msg"><h2>C2 liaison</h2><p class="small muted" style="margin:0">Everything the Wing Commanders say to each other.</p><div class="feed" data-wliaison style="max-height:360px"></div><div class="list" data-woffers></div></div>
       <div class="panel span2" data-sec="log"><div class="act-head"><h2>Log</h2><span class="small muted" data-logn>Voided entries are removed from every screen</span></div><div class="row logf" style="flex-wrap:wrap;gap:6px;align-items:center"><div class="seg" role="group" aria-label="Show in the log" data-logf style="flex-wrap:wrap"></div><select data-logside aria-label="Force" style="flex:0 0 auto;width:auto"><option value="">Both forces</option><option value="B">Blue Force</option><option value="R">Red Force</option></select></div><div class="feed" data-log style="max-height:420px"></div></div>
       <div class="panel span2" data-sec="log" data-ptbox><div class="act-head"><h2>Points</h2><span class="small" data-ptlead></span></div><div data-ptchart></div><div data-pttable></div></div>
-      <details class="panel span2 mapset" data-mapsetup data-sec="setup" data-aoc-off><summary><b>Map setup</b> <span class="small muted">(before STARTEX)</span></summary>
+      <details class="panel span2 mapset" data-mapsetup data-sec="setup b-map" data-aoc-off><summary><b>Map setup</b> <span class="small muted">(before STARTEX)</span></summary>
         <div class="stack" style="margin-top:10px">
           <p class="small muted" style="margin:0">MGRS or latitude and longitude in any common format, or the last map click. Last click: <b class="mono" data-lastclick>—</b></p>
           <div class="li"><label>Find the field: center on<input data-mcenter placeholder="Example: 40.8275, -77.8570 or an MGRS grid"></label><button type="button" data-mshow>Show on the map</button></div>
+          <div class="row" style="justify-content:flex-start;align-items:center"><button type="button" class="btn-side" data-mdraw style="flex:0 0 auto">Draw the play area on the map</button><button type="button" data-mdrawoff style="flex:0 0 auto" hidden>Stop drawing</button><span class="small muted" data-mdrawmsg>Click two opposite corners on the map. Then drag the corners and the site markers to adjust. The dashed grid is a preview until you save.</span></div>
           <div class="li"><label>Southwest corner of the play area<input data-mp="sw"></label><button type="button" data-muse="sw">Use last click</button></div>
           <div class="li"><label>Northeast corner of the play area<input data-mp="ne"></label><button type="button" data-muse="ne">Use last click</button></div>
+          <p class="small" data-msize style="margin:0"></p>
           <div class="row"><label>Play-grid columns<input data-mcols type="number" min="1" max="12" value="6"></label><label>Play-grid rows<input data-mrows type="number" min="1" max="12" value="5"></label><label>MGRS lines every<select data-mstep><option value="100">100 m</option><option value="1000">1 km</option></select></label></div>
           ${MAP_POINTS.map(([k, n]) => '<div class="li"><label>' + esc(n) + '<input data-mp="' + k + '"></label><button type="button" data-muse="' + k + '">Use last click</button></div>').join('')}
           <label>Interest points. Saved to the waypoint queue, not deployed. One per line: name | point<textarea data-mpois rows="5" placeholder="Example: Interest point 6 | 40.82665, -77.85797"></textarea></label>
           <div class="row" style="justify-content:flex-start"><button type="button" data-mpoiadd style="flex:0 0 auto">Add last click as an interest point</button></div>
           <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-msave style="flex:0 0 auto">Save the map for every screen</button><label for="mFile" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load a map file<input id="mFile" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted" data-mmsg></span></div>
         </div></details>
-      <details class="panel span2 mapset" data-ipbuild data-sec="intel create" data-aoc-off><summary><b>Intel package builder</b> <span class="small muted">(custom packages and photos)</span></summary>
+      <details class="panel span2 mapset" data-ipbuild data-sec="intel create b-intel c-intel" data-aoc-off><summary><b>Intel package builder</b> <span class="small muted">(custom packages and photos)</span></summary>
         <div class="stack" style="margin-top:10px">
           <p class="small muted" style="margin:0">A package has a question, four answers and two to eight pieces of intel. Mark the correct answer and every false or misleading piece. Saved packages appear in the Intel packages list. Saving a built-in package creates a replacement version.</p>
           <div class="row" style="align-items:end"><label>Start from<select data-ipbsrc><option value="">A blank package</option></select></label><button type="button" data-ipbload style="flex:0 0 auto">Load</button><button type="button" class="btn-side" data-ipbgen style="flex:0 0 auto">Generate a draft</button><button type="button" data-ipbclear style="flex:0 0 auto">Clear</button></div>
@@ -8046,7 +8226,7 @@ function buildWhite(){
           <h3 class="small muted" style="margin:6px 0 0">Packages built here</h3><div class="list" data-ipblist></div>
           <div class="row" style="justify-content:flex-start"><button type="button" data-ipbexport style="flex:0 0 auto">Download packages</button><label for="ipbImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload packages<input id="ipbImport" type="file" accept=".json,application/json" style="display:none"></label><span class="small muted">Saves all packages built here, including photos, as one file for another game.</span></div>
         </div></details>
-      <div class="panel span2 stack" data-sec="create" data-aoc-off><h2>Inject templates</h2>
+      <div class="panel span2 stack" data-sec="create b-inj c-inj" data-aoc-off><h2>Inject templates</h2>
         <p class="small muted" style="margin:0">Write the injects the White Force will send during the game. Each template appears under Send a message, where one tap fills in the message. A planned time or an escalation level is optional and only helps the White Force decide when to send it.</p>
         <div class="row" style="align-items:end"><label>Start from<select data-tplsrc><option value="">A blank template</option>${TEMPLATES.map((t, i) => '<option value="' + i + '">Sample: ' + esc(t.label) + '</option>').join('')}</select></label><button type="button" data-tplload style="flex:0 0 auto">Load</button><button type="button" data-tplall style="flex:0 0 auto">Add all sample templates</button></div>
         <p class="small muted" style="margin:0">Samples are starting points only. Nothing appears under Send a message until it is saved here, and every saved template can be edited or deleted.</p>
@@ -8062,18 +8242,18 @@ function buildWhite(){
         </form>
         <h3 class="small muted" style="margin:6px 0 0">Templates in this game</h3><div class="list" data-tpllist></div>
       </div>
-      <div class="panel span2 stack" data-sec="create" data-aoc-off data-propplan><h2>Props</h2>
+      <div class="panel span2 stack" data-sec="create b-props c-props" data-aoc-off data-propplan><h2>Props</h2>
         <p class="small muted" style="margin:0">The catalog lists every physical prop once. Injects and intel packages pick props from it in their builders. The schedule below is built from inject and package times; moving an inject moves its prop times. An item with props cannot be sent until every prop is reported placed, unless you override.</p>
         <form class="row" data-propf style="align-items:end"><label>Prop name<input name="name" maxlength="60" required placeholder="Example: Aid supply box 1"></label><label>Stored at<input name="home" maxlength="80" placeholder="Example: Logistics tent"></label><label>Note<input name="note" maxlength="200" placeholder="Optional"></label><button type="submit" class="btn-side" style="flex:0 0 auto" data-propsave>Add to catalog</button><button type="button" data-propclear style="flex:0 0 auto">Clear</button></form>
         <div class="list" data-proplist></div>
         <h3 class="small muted" style="margin:6px 0 0">Prop schedule</h3><div class="asb-wrap" data-propsched></div>
       </div>
-      <div class="panel span2 stack" data-sec="create" data-aoc-off><h2>Creation files</h2>
+      <div class="panel span2 stack" data-sec="create b-files c-files" data-aoc-off><h2>Creation files</h2>
         <p class="small muted" style="margin:0">Download every intel package and inject template built in this game as one file, including photos and map points. Send the file to the exercises officers, who upload it into the game where it will be used. Uploading adds to a game; it never deletes anything.</p>
         <div class="row" style="justify-content:flex-start"><button type="button" class="btn-side" data-crexport style="flex:0 0 auto">Download packages and injects</button><label for="crImport" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Upload creation files<input id="crImport" type="file" accept=".json,application/json" multiple style="display:none"></label><label for="crCombine" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Combine files into one<input id="crCombine" type="file" accept=".json,application/json" multiple style="display:none"></label></div>
         <p class="small muted" style="margin:0">Upload creation files adds every package and template from the files you choose to this game. Combine files into one merges several teams’ files into a single download without changing this game; use it to review everything before execution day.</p>
       </div>
-      <div class="panel stack" data-sec="setup" data-aoc-off><h2>Practice bots</h2><div class="banner" data-botlock hidden></div>
+      <div class="panel stack" data-sec="setup b-check" data-aoc-off><h2>Practice bots</h2><div class="banner" data-botlock hidden></div>
         <p class="small muted" style="margin:0">For training only. Bots play the roles you tick, using simple rules: fireteams walk at a real pace (about 55 to 75 m a minute) to sites, the town and inject spots, spend time at each station, then their C2 captures the site with a code word, asks for and runs contention on the other force’s sites, and sends a team that is not already there back to defend within the 10-minute window. They follow the site time limit (rotating out after about 20 minutes), leave show-of-force areas, work injects in person before their POC O/C calls them, carry aid packages, send strike 9-lines on militia targets and the cache, and their POC O/Cs report site time, shows of force, shots and provocations. They also post SALUTE reports, answer intel packages, send briefs, PERSTATs and damage assessments, answer drone flights and approve things in the queue. Bot skill sets how often they make the mistakes real teams make. They give every real player something to react to. They run in this browser only, so keep this tab open. Do not use them in the real game.</p>
         <div class="row" style="flex-wrap:wrap;gap:6px 16px">${[['B', 'Blue Force C2'], ['R', 'Red Force C2'], ['TB', 'Blue Force fireteams'], ['TR', 'Red Force fireteams'], ['OC', 'POC O/Cs'], ['A', 'AOC'], ['L', 'Props and logistics'], ['W', 'White Force (sends injects and approves)']].map(([k, n]) => '<label class="chk small" style="flex:0 0 auto;margin:0"><input type="checkbox" data-botrole="' + k + '"> ' + n + '</label>').join('')}</div>
         <label>Bot skill<select data-botskill>${Object.entries(BOT_SKILL).map(([k, o]) => '<option value="' + k + '"' + (k === 'real' ? ' selected' : '') + '>' + o.name + (k === 'sharp' ? ': rare mistakes' : k === 'real' ? ': about what 19 Nov looked like' : ': many mistakes, to stress-test the White Force') + '</option>').join('')}</select></label>
@@ -8095,9 +8275,9 @@ function buildWhite(){
           </div></details>
         <div class="row" style="justify-content:flex-start;align-items:center"><button type="button" class="btn-side" data-botgo style="flex:0 0 auto">Start bots</button><span class="small muted" data-botst>Bots are off.</span></div></div>
       <div class="panel stack" data-sec="set"><h2>Settings</h2><div data-settings="staff"></div></div>
-      <div class="panel stack" data-sec="setup" data-aoc-off data-inwf hidden><div class="act-head"><h2>Indoor game: rooms</h2><span class="small muted">Rooms are set by the admin under Edit game</span></div>
+      <div class="panel stack" data-sec="setup b-scen" data-aoc-off data-inwf hidden><div class="act-head"><h2>Indoor game: rooms</h2><span class="small muted">Rooms are set by the admin under Edit game</span></div>
         <div class="list" data-inwho></div></div>
-      <div class="panel" data-sec="setup" data-aoc-off><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-aarpdf style="flex:0 0 auto">After-action report (PDF)</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
+      <div class="panel" data-sec="setup b-files" data-aoc-off><h2>Game</h2><p class="small muted" style="margin:0" data-gameinfo></p><div class="row" style="justify-content:flex-start"><button type="button" data-newgame style="flex:0 0 auto">Set up a new game</button><button type="button" data-aarpdf style="flex:0 0 auto">After-action report (PDF)</button><button type="button" data-backup style="flex:0 0 auto" hidden>Download backup</button><label data-restore for="wcImport" hidden style="flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel);color:var(--ink);font-size:14px;font-weight:500">Load backup<input id="wcImport" type="file" accept=".json,application/json" style="display:none"></label></div></div>
     </div>
   </div>`;
   $$('[data-ev]', v).forEach(b => b.onclick = () => {
@@ -8133,8 +8313,8 @@ function buildWhite(){
       if (!tpl.label || !tpl.text){ toast('Add a name and a message.', true); return; }
       await writeEvent('tpl_save', null, { tpl }); await peSave('tpl', tpl.id); toast(tf.dataset.id ? 'Template updated.' : 'Template saved. It is under Send a message.'); tplClear(); });
     $('[data-tplclear]', v).onclick = tplClear;
-    $('[data-tplload]', v).onclick = () => { const i = $('[data-tplsrc]', v).value, t = TEMPLATES[+i]; if (i === '' || !t) { tplClear(); return; } tplClear(); tf.dataset.phase = t.phase || ''; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = t.text; tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; if (tf.oc) tf.oc.value = t.oc || ''; tplWinSet(t); $('[data-tplmode]', v).textContent = 'New template from the sample. Edit it, then save.'; };
-    $('[data-tplall]', v).onclick = async () => { const have = new Set((app.S.tpls || []).map(t => t.id)), todo = TEMPLATES.map((t, i) => Object.assign({ id:'tsample-' + i }, t)).filter(t => !have.has(t.id));
+    $('[data-tplload]', v).onclick = () => { const i = $('[data-tplsrc]', v).value, t = TEMPLATES[+i]; if (i === '' || !t) { tplClear(); return; } tplClear(); tf.dataset.phase = t.phase || ''; tf.label.value = t.label; tf.to.value = t.to; tf.from.value = hqFrom(t.from); tf.text.value = nameTxt(t.text); tf.at.value = t.at != null ? t.at : ''; tf.lvl.value = t.lvl != null ? String(t.lvl) : ''; tf.note.value = t.note || ''; if (tf.oc) tf.oc.value = t.oc || ''; tplWinSet(t); $('[data-tplmode]', v).textContent = 'New template from the sample. Edit it, then save.'; };
+    $('[data-tplall]', v).onclick = async () => { const have = new Set((app.S.tpls || []).map(t => t.id)), todo = TEMPLATES.map((t, i) => Object.assign({ id:'tsample-' + i }, t, { text:nameTxt(t.text), note:t.note ? nameTxt(t.note) : t.note })).filter(t => !have.has(t.id));
       if (!todo.length){ toast('All sample templates are already in this game.'); return; }
       if (!confirm('Add ' + todo.length + ' sample template' + (todo.length === 1 ? '' : 's') + ' to this game? Each can be edited or deleted afterward.')) return;
       for (const tpl of todo) await writeEvent('tpl_save', null, { tpl }); toast('Added ' + todo.length + ' template' + (todo.length === 1 ? '' : 's') + '.'); };
@@ -8189,7 +8369,12 @@ function buildWhite(){
   const setTab = (k, scroll) => {
     $$('[data-wtab]', v).forEach(b => b.setAttribute('aria-selected', b.dataset.wtab === k ? 'true' : 'false'));
     const sk = k === 'queue' && v.classList.contains('aocv') ? 'score' : k;
-    $$('[data-sec]', v).forEach(el => { const sec = el.dataset.sec.split(' '), on = k === 'all' ? !sec.includes('pic') && !sec.includes('plan') && !sec.includes('cmd') && !sec.includes('set') && !sec.includes('bdesk') && !sec.includes('rdesk') : sec.includes(sk); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
+    const bs = app.buildStep || 'scen', cf = app.createF || 'all';
+    $$('[data-sec]', v).forEach(el => { const sec = el.dataset.sec.split(' '), on = k === 'all' ? !sec.includes('pic') && !sec.includes('plan') && !sec.includes('cmd') && !sec.includes('set') && !sec.includes('bdesk') && !sec.includes('rdesk') && !sec.includes('build') : k === 'build' ? sec.includes('build') || sec.includes('b-' + bs) : k === 'create' ? sec.includes('create') && (cf === 'all' || sec.includes('c-' + cf) || el.classList.contains('cfbar')) : sec.includes(sk); if (on) el.removeAttribute('data-off'); else el.setAttribute('data-off', ''); });
+    $$('[data-bstep]', v).forEach(x => x.setAttribute('aria-pressed', x.dataset.bstep === bs ? 'true' : 'false'));
+    $$('[data-cf]', v).forEach(x => x.setAttribute('aria-pressed', x.dataset.cf === cf ? 'true' : 'false'));
+    v.classList.toggle('bmode', k === 'build');
+    if (k === 'build'){ builderRender(app.S, v); if (bs === 'map'){ const f = $('[data-mapsetup]', v); if (f) f.open = true; } if (bs === 'intel'){ const f = $('[data-ipbuild]', v); if (f) f.open = true; } }
     $('[data-wgrid]', v).classList.toggle('filtered', k !== 'all');
     $('[data-wgrid]', v).classList.toggle('picmode', k === 'pic');
     if (['pic', 'wf', 'plan', 'cmd', 'log', 'queue', 'all', 'bdesk', 'rdesk'].includes(k)) setTimeout(() => refresh(true), 0);
@@ -8200,6 +8385,10 @@ function buildWhite(){
     if (scroll) window.scrollTo({ top:0, behavior:'smooth' });
   };
   $('[data-wnav]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-wtab]'); if (b) setTab(b.dataset.wtab, true); });
+  app.buildStep = pref.get('marala-bstep', 'scen'); app.createF = pref.get('marala-cf', 'all');
+  $('[data-bsteps]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-bstep]'); if (!b) return; app.buildStep = b.dataset.bstep; pref.set('marala-bstep', app.buildStep); setTab('build', true); });
+  $('[data-cfbar]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-cf]'); if (!b) return; app.createF = b.dataset.cf; pref.set('marala-cf', app.createF); setTab('create', false); });
+  v.addEventListener('click', ev => { const g = ev.target.closest('[data-bgo]'); if (!g) return; app.buildStep = g.dataset.bgo; pref.set('marala-bstep', app.buildStep); setTab('build', true); });
   setTab(pref.get('marala-wtab', 'all'), false);
   v.addEventListener('click', ev => {
     const sop = ev.target.closest('[data-siteopen]'), spd = ev.target.closest('[data-siteplandel]');
@@ -8301,9 +8490,13 @@ function buildWhite(){
     navigator.geolocation.getCurrentPosition(pos => wcMove([pos.coords.latitude, pos.coords.longitude]), () => toast('Couldn\u2019t get a GPS fix. Allow location for this site or tap the map instead.', true), { enableHighAccuracy:true, timeout:15000, maximumAge:30000 });
   };
   const ms = $('[data-mapsetup]', v);
+  $('[data-mdraw]', ms).onclick = () => { app.mapDraw = { first:null }; $('[data-mdraw]', ms).hidden = true; $('[data-mdrawoff]', ms).hidden = false; toast('Click one corner of the play area on the map.'); };
+  $('[data-mdrawoff]', ms).onclick = mapDrawStop;
+  ms.addEventListener('toggle', () => { if (!ms.open) mapDrawStop(); draftAll(); });
+  ms.addEventListener('change', ev => { if (ev.target.matches('[data-mp],[data-mcols],[data-mrows]')) draftAll(); });
   $('[data-mshow]', ms).onclick = () => { const pt = GEO.parsePoint($('[data-mcenter]', ms).value); if (!pt){ toast('That point didn’t read.', true); return; } const d = 0.006; app.previewMap = { sw:[pt[0] - d, pt[1] - d * 1.3], ne:[pt[0] + d, pt[1] + d * 1.3], preview:true }; refresh(true); toast('Showing the area. Click the map to read grids.'); };
   $('[data-mpoiadd]', ms).onclick = () => { if (!app.lastClick){ toast('Click a point on the map first.', true); return; } const ta = $('[data-mpois]', ms); ta.value = (ta.value.trim() ? ta.value.trim() + '\n' : '') + 'Interest point ' + (ta.value.trim() ? ta.value.trim().split('\n').length + 1 : 1) + ' | ' + fmtPt(app.lastClick); ta.focus(); };
-  $$('[data-muse]', ms).forEach(b => b.onclick = () => { if (!app.lastClick){ toast('Click a point on the map first.', true); return; } $('[data-mp="' + b.dataset.muse + '"]', ms).value = fmtPt(app.lastClick); });
+  $$('[data-muse]', ms).forEach(b => b.onclick = () => { if (!app.lastClick){ toast('Click a point on the map first.', true); return; } $('[data-mp="' + b.dataset.muse + '"]', ms).value = fmtPt(app.lastClick); draftAll(); });
   $('#mFile', ms).onchange = async () => {
     const fl = $('#mFile', ms).files[0]; $('#mFile', ms).value = ''; if (!fl) return;
     let mf; try { mf = await readMapFile(fl); } catch(e){ toast(e.message, true); return; }
@@ -8322,7 +8515,7 @@ function buildWhite(){
     $('[data-mpois]', ms).value.split('\n').map(l => l.trim()).filter(Boolean).forEach((l, i) => { const j = l.lastIndexOf('|'), name = (j >= 0 ? l.slice(0, j).trim() : '') || 'Interest point ' + (i + 1), pt = GEO.parsePoint(j >= 0 ? l.slice(j + 1) : l); if (pt) pois.push({ name:name.slice(0, 60), pt }); else bad.push('point of interest "' + l.slice(0, 30) + '"'); });
     if (bad.length){ toast('These didn’t read: ' + bad.join(', ') + '.', true); return; }
     writeEvent('map_config', null, { sw:box.sw, ne:box.ne, cols:+$('[data-mcols]', ms).value || 6, rows:+$('[data-mrows]', ms).value || 5, step:+$('[data-mstep]', ms).value || 100, sites, pois:pois.slice(0, 30), outline:packOutline(mapCfg(app.S).outline) });
-    app.previewMap = null; app.mapFilled = false; toast('Map saved. Every screen now shows it.');
+    app.previewMap = null; app.mapFilled = false; mapDrawStop(); toast('Map saved. Every screen now shows it.'); setTimeout(draftAll, 300);
   };
   v.addEventListener('click', ev => { const b = ev.target.closest('[data-act="hreply"]'); if (b) toast('Only the Wing Commanders can answer offers.', true); });
   $('[data-newgame]', v).onclick = () => { app.wantSetup = true; route(); };
@@ -8606,7 +8799,7 @@ async function crImport(files){
 }
 function ipbGenerate(){
   const r = a => a[Math.floor(Math.random() * a.length)];
-  const places = [['harbor', 'the Harbor pier'], ['fuel', 'the Fuel Depot fence'], ['radar', 'the Radar Ridge mast'], ['airstrip', 'the airstrip gate'], ['town', 'the Marala Town hall'], ['quarry', 'the quarry shed'], ['coast', 'the coast road bridge'], ['culvert', 'the north road culvert']];
+  const places = [['harbor', 'the ' + SITES.harbor.name + ' pier'], ['fuel', 'the ' + SITES.fuel.name + ' fence'], ['radar', 'the ' + SITES.radar.name + ' mast'], ['airstrip', 'the ' + SITES.airstrip.name + ' gate'], ['town', 'the Marala Town hall'], ['quarry', 'the quarry shed'], ['coast', 'the coast road bridge'], ['culvert', 'the north road culvert']];
   const kinds = [
     { t:'bombing', title:p => 'The ' + p + ' bombing', q:p => 'Who planted the bomb at ' + p + ' last night?' },
     { t:'theft', title:p => 'Fuel stolen at ' + p, q:p => 'Who stole the fuel drums from ' + p + '?' },
@@ -8614,17 +8807,19 @@ function ipbGenerate(){
     { t:'cache', title:p => 'Weapons moved through ' + p, q:p => 'Who is moving weapons through ' + p + '?' }
   ];
   const who = ['B', 'R', 'M'];
-  const opts = ['Blue Force (the Coalition)', 'Red Force (North Korea)', 'The Marala First Front (militia)', 'Not enough information'];
+  const opts = ['Blue Force (the Coalition)', 'Red Force (North Korea)', 'The Marala First Front (militia)', 'Not enough information'].map(natTxt);
   const truth = r(who), decoy = r(who.filter(x => x !== truth));
   const [, place] = r(places), kind = r(kinds);
   const day = 4, hr = 1 + Math.floor(Math.random() * 4), mm = String(Math.floor(Math.random() * 6) * 10).padStart(2, '0');
   const dtg = (d, h, m) => String(d).padStart(2, '0') + String(h).padStart(2, '0') + m + 'R DEC 26';
   const look = { B:'tan uniforms with Coalition patches', R:'dark uniforms, speaking Korean', M:'fishing clothes and red armbands' };
+  Object.keys(look).forEach(k => look[k] = natTxt(look[k]));
   const veh = { B:'a tan Coalition 4x4 with a unit number on the door', R:'a dark green truck with no plates, the kind Red Force uses', M:'two men on foot carrying sacks, no vehicle' };
   const sig = { B:'Coalition patrol net: "Task done at the site, returning to base."', R:'Korean-language net: "Package placed. Return to the depot by the north road."', M:'Known militia handheld: "The foreigners will blame each other. Walk home through the paddies."' };
   const geo = { B:'The only vehicle route from the Coalition camp to the site passes their own checkpoint, which logged one vehicle out at the time.', R:'The Red Force camp sits 600 m away with a covered track straight to the site; a vehicle makes it in 4 minutes.', M:'A footpath from the fishing village reaches the site in about 6 minutes on foot, out of sight of both camps.' };
   const hum = { B:'"I saw soldiers in ' + look.B + ' at the site that night."', R:'"Men in ' + look.R + ' were at the site around ' + hr + ' in the morning."', M:'"My cousin\u2019s friends in ' + look.M + ' came back from the site laughing before dawn."' };
   const osi = { B:'Coalition trucks drove away from the site with their lights off last night.', R:'North Korean soldiers were at the site last night, everyone saw them.', M:'Front fighters say they hit the foreigners where it hurts last night.' };
+  [veh, sig, geo, osi].forEach(o => Object.keys(o).forEach(k => o[k] = natTxt(o[k])));
   const extra = Math.random() < .4, keys = IPB_KEYS.slice(0, extra ? 5 : 4).split('');
   const discs = IPB_DISC.concat(extra ? ['OSINT'] : []).sort(() => Math.random() - .5);
   const fKeys = keys.slice().sort(() => Math.random() - .5).slice(0, Math.random() < .35 ? 2 : 1).sort();
@@ -8646,7 +8841,7 @@ function ipbGenerate(){
 const IPB_OPT_EX = ['Blue Force (the Coalition)', 'Red Force (North Korea)', 'The Marala First Front (militia)', 'Not enough information'];
 function ipbOpts(vals, right){
   const box = $('[data-ipbopts]', ipbForm()); if (!box) return;
-  box.innerHTML = vals.map((v, k) => '<div class="row"><input type="checkbox" name="ipbA" value="' + k + '"' + (right.includes(k) ? ' checked' : '') + ' aria-label="Answer ' + (k + 1) + ' is correct"><input data-ipbopt="' + k + '" maxlength="100" value="' + esc(v) + '" placeholder="' + (IPB_OPT_EX[k] ? 'Example: ' + IPB_OPT_EX[k] : 'Answer ' + (k + 1)) + '"><button type="button" data-ipboptdel="' + k + '" style="flex:0 0 auto"' + (vals.length <= 2 ? ' disabled' : '') + '>Remove</button></div>').join('');
+  box.innerHTML = vals.map((v, k) => '<div class="row"><input type="checkbox" name="ipbA" value="' + k + '"' + (right.includes(k) ? ' checked' : '') + ' aria-label="Answer ' + (k + 1) + ' is correct"><input data-ipbopt="' + k + '" maxlength="100" value="' + esc(v) + '" placeholder="' + (natTxt(IPB_OPT_EX[k]) ? 'Example: ' + natTxt(IPB_OPT_EX[k]) : 'Answer ' + (k + 1)) + '"><button type="button" data-ipboptdel="' + k + '" style="flex:0 0 auto"' + (vals.length <= 2 ? ' disabled' : '') + '>Remove</button></div>').join('');
   $('[data-ipboptadd]', ipbForm()).disabled = vals.length >= 8;
 }
 function ipbOptsRead(){ const f = ipbForm(); return { vals:$$('[data-ipbopt]', f).map(i => i.value), right:$$('input[name="ipbA"]', f).filter(c => c.checked).map(c => +c.value) }; }
@@ -8843,7 +9038,48 @@ function pointsBox(S, v){
   const svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;max-width:760px;height:auto;display:block" role="img" aria-label="Blue Force and Red Force points over time">' + ax + yt + '<polygon points="' + band + '" fill="currentColor" opacity=".07"/><path d="' + line(1) + '" fill="none" stroke="var(--blu)" stroke-width="2.5"/><path d="' + line(2) + '" fill="none" stroke="var(--red)" stroke-width="2.5"/></svg><div class="small muted">Blue Force and Red Force totals over the game. The shaded band is the spread.</div>';
   if (ch.dataset.h !== svg){ ch.dataset.h = svg; ch.innerHTML = svg; }
 }
+function builderChecks(S){
+  const cfg = app.cfg || {}, M = mapCfg(S), C = [];
+  const codes = k => (S.siteCodes && S.siteCodes[k]) || (cfg.codes || {})[k];
+  const add = (step, ok, t, why) => C.push({ step, ok, t, why });
+  add('scen', true, 'Game window ' + hhmm(START_G) + ' to ' + hhmm(END_G), 'Change it under Clock and setup.');
+  add('scen', true, 'Forces: ' + SIDES.B.long + ' and ' + SIDES.R.long, 'Admins change names under Admin, Edit game.');
+  add('scen', true, S.intent && (S.intent.B || S.intent.R) ? 'Commander’s intent set for this game' : 'Commander’s intent and PIRs are the standing ones', 'Change them on the Command tab, Intent and PIRs.');
+  add('map', true, S.map && S.map.sw ? 'Map saved for this game (' + gridDims(M).cols + ' by ' + gridDims(M).rows + ' squares)' : 'Using the standard Area 5 map', 'Draw the play area under Map setup.');
+  const placed = BASE_SITE_KEYS.filter(k => M.sites && M.sites[k]);
+  add('map', placed.length === BASE_SITE_KEYS.length, placed.length + ' of ' + BASE_SITE_KEYS.length + ' key sites placed on the map', 'Drag the site markers under Map setup.');
+  const noCode = SITE_KEYS.filter(k => { const c = codes(k); return !c || (typeof c === 'object' && !Array.isArray(c) && !(c.cap || []).length); });
+  add('map', !noCode.length, noCode.length ? 'No capture code words for ' + noCode.map(k => SITES[k].name).join(', ') : 'Every site has capture code words', 'Code words are set when the game is created.');
+  const extra = SITE_KEYS.length - BASE_SITE_KEYS.length, plans = Object.values(S.sitePlans || {}).length;
+  add('map', true, extra + plans ? (extra ? extra + ' added site' + (extra === 1 ? '' : 's') : '') + (extra && plans ? ', ' : '') + (plans ? plans + ' planned site' + (plans === 1 ? '' : 's') : '') : 'No added sites (optional)', 'Make site on a waypoint adds one.');
+  const P = allProblems(S), pirN = pirsOf(S, 'B').filter(Boolean).length;
+  add('intel', P.length > 0, P.length + ' intel package' + (P.length === 1 ? '' : 's') + (cfg.blank ? '' : ', built-in packages on'), 'Build packages in the Intel package builder.');
+  const uncovered = []; for (let n = 1; n <= pirN; n++) if (!P.some(x => x.pir === n)) uncovered.push(n);
+  add('intel', !uncovered.length, uncovered.length ? 'No package answers PIR ' + uncovered.join(', ') : 'Every PIR has at least one package', 'Set Answers PIR on a package.');
+  const noTime = P.filter(x => x.at == null).length;
+  add('intel', !noTime, noTime ? noTime + ' package' + (noTime === 1 ? ' has' : 's have') + ' no intended time' : 'Every package has an intended time', 'Set Intended time (T+ min).');
+  const T = allTemplates(S), q = S.injq || [], timed = T.filter(t => t.at != null && !q.some(x => x.tid === t.id));
+  add('inj', T.length > 0, T.length + ' inject template' + (T.length === 1 ? '' : 's') + ', ' + q.length + ' queued', 'Add templates under Inject templates.');
+  add('inj', !timed.length, timed.length ? timed.length + ' timed template' + (timed.length === 1 ? ' is' : 's are') + ' not queued' : 'Every timed template is queued', 'Use Add any missing timed injects on the run sheet.');
+  const PR = (S.propOrder || []).map(k => S.props[k]).filter(Boolean);
+  add('props', true, PR.length ? PR.length + ' prop' + (PR.length === 1 ? '' : 's') + ' in the catalog' : 'No props yet (optional)', 'Add props under Props.');
+  add('files', true, 'Download a backup once setup is done', 'Game, Download backup saves everything in one file.');
+  return C;
+}
+function builderRender(S, v){
+  if (!S || !v) return;
+  const body = $('[data-bbody]', v); if (!body) return;
+  const C = builderChecks(S), bs = app.buildStep || 'scen';
+  ['scen', 'map', 'intel', 'inj', 'props', 'files'].forEach(k => { const m = $('[data-bmark="' + k + '"]', v), L = C.filter(c => c.step === k), bad = L.filter(c => !c.ok).length; if (m){ const t = L.length ? (bad ? ' ' + bad + ' to check' : ' ✓') : ''; if (m.textContent !== t) m.textContent = t; m.className = 'bmark' + (bad ? ' bad' : ''); } });
+  const row = c => '<div class="li"><span class="bck' + (c.ok ? ' ok' : '') + '" aria-hidden="true">' + (c.ok ? '✓' : '!') + '</span><div class="grow"><b>' + esc(c.t) + '</b><div class="small muted">' + esc(c.why) + '</div></div>' + (bs === 'check' ? '<button type="button" data-bgo="' + c.step + '" style="flex:0 0 auto">Go</button>' : '') + '</div>';
+  const intro = { scen:'Who the forces are, the game window, intent and PIRs.', map:'Draw the play area, place the sites and add waypoints. New sites are made from a waypoint with Make site.', intel:'Build packages, tie each to a PIR and set when it goes out.', inj:'Write inject templates and queue the timed ones.', props:'List the props and where each goes.', files:'Save creation files or a full backup, or load someone else’s.', check:'Everything still to look at before execution day. Practice bots below let you rehearse the whole game.' }[bs];
+  const L = bs === 'check' ? C : C.filter(c => c.step === bs);
+  const extra = bs === 'scen' ? '<div class="row" style="justify-content:flex-start"><button type="button" data-gotab="cmd" style="flex:0 0 auto">Open intent and PIRs</button><button type="button" data-gotab="setup" style="flex:0 0 auto">Open the clock settings</button></div>' : '';
+  const html = '<p class="small muted" style="margin:0">' + esc(intro) + '</p><div class="list">' + L.map(row).join('') + '</div>' + extra;
+  if (body.dataset.h !== html){ body.dataset.h = html; body.innerHTML = html; }
+}
 function renderWhite(S, now){
+  { const vb = $('#vWhite'); if (vb && vb.classList.contains('bmode')) builderRender(S, vb); }
   const v = $('#vWhite'), lvl = levelIndex(S.esc);
   indoorWF(S, v);
   biCopyImages(S);
@@ -9002,6 +9238,7 @@ document.addEventListener('submit', ev => { const f = ev.target && ev.target.clo
 function refresh(force){
   geoBanner();
   if (!app.cfg || !app.role) return;
+  if (applyNames(app.cfg)){ app.built = null; app.sig = null; route(); return; }
   const now = Date.now();
   if (!force && app.mapBusy && now - app.mapBusy < 4000){ app.mapDeferred = true; $$('[data-clock]').forEach(el => el.textContent = app.S ? clockText(app.S, now) : el.textContent); return; }
   const evKey = app.events.length + '|' + (app.events.length ? app.events[app.events.length - 1].id : '');
