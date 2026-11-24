@@ -3254,6 +3254,13 @@ function apply(S, e, cfg){
     case 'site_plan_del': { if (S.sitePlans && S.sitePlans[p.k]){ pushLog(S, 'Site plan cancelled: ' + S.sitePlans[p.k].name, null, e); delete S.sitePlans[p.k]; S.ver++; } break; }
     case 'site_open': { const pl = S.sitePlans && S.sitePlans[p.k]; if (pl && !SITES[pl.k]) siteMake(S, pl, e); break; }
     case 'site_new': siteMake(S, p, e); break;
+    case 'site_codes': {
+      const k = String(p.k || ''), hs = a => Array.isArray(a) ? a.filter(x => typeof x === 'string' && x.length <= 128).slice(0, 30) : [];
+      if (!(SITES[k] || k === 'town')) break;
+      if (p.reset){ if (BASE_SITE_KEYS.includes(k) || k === 'town') delete S.siteCodes[k]; S.ver++; break; }
+      const cap = hs(p.cap), def = hs(p.def); if (!cap.length) break;
+      S.siteCodes[k] = k === 'town' ? { cap } : { cap, def }; S.ver++; break;
+    }
     case 'site_remove': {
       const k = p.k, i = SITE_KEYS.indexOf(k);
       if (i < 0 || !SITES[k] || !SITES[k].dyn){ pushLog(S, 'Site removal refused', null, e, 'rejected'); break; }
@@ -3920,7 +3927,7 @@ const HELP = {
     ["POCs and props", 0, ["Queue, Manage POCs: Locate asks that phone for a fresh position. Remove takes off a wrong sign-in.", "Queue: Send announcement reaches every POC.", "Fireteams: Ping asks a team’s phone for its position."]],
     ["Points and mistakes", 0, ["Calls: apply a call yourself when no POC sent it.", "Log/Points: every event and who sent it. Void undoes a wrong entry."]],
     ["Backups", 0, ["Clock and setup: Download backup at about 0630, 0700 and right after ENDEX.", "If cell service fails for more than about 10 minutes, open the offline board and load the newest backup."]],
-    ["Setting up a game", 0, ["Builder: work through the steps in order: Scenario, Map and sites, Intel, Injects, Props, Files. Each step shows only what it needs and what is still to check.", "Scenario: set the game window, the force and site names (admins only), and each force\u2019s commander\u2019s intent and PIRs.", "Map and sites: Draw the play area (two opposite corners) and Draw the play boundary (click each corner, then Finish boundary). Tick Move sites and points to drag them. Save the map when it looks right.", "Undo on the map: Undo unsaved changes throws away edits you have not saved. Map history lists every saved version; Restore brings one back.", "Check: everything still open before execution day, with Go to jump to it. Practice bots are there to rehearse the game.", "Intel and inject creation: the same tools on one screen, with a filter for Intel packages, Inject templates, Props or Creation files."]]] },
+    ["Setting up a game", 0, ["Builder: work through the steps in order: Scenario, Map and sites, Intel, Injects, Props, Files. Each step shows only what it needs and what is still to check.", "Scenario: set the game window, the force and site names (admins only), and each force\u2019s commander\u2019s intent and PIRs.", "Map and sites: Draw the play area (two opposite corners) and Draw the play boundary (click each corner, then Finish boundary). Tick Move sites and points to drag them. Save the map when it looks right.", "Code words: type new words for any site and save to replace them. The old words stop working at once. Use the words from game setup goes back.", "Undo on the map: Undo unsaved changes throws away edits you have not saved. Map history lists every saved version; Restore brings one back.", "Check: everything still open before execution day, with Go to jump to it. Practice bots are there to rehearse the game.", "Intel and inject creation: the same tools on one screen, with a filter for Intel packages, Inject templates, Props or Creation files."]]] },
   P:{ t:"Public screen", b:"Display only. Nothing here needs input.", s:[] }
 };
 function doNowOn(){ return pref.get('marala-donow', '1') === '1'; }
@@ -8043,7 +8050,7 @@ function buildWhite(){
     <div data-warbar></div>
     <div class="white-grid" data-wgrid>
       <div class="panel stack bpanel" data-sec="build" data-aoc-off><div class="act-head"><h2>Builder</h2><span class="small muted">Set up the game one step at a time before execution day</span></div>
-        <div class="seg bsteps" role="group" aria-label="Builder steps" data-bsteps>${[['scen', 'Scenario'], ['map', 'Map and sites'], ['intel', 'Intel'], ['inj', 'Injects'], ['props', 'Props'], ['files', 'Files'], ['check', 'Check']].map(([k, n], i) => '<button type="button" data-bstep="' + k + '" aria-pressed="false"><span class="bnum">' + (i + 1) + '</span> ' + n + '<span class="bmark" data-bmark="' + k + '"></span></button>').join('')}</div>
+        <div class="seg bsteps" role="group" aria-label="Builder steps" data-bsteps>${[['scen', 'Scenario'], ['map', 'Map and sites'], ['codes', 'Code words'], ['intel', 'Intel'], ['inj', 'Injects'], ['props', 'Props'], ['files', 'Files'], ['check', 'Check']].map(([k, n], i) => '<button type="button" data-bstep="' + k + '" aria-pressed="false"><span class="bnum">' + (i + 1) + '</span> ' + n + '<span class="bmark" data-bmark="' + k + '"></span></button>').join('')}</div>
         <div data-bbody></div>
       </div>
       <div class="panel stack bscen" data-sec="b-scen" data-aoc-off data-bscen>
@@ -8063,6 +8070,11 @@ function buildWhite(){
           <form class="stack" data-bsint><label>Commander\u2019s intent<textarea name="text" rows="5" maxlength="1200"></textarea></label><div class="row" style="justify-content:flex-start;align-items:center"><button type="submit" style="flex:0 0 auto">Save intent</button><button type="button" data-bsintstd style="flex:0 0 auto">Use the standing intent</button><span class="small muted" data-bsintmsg></span></div></form>
           <form class="stack" data-bspir>${[1, 2, 3, 4, 5, 6].map(i => '<label>PIR ' + i + (i > 4 ? ' (optional)' : '') + '<input name="p' + i + '" maxlength="200"></label>').join('')}<div class="row" style="justify-content:flex-start;align-items:center"><button type="submit" style="flex:0 0 auto">Save PIRs</button><button type="button" data-bspirstd style="flex:0 0 auto">Use the standing PIRs</button><span class="small muted" data-bspirmsg></span></div></form>
         </div>`).join('')}</div>
+      </div>
+      <div class="panel stack bscen" data-sec="b-codes" data-aoc-off data-bcodes>
+        <h2>Code words</h2>
+        <p class="small muted" style="margin:0">Code words are stored scrambled, so the board cannot show the ones already set. Type new words and save to replace a site\u2019s words. Separate words with commas. Each capture word works once; defense words are for defending only. Tell the props team and POCs the new words before the game.</p>
+        <div class="list" data-bcodelist></div>
       </div>
       <div class="panel cfbar" data-sec="create" data-aoc-off><div class="seg" role="group" aria-label="Show in creation" data-cfbar>${[['all', 'All'], ['intel', 'Intel packages'], ['inj', 'Inject templates'], ['props', 'Props'], ['files', 'Creation files']].map(([k, n]) => '<button type="button" data-cf="' + k + '" aria-pressed="false">' + n + '</button>').join('')}</div></div>
       <section class="cmdsec" data-sec="cmd" data-cmdsec data-aoc-only>
@@ -8425,6 +8437,7 @@ function buildWhite(){
   app.buildStep = pref.get('marala-bstep', 'scen'); app.createF = pref.get('marala-cf', 'all');
   $('[data-bsteps]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-bstep]'); if (!b) return; app.buildStep = b.dataset.bstep; pref.set('marala-bstep', app.buildStep); setTab('build', true); });
   builderScenWire(v);
+  builderCodesWire(v);
   $('[data-cfbar]', v).addEventListener('click', ev => { const b = ev.target.closest('[data-cf]'); if (!b) return; app.createF = b.dataset.cf; pref.set('marala-cf', app.createF); setTab('create', false); });
   v.addEventListener('click', ev => { const g = ev.target.closest('[data-bgo]'); if (!g) return; app.buildStep = g.dataset.bgo; pref.set('marala-bstep', app.buildStep); setTab('build', true); });
   setTab(pref.get('marala-wtab', 'all'), false);
@@ -9096,7 +9109,7 @@ function builderChecks(S){
   const placed = BASE_SITE_KEYS.filter(k => M.sites && M.sites[k]);
   add('map', placed.length === BASE_SITE_KEYS.length, placed.length + ' of ' + BASE_SITE_KEYS.length + ' key sites placed on the map', 'Drag the site markers under Map setup.');
   const noCode = SITE_KEYS.filter(k => { const c = codes(k); return !c || (typeof c === 'object' && !Array.isArray(c) && !(c.cap || []).length); });
-  add('map', !noCode.length, noCode.length ? 'No capture code words for ' + noCode.map(k => SITES[k].name).join(', ') : 'Every site has capture code words', 'Code words are set when the game is created.');
+  add('codes', !noCode.length, noCode.length ? 'No capture code words for ' + noCode.map(k => SITES[k].name).join(', ') : 'Every site has capture code words', 'Set or replace them in the Code words step.');
   const extra = SITE_KEYS.length - BASE_SITE_KEYS.length, plans = Object.values(S.sitePlans || {}).length;
   add('map', true, extra + plans ? (extra ? extra + ' added site' + (extra === 1 ? '' : 's') : '') + (extra && plans ? ', ' : '') + (plans ? plans + ' planned site' + (plans === 1 ? '' : 's') : '') : 'No added sites (optional)', 'Make site on a waypoint adds one.');
   const P = allProblems(S), pirN = pirsOf(S, 'B').filter(Boolean).length;
@@ -9112,6 +9125,39 @@ function builderChecks(S){
   add('props', true, PR.length ? PR.length + ' prop' + (PR.length === 1 ? '' : 's') + ' in the catalog' : 'No props yet (optional)', 'Add props under Props.');
   add('files', true, 'Download a backup once setup is done', 'Game, Download backup saves everything in one file.');
   return C;
+}
+function codeInfo(S, k){
+  const c = (S.siteCodes && S.siteCodes[k]) || ((app.cfg && app.cfg.codes) || {})[k];
+  const cap = !c ? [] : typeof c === 'string' ? [c] : Array.isArray(c) ? c : (c.cap || []), def = c && !Array.isArray(c) && typeof c === 'object' && c.def ? c.def : [];
+  return { cap:cap.length, def:def.length, changed:!!(S.siteCodes && S.siteCodes[k] && (BASE_SITE_KEYS.includes(k) || k === 'town')) };
+}
+function builderCodes(S, v){
+  const box = $('[data-bcodelist]', v); if (!box) return;
+  const keys = SITE_KEYS.concat(['town']), sig = keys.join(',') + '|' + keys.map(k => SITES[k] ? SITES[k].name : '').join(',');
+  if (box.dataset.k !== sig){ box.dataset.k = sig;
+    box.innerHTML = keys.map(k => { const town = k === 'town', nm = town ? 'Marala Town office' : SITES[k].name;
+      return '<form class="li stack bcode" data-bcode="' + esc(k) + '" style="align-items:stretch"><div class="row" style="align-items:center;justify-content:space-between"><b>' + esc(nm) + (town ? ' <span class="small muted">(aid deliveries, words can be reused)</span>' : '') + '</b><span class="small muted" data-bcstat></span></div>'
+        + '<div class="row" style="align-items:end"><label>' + (town ? 'Code words' : 'Capture code words') + '<input name="cap" autocomplete="off" placeholder="Example: LANTERN, MAPLE, RIDGE"></label>' + (town ? '' : '<label>Defense code words (optional)<input name="def" autocomplete="off" placeholder="Example: ROPE, NET"></label>') + '</div>'
+        + '<div class="row" style="justify-content:flex-start;align-items:center"><button type="submit" style="flex:0 0 auto">Save new words</button>' + (BASE_SITE_KEYS.includes(k) || town ? '<button type="button" data-bcreset style="flex:0 0 auto">Use the words from game setup</button>' : '') + '</div></form>'; }).join(''); }
+  keys.forEach(k => { const f = $('[data-bcode="' + k + '"]', box); if (!f) return; const ci = codeInfo(S, k), t = (ci.cap ? ci.cap + (k === 'town' ? ' word' + (ci.cap === 1 ? '' : 's') : ' capture') : 'No words set') + (k !== 'town' && ci.cap ? ', ' + (ci.def ? ci.def + ' defense' : 'defense uses capture words') : '') + (ci.changed ? ' (changed in the Builder)' : '');
+    const st = $('[data-bcstat]', f); if (st.textContent !== t) st.textContent = t; st.style.color = ci.cap ? '' : 'var(--bad)'; const r = $('[data-bcreset]', f); if (r) r.hidden = !ci.changed; });
+}
+function builderCodesWire(v){
+  const box = $('[data-bcodelist]', v); if (!box) return;
+  box.addEventListener('submit', ev => {
+    const f = ev.target.closest('[data-bcode]'); if (!f) return; ev.preventDefault();
+    const k = f.dataset.bcode, cap = words(f.elements.cap.value), def = f.elements.def ? words(f.elements.def.value) : [], nm = k === 'town' ? 'the town office' : SITES[k] ? SITES[k].name : k;
+    if (!cap.length){ toast('Type at least one ' + (k === 'town' ? '' : 'capture ') + 'code word.', true); return; }
+    const both = cap.filter(w => def.includes(w)); if (both.length){ toast('A word cannot be both capture and defense: ' + both.join(', ') + '.', true); return; }
+    if (!confirm('Replace the code words for ' + nm + '? The old words stop working right away.')) return;
+    const salt = app.cfg.salt; writeEvent('site_codes', null, { k, cap:cap.map(w => secret(salt, w)), def:def.map(w => secret(salt, w)) });
+    f.reset(); toast('New code words saved for ' + nm + ': ' + cap.length + (k === 'town' ? '' : ' capture' + (def.length ? ', ' + def.length + ' defense' : '')) + '.');
+  });
+  box.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-bcreset]'); if (!b) return; const k = b.closest('[data-bcode]').dataset.bcode, nm = k === 'town' ? 'the town office' : SITES[k].name;
+    if (!confirm('Go back to the code words set when the game was created for ' + nm + '?')) return;
+    writeEvent('site_codes', null, { k, reset:true }); toast('Back to the original code words for ' + nm + '.');
+  });
 }
 function canNames(){ return app.mode !== 'remote' || adOk(); }
 function bsFill(el, val){ if (el && document.activeElement !== el && !el.dataset.dirty && el.value !== val) el.value = val; }
@@ -9169,12 +9215,13 @@ function builderRender(S, v){
   if (!S || !v) return;
   const body = $('[data-bbody]', v); if (!body) return;
   const C = builderChecks(S), bs = app.buildStep || 'scen';
-  ['scen', 'map', 'intel', 'inj', 'props', 'files'].forEach(k => { const m = $('[data-bmark="' + k + '"]', v), L = C.filter(c => c.step === k), bad = L.filter(c => !c.ok).length; if (m){ const t = L.length ? (bad ? ' ' + bad + ' to check' : ' ✓') : ''; if (m.textContent !== t) m.textContent = t; m.className = 'bmark' + (bad ? ' bad' : ''); } });
+  ['scen', 'map', 'codes', 'intel', 'inj', 'props', 'files'].forEach(k => { const m = $('[data-bmark="' + k + '"]', v), L = C.filter(c => c.step === k), bad = L.filter(c => !c.ok).length; if (m){ const t = L.length ? (bad ? ' ' + bad + ' to check' : ' ✓') : ''; if (m.textContent !== t) m.textContent = t; m.className = 'bmark' + (bad ? ' bad' : ''); } });
   const row = c => '<div class="li"><span class="bck' + (c.ok ? ' ok' : '') + '" aria-hidden="true">' + (c.ok ? '✓' : '!') + '</span><div class="grow"><b>' + esc(c.t) + '</b><div class="small muted">' + esc(c.why) + '</div></div>' + (bs === 'check' ? '<button type="button" data-bgo="' + c.step + '" style="flex:0 0 auto">Go</button>' : '') + '</div>';
-  const intro = { scen:'Who the forces are, the game window, and each force\u2019s commander\u2019s intent and PIRs. Everything saves straight to this game.', map:'Draw the play area, place the sites and add waypoints. New sites are made from a waypoint with Make site.', intel:'Build packages, tie each to a PIR and set when it goes out.', inj:'Write inject templates and queue the timed ones.', props:'List the props and where each goes.', files:'Save creation files or a full backup, or load someone else’s.', check:'Everything still to look at before execution day. Practice bots below let you rehearse the whole game.' }[bs];
+  const intro = { scen:'Who the forces are, the game window, and each force\u2019s commander\u2019s intent and PIRs. Everything saves straight to this game.', map:'Draw the play area, place the sites and add waypoints. New sites are made from a waypoint with Make site.', codes:'Set or replace the capture and defense code words for every site and the town office.', intel:'Build packages, tie each to a PIR and set when it goes out.', inj:'Write inject templates and queue the timed ones.', props:'List the props and where each goes.', files:'Save creation files or a full backup, or load someone else’s.', check:'Everything still to look at before execution day. Practice bots below let you rehearse the whole game.' }[bs];
   const L = bs === 'check' ? C : C.filter(c => c.step === bs);
   const extra = '';
   if (bs === 'scen') builderScen(S, v);
+  if (bs === 'codes') builderCodes(S, v);
   const html = '<p class="small muted" style="margin:0">' + esc(intro) + '</p><div class="list">' + L.map(row).join('') + '</div>' + extra;
   if (body.dataset.h !== html){ body.dataset.h = html; body.innerHTML = html; }
 }
