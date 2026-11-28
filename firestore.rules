@@ -1,24 +1,33 @@
+// Firestore security rules for the Marala Island Board.
+// Paste into Firebase console, Firestore Database, Rules, then Publish.
+// Before publishing, replace OWNER_EMAIL_HERE with the owner's sign-in email (lowercase).
+// Keep the real email out of the public GitHub copy.
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Someone is signed in with an email (Firebase Authentication, Email/Password).
     function signedIn() {
       return request.auth != null && request.auth.token.email != null;
     }
 
+    // The signed-in email, lowercase. Admin documents are stored under this.
     function me() {
       return request.auth.token.email.lower();
     }
 
+    // The owner: full control, the only one who can add or remove admins.
     function isOwner() {
       return signedIn() && me() in ['OWNER_EMAIL_HERE'];
     }
 
+    // This user's admin document: admins/{email}.
     function adminPath() {
       return /databases/$(database)/documents/admins/$(me());
     }
 
+    // An admin: the owner, or anyone with an active admins/{email} document. Admins can do everything except manage admins.
     function isAdmin() {
       return isOwner()
         || (signedIn()
@@ -27,6 +36,8 @@ service cloud.firestore {
           && get(adminPath()).data.role in ['admin', 'owner']);
     }
 
+    // A player event (no sign-in): only allowed into a game that exists, with the right shape and size,
+    // and a time no more than 2 minutes in the future.
     function validEvent(gameKey, eventId) {
       let d = request.resource.data;
       return exists(/databases/$(database)/documents/vault/$(gameKey))
@@ -42,6 +53,7 @@ service cloud.firestore {
         && (!('by' in d) || d.by == null || (d.by is string && d.by.size() <= 12));
     }
 
+    // Admin list. The owner manages it; an admin may only update their own lastSeen time.
     match /admins/{email} {
       allow read: if isOwner() || (signedIn() && me() == email);
       allow create: if isOwner()
@@ -58,15 +70,19 @@ service cloud.firestore {
       allow delete: if isOwner();
     }
 
+    // Game menu: names everyone can see. Only admins change it.
     match /lobby/{gameId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // Each game's vault key and PIN. Admins only.
     match /keys/{gameId} {
       allow read, write: if isAdmin();
     }
 
+    // Game settings and events, stored under a secret key made from the game PIN.
+    // Anyone with the key (the PIN) can read and add events; nobody but an admin can change or delete them.
     match /vault/{gameKey} {
       allow get: if true;
       allow list: if isAdmin();
@@ -80,10 +96,12 @@ service cloud.firestore {
       }
     }
 
+    // Older single-game layout. Admins only.
     match /games/{rest=**} {
       allow read, write: if isAdmin();
     }
 
+    // Board settings. Admins only.
     match /meta/{rest=**} {
       allow read, write: if isAdmin();
     }

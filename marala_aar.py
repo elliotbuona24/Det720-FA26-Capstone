@@ -1,3 +1,12 @@
+"""Marala Island Board after-action report.
+
+Builds the printable AAR (charts and tables) from a board backup file
+(White Force, Download backup). The board also prints its own AAR;
+this script makes a fuller report with charts.
+
+Usage: python marala_aar.py "backup.json" -o "AAR.html"
+Needs: matplotlib.
+"""
 import argparse
 import base64
 import html
@@ -53,6 +62,7 @@ plt.rcParams.update({
 })
 
 
+# Text for a fake (spoofed) order event.
 def fake_text(p):
     lst = p.get("fakeList")
     if not lst:
@@ -60,11 +70,13 @@ def fake_text(p):
     return "; ".join(f"{esc(x['k'])}, {esc(x['disc'])} ({esc(x['src'])})" for x in lst)
 
 
+# Board minute to clock time (board minute 0 is 0600).
 def hhmm(g):
     m = 360 + int(g)
     return f"{m // 60:02d}{m % 60:02d}"
 
 
+# Clock time like 0715 back to a board minute.
 def g_from_hhmm(text):
     t = "".join(ch for ch in str(text or "") if ch.isdigit())
     if len(t) != 4:
@@ -72,6 +84,7 @@ def g_from_hhmm(text):
     return int(t[:2]) * 60 + int(t[2:]) - 360
 
 
+# Escalation level name for a meter value.
 def level_name(esc):
     if esc >= 100:
         return "War"
@@ -81,6 +94,7 @@ def level_name(esc):
     return "War"
 
 
+# Puts clock times on a chart's x axis.
 def time_axis(ax, start, end):
     ax.set_xlim(start, end)
     span = end - start
@@ -90,6 +104,7 @@ def time_axis(ax, start, end):
     ax.set_axisbelow(True)
 
 
+# Saves a chart as PNG bytes.
 def fig_to_png(fig):
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=160, bbox_inches="tight", facecolor="white")
@@ -97,6 +112,7 @@ def fig_to_png(fig):
     return buf.getvalue()
 
 
+# Reads a board backup file and returns its AAR data.
 def load(path):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     aar = data.get("aar")
@@ -108,6 +124,7 @@ def load(path):
     return data, aar
 
 
+# One line of numbers over time from the AAR steps.
 def series(steps, pick):
     xs, ys = [], []
     for s in steps:
@@ -116,10 +133,12 @@ def series(steps, pick):
     return xs, ys
 
 
+# Log lines by event id.
 def log_by_id(aar):
     return {e["id"]: e for e in aar["log"] if e.get("id")}
 
 
+# Every escalation increase, who caused it and why.
 def escalation_jumps(aar):
     logs = log_by_id(aar)
     jumps = []
@@ -139,6 +158,7 @@ def escalation_jumps(aar):
     return jumps
 
 
+# Escalation chart.
 def chart_escalation(aar):
     steps = aar["steps"]
     start, end = aar["startG"], aar["endG"]
@@ -169,6 +189,7 @@ def chart_escalation(aar):
     return fig_to_png(fig)
 
 
+# A simple line chart (points or diplomatic points over time).
 def chart_lines(aar, pick, title, ylabel, ylim=None):
     steps = aar["steps"]
     fig, ax = plt.subplots(figsize=(8, 3.23))
@@ -188,6 +209,7 @@ def chart_lines(aar, pick, title, ylabel, ylim=None):
     return fig_to_png(fig)
 
 
+# Who held a site, and when.
 def site_segments(aar, key):
     segs = []
     cur = None
@@ -207,6 +229,7 @@ def site_segments(aar, key):
     return segs
 
 
+# Site control timeline.
 def chart_sites(aar):
     keys = list(aar["sites"].keys()) + ["town"]
     labels = [aar['sites'][k]['name'] for k in aar["sites"]] + ["Town office"]
@@ -234,6 +257,7 @@ def chart_sites(aar):
     return fig_to_png(fig)
 
 
+# Intel package results for each force.
 def intel_stats(aar):
     out = {}
     for side in ("B", "R"):
@@ -260,6 +284,7 @@ def intel_stats(aar):
     return out
 
 
+# Intel results chart.
 def chart_intel(stats):
     fig, ax = plt.subplots(figsize=(8, 2.09))
     cats = [("confirm", "Confirmed", "#2f5d3a"), ("duplicate", "Duplicate", "#8c8c8c"),
@@ -284,6 +309,7 @@ def chart_intel(stats):
     return fig_to_png(fig)
 
 
+# Public statements and whether they were right.
 def statements(aar):
     rows = []
     incidents = {i["id"]: i for i in aar["incidents"]}
@@ -300,6 +326,7 @@ def statements(aar):
     return rows
 
 
+# Escalation table rows.
 def esc_table(jumps):
     rows = []
     for j in jumps:
@@ -311,19 +338,23 @@ def esc_table(jumps):
     return rows
 
 
+# Escapes text for HTML.
 def esc(s):
     return html.escape(str(s))
 
 
+# A chart as an inline image.
 def img(png, alt):
     return f'<img alt="{esc(alt)}" src="data:image/png;base64,{base64.b64encode(png).decode()}">'
 
 
+# A table cell colored for a force.
 def side_cell(side, text):
     cls = {"B": "b", "R": "r"}.get(side, "")
     return f'<td class="{cls}">{esc(text)}</td>'
 
 
+# Builds the full AAR as an HTML page.
 def build_html(data, aar, charts):
     final = aar["final"]
     b, r = final["B"], final["R"]
@@ -339,7 +370,7 @@ def build_html(data, aar, charts):
     war = "War broke out" + (f" at {hhmm(final['warAt'])}" if final.get("warAt") is not None else "") + ", so both scores were cut in half." if final["war"] else \
         f"No war. Escalation finished at {final['esc']} ({level_name(final['esc'])})."
     score_rows = [
-        ("Site captures (+2) and time held (+1 per 10 minutes)", "hold"), ("Sites held at the end (+5 each)", "sites"), ("Town office open", "town"), ("Confirmed reports (+1 each)", "reports"), ("Intel packages (2 + 2 each)", "intel"),
+        ("Site captures (+10) and time held (+1 per 10 minutes)", "hold"), ("Sites held at the end (+5 each)", "sites"), ("Town office open", "town"), ("Confirmed reports (+1 each)", "reports"), ("Intel packages (2 + 2 each)", "intel"),
         ("IEDs handled", "ied"), ("IED casualties (−5 each)", "iedhit"), ("Militia cache", "cache"), ("Diplomatic points (1 per 10)", "hn"),
         ("Escalation caused (−1 each)", "esc"), ("White cell adjustments", "adj"), ("War penalty", "war"),
     ]
@@ -583,6 +614,7 @@ table.log{{font-size:10pt}}
 </main></body></html>"""
 
 
+# Command line: python marala_aar.py backup.json [-o report.html].
 def main():
     ap = argparse.ArgumentParser(description="Turn a Marala Island board backup into an after-action report.")
     ap.add_argument("backup", help="the .json file from the White Force's Download backup button")

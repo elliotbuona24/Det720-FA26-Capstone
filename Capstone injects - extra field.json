@@ -1,0 +1,318 @@
+{
+ "app": "marala-intel",
+ "version": 2,
+ "saved": 1795855550947,
+ "from": "Capstone extra field injects (library)",
+ "packages": [],
+ "images": {},
+ "injects": [
+  {
+   "id": "tx-f01",
+   "label": "Lost shepherd boy",
+   "to": "both",
+   "from": "Marala Town (HUMINT)",
+   "text": "A mother at the town office says her 10-year-old son went out with the goats before dawn and has not come back. A farmer heard a child crying near grid 18T TL 59676 22094 (40.81470, -77.84940), play square C1. The first force to find him, treat him and send a MEDEVAC 9-line earns the town’s thanks. Coordinate with the other force if both teams go.",
+   "at": 14,
+   "lvl": null,
+   "note": "No props: the POC O/C plays the scene from the card. Correct assessment and a correct MEDEVAC 9-line: POC calls Helped a civilian (diplomatic +5). Teams of both forces crowding each other: Provocation.",
+   "phase": "Phase 1",
+   "oc": "Read when your team arrives at C1: \"A boy about 10 is sitting against a tree, shivering and crying. His right ankle is swollen and he cannot stand on it. He is cold to the touch and says he has been out here since dark.\" Check that the team keeps security out, warms him (jacket or poncho), splints the ankle from the TCCC kit and sends one correct MEDEVAC 9-line (ambulatory or litter, routine). Then call Helped a civilian.",
+   "win": 20,
+   "who": "any",
+   "done": "civaid",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f02",
+   "label": "Vehicle rollover on the west road",
+   "to": "B",
+   "from": "Patrol report (HUMINT)",
+   "text": "A delivery truck rolled off the west road at grid 18T TL 59606 21763 (40.81170, -77.85010), play square B6. Two civilians are hurt and fuel is leaking. Send a team with a TCCC kit: keep 25 m from the fuel until it is safe, triage, treat and send one MEDEVAC 9-line through your POC. Report within 20 minutes.",
+   "at": 48,
+   "lvl": null,
+   "note": "No props beyond a TCCC kit. Correct triage order and a correct MEDEVAC 9-line: POC calls Helped a civilian (diplomatic +5). Missed: diplomatic −3.",
+   "phase": "Phase 2",
+   "oc": "Read when your team arrives at B6: \"The truck is on its side. The driver, a man about 50, is still in the cab, conscious, with a deep cut on his forearm that is bleeding steadily. A teenage passenger is sitting in the grass holding her ribs, breathing fast and shallow. You smell fuel.\" Check that the team stays 25 m off until it checks the fuel, treats the driver’s bleeding first (Urgent), assesses the passenger (Priority, possible chest injury) and sends one correct MEDEVAC 9-line. Then call Helped a civilian.",
+   "win": 20,
+   "who": "each",
+   "done": "civaid",
+   "miss": {
+    "pts": 0,
+    "hn": 3
+   }
+  },
+  {
+   "id": "tx-f03",
+   "label": "Tractor accident at the north farm",
+   "to": "R",
+   "from": "Farm cooperative (HUMINT)",
+   "text": "A farm worker was pinned when a tractor tipped at grid 18T TL 59895 22076 (40.81460, -77.84680), play square F2. The farmer has freed him but he is badly hurt. Send a team with a TCCC kit: triage, treat and send one MEDEVAC 9-line through your POC. Report within 20 minutes.",
+   "at": 50,
+   "lvl": null,
+   "note": "No props beyond a TCCC kit. Correct treatment and a correct MEDEVAC 9-line: POC calls Helped a civilian (diplomatic +5). Missed: diplomatic −3.",
+   "phase": "Phase 2",
+   "oc": "Read when your team arrives at F2: \"A man about 35 lies on his back beside a tipped tractor. His left lower leg is bent at an odd angle and bleeding through his trousers. He is pale, sweating and asking for water. The farmer, about 60, has a burned hand from the exhaust.\" Check that the team treats the leg bleeding first (tourniquet, Urgent), does not give him water, treats the farmer (Routine) and sends one correct MEDEVAC 9-line. Then call Helped a civilian.",
+   "win": 20,
+   "who": "each",
+   "done": "civaid",
+   "miss": {
+    "pts": 0,
+    "hn": 3
+   }
+  },
+  {
+   "id": "tx-f04",
+   "label": "Water for the clinic",
+   "to": "both",
+   "from": "Marala Town clinic",
+   "text": "A clinic truck broke down and left a pack of drinking water at grid 18T TL 59801 22035 (40.81420, -77.84790), play square E2. The town clinic is out of clean water. The mayor asks for the pack to reach the Marala Town office intact. The first force to deliver it earns the town’s thanks. Do not open it or drink from it.",
+   "at": 56,
+   "lvl": null,
+   "note": "Prop: the rucksack or duffel loaded with water bottles (resource STA-16), placed at E2 before the send time. Check that no station is using it then. Delivered intact to the town office: POC calls Supply box delivered (diplomatic +5). Opened, drunk from or dropped: Poor conduct. Props team recovers it at ENDEX.",
+   "phase": "Phase 2",
+   "win": 25,
+   "who": "any",
+   "done": "box",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f05",
+   "label": "Militia observation post",
+   "to": "B",
+   "from": "Patrol report (HUMINT)",
+   "text": "A Coalition patrol saw two men with binoculars and a radio watching your force from the brush near grid 18T TL 59622 21985 (40.81370, -77.85000), play square B3. They are reporting your moves to the Marala First Front and will move within 25 minutes. Fix them with your UAV, a drone flight or a team’s SALUTE or activity report within about 80 m of that grid, then strike with a correct strike 9-line within 10 minutes of the fix. It is marked on your map as a militia target.",
+   "at": 16,
+   "lvl": null,
+   "note": "No props. The target is on the board: it shows faintly on the Blue Force map until fixed. A UAV launch, a drone flight over the grid or a Blue Force SALUTE within about 80 m fixes it. Strike approved by the White Force on a correct 9-line: +3 points, diplomatic +2. Gone after 25 minutes if not struck.",
+   "phase": "Phase 1",
+   "oc": "Militia observation post (B3). If your Blue Force team reaches B3 and the target is not destroyed, read: \"Flattened grass behind the brush, a wrapper from a ration pack and two sets of boot prints heading north-west. They left within the last few minutes.\" The team should send a SALUTE or activity report with the grid where it is standing; that fixes the target for its C2.",
+   "mt": {
+    "label": "Militia observation post",
+    "pt": [
+     40.8137,
+     -77.85
+    ],
+    "grid": "B3",
+    "life": 25
+   },
+   "win": 25,
+   "who": "each",
+   "done": "mt",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f06",
+   "label": "Militia sniper team",
+   "to": "R",
+   "from": "Sentry report (HUMINT)",
+   "text": "A sentry heard a single shot from the high ground near grid 18T TL 59786 22102 (40.81480, -77.84810), play square D1 and saw a glint from a scope. No one was hit. A militia sniper team is expected to move within 25 minutes. Fix it with your UAV, a drone flight or a team’s SALUTE or activity report within about 80 m of that grid, then strike with a correct strike 9-line within 10 minutes of the fix. It is marked on your map as a militia target.",
+   "at": 19,
+   "lvl": null,
+   "note": "No props. Same rules as the observation post, for Red Force: fixed by a UAV launch, a drone flight or a Red Force SALUTE within about 80 m. Strike approved on a correct 9-line: +3 points, diplomatic +2. Gone after 25 minutes.",
+   "phase": "Phase 1",
+   "oc": "Militia sniper team (D1). If your Red Force team reaches D1 and the target is not destroyed, read: \"A shallow scrape in the dirt facing south, one spent rifle casing and a torn strip of camouflage netting. Footprints lead east toward the trees.\" The team should send a SALUTE or activity report with the grid where it is standing; that fixes the target for its C2.",
+   "mt": {
+    "label": "Militia sniper team",
+    "pt": [
+     40.8148,
+     -77.8481
+    ],
+    "grid": "D1",
+    "life": 25
+   },
+   "win": 25,
+   "who": "each",
+   "done": "mt",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f07",
+   "label": "Militia drone launch point",
+   "to": "both",
+   "from": "EW cell (SIGINT)",
+   "text": "The EW cell picked up a drone control signal from near grid 18T TL 59754 21892 (40.81290, -77.84840), play square D4, about 50 m from Marala Town. The militia is flying small drones over both forces. The first force to fix and strike the launch point takes it out of play. This is close to the town: say honestly in your strike 9-line whether civilians are near.",
+   "at": 86,
+   "lvl": null,
+   "note": "No props. A militia target for both forces: the first approved strike takes it. Strike near the town with civilians reported near: diplomatic −10 (the board applies it). Gone after 15 minutes.",
+   "phase": "Phase 3",
+   "oc": "Militia drone launch point (D4). If your team reaches D4 and the target is not destroyed, read: \"An empty plastic case with foam cut-outs for a small drone, two spent batteries and a folding table. Tire tracks lead toward the town.\" The team should send a SALUTE or activity report with the grid where it is standing.",
+   "mt": {
+    "label": "Militia drone launch point",
+    "pt": [
+     40.8129,
+     -77.8484
+    ],
+    "grid": "D4",
+    "life": 15
+   },
+   "win": 15,
+   "who": "any",
+   "done": "mt",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f08",
+   "label": "Device at the crossroads",
+   "to": "both",
+   "from": "Marala police (HUMINT)",
+   "text": "Marala police report a device left at the crossroads at grid 18T TL 59714 21949 (40.81340, -77.84890), play square D3. Locals are walking past it. Treat it as live. The first force to cordon it at 25 m or more, keep civilians out and send a correct IED 9-line through its POC clears it. Coordinate with the other force if both teams arrive.",
+   "at": 52,
+   "lvl": null,
+   "note": "Prop: the spare IED prop, placed at D3 before the send time (do not use it if another IED prop is missing that day). Correct cordon and 9-line: POC calls Real IED cleared (+2, diplomatic +5). A team that walks onto it: Hit by an IED. Props team recovers it when the window closes.",
+   "phase": "Phase 2",
+   "win": 20,
+   "who": "any",
+   "done": "ied",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f09",
+   "label": "Farmer’s damage claim",
+   "to": "B",
+   "from": "Marala Town office",
+   "text": "A farmer at grid 18T TL 59683 21772 (40.81180, -77.84920), play square C6 says Coalition vehicles crushed his fence and crops last night and he wants to be paid. He is angry and has told the mayor. Send a team to hear him out, record his claim and tell him how it will be handled. Do not promise money.",
+   "at": 26,
+   "lvl": null,
+   "note": "No props: the POC O/C plays the farmer. Respectful, listens, takes down the claim and refers it to the AOC: Good conduct (diplomatic +5). Argues, dismisses him or promises payment: Poor conduct (diplomatic −5).",
+   "phase": "Phase 1",
+   "oc": "Play the farmer when your team arrives at C6. Start angry: \"Your trucks drove through my fence. Who pays for this?\" Calm down only if the team listens, apologizes for the trouble and writes down your name, the damage and where. If they promise money, accept it happily (that is Poor conduct: they cannot promise payment). Good conduct if they are respectful and refer the claim to the AOC.",
+   "win": 20,
+   "who": "each",
+   "done": "conduct",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f10",
+   "label": "Fisherman’s complaint",
+   "to": "R",
+   "from": "Marala Town office",
+   "text": "A fisherman at grid 18T TL 59917 21987 (40.81380, -77.84650), play square F3 says North Korean soldiers stopped him at the harbor road and took his catch. He has told the mayor. Send a team to hear him out, record what happened and tell him how it will be handled. Do not promise money.",
+   "at": 28,
+   "lvl": null,
+   "note": "No props: the POC O/C plays the fisherman. Respectful, listens, takes down the complaint and refers it to the AOC: Good conduct (diplomatic +5). Argues, threatens him or promises payment: Poor conduct (diplomatic −5).",
+   "phase": "Phase 1",
+   "oc": "Play the fisherman when your team arrives at F3. Start upset and afraid: \"Your soldiers took my fish. How will I feed my family?\" Open up only if the team is calm, respectful and writes down your name, what was taken and where. If they promise money, accept it (that is Poor conduct). Good conduct if they are respectful and refer the complaint to the AOC.",
+   "win": 20,
+   "who": "each",
+   "done": "conduct",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f11",
+   "label": "Wounded militia fighter",
+   "to": "both",
+   "from": "Patrol report (HUMINT)",
+   "text": "A wounded militia fighter has crawled out of the trees at grid 18T TL 59825 22012 (40.81400, -77.84760), play square E2 with his hands up. He is bleeding and asking for help. The first force to reach him must secure him, treat him under the law of armed conflict and report him to the AOC.",
+   "at": 88,
+   "lvl": null,
+   "note": "No props: the POC O/C plays the fighter. Searched and secured, treated like any casualty and reported to the AOC: Good conduct (diplomatic +5). Mistreated, ignored or taken as a trophy: Poor conduct (diplomatic −5).",
+   "phase": "Phase 3",
+   "oc": "Play the fighter when your team arrives at E2: \"I am done. Please, my leg.\" Gunshot wound to the right calf, bleeding steadily. Check that the team covers him, searches him, treats the leg like any other casualty and reports him to the AOC through its C2. Call Good conduct if they do all of that; Poor conduct if they mistreat him or leave him.",
+   "win": 15,
+   "who": "any",
+   "done": "conduct",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f12",
+   "label": "Survey marker check (land navigation)",
+   "to": "both",
+   "from": "AOC",
+   "text": "The AOC needs an exact grid for a survey marker for future air drops: a triangle of three orange cones with a numbered envelope, about 70 m west of Marala Town in play square C5. Send one team with a map, compass and protractor. Plot it yourselves: do not use a phone. Your C2 sends the AOC the 8-digit grid and the number in the envelope.",
+   "at": 38,
+   "lvl": null,
+   "note": "Props: three cones and an envelope with a number, at 18T TL 5966 2180 (40.8121, -77.8494) before the send time. A force that writes to the AOC in the window closes it. White Force checks the grid: within about 10 m of 5966 2180 and the right number is worth a +1 points adjustment (\"Accurate survey grid\"). Props team recovers the cones at ENDEX.",
+   "phase": "Phase 1",
+   "oc": "At the survey marker (C5, three cones with an envelope). Check that the team plots the grid with the map, compass and protractor and does not use a phone. Do not give them the grid. No call: the C2 reports to the AOC on the board.",
+   "win": 30,
+   "who": "each",
+   "done": "aoc",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f13",
+   "label": "Route reconnaissance",
+   "to": "both",
+   "from": "AOC",
+   "text": "The AOC plans to move aid trucks along the coast road from play square B6 to E5 this afternoon. Send one team to walk the route and report: road condition, any obstacles or choke points, signs of militia activity and good places to stop. Your C2 sends the AOC a route report in the window.",
+   "at": 62,
+   "lvl": null,
+   "note": "No props. A force that writes to the AOC in the window closes it. White Force may award up to +2 points as an adjustment (\"Route report\") for a complete report with grids for every obstacle.",
+   "phase": "Phase 2",
+   "oc": "No scene. If your team walks the coast road, check that it moves with security, notes grids for anything that would stop a truck and reports through its C2. No call.",
+   "win": 25,
+   "who": "each",
+   "done": "aoc",
+   "miss": {
+    "pts": 0,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f14",
+   "label": "Unexploded round near the north track",
+   "to": "R",
+   "from": "Farm cooperative (HUMINT)",
+   "text": "A farmer found an unexploded mortar round sticking out of the ground beside the north track at grid 18T TL 59829 22112 (40.81490, -77.84760), play square E1. Treat it as live. Keep every cadet at least 25 m away, cordon it, keep civilians out, and send an IED/UXO 9-line through your POC. Report within 20 minutes.",
+   "at": 72,
+   "lvl": null,
+   "note": "Prop: a water bottle wrapped in red duct tape (resource FLD-06), pushed into the ground at E1 before the send time. Correct cordon and 9-line: POC calls Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED. Props team recovers it when the window closes.",
+   "phase": "Phase 2",
+   "win": 20,
+   "who": "each",
+   "done": "ied",
+   "miss": {
+    "pts": 2,
+    "hn": 0
+   }
+  },
+  {
+   "id": "tx-f15",
+   "label": "Unexploded round near the west track",
+   "to": "B",
+   "from": "Patrol report (HUMINT)",
+   "text": "A Coalition patrol found an unexploded mortar round half buried beside the west track at grid 18T TL 59592 21842 (40.81240, -77.85030), play square B5. Treat it as live. Keep every cadet at least 25 m away, cordon it, keep civilians out, and send an IED/UXO 9-line through your POC. Report within 20 minutes.",
+   "at": 70,
+   "lvl": null,
+   "note": "Prop: a water bottle wrapped in red duct tape (resource FLD-06), pushed into the ground at B5 before the send time. Correct cordon and 9-line: POC calls Real IED cleared (+2, diplomatic +5). Walked onto it: Hit by an IED. Props team recovers it when the window closes.",
+   "phase": "Phase 2",
+   "win": 20,
+   "who": "each",
+   "done": "ied",
+   "miss": {
+    "pts": 2,
+    "hn": 0
+   }
+  }
+ ]
+}

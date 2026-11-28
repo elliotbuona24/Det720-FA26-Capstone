@@ -1,3 +1,7 @@
+// Service worker: lets the board open with a weak or no signal.
+// The page itself is network-first (always the newest version when online, the saved copy when not).
+// Intel images, the Firebase SDK and fonts are kept after the first load.
+// Bump CACHE (v2, v3...) only to force every phone to drop its saved copies.
 const CACHE = 'marala-board-v1';
 const NET_WAIT = 4000;
 
@@ -10,6 +14,7 @@ self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('marala-board-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
+// Network first, falling back to the saved copy after NET_WAIT ms or when offline.
 function pageFirst(req){
   return new Promise(resolve => {
     let done = false;
@@ -22,6 +27,7 @@ function pageFirst(req){
   });
 }
 
+// Saved copy first, refreshed from the network in the background.
 function keepCopy(req){
   return caches.open(CACHE).then(c => c.match(req).then(hit => {
     const net = fetch(req).then(r => { if (r && (r.ok || r.type === 'opaque')) c.put(req, r.clone()); return r; }).catch(() => hit);
@@ -29,6 +35,7 @@ function keepCopy(req){
   }));
 }
 
+// Which requests use which strategy. Everything else goes straight to the network.
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;

@@ -16,6 +16,11 @@ READ ALL SUPPORTING DOCUMENTS PROVIDED BY EXERCISES PRIOR TO USE
 | `marala_aar.py` | Turns a white force backup into a printable after-action report |
 | `firestore.rules` | Database security rules to paste into the Firebase console |
 | `HANDOFF.md` | How the board works, who owns what, and how to run a new exercise |
+| `Capstone injects - AOC.json` | The 31 injects used on 19 Nov (load on White Force, Intel and inject creation) |
+| `Capstone injects - extra field.json` | 15 more field injects that use only props already on hand |
+| `Capstone props catalog.json` | The props catalog and where each prop is used |
+| `Capstone offline board.zip` | Offline copy of the board for the White Force laptop if the internet fails |
+| `sw.js` | Lets phones reopen the board with a weak signal |
 
 ## Updating the board
 

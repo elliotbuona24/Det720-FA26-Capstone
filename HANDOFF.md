@@ -17,7 +17,7 @@ For the next exercises officer, or anyone reusing the board for another exercise
 | GitHub repository | github.com, repository Settings | Add the new officer as a collaborator, or transfer the repository to a detachment GitHub account |
 | Firebase project | console.firebase.google.com, Project settings, Users and permissions | Add the new officer as Owner. Keep at least two Owners so the project is never locked out |
 | Owner | Firestore rules, `isOwner()` | The owner email in the rules has full control, including managing admins. Change it in the console rules when ownership moves |
-| Admins | Board, Admin, Admins list (owner only) | The owner adds, renames, suspends and removes admins on the board. Each admin also needs a Firebase sign-in: tick "Also create their sign-in now" (needs sign-up turned on) or create it in Firebase console, Authentication, Users |
+| Admins | Board, Admin, Admins list (owner only) | The owner adds, renames, suspends and removes admins on the board. Each admin also needs a Firebase sign-in. Best: Add an admin with **Create it with a temporary password I give them** and hand the password over in person (university mail such as psu.edu quarantines the Firebase set-password email). The admin then uses **Change my password**. If an admin never got a working password, delete their user in Firebase console, Authentication, Users, then tap **Set up sign-in** on their row. Creating sign-ins from the board needs sign-up turned on (step 2 below); otherwise use Authentication, Users, Add user |
 | Billing (Blaze plan) | Firebase console, Usage and billing | Keep a budget alert on whoever pays. A full exercise costs well under a dollar |
 
 If you keep ownership yourself, still add a second Owner on Firebase and GitHub so the board survives a lost password.
@@ -38,6 +38,16 @@ If you keep ownership yourself, still add a second Owner on Firebase and GitHub 
 4. **After.** Download the ENDEX backup and run `marala_aar.py` for the AAR (see the README).
 
 Never commit the setup JSON, backups, PINs, code words or rosters. This repository is public.
+
+## Reading the code
+
+`index.html` is commented throughout. Start with the ENGINE and INTERFACE header comments: every action is an event, `apply()` says what each event does (one commented `case` per event), and each screen has a `buildX()` and `renderX()` pair. Every function has a one-line comment saying what it does.
+
+## Extra content files
+
+- `Capstone injects - AOC.json`: the 31 injects used on 19 Nov.
+- `Capstone injects - extra field.json`: 15 more field injects (casualties, conduct, militia targets, UXO, land navigation, route recon) that use only props already on hand. Load on White Force, Intel and inject creation, then **Add any missing timed injects**. Delete the ones you will not use.
+- White Force, Clock and setup, **Print role cards** prints one page per role for the loaded game.
 
 ## Changing the built-in content in the code
 
